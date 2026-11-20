@@ -6,4 +6,14 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 
 | ID | Status | Pri | Depends | Title | Summary | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-
+| BL-001 | done | P0 | - | [Monorepo scaffold](bl-001-scaffold.md) | Turborepo with shadcn Vite web, Hono server with typed client and websocket, shared zod package. | scaffold, web, server |
+| BL-002 | done | P0 | BL-001 | [Dev tooling and agent setup](bl-002-dev-tooling.md) | Cursor format hook, eslint and prettier everywhere, Vitest, Playwright e2e, AGENTS.md and Cursor rules. | tooling, testing, agents |
+| BL-003 | done | P0 | BL-002 | [Docs system](bl-003-docs-system.md) | designs and backlogs folders, one frontmatter schema, generated indexes, docs:check, retrieval rules. | docs, agents |
+| BL-004 | todo | P0 | BL-001 | [Engine core](bl-004-engine-core.md) | packages/engine with workflow schema, SQLite event log, scheduler, command tasks, needs and parallelism. | engine, events, scheduler |
+| BL-005 | todo | P0 | BL-004 | [Resume after restart](bl-005-resume.md) | Replay the log on start, re-attach or interrupt open attempts, never rerun finished tasks. | engine, resume, events |
+| BL-006 | todo | P1 | BL-005 | [Conditions and loops](bl-006-conditions-loops.md) | exit and expr conditions for when, until and branches; retry and repeat with separate counters. | engine, conditions, loops, retry |
+| BL-007 | todo | P1 | BL-006 | [Agent tasks and spawn](bl-007-agent-tasks.md) | kind agent tasks via Claude Code and Cursor CLI adapters, memories, and runtime spawn of new tasks. | agents, spawn, cli |
+| BL-008 | todo | P2 | BL-007 | [Web run view](bl-008-run-view.md) | Web screen that lists runs and shows live task states and logs over the websocket. | ui, web, runs |
+| BL-009 | todo | P2 | BL-008 | [Graph editor with YAML sync](bl-009-graph-editor.md) | React Flow editor for workflows that reads and writes workflow.yaml, kept in sync both ways. | ui, web, editor, yaml |
+| BL-010 | todo | P2 | BL-009 | [Sandboxing](bl-010-sandboxing.md) | Restrict task writes to the workflow dir with sandbox-exec or bubblewrap, with a warned fallback. | sandbox, security, process |
+| BL-011 | todo | P2 | BL-006, BL-007 | [Agent judge conditions](bl-011-agent-judge.md) | agent condition kind where an agent CLI judges output and returns pass or fail. | engine, conditions, agents |

@@ -8,7 +8,7 @@ Schema and retrieval rules: [README.md](README.md).
 | Section | Index | Size | Holds |
 | --- | --- | --- | --- |
 | Designs | [designs/INDEX.md](designs/INDEX.md) | 8 docs | system designs and UI instructions |
-| Backlogs | [backlogs/INDEX.md](backlogs/INDEX.md) | 0 docs, 0 open | chunked work items, one per file |
+| Backlogs | [backlogs/INDEX.md](backlogs/INDEX.md) | 11 docs, 8 open | chunked work items, one per file |
 
 | ID | Guide | Summary |
 | --- | --- | --- |
