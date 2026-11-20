@@ -5,8 +5,9 @@ type: design
 status: active
 summary: Ledger of known risks (decision, risk, guard, revisit trigger) for the design and tooling, plus open questions.
 tags: [tradeoffs, decisions, questions, tooling]
-related: [DES-001, DES-003, DES-006, DES-009, DES-010, DOC-001]
-updated: 2026-11-20
+related:
+  [DES-001, DES-003, DES-006, DES-009, DES-010, DES-011, DES-012, DOC-001]
+updated: 2026-11-21
 ---
 
 # Trade-offs and open questions
@@ -69,6 +70,39 @@ the trigger fires and the choice changes.
 - Guard: each uses the same recommended sets; `pnpm lint` runs them all.
 - Revisit when: one rule change has to be made in more than one file.
 
+## UI
+
+### Graph layout is automatic, positions are not saved
+
+- Risk: users cannot arrange a large graph the way they think about it.
+- Guard: dagre gives a stable layered layout; `workflow.yaml` stays the
+  only file to sync.
+- Revisit when: users ask to pin node positions, or a workflow's graph is
+  hard to read with the automatic layout.
+
+### A matrix task is one node, in the editor and the run view
+
+- Risk: per-value state is one click away instead of on the canvas; a
+  failing value is less visible.
+- Guard: the node badge shows `xN`, and the node's state reflects its
+  instances; the detail lists every value with its state.
+- Revisit when: users need per-value state on the graph, for example to
+  retry one value or see which value failed without opening the node.
+
+### react-markdown instead of Streamdown for `SUMMARY.md`
+
+- Risk: two markdown stacks if agent output is later rendered as it
+  streams.
+- Guard: Streamdown is a drop-in replacement for react-markdown.
+- Revisit when: the UI renders markdown that is still streaming.
+
+### CodeMirror without schema completion
+
+- Risk: no autocomplete of workflow keys while typing YAML.
+- Guard: diagnostics from the `yaml` parser and the zod schema, inline.
+- Revisit when: users ask for completion, or schema errors are common in
+  hand-written YAML.
+
 Index size, measured on 2026-11-20 with 20 docs (generated vs the same
 file run through prettier): root 655 vs 1053 bytes, designs 1915 vs 2597,
 backlogs 2466 vs 3299. Prettier adds 33 to 60 percent, all padding, and
@@ -80,4 +114,15 @@ the overhead grows with the longest summary in each table.
 2. OS support on day one: macOS only?
 3. Per-task agent budget (tokens, time, cost)?
 
-UI questions live in the UI design docs (DES-009, DES-010).
+Raised by the UI designs (DES-011, DES-010), to settle in BL-004 or
+before BL-012:
+
+4. Cancel needs a terminal state for tasks and runs. Add `cancelled` to
+   the lifecycle in DES-003?
+5. The event log is append-only. When a user deletes a run, are its
+   events removed, or kept with a deleted marker while the files go?
+6. Matrix is only shown by example in DES-002. Undefined: how a value
+   reaches the command (env var or template), how several keys expand,
+   and how downstream `needs` wait on all instances.
+
+The UI design docs have no open questions as of 2026-11-21.
