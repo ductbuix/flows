@@ -8,23 +8,25 @@ const API = process.env.PW_API_BASE!
 test.describe("workflow lifecycle", () => {
   test("create, rename and delete a workflow", async ({ page, request }) => {
     test.setTimeout(60_000)
+    const id = `life-${crypto.randomUUID().slice(0, 8)}`
+    const renamed = `${id}-renamed`
     await page.goto("/")
     await page.getByTestId("workflow-create-open").click()
     await expect(page.getByTestId("workflow-create")).toBeVisible()
-    await page.getByTestId("create-id-input").fill("life-e2e")
+    await page.getByTestId("create-id-input").fill(id)
     await page.getByTestId("create-goal-input").fill("lifecycle e2e")
     await page.getByTestId("create-submit").click()
 
-    await expect(page).toHaveURL(/\/workflows\/life-e2e/)
+    await expect(page).toHaveURL(new RegExp(`/workflows/${id}$`))
     await expect(page.getByTestId("graph-canvas")).toBeVisible({
       timeout: 15_000,
     })
-    expect(existsSync(join(HOME, "workflows", "life-e2e", "workflow.yaml"))).toBe(
-      true
-    )
+    expect(existsSync(join(HOME, "workflows", id, "workflow.yaml"))).toBe(true)
 
     // Seed a finished run so rename can rebind history.
-    const startRes = await request.post(`${API}/api/workflows/life-e2e/runs`)
+    const startRes = await request.post(`${API}/api/workflows/${id}/runs`, {
+      data: { requestId: crypto.randomUUID() },
+    })
     expect(startRes.ok()).toBeTruthy()
     const { runId } = (await startRes.json()) as { runId: string }
     await expect
@@ -39,36 +41,36 @@ test.describe("workflow lifecycle", () => {
       .toBe("succeeded")
 
     // Reload so action buttons re-check live status.
-    await page.goto("/workflows/life-e2e")
+    await page.goto(`/workflows/${id}`)
     await expect(page.getByTestId("graph-canvas")).toBeVisible({
       timeout: 15_000,
     })
 
-    await page.getByTestId("workflow-rename-open-life-e2e").click()
+    await page.getByTestId(`workflow-rename-open-${id}`).click()
     await expect(page.getByTestId("workflow-rename")).toBeVisible()
-    await page.getByTestId("rename-id-input").fill("life-renamed")
+    await page.getByTestId("rename-id-input").fill(renamed)
     await page.getByTestId("rename-submit").click()
-    await expect(page).toHaveURL(/\/workflows\/life-renamed/)
-    expect(existsSync(join(HOME, "workflows", "life-e2e"))).toBe(false)
-    expect(
-      existsSync(join(HOME, "workflows", "life-renamed", "workflow.yaml"))
-    ).toBe(true)
+    await expect(page).toHaveURL(new RegExp(`/workflows/${renamed}$`))
+    expect(existsSync(join(HOME, "workflows", id))).toBe(false)
+    expect(existsSync(join(HOME, "workflows", renamed, "workflow.yaml"))).toBe(
+      true
+    )
     const yaml = readFileSync(
-      join(HOME, "workflows", "life-renamed", "workflow.yaml"),
+      join(HOME, "workflows", renamed, "workflow.yaml"),
       "utf8"
     )
-    expect(yaml).toMatch(/^id: life-renamed$/m)
+    expect(yaml).toMatch(new RegExp(`^id: ${renamed}$`, "m"))
 
-    const runs = await request.get(`${API}/api/workflows/life-renamed/runs`)
+    const runs = await request.get(`${API}/api/workflows/${renamed}/runs`)
     const list = (await runs.json()) as Array<{ id: string }>
     expect(list.map((r) => r.id)).toContain(runId)
 
-    await page.getByTestId("workflow-delete-open-life-renamed").click()
+    await page.getByTestId(`workflow-delete-open-${renamed}`).click()
     await expect(page.getByTestId("workflow-delete")).toBeVisible()
-    await page.getByTestId("delete-confirm-input").fill("life-renamed")
+    await page.getByTestId("delete-confirm-input").fill(renamed)
     await page.getByTestId("delete-submit").click()
     await expect(page).toHaveURL("/")
-    expect(existsSync(join(HOME, "workflows", "life-renamed"))).toBe(false)
+    expect(existsSync(join(HOME, "workflows", renamed))).toBe(false)
   })
 
   test("edit a memory file and show future-launch warning", async ({
@@ -83,7 +85,11 @@ test.describe("workflow lifecycle", () => {
       timeout: 15_000,
     })
     await expect(page.getByTestId("memory-row-style.md")).toBeVisible()
-    await page.getByTestId("memory-row-style.md").getByRole("button").first().click()
+    await page
+      .getByTestId("memory-row-style.md")
+      .getByRole("button")
+      .first()
+      .click()
     await expect(page.getByTestId("memory-editor")).toBeVisible()
     await expect(page.getByTestId("memory-editor")).toContainText(
       "future launches only"
