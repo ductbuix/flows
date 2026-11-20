@@ -58,6 +58,16 @@ export class EventLog {
     }))
   }
 
+  /** Distinct run ids in log order of first appearance. */
+  listRunIds(): string[] {
+    const rows = this.db
+      .prepare(
+        `SELECT run_id FROM events GROUP BY run_id ORDER BY MIN(seq) ASC`
+      )
+      .all() as Array<{ run_id: string }>
+    return rows.map((row) => row.run_id)
+  }
+
   close(): void {
     this.db.close()
   }

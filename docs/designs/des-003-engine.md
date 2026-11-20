@@ -59,20 +59,25 @@ is waiting.
    hides deleted runs from every view. If the process dies between the
    event and the removal, resume finishes the removal.
 
-## Event kinds (BL-004)
+## Event kinds (BL-004, BL-005)
 
 Schemas live in `packages/shared`. The fold and the UI use the same set.
 
-| Type               | Meaning                                                    |
-| ------------------ | ---------------------------------------------------------- |
-| `run_started`      | Run created; payload includes the frozen `graph`           |
-| `attempt_started`  | Attempt id recorded before launch (append-then-act)        |
-| `attempt_launched` | Process spawned; includes `pid`                            |
-| `attempt_finished` | Process exited; includes `exitCode` (task succeeds if `0`) |
-| `run_succeeded`    | Every task terminal and none failed                        |
-| `run_failed`       | At least one task failed (no ready work left)              |
+| Type                  | Meaning                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| `run_started`         | Run created; payload includes the frozen `graph`           |
+| `attempt_started`     | Attempt id recorded before launch (append-then-act)        |
+| `attempt_launched`    | Process spawned; includes `pid`                            |
+| `attempt_finished`    | Process exited; includes `exitCode` (task succeeds if `0`) |
+| `attempt_interrupted` | Resume could not re-attach; no reliable exit code          |
+| `run_succeeded`       | Every task terminal and none failed                        |
+| `run_failed`          | At least one task failed (no ready work left)              |
 
-Later backlogs add resume, approval, cancel and delete marker events.
+Each launch wraps the command so it writes `exit.code` under the attempt
+dir. On resume, a dead pid with that file becomes `attempt_finished`;
+otherwise `attempt_interrupted`. Until BL-006, interrupt fails the task
+(no automatic retry). Later backlogs add approval, cancel and delete
+marker events.
 
 ## Concurrency
 

@@ -2,11 +2,11 @@
 id: BL-005
 title: Resume after restart
 type: backlog
-status: todo
+status: done
 summary: Replay the log on start, re-attach or interrupt open attempts, never rerun finished tasks.
 tags: [engine, resume, events]
 related: [DES-003]
-updated: 2026-11-20
+updated: 2026-11-21
 priority: P0
 depends: [BL-004]
 ---
@@ -18,8 +18,8 @@ and 5).
 
 ## Done when
 
-- [ ] Kill the engine mid-run, restart it, and the run completes.
-- [ ] Finished tasks are not rerun.
-- [ ] A started attempt with no exit is re-attached by pid if alive, else
+- [x] Kill the engine mid-run, restart it, and the run completes.
+- [x] Finished tasks are not rerun.
+- [x] A started attempt with no exit is re-attached by pid if alive, else
       recorded `interrupted` and handled by the retry policy.
-- [ ] Covered by a test that kills and restarts the engine process.
+- [x] Covered by a test that kills and restarts the engine process.

@@ -48,6 +48,14 @@ export const attemptFinishedEventSchema = z.object({
   exitCode: z.number().int(),
 })
 
+/** Open attempt could not be re-attached after a restart (DES-003). */
+export const attemptInterruptedEventSchema = z.object({
+  type: z.literal("attempt_interrupted"),
+  ...eventBase,
+  taskId: z.string().min(1),
+  attempt: z.number().int().positive(),
+})
+
 export const runSucceededEventSchema = z.object({
   type: z.literal("run_succeeded"),
   ...eventBase,
@@ -63,6 +71,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   attemptStartedEventSchema,
   attemptLaunchedEventSchema,
   attemptFinishedEventSchema,
+  attemptInterruptedEventSchema,
   runSucceededEventSchema,
   runFailedEventSchema,
 ])

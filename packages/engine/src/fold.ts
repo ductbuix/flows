@@ -9,6 +9,7 @@ export type AttemptState = {
   attempt: number
   pid?: number
   exitCode?: number
+  interrupted?: boolean
 }
 
 export type TaskState = {
@@ -74,6 +75,15 @@ export function foldEvents(events: EngineEvent[]): RunState | null {
         }
         break
       }
+      case "attempt_interrupted": {
+        if (!state) break
+        const task = state.tasks[event.taskId]
+        const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
+        if (attempt) attempt.interrupted = true
+        // Until BL-006 retry policy: interrupt ends the task as failed.
+        if (task) task.status = "failed"
+        break
+      }
       case "run_succeeded": {
         if (!state) break
         state.status = "succeeded"
@@ -104,10 +114,28 @@ export function readyTaskIds(state: RunState): string[] {
   return ready
 }
 
+/** Attempt started or launched with no finish and no interrupt. */
+export function isOpenAttempt(attempt: AttemptState): boolean {
+  return attempt.exitCode === undefined && !attempt.interrupted
+}
+
 export function hasOpenAttempts(state: RunState): boolean {
-  return Object.values(state.tasks).some(
-    (task) =>
-      task.status === "running" ||
-      task.attempts.some((a) => a.exitCode === undefined)
+  return Object.values(state.tasks).some((task) =>
+    task.attempts.some(isOpenAttempt)
   )
+}
+
+/** Open attempts across the run (for resume). */
+export function openAttempts(
+  state: RunState
+): Array<{ taskId: string; attempt: AttemptState }> {
+  const out: Array<{ taskId: string; attempt: AttemptState }> = []
+  for (const task of Object.values(state.tasks)) {
+    for (const attempt of task.attempts) {
+      if (isOpenAttempt(attempt)) {
+        out.push({ taskId: task.id, attempt })
+      }
+    }
+  }
+  return out
 }

@@ -3,7 +3,7 @@ import type { EngineEvent, Workflow } from "@workspace/shared"
 import { prepareRunDirs } from "./dirs.ts"
 import { EventLog } from "./event-log.ts"
 import { foldEvents, type RunState } from "./fold.ts"
-import { appDbPath, resolveAppHome } from "./paths.ts"
+import { appDbPath, resolveAppHome, runDir, workflowDir } from "./paths.ts"
 import { Scheduler } from "./scheduler.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
 
@@ -35,8 +35,8 @@ export class Engine {
     this.log = new EventLog(appDbPath(this.home))
   }
 
-  loadWorkflow(workflowDir: string): Workflow {
-    const workflow = loadWorkflowFile(workflowDir)
+  loadWorkflow(workflowDirPath: string): Workflow {
+    const workflow = loadWorkflowFile(workflowDirPath)
     assertValidGraph(workflow)
     return workflow
   }
@@ -63,25 +63,83 @@ export class Engine {
       at: new Date().toISOString(),
     })
 
+    const scheduler = this.attachScheduler(
+      runId,
+      options.workflowDir,
+      runRoot,
+      graph
+    )
+    scheduler.requestTick()
+
+    return this.handleFor(runId, scheduler)
+  }
+
+  /**
+   * Resume every run still `running` in the log: re-attach live pids or
+   * record interrupted, then continue scheduling (DES-003 / BL-005).
+   */
+  resumeAll(): RunHandle[] {
+    const handles: RunHandle[] = []
+    for (const runId of this.log.listRunIds()) {
+      const handle = this.resumeRun(runId)
+      if (handle) handles.push(handle)
+    }
+    return handles
+  }
+
+  /**
+   * Resume one run if it is still running. Returns null if the run is
+   * missing or already terminal.
+   */
+  resumeRun(runId: string): RunHandle | null {
+    const existing = this.schedulers.get(runId)
+    if (existing) {
+      return this.handleFor(runId, existing)
+    }
+
+    const state = this.fold(runId)
+    if (!state || state.status !== "running") return null
+
+    const workflowRoot = workflowDir(this.home, state.workflowId)
+    const runRoot = runDir(workflowRoot, runId)
+    const scheduler = this.attachScheduler(
+      runId,
+      workflowRoot,
+      runRoot,
+      state.graph
+    )
+    scheduler.resumeOpenAttempts()
+    scheduler.requestTick()
+    return this.handleFor(runId, scheduler)
+  }
+
+  close(): void {
+    this.log.close()
+  }
+
+  private attachScheduler(
+    runId: string,
+    workflowRoot: string,
+    runRoot: string,
+    graph: Workflow
+  ): Scheduler {
     const scheduler = new Scheduler({
       log: this.log,
       runId,
-      workflowRoot: options.workflowDir,
+      workflowRoot,
       runRoot,
       graph,
     })
     this.schedulers.set(runId, scheduler)
-    scheduler.requestTick()
+    return scheduler
+  }
 
+  private handleFor(runId: string, scheduler: Scheduler): RunHandle {
     return {
       runId,
       wait: () => scheduler.wait(),
       state: () => scheduler.state(),
     }
-  }
-
-  close(): void {
-    this.log.close()
   }
 }
 

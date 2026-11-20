@@ -3,6 +3,7 @@ import { closeSync, openSync } from "node:fs"
 import { join } from "node:path"
 import type { CommandTask, Workflow } from "@workspace/shared"
 import { attemptDir, taskDir } from "./paths.ts"
+import { exitCodePath } from "./pid.ts"
 
 export type LaunchResult = {
   child: ChildProcess
@@ -48,6 +49,20 @@ export function buildTaskEnv(
 }
 
 /**
+ * Wrap the task command so it always writes exit.code under the attempt
+ * dir. Resume reads that file when re-attaching by pid (DES-003).
+ */
+export function wrapCommandWithExitCode(run: string, codePath: string): string {
+  const escaped = codePath.replaceAll("'", "'\\''")
+  return [
+    run,
+    `__flow_code=$?`,
+    `printf '%s' "$__flow_code" > '${escaped}'`,
+    `exit "$__flow_code"`,
+  ].join("\n")
+}
+
+/**
  * Launch a command task as a detached process in its own group.
  * Caller must keep the ChildProcess to observe exit (append-then-act).
  */
@@ -58,16 +73,21 @@ export function launchCommand(
   graph: Workflow
 ): LaunchResult {
   const attemptRoot = attemptDir(paths.runRoot, task.id, attempt)
+  const codePath = exitCodePath(paths.runRoot, task.id, attempt)
   const stdoutFd = openSync(join(attemptRoot, "stdout.log"), "a")
   const stderrFd = openSync(join(attemptRoot, "stderr.log"), "a")
 
   try {
-    const child = spawn("/bin/sh", ["-c", task.run], {
-      cwd: paths.workflowRoot,
-      env: buildTaskEnv(task, attempt, paths, graph),
-      detached: true,
-      stdio: ["ignore", stdoutFd, stderrFd],
-    })
+    const child = spawn(
+      "/bin/sh",
+      ["-c", wrapCommandWithExitCode(task.run, codePath)],
+      {
+        cwd: paths.workflowRoot,
+        env: buildTaskEnv(task, attempt, paths, graph),
+        detached: true,
+        stdio: ["ignore", stdoutFd, stderrFd],
+      }
+    )
 
     if (child.pid === undefined) {
       throw new Error(`failed to spawn task ${task.id}`)

@@ -15,6 +15,7 @@ export {
   attemptStartedEventSchema,
   attemptLaunchedEventSchema,
   attemptFinishedEventSchema,
+  attemptInterruptedEventSchema,
   runSucceededEventSchema,
   runFailedEventSchema,
   type TaskStatus,

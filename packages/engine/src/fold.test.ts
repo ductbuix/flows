@@ -90,4 +90,35 @@ describe("foldEvents", () => {
     expect(state?.status).toBe("failed")
     expect(readyTaskIds(state!)).toEqual([])
   })
+
+  it("marks the attempt interrupted and the task failed", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_launched",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        pid: 9,
+        at: "t2",
+      },
+      {
+        type: "attempt_interrupted",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t3",
+      },
+    ])
+    expect(state?.tasks.a?.status).toBe("failed")
+    expect(state?.tasks.a?.attempts[0]?.interrupted).toBe(true)
+    expect(readyTaskIds(state!)).toEqual([])
+  })
 })

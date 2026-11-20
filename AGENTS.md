@@ -25,7 +25,8 @@ Built:
 - `packages/shared`: zod schemas and types shared by server and web
   (`healthSchema`, workflow and engine event schemas).
 - `packages/engine`: SQLite event log (`node:sqlite`), fold, scheduler,
-  command-task runner; `FLOWAPP_HOME` for app data. Next: BL-005 resume.
+  command-task runner, resume (`resumeAll` / re-attach or interrupt);
+  `FLOWAPP_HOME` for app data.
 - `apps/e2e`: Playwright tests that start server and web together.
 - `packages/docs-tools`: docs index generator and checker (`tsx`).
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with one frontmatter
@@ -33,7 +34,7 @@ Built:
 
 Not built yet:
 
-- Resume after restart (BL-005), workflow/task API routes, visual editor.
+- Conditions/loops (BL-006), workflow/task API routes, visual editor.
 
 ## Commands
 

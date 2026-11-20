@@ -8,6 +8,9 @@ export {
 export {
   foldEvents,
   readyTaskIds,
+  openAttempts,
+  hasOpenAttempts,
+  isOpenAttempt,
   type RunState,
   type TaskState,
   type AttemptState,

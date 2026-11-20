@@ -1,4 +1,5 @@
 import type { EngineEvent, Workflow } from "@workspace/shared"
+import { watchChild } from "./attempt-watch.ts"
 import type { EventLog } from "./event-log.ts"
 import { prepareAttemptDirs } from "./dirs.ts"
 import {
@@ -7,7 +8,8 @@ import {
   readyTaskIds,
   type RunState,
 } from "./fold.ts"
-import { launchCommand, waitForExit } from "./runner.ts"
+import { resumeOpenAttempts } from "./resume.ts"
+import { launchCommand } from "./runner.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -23,7 +25,8 @@ export type SchedulerOptions = {
 
 /**
  * Drives one run: ready tasks from needs, launch command processes in
- * parallel, append-then-act for every side effect.
+ * parallel, append-then-act for every side effect. Resume re-attaches or
+ * interrupts open attempts (DES-003).
  */
 export class Scheduler {
   private readonly log: EventLog
@@ -35,6 +38,7 @@ export class Scheduler {
   private again = false
   private readonly waiters: Array<(state: RunState) => void> = []
   private settled = false
+  private readonly watching = new Set<string>()
 
   constructor(options: SchedulerOptions) {
     this.log = options.log
@@ -44,7 +48,6 @@ export class Scheduler {
     this.graph = options.graph
   }
 
-  /** Current fold of this run's events. */
   state(): RunState {
     const events = this.log.listByRun(this.runId).map((e) => e.event)
     const state = foldEvents(events)
@@ -60,13 +63,28 @@ export class Scheduler {
     })
   }
 
-  /** Queue a tick; coalesces concurrent calls. */
   requestTick(): void {
     if (this.ticking) {
       this.again = true
       return
     }
     void this.runTicks()
+  }
+
+  /** Re-attach live pids or interrupt open attempts, then tick. */
+  resumeOpenAttempts(): void {
+    resumeOpenAttempts(this.watchHost(), (event) => this.append(event))
+  }
+
+  private watchHost() {
+    return {
+      runId: this.runId,
+      runRoot: this.runRoot,
+      watching: this.watching,
+      state: () => this.state(),
+      append: (event: EngineEvent) => this.append(event),
+      requestTick: () => this.requestTick(),
+    }
   }
 
   private async runTicks(): Promise<void> {
@@ -102,15 +120,12 @@ export class Scheduler {
       if (!task || task.kind !== "command") continue
 
       const attempt = (state.tasks[taskId]?.attempts.length ?? 0) + 1
-      const at = now()
-
-      // Append, then act (DES-003).
       this.append({
         type: "attempt_started",
         runId: this.runId,
         taskId,
         attempt,
-        at,
+        at: now(),
       })
       prepareAttemptDirs(this.runRoot, taskId, attempt)
 
@@ -133,30 +148,7 @@ export class Scheduler {
         pid,
         at: now(),
       })
-
-      void waitForExit(child)
-        .then((exitCode) => {
-          this.append({
-            type: "attempt_finished",
-            runId: this.runId,
-            taskId,
-            attempt,
-            exitCode,
-            at: now(),
-          })
-          this.requestTick()
-        })
-        .catch(() => {
-          this.append({
-            type: "attempt_finished",
-            runId: this.runId,
-            taskId,
-            attempt,
-            exitCode: 1,
-            at: now(),
-          })
-          this.requestTick()
-        })
+      watchChild(this.watchHost(), taskId, attempt, child)
     }
 
     const after = this.state()
