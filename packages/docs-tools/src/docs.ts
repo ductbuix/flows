@@ -111,7 +111,12 @@ export function parseFrontmatter(
 export function tableErrors(text: string): string[] {
   const errors: string[] = []
   const cols = (line: string) => line.replace(/\\\|/g, "").split("|").length - 2
-  const lines = text.split("\n")
+  // Blank out fenced code blocks so diagrams there are not read as tables.
+  let fenced = false
+  const lines = text.split("\n").map((line) => {
+    if (line.startsWith("```")) fenced = !fenced
+    return fenced || line.startsWith("```") ? "" : line
+  })
   for (let i = 0; i < lines.length; i++) {
     if (!lines[i].startsWith("|") || (i > 0 && lines[i - 1].startsWith("|")))
       continue

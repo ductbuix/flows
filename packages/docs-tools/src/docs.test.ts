@@ -107,6 +107,10 @@ describe("tableErrors", () => {
     )
   })
 
+  it("ignores pipes inside fenced code blocks", () => {
+    expect(tableErrors("```\n| box | box |\n|  x  |\n```\n")).toEqual([])
+  })
+
   it("rejects a missing separator and ragged rows", () => {
     expect(tableErrors("| a | b |\n| 1 | 2 |\n")).toHaveLength(1)
     expect(tableErrors("| a | b |\n| --- | --- |\n| 1 |\n")).toHaveLength(1)
