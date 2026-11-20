@@ -19,14 +19,15 @@ the trigger fires and the choice changes.
 
 ## Engine design
 
-| Decision                         | Risk                            | Guard                                                                          | Revisit when                                                                                    |
-| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Tasks read upstream dirs by path | can read beyond declared needs  | writes limited to the workflow dir (DES-006)                                   | runs must move to another machine                                                               |
-| SQLite log, no queue             | single-process engine           | append-then-act and replay on resume (DES-003)                                 | a second machine runs tasks                                                                     |
-| macOS only on day one            | no Linux or Windows users       | `sandbox-exec` is the one sandbox path to build                                | first user asks for Linux or Windows                                                            |
-| Sandbox best effort              | a task runs unsandboxed         | warning badge on unsandboxed runs (DES-006)                                    | a run needs the sandbox to be safe                                                              |
-| No `matrix`; fan-out by spawn    | a fixed list costs an agent run | write copies by hand, or spawn within `maxTasks` and `maxSpawnDepth` (DES-005) | users keep hand-writing identical tasks, or spawn fan-out is too slow or costly for fixed lists |
-| Agent judge conditions           | slow, not deterministic         | cheap kinds evaluate first; loop max counts (DES-004)                          | judges disagree on identical output                                                             |
+| Decision                         | Risk                             | Guard                                                                          | Revisit when                                                                                    |
+| -------------------------------- | -------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Tasks read upstream dirs by path | can read beyond declared needs   | writes limited to the workflow dir (DES-006)                                   | runs must move to another machine                                                               |
+| SQLite log, no queue             | single-process engine            | append-then-act and replay on resume (DES-003)                                 | a second machine runs tasks                                                                     |
+| macOS only on day one            | no Linux or Windows users        | `sandbox-exec` is the one sandbox path to build                                | first user asks for Linux or Windows                                                            |
+| Sandbox best effort              | a task runs unsandboxed          | warning badge on unsandboxed runs (DES-006)                                    | a run needs the sandbox to be safe                                                              |
+| No `matrix`; fan-out by spawn    | a fixed list costs an agent run  | write copies by hand, or spawn within `maxTasks` and `maxSpawnDepth` (DES-005) | users keep hand-writing identical tasks, or spawn fan-out is too slow or costly for fixed lists |
+| No agent limits yet              | a runaway or expensive agent run | retry and repeat max, `maxTasks`, `maxSpawnDepth`, `agents`, cancel            | a runaway or expensive agent run                                                                |
+| Agent judge conditions           | slow, not deterministic          | cheap kinds evaluate first; loop max counts (DES-004)                          | judges disagree on identical output                                                             |
 
 ## Tooling and docs
 
@@ -103,15 +104,13 @@ the overhead grows with the longest summary in each table.
 
 ## Open questions
 
-Awaiting confirmation (answered, but the answers need confirming before
-they go into the design):
-
-1. Per-task agent budget (tokens, time, cost).
+None open as of 2026-11-21.
 
 Settled on 2026-11-21: approval gates (yes), macOS only on day one,
 `cancelled` state for tasks and runs, and deleted runs kept in the log
 with a marker event. See DES-003 and DES-006. Also settled: no `matrix`
 key; workflows are dynamic and fan-out is done by spawn (DES-001,
-DES-005).
+DES-005). And: each task has a user-written instructions file, with no
+agent limits yet (DES-002).
 
 The UI design docs have no open questions as of 2026-11-21.

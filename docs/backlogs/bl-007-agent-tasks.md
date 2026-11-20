@@ -18,6 +18,8 @@ Spec: [DES-005](../designs/des-005-agents-spawn.md).
 ## Done when
 
 - [ ] Claude Code and Cursor CLI adapters run headless in the attempt dir.
+- [ ] The task's `instructions` file is the agent's prompt and its path
+      is in `TASK_INSTRUCTIONS`.
 - [ ] Listed `memory/*.md` files are copied to `input/memory/` before
       launch.
 - [ ] Specs in `out/spawn/*.yaml` are validated (schema, unique id, needs,

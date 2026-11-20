@@ -28,7 +28,7 @@ preservation are in [DES-013](des-013-workflow-editing.md).
   `spawn`, `retry`, `repeat` and `when`
   ([DES-004](des-004-conditions-loops.md)).
 - Edges that carry a condition (branch edges, `when`) are labeled.
-- Edit a task: kind, `run` or `cli` and `prompt`, `memory` files,
+- Edit a task: kind, `run` or `cli`, `instructions` file, `memory` files,
   `needs`, `when`, `retry`, `repeat`, `spawn`,
   `continueOnError`, limits.
 - Edit workflow fields: `goal` and `limits` (`concurrency`, `agents`,

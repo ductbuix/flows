@@ -42,7 +42,7 @@ tasks:
   - id: plan
     kind: agent
     cli: claude # or cursor
-    prompt: Read input/topic.md and plan the research.
+    instructions: tasks/plan.md # user-written instructions for this task
     memory: [memory/style.md]
     spawn: true
     retry: { max: 2 }
@@ -66,6 +66,15 @@ tasks:
 The visual editor and `workflow.yaml` stay in sync; the file is the source
 of truth.
 
+## Task instructions
+
+Each task can have its own instructions file, written by the user, set
+with `instructions:` as a path relative to the workflow dir (any name or
+folder). For an agent task it is the agent's prompt; a command task can
+read it from `TASK_INSTRUCTIONS`. No agent limits (turns, time, tokens,
+cost) are defined yet, in the file or in `workflow.yaml`; ledger entry in
+[DES-007](des-007-tradeoffs.md).
+
 ## App home
 
 The app home is `~/.flowapp`. `FLOWAPP_HOME` overrides it, so tests and
@@ -73,5 +82,5 @@ e2e runs use a temporary directory and never touch the user's data.
 
 ## Task environment
 
-Tasks read upstream outputs by path. Env: `UPSTREAM_<taskId>`, `TASK_IN`,
+Tasks read upstream outputs by path. Env: `UPSTREAM_<taskId>`, `TASK_IN`, `TASK_INSTRUCTIONS`,
 `TASK_OUT`, `PREV_ATTEMPT`, `WF_DIR`, `WF_INPUT`, `WF_OUTPUT`, `RUN_ID`.

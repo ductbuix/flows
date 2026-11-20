@@ -12,7 +12,8 @@ updated: 2026-11-21
 # Agents and runtime spawn
 
 - Headless agent CLI (Claude Code or Cursor CLI), cwd in its attempt dir,
-  stateless: knows only its input dir, memories, upstream paths.
+  stateless: knows only its instructions file (DES-002), input dir,
+  memories and upstream paths. No agent limits are defined yet.
 - `memory/*.md` listed on the task are copied into `input/memory/` before
   launch.
 - Spawn: agent writes specs to `out/spawn/*.yaml` or calls
