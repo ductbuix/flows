@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: Chosen libs with measured sizes; react-markdown for SUMMARY.md, CodeMirror 6 for YAML, React Flow with dagre.
 tags: [ui, web, libraries, markdown, editor, layout]
-related: [DES-008, DES-009, DES-010, DES-007]
+related: [DES-008, DES-009, DES-010, DES-013, DES-007]
 updated: 2026-11-21
 ---
 
@@ -104,4 +104,4 @@ the editor and the read-only run graph.
 Use the `yaml` package Document API, which the repo already uses for
 docs: `parseDocument(text)`, change nodes with `setIn`, `addIn` and
 `deleteIn`, then `doc.toString()`. Never rebuild the file from a plain
-object. Test plan in DES-010.
+object. Test plan in [DES-013](des-013-workflow-editing.md).
