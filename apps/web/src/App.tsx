@@ -1,7 +1,9 @@
 import { Link, Outlet, Route, Routes } from "react-router"
+import { Toaster } from "@workspace/ui/components/sonner"
 import { HomePage } from "@/pages/HomePage"
 import { WorkflowRunsPage } from "@/pages/WorkflowRunsPage"
 import { RunViewPage } from "@/pages/run-view/RunViewPage"
+import { WorkflowEditorPage } from "@/pages/editor/WorkflowEditorPage"
 
 function AppShell() {
   return (
@@ -24,6 +26,7 @@ function AppShell() {
       <main className="min-w-0 flex-1 p-6">
         <Outlet />
       </main>
+      <Toaster />
     </div>
   )
 }
@@ -33,7 +36,11 @@ export function App() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
-        <Route path="workflows/:workflowId" element={<WorkflowRunsPage />} />
+        <Route path="workflows/:workflowId" element={<WorkflowEditorPage />} />
+        <Route
+          path="workflows/:workflowId/runs"
+          element={<WorkflowRunsPage />}
+        />
         <Route
           path="workflows/:workflowId/runs/:runId"
           element={<RunViewPage />}

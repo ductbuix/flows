@@ -65,7 +65,6 @@ function waitForFile(path: string, timeoutMs = 15_000): Promise<void> {
 describe("resume after restart", () => {
   it("re-attaches a live pid after the engine process is killed", async () => {
     const home = tempHome()
-    const marker = join(home, "a-done.txt")
     const workflowDir = writeWorkflow(
       home,
       "resume-live",
@@ -74,13 +73,14 @@ id: resume-live
 tasks:
   - id: a
     kind: command
-    run: "printf done > \\"${marker.replaceAll('"', '\\"')}\\""
+    run: "printf done > \\"$WF_DIR/a-done.txt\\""
   - id: b
     kind: command
     run: "sleep 8 && printf ok > \\"$TASK_OUT/out.txt\\""
     needs: [a]
 `
     )
+    const marker = join(workflowDir, "a-done.txt")
 
     const harness = join(here, "resume-harness.ts")
     // Detached process group so SIGKILL to -pid stops tsx and the harness

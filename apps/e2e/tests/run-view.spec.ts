@@ -12,7 +12,8 @@ test.describe("run view", () => {
 
     await expect(page.getByTestId("run-status")).toBeVisible()
     await expect(page.getByTestId("ws-status")).toBeVisible()
-    await expect(page.getByTestId("sandbox-badge")).toBeVisible()
+    // macOS sandbox-exec applies; badge only shows when unrestricted.
+    await expect(page.getByTestId("sandbox-badge")).toHaveCount(0)
 
     for (const id of ["a", "b", "c", "d"]) {
       await expect(page.getByTestId(`task-state-${id}`)).toHaveText(

@@ -129,9 +129,11 @@ tasks:
 describe("retry and repeat", () => {
   it("retries a failing command until success", async () => {
     const home = tempHome()
-    const counter = join(home, "count.txt")
+    const workflowDir = join(home, "workflows", "retry")
+    mkdirSync(workflowDir, { recursive: true })
+    const counter = join(workflowDir, "count.txt")
     writeFileSync(counter, "0")
-    const script = join(home, "flaky.sh")
+    const script = join(workflowDir, "flaky.sh")
     writeFileSync(
       script,
       `#!/bin/sh
@@ -143,7 +145,7 @@ printf ok > "$TASK_OUT/out.txt"
 `,
       { mode: 0o755 }
     )
-    const workflowDir = writeWorkflow(
+    writeWorkflow(
       home,
       "retry",
       `
@@ -166,9 +168,11 @@ tasks:
 
   it("repeats until expr passes with separate attempt dirs", async () => {
     const home = tempHome()
-    const counter = join(home, "rep.txt")
+    const workflowDir = join(home, "workflows", "repeat")
+    mkdirSync(workflowDir, { recursive: true })
+    const counter = join(workflowDir, "rep.txt")
     writeFileSync(counter, "0")
-    const script = join(home, "score.sh")
+    const script = join(workflowDir, "score.sh")
     writeFileSync(
       script,
       `#!/bin/sh
@@ -179,7 +183,7 @@ printf '{"score":0.%s}' "$n" > "$TASK_OUT/score.json"
 `,
       { mode: 0o755 }
     )
-    const workflowDir = writeWorkflow(
+    writeWorkflow(
       home,
       "repeat",
       `

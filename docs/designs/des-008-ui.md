@@ -13,6 +13,7 @@ updated: 2026-11-21
 
 ## System
 
+
 - shadcn initialised with preset `b1HvWXNDFK`, Vite template, monorepo
   layout. Style `base-nova` on Base UI (not Radix), base color `neutral`,
   lucide icons.
@@ -57,10 +58,11 @@ Primitives land in `packages/ui/src/components` (import as
 
 ## Screens
 
-Workflow list, run list and run view ([DES-009](des-009-run-view.md)) are
-built. Next: graph editor ([DES-010](des-010-graph-editor.md)) and run
-controls ([DES-011](des-011-run-controls.md)). Each screen gets its own
-UI doc before it is built.
+Workflow list, graph editor ([DES-010](des-010-graph-editor.md)), run
+list and run view ([DES-009](des-009-run-view.md)) are built. Next: run
+controls ([DES-011](des-011-run-controls.md)) and workflow lifecycle
+([DES-013](des-013-workflow-editing.md)). Each screen gets its own UI
+doc before it is built.
 
 ## Testing and evidence
 

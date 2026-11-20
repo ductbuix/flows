@@ -11,6 +11,7 @@ export type SchedulerCore = {
   workflowRoot: string
   watching: Set<string>
   retries: RetryQueue
+  judgeCache: Map<string, Promise<boolean>>
   globalLimits?: WorkflowLimits
   state: () => RunState
   append: (event: EngineEvent) => void
@@ -56,8 +57,10 @@ export function resolveHost(core: SchedulerCore): ResolveHost {
   return {
     runId: core.runId,
     runRoot: core.runRoot,
+    workflowRoot: core.workflowRoot,
     state: core.state,
     append: core.append,
+    judgeCache: core.judgeCache,
     scheduleRetry: (taskId, backoffMs) => {
       core.retries.schedule(taskId, backoffMs, () => {
         if (core.state().status !== "running" || core.state().cancelRequested) {

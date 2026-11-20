@@ -40,15 +40,18 @@ describe("agent adapters", () => {
         needs: [],
         spawn: true,
       },
-      "/wf/tasks/plan.md"
+      "/wf/tasks/plan.md",
+      { workflowRoot: "/wf", attemptRoot: "/wf/runs/r/tasks/plan/attempt-1" }
     )
     expect(cmd).toContain("claude --print --permission-mode dontAsk")
+    expect(cmd).toContain(`--add-dir ${shellSingleQuote("/wf")}`)
     expect(cmd).toContain(
       shellSingleQuote(agentPrompt("/wf/tasks/plan.md", true))
     )
   })
 
   it("builds a headless Cursor CLI command", () => {
+    const attempt = "/wf/runs/r/tasks/plan/attempt-1"
     const cmd = buildAgentShellCommand(
       {
         id: "plan",
@@ -57,9 +60,12 @@ describe("agent adapters", () => {
         instructions: "tasks/plan.md",
         needs: [],
       },
-      "/wf/tasks/plan.md"
+      "/wf/tasks/plan.md",
+      { workflowRoot: "/wf", attemptRoot: attempt }
     )
     expect(cmd).toContain("agent -p --force --trust")
+    expect(cmd).toContain(`--workspace ${shellSingleQuote(attempt)}`)
+    expect(cmd).toContain(`--add-dir ${shellSingleQuote("/wf")}`)
     expect(cmd).not.toContain("out/spawn")
   })
 

@@ -46,6 +46,8 @@ export const attemptLaunchedEventSchema = z.object({
   taskId: z.string().min(1),
   attempt: z.number().int().positive(),
   pid: z.number().int().positive(),
+  /** False when sandbox-exec was not applied (DES-006). */
+  sandboxed: z.boolean().optional(),
 })
 
 export const attemptFinishedEventSchema = z.object({

@@ -62,6 +62,8 @@ export function applyEvent(
         status: "running",
         graph: event.graph,
         tasks: emptyTasks(event.graph),
+        // Optimistic until an unrestricted attempt_launched (DES-006).
+        sandboxed: true,
       }
     case "approval_requested": {
       if (!state) return state
@@ -102,6 +104,8 @@ export function applyEvent(
       const task = state.tasks[event.taskId]
       const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
       if (attempt) attempt.pid = event.pid
+      // Missing sandboxed (older events) counts as unrestricted.
+      if (event.sandboxed !== true) state.sandboxed = false
       return state
     }
     case "attempt_finished": {

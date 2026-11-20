@@ -124,6 +124,41 @@ export const apiErrorSchema = z.object({
 
 export type ApiError = z.infer<typeof apiErrorSchema>
 
+export const yamlDiagnosticSchema = z.object({
+  message: z.string().min(1),
+  path: z.array(z.union([z.string(), z.number()])),
+  from: z.number().int().nonnegative(),
+  to: z.number().int().nonnegative(),
+  severity: z.literal("error"),
+})
+
+export type YamlDiagnosticDto = z.infer<typeof yamlDiagnosticSchema>
+
+export const workflowDetailSchema = z.object({
+  id: z.string().min(1),
+  yaml: z.string(),
+  hash: z.string().min(1),
+  workflow: workflowSchema.nullable(),
+  errors: z.array(yamlDiagnosticSchema),
+})
+
+export type WorkflowDetail = z.infer<typeof workflowDetailSchema>
+
+export const putWorkflowBodySchema = z.object({
+  yaml: z.string(),
+  baseHash: z.string().min(1),
+})
+
+export type PutWorkflowBody = z.infer<typeof putWorkflowBodySchema>
+
+export const workflowConflictSchema = z.object({
+  message: z.literal("conflict"),
+  diskYaml: z.string(),
+  diskHash: z.string().min(1),
+})
+
+export type WorkflowConflict = z.infer<typeof workflowConflictSchema>
+
 /** Client → server websocket messages. */
 export const wsClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
@@ -150,6 +185,14 @@ export const wsClientMessageSchema = z.discriminatedUnion("type", [
     attempt: z.number().int().positive(),
     stream: z.enum(["stdout", "stderr"]),
   }),
+  z.object({
+    type: z.literal("subscribe_workflow"),
+    workflowId: z.string().min(1),
+  }),
+  z.object({
+    type: z.literal("unsubscribe_workflow"),
+    workflowId: z.string().min(1),
+  }),
 ])
 
 export type WsClientMessage = z.infer<typeof wsClientMessageSchema>
@@ -172,6 +215,13 @@ export const wsServerMessageSchema = z.discriminatedUnion("type", [
     taskId: z.string().min(1),
     attempt: z.number().int().positive(),
     chunk: logChunkSchema,
+  }),
+  z.object({
+    type: z.literal("file_changed"),
+    workflowId: z.string().min(1),
+    path: z.string().min(1),
+    hash: z.string().min(1),
+    content: z.string(),
   }),
   z.object({
     type: z.literal("error"),

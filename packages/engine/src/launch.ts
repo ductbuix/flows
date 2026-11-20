@@ -81,7 +81,7 @@ export function launchTaskAttempt(
   })
   prepareAttemptDirs(host.runRoot, taskId, attempt)
 
-  const { child, pid } = launchTask(
+  const { child, pid, sandboxed } = launchTask(
     task,
     attempt,
     {
@@ -98,6 +98,7 @@ export function launchTaskAttempt(
     taskId,
     attempt,
     pid,
+    sandboxed,
     at: now(),
   })
   watchChild(host.watchHost(), taskId, attempt, child)

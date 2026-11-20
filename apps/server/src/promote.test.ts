@@ -1,0 +1,71 @@
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { chmodSync } from "node:fs"
+import { createEngine } from "@workspace/engine"
+import { afterEach, describe, expect, it } from "vitest"
+import { createApp } from "./app.ts"
+
+const homes: string[] = []
+
+afterEach(() => {
+  for (const home of homes.splice(0)) {
+    rmSync(home, { recursive: true, force: true })
+  }
+  delete process.env.FLOWAPP_RETRY_BACKOFF_MS
+})
+
+function installStubClaude(home: string, spawnYaml: string) {
+  const bin = join(home, "bin")
+  mkdirSync(bin, { recursive: true })
+  const script = `#!/bin/bash
+set -euo pipefail
+mkdir -p "$TASK_OUT/spawn"
+printf '%s' '${spawnYaml.replace(/'/g, `'\\''`)}' > "$TASK_OUT/spawn/child.yaml"
+`
+  writeFileSync(join(bin, "claude"), script)
+  chmodSync(join(bin, "claude"), 0o755)
+  process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
+}
+
+describe("promote spawned task", () => {
+  it("copies a spawned task into workflow.yaml", async () => {
+    process.env.FLOWAPP_RETRY_BACKOFF_MS = "10"
+    const home = mkdtempSync(join(tmpdir(), "flowapp-promote-"))
+    homes.push(home)
+    const wf = join(home, "workflows", "research")
+    mkdirSync(join(wf, "tasks"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "plan.md"), "Plan.\n")
+    writeFileSync(
+      join(wf, "workflow.yaml"),
+      `id: research
+limits: { agents: 2, maxTasks: 20, maxSpawnDepth: 2 }
+tasks:
+  - id: plan
+    kind: agent
+    cli: claude
+    instructions: tasks/plan.md
+    spawn: true
+`
+    )
+    installStubClaude(
+      home,
+      'id: fetch\nkind: command\nrun: "printf ok > \\"$TASK_OUT/done.txt\\""\nneeds: [plan]\n'
+    )
+
+    const engine = createEngine({ home })
+    const app = createApp({ engine })
+    const handle = engine.startRun({ workflowDir: wf, runId: "r1" })
+    await handle.wait()
+
+    const res = await app.request("/api/runs/r1/tasks/fetch/promote", {
+      method: "POST",
+    })
+    expect(res.status).toBe(200)
+    const yaml = readFileSync(join(wf, "workflow.yaml"), "utf8")
+    expect(yaml).toContain("id: fetch")
+    expect(yaml).toContain("kind: command")
+    expect(yaml).not.toContain("spawnedBy")
+    engine.close()
+  }, 30_000)
+})

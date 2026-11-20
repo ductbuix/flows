@@ -11,6 +11,7 @@ updated: 2026-11-21
 
 # Task lifecycle, engine and concurrency
 
+
 ## Task lifecycle
 
 `pending -> ready -> running -> (condition) -> succeeded | failed`, with
@@ -70,7 +71,7 @@ Schemas live in `packages/shared`. The fold and the UI use the same set.
 | `task_approved`       | Human approved; next tick may launch                       |
 | `task_rejected`       | Human rejected; task `failed` with reason `rejected`       |
 | `attempt_started`     | Attempt id recorded before launch (append-then-act)        |
-| `attempt_launched`    | Process spawned; includes `pid`                            |
+| `attempt_launched`    | Process spawned; includes `pid` and `sandboxed` (DES-006)  |
 | `attempt_finished`    | Process exited; includes `exitCode`                        |
 | `attempt_interrupted` | Resume could not re-attach; no reliable exit code          |
 | `task_succeeded`      | Scheduler ended a looping or spawn task as succeeded       |

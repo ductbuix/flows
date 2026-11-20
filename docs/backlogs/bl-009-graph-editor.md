@@ -2,7 +2,7 @@
 id: BL-009
 title: Graph editor with YAML sync
 type: backlog
-status: todo
+status: done
 summary: React Flow editor with dagre layout and a CodeMirror YAML pane, kept in sync with workflow.yaml both ways.
 tags: [ui, web, editor, yaml]
 related: [DES-002, DES-008, DES-010, DES-012, DES-013]
@@ -20,13 +20,13 @@ Workflow create, rename, delete and memory editing are BL-013.
 ## Done when
 
 - [x] DES-010 open questions answered and its status set to `active`.
-- [ ] Editing the graph updates `workflow.yaml`, and editing the file
+- [x] Editing the graph updates `workflow.yaml`, and editing the file
       updates the graph.
-- [ ] YAML pane is CodeMirror 6 with diagnostics from `yaml` plus the zod
+- [x] YAML pane is CodeMirror 6 with diagnostics from `yaml` plus the zod
       schema, mapped to source ranges.
-- [ ] Layout is automatic with dagre; nothing is saved besides the YAML.
-- [ ] Graph writes keep comments and key order (DES-013 test plan passes).
-- [ ] Disk changes reload or open the conflict dialog (DES-013); saves
+- [x] Layout is automatic with dagre; nothing is saved besides the YAML.
+- [x] Graph writes keep comments and key order (DES-013 test plan passes).
+- [x] Disk changes reload or open the conflict dialog (DES-013); saves
       with a stale hash get `409`.
-- [ ] Spawned tasks from a run can be promoted into `workflow.yaml`.
-- [ ] Playwright tests from DES-010 with video and screenshots.
+- [x] Spawned tasks from a run can be promoted into `workflow.yaml`.
+- [x] Playwright tests from DES-010 with video and screenshots.

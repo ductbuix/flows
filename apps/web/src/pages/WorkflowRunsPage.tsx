@@ -104,7 +104,15 @@ export function WorkflowRunsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
+          <Link
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            to={`/workflows/${workflowId}`}
+          >
+            Edit workflow
+          </Link>
+        </div>
         <ActionButton
           data-testid="run-start"
           pending={starting}

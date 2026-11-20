@@ -38,6 +38,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-20 | Tasks read upstream dirs by path                  | files are the context; no copying                        | DES-002, 007 |
 | 2026-11-20 | Retry and repeat are separate policies            | failure and "not done yet" are different loops           | DES-004      |
 | 2026-11-21 | Shared condition shape for when, until, branches  | one evaluator; cheap kinds before agent (BL-011)         | DES-004      |
+| 2026-11-21 | Agent judge via CLI exit 0 / non-zero             | same adapters as tasks; not a graph task; cached / run   | DES-004      |
 | 2026-11-20 | Nested concurrency limits plus an `agents` limit  | control at global, workflow, run and group level         | DES-003      |
 | 2026-11-21 | Dynamic workflows: fan-out by spawn, no `matrix`  | agents decide the split; one mechanism instead of two    | DES-001, 005 |
 | 2026-11-21 | Headless Claude/Cursor adapters + `tasks_spawned` | file spawn under attempt `out/spawn/`; reject to input   | DES-005      |
