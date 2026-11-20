@@ -64,19 +64,38 @@ export function WorkflowRunsPage() {
 
   if (runs.length === 0) {
     return (
-      <Empty data-testid="run-list">
-        <EmptyTitle>No runs yet</EmptyTitle>
-        <EmptyDescription>
-          Start a run from the API or e2e to see it here.
-        </EmptyDescription>
-        <EmptyContent />
-      </Empty>
+      <div className="space-y-4">
+        <div className="flex items-baseline gap-3">
+          <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
+          <Link
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            to={`/workflows/${workflowId}`}
+          >
+            Edit workflow
+          </Link>
+        </div>
+        <Empty data-testid="run-list">
+          <EmptyTitle>No runs yet</EmptyTitle>
+          <EmptyDescription>
+            Start a run from the API or e2e to see it here.
+          </EmptyDescription>
+          <EmptyContent />
+        </Empty>
+      </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
+      <div className="flex items-baseline gap-3">
+        <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
+        <Link
+          className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          to={`/workflows/${workflowId}`}
+        >
+          Edit workflow
+        </Link>
+      </div>
       <Table data-testid="run-list">
         <TableHeader>
           <TableRow>

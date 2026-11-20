@@ -6,6 +6,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
+import { PromoteButton } from "./PromoteButton"
 import {
   Table,
   TableBody,
@@ -171,6 +172,11 @@ export function TaskDetail({ run, task }: Props) {
               The engine rejected spawn specs for this task.
             </AlertDescription>
           </Alert>
+        )}
+        {task.spawned && (
+          <div className="mb-3">
+            <PromoteButton runId={run.id} taskId={task.id} />
+          </div>
         )}
         {spawnedChildren.length === 0 ? (
           <Empty>

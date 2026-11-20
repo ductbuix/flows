@@ -75,6 +75,10 @@ export {
   outFileSchema,
   outListSchema,
   startRunResponseSchema,
+  yamlDiagnosticSchema,
+  workflowDetailSchema,
+  putWorkflowBodySchema,
+  workflowConflictSchema,
   wsClientMessageSchema,
   wsServerMessageSchema,
   type WorkflowSummary,
@@ -86,6 +90,32 @@ export {
   type SummaryResponse,
   type OutList,
   type StartRunResponse,
+  type YamlDiagnosticDto,
+  type WorkflowDetail,
+  type PutWorkflowBody,
+  type WorkflowConflict,
   type WsClientMessage,
   type WsServerMessage,
 } from "./api.ts"
+export {
+  parseWorkflowYaml,
+  stripSpawnMeta,
+  taskIndex,
+  tasksSeq,
+  taskMap,
+  type YamlDiagnostic,
+  type ParsedWorkflowYaml,
+} from "./workflow-yaml.ts"
+export {
+  roundTripYaml,
+  addTask,
+  removeTask,
+  renameTask,
+  setTaskNeeds,
+  setRetryMax,
+  setApproval,
+  setTaskField,
+  setWorkflowField,
+  upsertTask,
+} from "./workflow-yaml-edit.ts"
+export { applyWorkflowDiff } from "./workflow-yaml-diff.ts"

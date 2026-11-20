@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine } from "@workspace/engine"
@@ -9,6 +15,8 @@ import {
   runSummarySchema,
   startRunResponseSchema,
   summaryResponseSchema,
+  workflowConflictSchema,
+  workflowDetailSchema,
   workflowSummarySchema,
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
@@ -137,6 +145,48 @@ describe("run API", () => {
     const { engine, app } = testStack()
     const res = await app.request("/api/runs/missing-run")
     expect(res.status).toBe(404)
+    engine.close()
+  })
+})
+
+describe("workflow YAML API", () => {
+  it("gets and puts workflow.yaml with hash conflict", async () => {
+    const { engine, app, workflowDir } = testStack()
+
+    const getRes = await app.request("/api/workflows/api-diamond")
+    expect(getRes.status).toBe(200)
+    const detail = workflowDetailSchema.parse(await getRes.json())
+    expect(detail.workflow?.id).toBe("api-diamond")
+    expect(detail.hash.length).toBe(64)
+
+    const nextYaml = detail.yaml.replace(
+      "goal: api test fixture",
+      "goal: updated goal"
+    )
+    const putOk = await app.request("/api/workflows/api-diamond", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ yaml: nextYaml, baseHash: detail.hash }),
+    })
+    expect(putOk.status).toBe(200)
+    const saved = workflowDetailSchema.parse(await putOk.json())
+    expect(saved.workflow?.goal).toBe("updated goal")
+    expect(readFileSync(join(workflowDir, "workflow.yaml"), "utf8")).toContain(
+      "updated goal"
+    )
+
+    writeFileSync(
+      join(workflowDir, "workflow.yaml"),
+      fixtureYaml.replace("api test fixture", "disk change")
+    )
+    const putConflict = await app.request("/api/workflows/api-diamond", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ yaml: nextYaml, baseHash: saved.hash }),
+    })
+    expect(putConflict.status).toBe(409)
+    const conflict = workflowConflictSchema.parse(await putConflict.json())
+    expect(conflict.diskYaml).toContain("disk change")
     engine.close()
   })
 })

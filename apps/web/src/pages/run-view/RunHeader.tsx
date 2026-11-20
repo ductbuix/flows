@@ -47,7 +47,9 @@ export function RunHeader({
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link to={`/workflows/${workflowId}`} />}>
+            <BreadcrumbLink
+              render={<Link to={`/workflows/${workflowId}/runs`} />}
+            >
               {workflowId}
             </BreadcrumbLink>
           </BreadcrumbItem>

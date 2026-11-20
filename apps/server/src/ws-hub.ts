@@ -7,9 +7,11 @@ import {
 import type { WSContext, WSEvents } from "hono/ws"
 import { buildRunDetail } from "./run-detail.ts"
 import { type LogSub, logSubKey, startLogSubscription } from "./ws-log.ts"
+import { WorkflowWatcher, type FileChange } from "./workflow-watch.ts"
 
 type SocketState = {
   runs: Set<string>
+  workflows: Set<string>
   logs: Map<string, LogSub>
 }
 
@@ -17,8 +19,13 @@ export class WsHub {
   private readonly offEvent: () => void
   private readonly sockets = new Map<WSContext, SocketState>()
   private readonly runWatchers = new Map<string, Set<WSContext>>()
+  private readonly workflowWatchers = new Map<string, Set<WSContext>>()
+  readonly files: WorkflowWatcher
 
   constructor(private readonly engine: Engine) {
+    this.files = new WorkflowWatcher(engine, (change) =>
+      this.broadcastFileChange(change)
+    )
     this.offEvent = engine.onEvent((stored) => {
       const sockets = this.runWatchers.get(stored.event.runId)
       if (!sockets) return
@@ -28,17 +35,23 @@ export class WsHub {
 
   dispose(): void {
     this.offEvent()
+    this.files.dispose()
     for (const state of this.sockets.values()) {
       for (const sub of state.logs.values()) clearInterval(sub.timer)
     }
     this.sockets.clear()
     this.runWatchers.clear()
+    this.workflowWatchers.clear()
   }
 
   connection(): WSEvents {
     return {
       onOpen: (_evt, ws) => {
-        this.sockets.set(ws, { runs: new Set(), logs: new Map() })
+        this.sockets.set(ws, {
+          runs: new Set(),
+          workflows: new Set(),
+          logs: new Map(),
+        })
         this.send(ws, { type: "hello" })
       },
       onMessage: (evt, ws) => this.onClientMessage(ws, evt.data),
@@ -61,15 +74,64 @@ export class WsHub {
       return
     }
     const msg = parsed.data
-    if (msg.type === "subscribe_run") {
-      this.subscribeRun(ws, msg.runId, msg.afterSeq ?? 0)
-    } else if (msg.type === "unsubscribe_run") {
-      this.unsubscribeRun(ws, msg.runId)
-    } else if (msg.type === "subscribe_log") {
-      this.subscribeLog(ws, msg)
-    } else {
-      this.unsubscribeLog(ws, msg.runId, msg.taskId, msg.attempt, msg.stream)
+    switch (msg.type) {
+      case "subscribe_run":
+        this.subscribeRun(ws, msg.runId, msg.afterSeq ?? 0)
+        break
+      case "unsubscribe_run":
+        this.unsubscribeRun(ws, msg.runId)
+        break
+      case "subscribe_log":
+        this.subscribeLog(ws, msg)
+        break
+      case "unsubscribe_log":
+        this.unsubscribeLog(ws, msg.runId, msg.taskId, msg.attempt, msg.stream)
+        break
+      case "subscribe_workflow":
+        this.subscribeWorkflow(ws, msg.workflowId)
+        break
+      case "unsubscribe_workflow":
+        this.unsubscribeWorkflow(ws, msg.workflowId)
+        break
     }
+  }
+
+  private subscribeWorkflow(ws: WSContext, workflowId: string) {
+    const state = this.sockets.get(ws)
+    if (!state) return
+    state.workflows.add(workflowId)
+    let set = this.workflowWatchers.get(workflowId)
+    if (!set) {
+      set = new Set()
+      this.workflowWatchers.set(workflowId, set)
+    }
+    set.add(ws)
+    this.files.watch(workflowId)
+  }
+
+  private unsubscribeWorkflow(ws: WSContext, workflowId: string) {
+    const state = this.sockets.get(ws)
+    if (!state) return
+    state.workflows.delete(workflowId)
+    const set = this.workflowWatchers.get(workflowId)
+    set?.delete(ws)
+    if (set && set.size === 0) {
+      this.workflowWatchers.delete(workflowId)
+      this.files.unwatch(workflowId)
+    }
+  }
+
+  private broadcastFileChange(change: FileChange) {
+    const sockets = this.workflowWatchers.get(change.workflowId)
+    if (!sockets) return
+    const message: WsServerMessage = {
+      type: "file_changed",
+      workflowId: change.workflowId,
+      path: change.path,
+      hash: change.hash,
+      content: change.content,
+    }
+    for (const ws of sockets) this.send(ws, message)
   }
 
   private subscribeRun(ws: WSContext, runId: string, afterSeq: number) {
@@ -163,6 +225,9 @@ export class WsHub {
     const state = this.sockets.get(ws)
     if (!state) return
     for (const runId of state.runs) this.runWatchers.get(runId)?.delete(ws)
+    for (const workflowId of state.workflows) {
+      this.unsubscribeWorkflow(ws, workflowId)
+    }
     for (const sub of state.logs.values()) clearInterval(sub.timer)
     this.sockets.delete(ws)
   }

@@ -6,10 +6,13 @@ import { workflowDir, type Engine } from "@workspace/engine"
 import {
   logChunkSchema,
   outListSchema,
+  putWorkflowBodySchema,
   runDetailSchema,
   runSummarySchema,
   startRunResponseSchema,
   summaryResponseSchema,
+  workflowConflictSchema,
+  workflowDetailSchema,
   workflowSummarySchema,
   type Health,
   type LogChunk,
@@ -18,6 +21,7 @@ import {
   type RunSummary,
   type StartRunResponse,
   type SummaryResponse,
+  type WorkflowDetail,
   type WorkflowSummary,
 } from "@workspace/shared"
 import { Hono } from "hono"
@@ -29,11 +33,20 @@ import {
   readSummary,
   resolveAttemptRoot,
 } from "./run-files.ts"
+import {
+  promoteSpawnedTask,
+  readWorkflowDetail,
+  writeWorkflowYaml,
+} from "./workflow-files.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { WsHub } from "./ws-hub.ts"
 
 const idParam = z.object({ workflowId: z.string().min(1) })
 const runParam = z.object({ runId: z.string().min(1) })
+const promoteParam = z.object({
+  runId: z.string().min(1),
+  taskId: z.string().min(1),
+})
 const attemptParams = z.object({
   runId: z.string().min(1),
   taskId: z.string().min(1),
@@ -61,6 +74,55 @@ export function createApp({ engine }: { engine: Engine }) {
         200
       )
     })
+    .get("/workflows/:workflowId", zValidator("param", idParam), (c) => {
+      const { workflowId } = c.req.valid("param")
+      const detail = readWorkflowDetail(engine, workflowId)
+      if (!detail) return c.json({ message: "workflow not found" }, 404)
+      return c.json(
+        workflowDetailSchema.parse(detail) satisfies WorkflowDetail,
+        200
+      )
+    })
+    .put(
+      "/workflows/:workflowId",
+      zValidator("param", idParam),
+      zValidator("json", putWorkflowBodySchema),
+      (c) => {
+        const { workflowId } = c.req.valid("param")
+        const body = c.req.valid("json")
+        const result = writeWorkflowYaml(
+          engine,
+          workflowId,
+          body.yaml,
+          body.baseHash
+        )
+        if (result.ok === false && result.kind === "not_found") {
+          return c.json({ message: "workflow not found" }, 404)
+        }
+        if (result.ok === false && result.kind === "conflict") {
+          return c.json(
+            workflowConflictSchema.parse({
+              message: "conflict",
+              diskYaml: result.diskYaml,
+              diskHash: result.diskHash,
+            }),
+            409
+          )
+        }
+        if (result.ok === false && result.kind === "invalid") {
+          return c.json(
+            workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
+            400
+          )
+        }
+        hub.files.noteWrite(workflowId, "workflow.yaml", result.detail.hash)
+        hub.files.watch(workflowId)
+        return c.json(
+          workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
+          200
+        )
+      }
+    )
     .get("/workflows/:workflowId/runs", zValidator("param", idParam), (c) => {
       const { workflowId } = c.req.valid("param")
       const items = buildRunSummaries(engine, workflowId)
@@ -85,6 +147,32 @@ export function createApp({ engine }: { engine: Engine }) {
       if (!detail) return c.json({ message: "run not found" }, 404)
       return c.json(runDetailSchema.parse(detail) satisfies RunDetail, 200)
     })
+    .post(
+      "/runs/:runId/tasks/:taskId/promote",
+      zValidator("param", promoteParam),
+      (c) => {
+        const { runId, taskId } = c.req.valid("param")
+        const result = promoteSpawnedTask(engine, runId, taskId)
+        if (result.ok === false) {
+          const status =
+            result.kind === "not_found"
+              ? 404
+              : result.kind === "not_spawned"
+                ? 400
+                : 400
+          return c.json({ message: result.kind }, status)
+        }
+        hub.files.noteWrite(
+          result.detail.id,
+          "workflow.yaml",
+          result.detail.hash
+        )
+        return c.json(
+          workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
+          200
+        )
+      }
+    )
     .get(
       "/runs/:runId/tasks/:taskId/attempts/:n/log",
       zValidator("param", attemptParams),
