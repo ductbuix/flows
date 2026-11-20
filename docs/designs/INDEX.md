@@ -12,5 +12,5 @@ Holds system designs and UI instructions. Back to [docs index](../INDEX.md).
 | DES-004 | design | active | [Conditions and loops](des-004-conditions-loops.md) | Condition kinds (exit, expr, agent) shared by when, until and branches; retry and repeat policies. | engine, conditions, loops, retry |
 | DES-005 | design | active | [Agents and runtime spawn](des-005-agents-spawn.md) | How agent CLI tasks run stateless with memories, and how they add tasks to a running graph. | agents, spawn, memory, cli |
 | DES-006 | design | active | [Sandboxing](des-006-sandboxing.md) | Baseline process isolation, write-only-in-workflow-dir via OS sandboxes, and the fallback. | sandbox, security, process |
-| DES-007 | design | active | [Trade-offs and open questions](des-007-tradeoffs.md) | Known design risks with when to revisit them, and questions still open. | tradeoffs, decisions, questions |
+| DES-007 | design | active | [Trade-offs and open questions](des-007-tradeoffs.md) | Ledger of known risks (decision, risk, guard, revisit trigger) for the design and tooling, plus open questions. | tradeoffs, decisions, questions, tooling |
 | DES-008 | ui | active | [UI instructions](des-008-ui.md) | UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence. | ui, web, shadcn, ai-elements, testing |
