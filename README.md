@@ -1,21 +1,21 @@
-# shadcn/ui monorepo template
+# Flows
 
-This is a Vite monorepo template with shadcn/ui.
+Local app for building and running workflows of tasks (commands, scripts, AI agent CLIs). See `docs/design.md`.
 
-## Adding components
+## Layout
 
-To add components to your app, run the following command at the root of your `web` app:
+- `apps/web`: Vite + React + shadcn UI (port 5173, proxies `/api` to the server)
+- `apps/server`: Hono API and websocket on `127.0.0.1:8787`
+- `packages/ui`: shared shadcn components
+- `packages/shared`: zod schemas and types shared by server and web
 
-```bash
-pnpm dlx shadcn@latest add button -c apps/web
+## Commands
+
+```sh
+pnpm install
+pnpm dev        # server and web together (turbo)
+pnpm build      # typecheck and build web
+pnpm typecheck
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
-
-## Using components
-
-To use the components in your app, import them from the `ui` package.
-
-```tsx
-import { Button } from "@workspace/ui/components/button";
-```
+Add a UI component: `pnpm dlx shadcn@latest add <name> -c apps/web`.
