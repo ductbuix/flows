@@ -51,6 +51,7 @@ export class Scheduler {
   private settled = false
   private readonly watching = new Set<string>()
   private readonly retries = new RetryQueue()
+  private readonly judgeCache = new Map<string, Promise<boolean>>()
 
   constructor(options: SchedulerOptions) {
     this.log = options.log
@@ -70,9 +71,7 @@ export class Scheduler {
   wait(): Promise<RunState> {
     const current = this.state()
     if (current.status !== "running") return Promise.resolve(current)
-    return new Promise((resolve) => {
-      this.waiters.push(resolve)
-    })
+    return new Promise((resolve) => this.waiters.push(resolve))
   }
 
   requestTick(): void {
@@ -89,17 +88,14 @@ export class Scheduler {
 
   resumeCancelIfNeeded(): void {
     const state = this.state()
-    if (state.status !== "running" || !state.cancelRequested) return
-    finishCancel(cancelHost(this.core()))
+    if (state.status === "running" && state.cancelRequested) {
+      finishCancel(cancelHost(this.core()))
+    }
   }
 
   approve(taskId: string): void {
-    const state = this.state()
-    const task = state.tasks[taskId]
-    if (!task || task.status !== "awaiting_approval") {
-      throw new Error(`task ${taskId} is not awaiting approval`)
-    }
-    if (task.approved) return
+    this.requireAwaiting(taskId)
+    if (this.state().tasks[taskId]?.approved) return
     this.append({
       type: "task_approved",
       runId: this.runId,
@@ -110,11 +106,7 @@ export class Scheduler {
   }
 
   reject(taskId: string): void {
-    const state = this.state()
-    const task = state.tasks[taskId]
-    if (!task || task.status !== "awaiting_approval") {
-      throw new Error(`task ${taskId} is not awaiting approval`)
-    }
+    this.requireAwaiting(taskId)
     this.append({
       type: "task_rejected",
       runId: this.runId,
@@ -130,6 +122,13 @@ export class Scheduler {
     cancelRun(cancelHost(this.core()))
   }
 
+  private requireAwaiting(taskId: string): void {
+    const task = this.state().tasks[taskId]
+    if (!task || task.status !== "awaiting_approval") {
+      throw new Error(`task ${taskId} is not awaiting approval`)
+    }
+  }
+
   private core(): SchedulerCore {
     return {
       runId: this.runId,
@@ -137,6 +136,7 @@ export class Scheduler {
       workflowRoot: this.workflowRoot,
       watching: this.watching,
       retries: this.retries,
+      judgeCache: this.judgeCache,
       globalLimits: this.globalLimits,
       state: () => this.state(),
       append: (event) => this.append(event),
@@ -168,7 +168,6 @@ export class Scheduler {
 
   private async tickOnce(): Promise<void> {
     if (this.settled) return
-
     const state = this.state()
     if (state.status !== "running" || state.cancelRequested) {
       if (state.cancelRequested && state.status === "running") {
@@ -178,46 +177,45 @@ export class Scheduler {
       }
       return
     }
-
     const host = resolveHost(this.core())
-    resolveLoops(host)
+    await resolveLoops(host)
     resolveSpawn(spawnHost(this.core()))
-    resolveSkips(host)
+    await resolveSkips(host)
     launchReadyTasks(launchHost(this.core()))
+    this.maybeSettle()
+  }
 
+  private maybeSettle(): void {
     const after = this.state()
     if (after.status !== "running") {
       this.finish(after)
       return
     }
-
     const waiting = Object.values(after.tasks).some(
       (t) => t.status === "awaiting_approval" && !t.approved
     )
     if (
-      shouldSettleRun(
+      !shouldSettleRun(
         after,
         readyTaskIds(after).length,
         approvedAwaitingIds(after).length,
         waiting,
         this.retries.size
       )
-    ) {
-      this.append({
-        type: runHasHardFailure(after) ? "run_failed" : "run_succeeded",
-        runId: this.runId,
-        at: now(),
-      })
-      this.finish(this.state())
-    }
+    )
+      return
+    this.append({
+      type: runHasHardFailure(after) ? "run_failed" : "run_succeeded",
+      runId: this.runId,
+      at: now(),
+    })
+    this.finish(this.state())
   }
 
   private finish(state: RunState): void {
     if (this.settled) return
     this.settled = true
     this.retries.clear()
-    for (const resolve of this.waiters.splice(0)) {
-      resolve(state)
-    }
+    for (const resolve of this.waiters.splice(0)) resolve(state)
   }
 }

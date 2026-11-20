@@ -5,7 +5,7 @@ import {
   type Task,
   type When,
 } from "@workspace/shared"
-import { evaluateCondition } from "./conditions.ts"
+import { evaluateCondition, type ConditionContext } from "./conditions.ts"
 import { hasOpenAttempts, isOpenAttempt, type RunState } from "./fold.ts"
 import { decideLoop, evalUntil } from "./loops.ts"
 import {
@@ -23,14 +23,16 @@ function now(): string {
 export type ResolveHost = {
   runId: string
   runRoot: string
+  workflowRoot: string
   state: () => RunState
   append: (event: EngineEvent) => void
   scheduleRetry: (taskId: string, backoffMs: number) => void
   launchAgain: (taskId: string) => void
+  judgeCache: Map<string, Promise<boolean>>
 }
 
 /** Skip pending tasks for when / upstream skip / branch miss. */
-export function resolveSkips(host: ResolveHost): void {
+export async function resolveSkips(host: ResolveHost): Promise<void> {
   // Re-fold after each skip so propagation sees fresh upstream status.
   for (;;) {
     const state = host.state()
@@ -49,7 +51,7 @@ export function resolveSkips(host: ResolveHost): void {
 
       if (!needsStructurallyReady(task, state)) continue
 
-      if (branchWhenFails(task, state, host.runRoot)) {
+      if (await branchWhenFails(task, state, host)) {
         appendSkip(host, task.id, "branch")
         skipped = true
         break
@@ -57,7 +59,7 @@ export function resolveSkips(host: ResolveHost): void {
 
       if (
         task.when !== undefined &&
-        !evalWhen(task.when, task, state, host.runRoot)
+        !(await evalWhen(task.when, task, state, host))
       ) {
         appendSkip(host, task.id, "when")
         skipped = true
@@ -68,11 +70,11 @@ export function resolveSkips(host: ResolveHost): void {
   }
 }
 
-function branchWhenFails(
+async function branchWhenFails(
   task: Task,
   state: RunState,
-  runRoot: string
-): boolean {
+  host: ResolveHost
+): Promise<boolean> {
   for (const need of task.needs) {
     if (!isNeedObject(need) || !need.when) continue
     const up = state.tasks[need.task]
@@ -81,13 +83,15 @@ function branchWhenFails(
     }
     const last = up.attempts[up.attempts.length - 1]
     const attemptRoot = last
-      ? attemptDir(runRoot, need.task, last.attempt)
+      ? attemptDir(host.runRoot, need.task, last.attempt)
       : undefined
     if (
-      !evaluateCondition(need.when, {
+      !(await evaluateCondition(need.when, {
         exitCode: latestExitCode(up),
         attemptRoot,
-      })
+        workflowRoot: host.workflowRoot,
+        judgeCache: host.judgeCache,
+      }))
     ) {
       return true
     }
@@ -95,12 +99,12 @@ function branchWhenFails(
   return false
 }
 
-function evalWhen(
+async function evalWhen(
   when: When,
   task: Task,
   state: RunState,
-  runRoot: string
-): boolean {
+  host: ResolveHost
+): Promise<boolean> {
   if (typeof when === "boolean") return when
   const needExitCodes: Record<string, number | undefined> = {}
   for (const need of task.needs) {
@@ -112,9 +116,15 @@ function evalWhen(
     const id = needTaskId(task.needs[0]!)
     const up = state.tasks[id]
     const last = up?.attempts[up.attempts.length - 1]
-    if (last) attemptRoot = attemptDir(runRoot, id, last.attempt)
+    if (last) attemptRoot = attemptDir(host.runRoot, id, last.attempt)
   }
-  return evaluateCondition(when, { needExitCodes, attemptRoot })
+  const ctx: ConditionContext = {
+    needExitCodes,
+    attemptRoot,
+    workflowRoot: host.workflowRoot,
+    judgeCache: host.judgeCache,
+  }
+  return evaluateCondition(when, ctx)
 }
 
 function appendSkip(
@@ -132,7 +142,7 @@ function appendSkip(
 }
 
 /** Resolve looping tasks whose latest attempt has closed. */
-export function resolveLoops(host: ResolveHost): void {
+export async function resolveLoops(host: ResolveHost): Promise<void> {
   const state = host.state()
   if (state.status !== "running" || state.cancelRequested) return
 
@@ -156,7 +166,10 @@ export function resolveLoops(host: ResolveHost): void {
     const attemptRoot = attemptDir(host.runRoot, task.id, last.attempt)
     const untilPassed =
       last.exitCode === 0
-        ? evalUntil(task, attemptRoot, last.exitCode)
+        ? await evalUntil(task, attemptRoot, last.exitCode, {
+            workflowRoot: host.workflowRoot,
+            judgeCache: host.judgeCache,
+          })
         : undefined
     const decision = decideLoop(task, live, untilPassed)
 

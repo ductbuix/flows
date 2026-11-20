@@ -1,9 +1,19 @@
 import { z } from "zod"
 
-/** Leaf and combined conditions (DES-004). Agent kind is BL-011. */
+/** Agent judge leaf (DES-004 / BL-011). */
+export const agentJudgeSchema = z.object({
+  cli: z.enum(["claude", "cursor"]),
+  /** Path relative to the workflow dir. */
+  instructions: z.string().min(1),
+})
+
+export type AgentJudge = z.infer<typeof agentJudgeSchema>
+
+/** Leaf and combined conditions (DES-004). */
 export type Condition =
   | { exit: number | number[] }
   | { expr: string }
+  | { agent: AgentJudge }
   | { all: Condition[] }
   | { any: Condition[] }
 
@@ -13,6 +23,7 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
       exit: z.union([z.number().int(), z.array(z.number().int()).min(1)]),
     }),
     z.object({ expr: z.string().min(1) }),
+    z.object({ agent: agentJudgeSchema }),
     z.object({ all: z.array(conditionSchema).min(1) }),
     z.object({ any: z.array(conditionSchema).min(1) }),
   ])

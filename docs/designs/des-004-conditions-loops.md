@@ -27,6 +27,7 @@ when: false # always skip
 when: { exit: 0 } # every need's latest exit matches
 when: { exit: [0, 1] }
 when: { expr: "json('out/score.json').score >= 0.8" }
+when: { agent: { cli: claude, instructions: tasks/judge.md } }
 when: { all: [{ exit: 0 }, { expr: "text('out/ok.txt') == 'yes'" }] }
 when: { any: [{ exit: 0 }, { exit: 2 }] }
 ```
@@ -34,6 +35,17 @@ when: { any: [{ exit: 0 }, { exit: 2 }] }
 `expr` may use `json('rel')` and `text('rel')` (paths under the attempt
 root), property access, literals, `== != < > <= >=`, `&& || !`, and
 parentheses. No function calls beyond `json` / `text`.
+
+### Agent judge
+
+`agent` runs a headless Claude Code or Cursor CLI (same adapters as
+DES-005) with cwd at the subject attempt root. The CLI reads
+`instructions` (workflow-relative) and must exit `0` for pass or
+non-zero for fail. Judges are not graph tasks and do not take an
+`agents` slot. Results are cached per (cli, instructions, attempt root)
+for the run so ticks do not re-spawn. In `all` / `any`, `exit` and
+`expr` (and nested groups that contain only those) run before any
+`agent` leaf.
 
 ## Where conditions run
 

@@ -23,7 +23,8 @@ Schema and writing rules: `docs/README.md`.
   REST, log/summary/out, websocket run snapshots and log chunks.
 - `packages/engine`: SQLite event log, fold, scheduler, command and agent
   tasks (Claude Code / Cursor CLI), spawn into `graph.json`, resume,
-  approval, cancel, conditions, retry, repeat, `agents` limits.
+  approval, cancel, conditions (exit / expr / agent judge), retry,
+  repeat, `agents` limits.
 - `packages/shared`: zod schemas for API, websocket, workflow and events.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: workflow list, run list, run view (list/graph, attempts,
