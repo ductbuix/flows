@@ -61,10 +61,17 @@ tasks:
     needs: [check]
     when: { exit: 0 }
     approval: true # wait for approval in the UI before running
+  - id: on-fail
+    kind: command
+    run: echo failed
+    needs:
+      - task: check
+        when: { exit: 1 } # branch edge (DES-004)
 ```
 
 The visual editor and `workflow.yaml` stay in sync; the file is the source
-of truth.
+of truth. Conditions, `when`, `retry`, `repeat` and branch edges:
+[DES-004](des-004-conditions-loops.md).
 
 ## Task instructions
 

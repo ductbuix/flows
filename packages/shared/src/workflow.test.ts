@@ -33,4 +33,36 @@ describe("workflowSchema", () => {
     })
     expect(workflow.tasks[0]?.approval).toBe(true)
   })
+
+  it("accepts when, retry, repeat and branch needs", () => {
+    const workflow = workflowSchema.parse({
+      id: "flow",
+      tasks: [
+        {
+          id: "a",
+          kind: "command",
+          run: "echo a",
+          retry: {},
+          when: false,
+        },
+        {
+          id: "b",
+          kind: "command",
+          run: "echo b",
+          needs: [{ task: "a", when: { exit: 0 } }],
+          repeat: {
+            until: { expr: "json('out/score.json').score >= 0.8" },
+          },
+          when: { all: [{ exit: 0 }, { any: [{ exit: 1 }] }] },
+        },
+      ],
+    })
+    expect(workflow.tasks[0]?.retry?.max).toBe(3)
+    expect(workflow.tasks[0]?.when).toBe(false)
+    expect(workflow.tasks[1]?.repeat?.max).toBe(5)
+    expect(workflow.tasks[1]?.needs[0]).toEqual({
+      task: "a",
+      when: { exit: 0 },
+    })
+  })
 })

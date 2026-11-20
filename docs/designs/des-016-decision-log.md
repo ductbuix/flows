@@ -37,6 +37,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-20 | Append, then act                                 | a crash can never act without a record, or act twice     | DES-003      |
 | 2026-11-20 | Tasks read upstream dirs by path                 | files are the context; no copying                        | DES-002, 007 |
 | 2026-11-20 | Retry and repeat are separate policies           | failure and "not done yet" are different loops           | DES-004      |
+| 2026-11-21 | Shared condition shape for when, until, branches | one evaluator; cheap kinds before agent (BL-011)         | DES-004      |
 | 2026-11-20 | Nested concurrency limits plus an `agents` limit | control at global, workflow, run and group level         | DES-003      |
 | 2026-11-21 | Dynamic workflows: fan-out by spawn, no `matrix` | agents decide the split; one mechanism instead of two    | DES-001, 005 |
 | 2026-11-21 | Per-task instructions file, no agent limits yet  | user writes the instructions; limits wait for real need  | DES-002, 007 |

@@ -4,12 +4,25 @@ import type { EventLog } from "./event-log.ts"
 import {
   approvedAwaitingIds,
   foldEvents,
-  hasOpenAttempts,
   readyTaskIds,
   type RunState,
 } from "./fold.ts"
-import { launchReadyTasks } from "./launch.ts"
+import { launchReadyTasks, launchTaskAttempt } from "./launch.ts"
 import { resumeOpenAttempts } from "./resume.ts"
+import {
+  resolveLoops,
+  resolveSkips,
+  runHasHardFailure,
+  shouldSettleRun,
+} from "./resolve.ts"
+import { RetryQueue } from "./retry-queue.ts"
+import {
+  cancelHost,
+  launchHost,
+  resolveHost,
+  watchHost,
+  type SchedulerCore,
+} from "./scheduler-hosts.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -24,8 +37,8 @@ export type SchedulerOptions = {
 }
 
 /**
- * Drives one run: ready tasks from needs, approval gates, launch command
- * processes, cancel. Resume re-attaches or interrupts (DES-003).
+ * Drives one run: ready tasks, when/skip, approval, launch, retry/repeat,
+ * cancel (DES-003, DES-004).
  */
 export class Scheduler {
   private readonly log: EventLog
@@ -38,6 +51,7 @@ export class Scheduler {
   private readonly waiters: Array<(state: RunState) => void> = []
   private settled = false
   private readonly watching = new Set<string>()
+  private readonly retries = new RetryQueue()
 
   constructor(options: SchedulerOptions) {
     this.log = options.log
@@ -70,16 +84,14 @@ export class Scheduler {
     void this.runTicks()
   }
 
-  /** Re-attach live pids or interrupt open attempts, then tick. */
   resumeOpenAttempts(): void {
-    resumeOpenAttempts(this.watchHost(), (event) => this.append(event))
+    resumeOpenAttempts(watchHost(this.core()), (event) => this.append(event))
   }
 
-  /** Finish cancel if cancel_requested was logged without run_cancelled. */
   resumeCancelIfNeeded(): void {
     const state = this.state()
     if (state.status !== "running" || !state.cancelRequested) return
-    finishCancel(this.cancelHost())
+    finishCancel(cancelHost(this.core()))
   }
 
   approve(taskId: string): void {
@@ -115,27 +127,28 @@ export class Scheduler {
   }
 
   cancel(): void {
-    cancelRun(this.cancelHost())
+    this.retries.clear()
+    cancelRun(cancelHost(this.core()))
   }
 
-  private cancelHost() {
-    return {
-      runId: this.runId,
-      state: () => this.state(),
-      append: (event: EngineEvent) => this.append(event),
-      finish: (state: RunState) => this.finish(state),
-    }
-  }
-
-  private watchHost() {
+  private core(): SchedulerCore {
     return {
       runId: this.runId,
       runRoot: this.runRoot,
+      workflowRoot: this.workflowRoot,
+      graph: this.graph,
       watching: this.watching,
+      retries: this.retries,
       state: () => this.state(),
-      append: (event: EngineEvent) => this.append(event),
+      append: (event) => this.append(event),
       requestTick: () => this.requestTick(),
+      launchAgain: (taskId) => this.launchAgain(taskId),
+      finish: (state) => this.finish(state),
     }
+  }
+
+  private launchAgain(taskId: string): void {
+    launchTaskAttempt(launchHost(this.core()), taskId, ["running"])
   }
 
   private async runTicks(): Promise<void> {
@@ -160,22 +173,17 @@ export class Scheduler {
     const state = this.state()
     if (state.status !== "running" || state.cancelRequested) {
       if (state.cancelRequested && state.status === "running") {
-        finishCancel(this.cancelHost())
+        finishCancel(cancelHost(this.core()))
       } else {
         this.finish(state)
       }
       return
     }
 
-    launchReadyTasks({
-      runId: this.runId,
-      runRoot: this.runRoot,
-      workflowRoot: this.workflowRoot,
-      graph: this.graph,
-      state: () => this.state(),
-      append: (event) => this.append(event),
-      watchHost: () => this.watchHost(),
-    })
+    const host = resolveHost(this.core())
+    resolveLoops(host)
+    resolveSkips(host)
+    launchReadyTasks(launchHost(this.core()))
 
     const after = this.state()
     if (after.status !== "running") {
@@ -187,16 +195,16 @@ export class Scheduler {
       (t) => t.status === "awaiting_approval" && !t.approved
     )
     if (
-      !hasOpenAttempts(after) &&
-      readyTaskIds(after).length === 0 &&
-      approvedAwaitingIds(after).length === 0 &&
-      !waiting
-    ) {
-      const failed = Object.values(after.tasks).some(
-        (t) => t.status === "failed"
+      shouldSettleRun(
+        after,
+        readyTaskIds(after).length,
+        approvedAwaitingIds(after).length,
+        waiting,
+        this.retries.size
       )
+    ) {
       this.append({
-        type: failed ? "run_failed" : "run_succeeded",
+        type: runHasHardFailure(after) ? "run_failed" : "run_succeeded",
         runId: this.runId,
         at: now(),
       })
@@ -207,6 +215,7 @@ export class Scheduler {
   private finish(state: RunState): void {
     if (this.settled) return
     this.settled = true
+    this.retries.clear()
     for (const resolve of this.waiters.splice(0)) {
       resolve(state)
     }

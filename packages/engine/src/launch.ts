@@ -1,4 +1,4 @@
-import type { EngineEvent, Workflow } from "@workspace/shared"
+import type { EngineEvent, TaskStatus, Workflow } from "@workspace/shared"
 import { watchChild, type AttemptWatchHost } from "./attempt-watch.ts"
 import { prepareAttemptDirs } from "./dirs.ts"
 import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
@@ -39,46 +39,51 @@ export function launchReadyTasks(host: LaunchHost): void {
   ]
 
   for (const taskId of toLaunch) {
-    const task = byId.get(taskId)
-    if (!task || task.kind !== "command") continue
-    if (host.state().cancelRequested) break
-    const live = host.state().tasks[taskId]
-    if (
-      !live ||
-      (live.status !== "pending" && live.status !== "awaiting_approval")
-    ) {
-      continue
-    }
-
-    const attempt = live.attempts.length + 1
-    host.append({
-      type: "attempt_started",
-      runId: host.runId,
-      taskId,
-      attempt,
-      at: now(),
-    })
-    prepareAttemptDirs(host.runRoot, taskId, attempt)
-
-    const { child, pid } = launchCommand(
-      task,
-      attempt,
-      {
-        workflowRoot: host.workflowRoot,
-        runRoot: host.runRoot,
-        runId: host.runId,
-      },
-      host.graph
-    )
-
-    host.append({
-      type: "attempt_launched",
-      runId: host.runId,
-      taskId,
-      attempt,
-      pid,
-      at: now(),
-    })
-    watchChild(host.watchHost(), taskId, attempt, child)
+    launchTaskAttempt(host, taskId, ["pending", "awaiting_approval"])
   }
+}
+
+/** Launch another attempt for a running task (retry / repeat). */
+export function launchTaskAttempt(
+  host: LaunchHost,
+  taskId: string,
+  allowed: TaskStatus[]
+): void {
+  const byId = new Map(host.graph.tasks.map((t) => [t.id, t]))
+  const task = byId.get(taskId)
+  if (!task || task.kind !== "command") return
+  if (host.state().cancelRequested) return
+  const live = host.state().tasks[taskId]
+  if (!live || !allowed.includes(live.status)) return
+
+  const attempt = live.attempts.length + 1
+  host.append({
+    type: "attempt_started",
+    runId: host.runId,
+    taskId,
+    attempt,
+    at: now(),
+  })
+  prepareAttemptDirs(host.runRoot, taskId, attempt)
+
+  const { child, pid } = launchCommand(
+    task,
+    attempt,
+    {
+      workflowRoot: host.workflowRoot,
+      runRoot: host.runRoot,
+      runId: host.runId,
+    },
+    host.graph
+  )
+
+  host.append({
+    type: "attempt_launched",
+    runId: host.runId,
+    taskId,
+    attempt,
+    pid,
+    at: now(),
+  })
+  watchChild(host.watchHost(), taskId, attempt, child)
 }

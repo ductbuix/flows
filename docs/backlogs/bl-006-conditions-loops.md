@@ -2,11 +2,11 @@
 id: BL-006
 title: Conditions and loops
 type: backlog
-status: todo
+status: done
 summary: exit and expr conditions for when, until and branches; retry and repeat with separate counters.
 tags: [engine, conditions, loops, retry]
 related: [DES-004]
-updated: 2026-11-20
+updated: 2026-11-21
 priority: P1
 depends: [BL-005]
 ---
@@ -18,9 +18,9 @@ condition is BL-011.
 
 ## Done when
 
-- [ ] `exit` and `expr` conditions, combined with `all` and `any`, work for
+- [x] `exit` and `expr` conditions, combined with `all` and `any`, work for
       `when`, `until` and branch edges.
-- [ ] `when: false` skips a task and skips propagate as in DES-003.
-- [ ] `retry` (default max 3, backoff 2s doubling) and `repeat` (default
+- [x] `when: false` skips a task and skips propagate as in DES-003.
+- [x] `retry` (default max 3, backoff 2s doubling) and `repeat` (default
       max 5) keep separate counters, one `attempt-<n>/` per launch.
-- [ ] Tests cover each condition kind and both loop kinds.
+- [x] Tests cover each condition kind and both loop kinds.

@@ -7,6 +7,7 @@ export const taskStatusSchema = z.enum([
   "running",
   "succeeded",
   "failed",
+  "skipped",
   "cancelled",
 ])
 
@@ -82,6 +83,28 @@ export const taskRejectedEventSchema = z.object({
   reason: z.literal("rejected"),
 })
 
+/** Scheduler decided the task succeeded (after loops / until). */
+export const taskSucceededEventSchema = z.object({
+  type: z.literal("task_succeeded"),
+  ...eventBase,
+  taskId: z.string().min(1),
+})
+
+/** Scheduler decided the task failed (retries exhausted or until max). */
+export const taskFailedEventSchema = z.object({
+  type: z.literal("task_failed"),
+  ...eventBase,
+  taskId: z.string().min(1),
+})
+
+/** when false, branch edge miss, or upstream skip (DES-004). */
+export const taskSkippedEventSchema = z.object({
+  type: z.literal("task_skipped"),
+  ...eventBase,
+  taskId: z.string().min(1),
+  reason: z.enum(["when", "upstream_skip", "branch"]),
+})
+
 export const cancelRequestedEventSchema = z.object({
   type: z.literal("cancel_requested"),
   ...eventBase,
@@ -123,6 +146,9 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   approvalRequestedEventSchema,
   taskApprovedEventSchema,
   taskRejectedEventSchema,
+  taskSucceededEventSchema,
+  taskFailedEventSchema,
+  taskSkippedEventSchema,
   cancelRequestedEventSchema,
   taskCancelledEventSchema,
   runCancelledEventSchema,

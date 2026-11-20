@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { parse as parseYaml } from "yaml"
-import { workflowSchema, type Workflow } from "@workspace/shared"
+import { needTaskId, workflowSchema, type Workflow } from "@workspace/shared"
 
 export function loadWorkflowFile(workflowRoot: string): Workflow {
   const raw = readFileSync(join(workflowRoot, "workflow.yaml"), "utf8")
@@ -16,10 +16,11 @@ export function assertValidGraph(workflow: Workflow): void {
   }
   for (const task of workflow.tasks) {
     for (const need of task.needs) {
-      if (!ids.has(need)) {
-        throw new Error(`task ${task.id} needs unknown task ${need}`)
+      const needId = needTaskId(need)
+      if (!ids.has(needId)) {
+        throw new Error(`task ${task.id} needs unknown task ${needId}`)
       }
-      if (need === task.id) {
+      if (needId === task.id) {
         throw new Error(`task ${task.id} cannot need itself`)
       }
     }
@@ -39,7 +40,7 @@ function detectCycle(workflow: Workflow): void {
     }
     visiting.add(id)
     for (const need of byId.get(id)?.needs ?? []) {
-      walk(need)
+      walk(needTaskId(need))
     }
     visiting.delete(id)
     visited.add(id)
