@@ -23,3 +23,8 @@ apply.
 - Do not refactor code far from the task just because you saw it. Record a
   bigger refactor you skip as a backlog item or a DES-007 ledger entry with
   a revisit trigger, and mention it in your report.
+- Keep each code file under about 200 lines of code (blank lines and
+  comments not counted). Tests may run to about 300. Generated files and
+  lockfiles are exempt. Split by responsibility before a file crosses the
+  limit, never mechanically at line 200. ESLint `max-lines` warns at
+  these limits.
