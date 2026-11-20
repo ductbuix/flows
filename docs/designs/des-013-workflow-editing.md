@@ -91,7 +91,7 @@ Test plan (unit tests on the module that applies edits):
   tasks, keys in a non-default order, and both flow (`{ max: 2 }`) and
   block maps.
 - Apply: add a task, remove a task, rename a task, change `needs`, change
-  `retry.max`, add a `matrix`.
+  `retry.max`, add `approval: true`.
 - Assert every comment is still present, lines of untouched tasks are
   byte-identical, key order of untouched maps is unchanged, and the
   result parses to the expected object.

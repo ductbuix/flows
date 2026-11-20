@@ -3,7 +3,7 @@ id: DES-010
 title: "UI: workflow list and graph editor"
 type: ui
 status: active
-summary: Workflow list and React Flow graph editor synced with workflow.yaml (CodeMirror pane), auto layout, matrix as one node.
+summary: Workflow list and React Flow graph editor synced with workflow.yaml (CodeMirror pane), auto layout, spawn marker.
 tags: [ui, web, editor, yaml]
 related:
   [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013]
@@ -24,12 +24,12 @@ preservation are in [DES-013](des-013-workflow-editing.md).
 - The user's workflows (a user has many), with id and goal, and create,
   rename and delete actions (DES-013).
 - For one workflow, a graph: tasks are nodes, `needs` are edges.
-- Per node: `id`, `kind` (`command` or `agent`), and markers for `matrix`,
+- Per node: `id`, `kind` (`command` or `agent`), and markers for
   `spawn`, `retry`, `repeat` and `when`
   ([DES-004](des-004-conditions-loops.md)).
 - Edges that carry a condition (branch edges, `when`) are labeled.
 - Edit a task: kind, `run` or `cli` and `prompt`, `memory` files,
-  `needs`, `when`, `retry`, `repeat`, `matrix`, `spawn`,
+  `needs`, `when`, `retry`, `repeat`, `spawn`,
   `continueOnError`, limits.
 - Edit workflow fields: `goal` and `limits` (`concurrency`, `agents`,
   `maxTasks`, `maxSpawnDepth`).
@@ -46,14 +46,9 @@ preservation are in [DES-013](des-013-workflow-editing.md).
 - Layout is automatic: dagre, left to right, recomputed on every change
   (DES-012). Nodes cannot be pinned and no positions are saved, so
   `workflow.yaml` stays the only file. Ledger entry in DES-007.
-- A `matrix` task is one node, in the editor and in the run view. It
-  carries a `xN` badge, N being the number of instances. Only the
-  single-list form in DES-002 is defined; how several keys expand is not.
-  The inspector lists the matrix keys
-  and values; in the run view the node's detail lists one row per value
-  with its state, like the attempts list. Ledger entry in DES-007.
-- How a matrix value reaches the task's command (env var or template) is
-  not defined in the design yet; the editor only edits the `matrix` map.
+- There is no `matrix` key. Fan-out happens at runtime through spawn
+  ([DES-005](des-005-agents-spawn.md)), so spawned tasks appear in the run
+  view, not in the editor, unless promoted.
 
 ## Layout
 
@@ -110,7 +105,6 @@ Group, which is what this does.
 | Unsaved changes      | Save enabled; leaving asks with Alert Dialog                              |
 | Save failed          | Toast with the server error; edits kept                                   |
 | File changed on disk | ask the user, see DES-013                                                 |
-| Matrix task          | one node with `xN` badge                                                  |
 
 ## Data contracts (proposed)
 
@@ -127,7 +121,7 @@ Final shapes are zod schemas in `packages/shared`. Names are placeholders.
 
 `workflow-list`, `workflow-row-<id>`, `graph-canvas`, `node-<taskId>`,
 `edge-<from>-<to>`, `inspector`, `field-<name>`, `yaml-pane`,
-`yaml-errors`, `save-button`, `promote-<taskId>`, `matrix-badge-<taskId>`.
+`yaml-errors`, `save-button`, `promote-<taskId>`.
 Workflow and memory actions add their own ids in DES-013.
 
 ## Playwright evidence
@@ -136,7 +130,6 @@ Workflow and memory actions add their own ids in DES-013.
   the file on disk contain it.
 - Edit YAML to rename a task and assert the node label changes.
 - Break the YAML and assert `yaml-errors` shows and the graph is kept.
-- A matrix task with three values shows one node with `x3`.
 - Video and screenshots go in the PR.
 
 ## Resolved questions
@@ -146,7 +139,7 @@ Answered on 2026-11-21:
 1. YAML editor: CodeMirror 6, not a textarea (DES-012).
 2. File changed on disk with unsaved edits: ask the user (DES-013).
 3. Graph layout: automatic for now, no saved positions.
-4. Matrix: one node for now, in the editor and the run view.
+4. Matrix: dropped; fan-out is done by spawn (DES-005).
 5. Workflow create, rename, delete and `memory/*.md` editing are in scope,
    with warnings on consequences (DES-013).
 6. Graph writes keep YAML comments and key order (DES-013).

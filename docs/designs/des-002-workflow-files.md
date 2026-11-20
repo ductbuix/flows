@@ -22,7 +22,7 @@ updated: 2026-11-21
     memory/*.md               # initial memories for agent tasks
     input/  output/  SUMMARY.md
     runs/<runId>/
-      graph.json              # frozen graph plus spawned tasks
+      graph.json              # starting graph plus tasks spawned in this run
       tasks/<taskId>/
         input/
         attempt-<n>/out/  attempt-<n>/SUMMARY.md  stdout.log  stderr.log
@@ -50,7 +50,6 @@ tasks:
     kind: command
     run: node scripts/fetch.js
     needs: [plan]
-    matrix: { source: [web, papers, news] }
   - id: check
     kind: command
     run: python check.py

@@ -6,7 +6,7 @@ status: active
 summary: What Flows is, the stack, and the core entities (workflow, task, run, attempt, event).
 tags: [overview, domain, stack]
 related: [DES-002, DES-003, DES-008]
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Overview and domain model
@@ -37,7 +37,18 @@ bound to 127.0.0.1.
 | Event    | append-only fact                                     | SQLite `events` table           |
 
 A first agent is a task with `kind: agent`. Many instances means several
-agent tasks or a `matrix`. A user has many workflows.
+agent tasks, written in `workflow.yaml` or spawned at runtime. A user has
+many workflows.
+
+## Workflows are dynamic
+
+`workflow.yaml` is the starting graph, not the final one. Each run copies
+it into its own `graph.json`, and agent tasks can add tasks to that run's
+graph while it runs ([DES-005](des-005-agents-spawn.md)). So the same
+workflow can grow a different graph on every run, bounded by `maxTasks`
+and `maxSpawnDepth`. Fan-out over a list (one task per item) works this
+way: an agent reads upstream output and spawns one task per item. There
+is no `matrix` key.
 
 ## Where the rest lives
 

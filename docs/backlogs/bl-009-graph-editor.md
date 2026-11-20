@@ -25,7 +25,6 @@ Workflow create, rename, delete and memory editing are BL-013.
 - [ ] YAML pane is CodeMirror 6 with diagnostics from `yaml` plus the zod
       schema, mapped to source ranges.
 - [ ] Layout is automatic with dagre; nothing is saved besides the YAML.
-- [ ] A matrix task is one node with a `xN` badge.
 - [ ] Graph writes keep comments and key order (DES-013 test plan passes).
 - [ ] Disk changes reload or open the conflict dialog (DES-013); saves
       with a stale hash get `409`.

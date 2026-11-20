@@ -55,9 +55,6 @@ in the URL (`?view=graph`) so a reload or a shared link keeps it.
 - Graph: read-only React Flow canvas laid out with dagre (DES-012). Nodes
   show task id, state and attempt count; edges are `needs`, labeled when
   they carry a condition. No dragging, no editing; pan and zoom only.
-- A `matrix` task is one node and one row, with a `xN` badge. Its detail
-  lists one row per matrix value with that instance's state and attempts,
-  like the attempts list (decided with DES-010).
 - Selection is shared: selecting a task in either view opens it in the
   detail panel and stays selected after switching (`?task=<taskId>`).
 

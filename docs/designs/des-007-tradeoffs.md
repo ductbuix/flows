@@ -19,13 +19,14 @@ the trigger fires and the choice changes.
 
 ## Engine design
 
-| Decision                         | Risk                           | Guard                                                 | Revisit when                         |
-| -------------------------------- | ------------------------------ | ----------------------------------------------------- | ------------------------------------ |
-| Tasks read upstream dirs by path | can read beyond declared needs | writes limited to the workflow dir (DES-006)          | runs must move to another machine    |
-| SQLite log, no queue             | single-process engine          | append-then-act and replay on resume (DES-003)        | a second machine runs tasks          |
-| macOS only on day one            | no Linux or Windows users      | `sandbox-exec` is the one sandbox path to build       | first user asks for Linux or Windows |
-| Sandbox best effort              | a task runs unsandboxed        | warning badge on unsandboxed runs (DES-006)           | a run needs the sandbox to be safe   |
-| Agent judge conditions           | slow, not deterministic        | cheap kinds evaluate first; loop max counts (DES-004) | judges disagree on identical output  |
+| Decision                         | Risk                            | Guard                                                                          | Revisit when                                                                                    |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Tasks read upstream dirs by path | can read beyond declared needs  | writes limited to the workflow dir (DES-006)                                   | runs must move to another machine                                                               |
+| SQLite log, no queue             | single-process engine           | append-then-act and replay on resume (DES-003)                                 | a second machine runs tasks                                                                     |
+| macOS only on day one            | no Linux or Windows users       | `sandbox-exec` is the one sandbox path to build                                | first user asks for Linux or Windows                                                            |
+| Sandbox best effort              | a task runs unsandboxed         | warning badge on unsandboxed runs (DES-006)                                    | a run needs the sandbox to be safe                                                              |
+| No `matrix`; fan-out by spawn    | a fixed list costs an agent run | write copies by hand, or spawn within `maxTasks` and `maxSpawnDepth` (DES-005) | users keep hand-writing identical tasks, or spawn fan-out is too slow or costly for fixed lists |
+| Agent judge conditions           | slow, not deterministic         | cheap kinds evaluate first; loop max counts (DES-004)                          | judges disagree on identical output                                                             |
 
 ## Tooling and docs
 
@@ -81,15 +82,6 @@ the trigger fires and the choice changes.
 - Revisit when: users ask to pin node positions, or a workflow's graph is
   hard to read with the automatic layout.
 
-### A matrix task is one node, in the editor and the run view
-
-- Risk: per-value state is one click away instead of on the canvas; a
-  failing value is less visible.
-- Guard: the node badge shows `xN`, and the node's state reflects its
-  instances; the detail lists every value with its state.
-- Revisit when: users need per-value state on the graph, for example to
-  retry one value or see which value failed without opening the node.
-
 ### react-markdown instead of Streamdown for `SUMMARY.md`
 
 - Risk: two markdown stacks if agent output is later rendered as it
@@ -115,11 +107,11 @@ Awaiting confirmation (answered, but the answers need confirming before
 they go into the design):
 
 1. Per-task agent budget (tokens, time, cost).
-2. Matrix semantics: how a value reaches the command, how several keys
-   expand, and how downstream `needs` wait on all instances.
 
 Settled on 2026-11-21: approval gates (yes), macOS only on day one,
 `cancelled` state for tasks and runs, and deleted runs kept in the log
-with a marker event. See DES-003 and DES-006.
+with a marker event. See DES-003 and DES-006. Also settled: no `matrix`
+key; workflows are dynamic and fan-out is done by spawn (DES-001,
+DES-005).
 
 The UI design docs have no open questions as of 2026-11-21.
