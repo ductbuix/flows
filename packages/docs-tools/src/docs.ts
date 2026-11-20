@@ -28,8 +28,8 @@ export const SECTIONS: Record<SectionName, Section> = {
   designs: {
     prefix: "DES",
     title: "Designs",
-    holds: "system designs and UI instructions",
-    types: ["design", "ui"],
+    holds: "direction docs, system designs and UI instructions",
+    types: ["direction", "design", "ui"],
     statuses: ["draft", "active", "deprecated"],
   },
   backlogs: {
@@ -56,7 +56,10 @@ const base = {
   updated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "must be YYYY-MM-DD"),
 }
 export const frontmatterSchema = z.discriminatedUnion("type", [
-  z.strictObject({ ...base, type: z.enum(["guide", "design", "ui"]) }),
+  z.strictObject({
+    ...base,
+    type: z.enum(["guide", "direction", "design", "ui"]),
+  }),
   z.strictObject({
     ...base,
     type: z.literal("backlog"),
@@ -234,6 +237,10 @@ function rootIndex(docs: Doc[], docsDir: string): string {
         : ""
     return `| ${SECTIONS[n].title} | [${n}/INDEX.md](${n}/INDEX.md) | ${rows.length} docs${open} | ${SECTIONS[n].holds} |`
   })
+  const direction = docs
+    .filter((d) => d.type === "direction")
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((d) => `| ${d.id} | ${link(d, docsDir)} | ${cell(d.summary)} |`)
   const guides = inSection(docs, "").map(
     (d) => `| ${d.id} | ${link(d, docsDir)} | ${cell(d.summary)} |`
   )
@@ -245,6 +252,16 @@ function rootIndex(docs: Doc[], docsDir: string): string {
     "Start here. Then open one section index, then only the doc you need.",
     "Schema and retrieval rules: [README.md](README.md).",
     "",
+    ...(direction.length
+      ? [
+          "For direction (vision, architecture, decisions, roadmap) read these first.",
+          "",
+          "| ID | Direction | Summary |",
+          "| --- | --- | --- |",
+          ...direction,
+          "",
+        ]
+      : []),
     "| Section | Index | Size | Holds |",
     "| --- | --- | --- | --- |",
     ...sections,

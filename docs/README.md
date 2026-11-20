@@ -6,7 +6,7 @@ status: active
 summary: Layout, the one frontmatter schema, retrieval rules for agents, and how to add or change docs.
 tags: [docs, meta, agents]
 related: []
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Docs system
@@ -19,7 +19,7 @@ docs/
   README.md         # this guide
   designs/
     INDEX.md        # generated table, one row per doc
-    des-NNN-*.md    # system designs (type design) and UI instructions (type ui)
+    des-NNN-*.md    # direction docs (type direction), system designs (design), UI instructions (ui)
   backlogs/
     INDEX.md        # generated table, one row per item
     bl-NNN-*.md     # one chunk of work per file
@@ -35,28 +35,33 @@ parsed with the `yaml` package and validated with a zod schema in
 that contains `: ` (standard YAML), for example
 `summary: "Engine: event log and scheduler"`.
 
-| Key      | Required | Value                                                    |
-| -------- | -------- | -------------------------------------------------------- |
-| id       | all      | `DOC-NNN`, `DES-NNN` or `BL-NNN`; stable, never reused   |
-| title    | all      | short title                                              |
-| type     | all      | `guide` (docs root), `design` or `ui`, `backlog`         |
-| status   | all      | see below                                                |
-| summary  | all      | one line, max 140 chars; this is what indexes show       |
-| tags     | all      | list, at least one, lowercase words                      |
-| related  | all      | list of ids this doc builds on or links to; may be `[]`  |
-| updated  | all      | `YYYY-MM-DD` of the last real content change             |
-| priority | backlog  | `P0` (next), `P1` (soon), `P2` (later)                   |
-| depends  | backlog  | list of backlog ids that must be done first; may be `[]` |
+| Key      | Required | Value                                                         |
+| -------- | -------- | ------------------------------------------------------------- |
+| id       | all      | `DOC-NNN`, `DES-NNN` or `BL-NNN`; stable, never reused        |
+| title    | all      | short title                                                   |
+| type     | all      | `guide` (docs root), `direction`, `design` or `ui`, `backlog` |
+| status   | all      | see below                                                     |
+| summary  | all      | one line, max 140 chars; this is what indexes show            |
+| tags     | all      | list, at least one, lowercase words                           |
+| related  | all      | list of ids this doc builds on or links to; may be `[]`       |
+| updated  | all      | `YYYY-MM-DD` of the last real content change                  |
+| priority | backlog  | `P0` (next), `P1` (soon), `P2` (later)                        |
+| depends  | backlog  | list of backlog ids that must be done first; may be `[]`      |
 
 Status values:
 
 - guide: `active`
-- design and ui: `draft`, `active`, `deprecated`
+- direction, design and ui: `draft`, `active`, `deprecated`
 - backlog: `todo`, `doing`, `blocked`, `done`
 
 File names start with the lowercase id: `designs/des-003-engine.md`. The
 one exception is this `README.md`.
 Backlog bodies must have a `## Done when` section with checkable criteria.
+
+`direction` docs hold the high-level view: vision, architecture, decision
+log and roadmap. They live in `designs/` with `DES-` ids, and the root
+index lists them first. Keep them short and link to the design that holds
+the detail instead of repeating it.
 
 Example:
 
@@ -79,7 +84,8 @@ depends: [BL-001]
 
 Read as little as possible, in this order:
 
-1. `docs/INDEX.md` (tiny) to pick a section.
+1. `docs/INDEX.md` (tiny) to pick a section. For direction or "why"
+   questions, its direction table is often enough.
 2. That section's `INDEX.md` to pick docs by id, status, summary and tags.
 3. Only the docs you need. Follow `related` and `depends` ids one hop at a
    time, and only when the task needs them.

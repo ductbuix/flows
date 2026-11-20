@@ -69,6 +69,25 @@ describe("run", () => {
     )
   })
 
+  it("lists direction docs at the top of the root index", () => {
+    write(
+      "designs/des-002-vision.md",
+      design({ id: "DES-002", type: "direction", title: "Vision" })
+    )
+    expect(run(docs, "index").errors).toEqual([])
+    const root = readFileSync(join(docs, "INDEX.md"), "utf8")
+    expect(root).toContain("| DES-002 | [Vision](designs/des-002-vision.md) |")
+    expect(root).not.toContain("| DES-001 | [Overview]")
+    expect(root.indexOf("| ID | Direction |")).toBeLessThan(
+      root.indexOf("| Section |")
+    )
+  })
+
+  it("rejects direction docs outside designs", () => {
+    write("backlogs/bl-001-x.md", design({ id: "BL-001", type: "direction" }))
+    expect(run(docs, "index").errors.join("\n")).toMatch(/type must be one of/)
+  })
+
   it("fails on a stale index", () => {
     run(docs, "index")
     write("designs/des-001-overview.md", design({ title: "Renamed" }))

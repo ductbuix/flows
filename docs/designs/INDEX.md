@@ -2,7 +2,7 @@
 
 # Designs index
 
-Holds system designs and UI instructions. Back to [docs index](../INDEX.md).
+Holds direction docs, system designs and UI instructions. Back to [docs index](../INDEX.md).
 
 | ID | Type | Status | Title | Summary | Tags |
 | --- | --- | --- | --- | --- | --- |
