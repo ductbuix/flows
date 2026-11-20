@@ -5,7 +5,7 @@ type: design
 status: active
 summary: Ledger of known risks (decision, risk, guard, revisit trigger) for the design and tooling, plus open questions.
 tags: [tradeoffs, decisions, questions, tooling]
-related: [DES-001, DES-003, DES-006, DOC-001]
+related: [DES-001, DES-003, DES-006, DES-009, DES-010, DOC-001]
 updated: 2026-11-20
 ---
 

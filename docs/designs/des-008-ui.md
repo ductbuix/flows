@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence.
 tags: [ui, web, shadcn, ai-elements, testing]
-related: [DES-001]
+related: [DES-001, DES-009, DES-010]
 updated: 2026-11-20
 ---
 
@@ -58,10 +58,10 @@ Primitives land in `packages/ui/src/components` (import as
 ## Screens
 
 Today there is one screen: `App.tsx` shows the "Flows" heading and the
-server health line (`data-testid="health"`). Planned, in backlog order: a
-run view, then a graph editor (React Flow) kept in sync with
-`workflow.yaml`. Design those screens in their own docs when the work
-starts.
+server health line (`data-testid="health"`). Planned, in backlog order:
+the run view ([DES-009](des-009-run-view.md)), then the workflow list and
+graph editor ([DES-010](des-010-graph-editor.md)). Each screen gets its
+own UI doc before it is built.
 
 ## Testing and evidence
 

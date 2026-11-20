@@ -14,3 +14,5 @@ Holds system designs and UI instructions. Back to [docs index](../INDEX.md).
 | DES-006 | design | active | [Sandboxing](des-006-sandboxing.md) | Baseline process isolation, write-only-in-workflow-dir via OS sandboxes, and the fallback. | sandbox, security, process |
 | DES-007 | design | active | [Trade-offs and open questions](des-007-tradeoffs.md) | Ledger of known risks (decision, risk, guard, revisit trigger) for the design and tooling, plus open questions. | tradeoffs, decisions, questions, tooling |
 | DES-008 | ui | active | [UI instructions](des-008-ui.md) | UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence. | ui, web, shadcn, ai-elements, testing |
+| DES-009 | ui | draft | [UI: run view](des-009-run-view.md) | Run view screen with runs list, live task states, attempts, logs, outputs and spawned tasks over the websocket. | ui, web, runs, logs |
+| DES-010 | ui | draft | [UI: workflow list and graph editor](des-010-graph-editor.md) | Workflow list and a React Flow graph editor kept in sync with workflow.yaml, plus promoting spawned tasks. | ui, web, editor, yaml |
