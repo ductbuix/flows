@@ -94,4 +94,28 @@ describe("workflowSchema", () => {
       when: { exit: 0 },
     })
   })
+
+  it("accepts agent judge conditions", () => {
+    const workflow = workflowSchema.parse({
+      id: "judged",
+      tasks: [
+        {
+          id: "a",
+          kind: "command",
+          run: "echo a",
+          when: {
+            agent: { cli: "claude", instructions: "tasks/judge.md" },
+          },
+          repeat: {
+            until: {
+              agent: { cli: "cursor", instructions: "tasks/until.md" },
+            },
+          },
+        },
+      ],
+    })
+    expect(workflow.tasks[0]?.when).toEqual({
+      agent: { cli: "claude", instructions: "tasks/judge.md" },
+    })
+  })
 })

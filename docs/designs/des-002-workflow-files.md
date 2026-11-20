@@ -54,7 +54,12 @@ tasks:
     kind: command
     run: python check.py
     needs: [fetch]
-    repeat: { max: 5, until: { expr: "json('out/score.json').score >= 0.8" } }
+    repeat:
+      max: 5
+      until:
+        any:
+          - expr: "json('out/score.json').score >= 0.8"
+          - agent: { cli: claude, instructions: tasks/judge-score.md }
   - id: publish
     kind: command
     run: cp -r $UPSTREAM_check/out/* $WF_OUTPUT/

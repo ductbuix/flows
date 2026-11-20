@@ -11,14 +11,16 @@ updated: 2026-11-21
 
 # Agents and runtime spawn
 
+
 - Headless agent CLI (Claude Code or Cursor CLI), cwd in its attempt dir,
   stateless: knows only its instructions file (DES-002), input dir,
   memories and upstream paths. Turn/token/cost agent limits are not
   defined yet (DES-007); the `agents` concurrency cap still applies
   (DES-003).
-- Adapters: `claude --print --permission-mode dontAsk` and
-  `agent -p --force --trust`. `TASK_INSTRUCTIONS` is the absolute path to
-  the instructions file; the CLI prompt tells the agent to follow it.
+- Adapters: `claude --print --permission-mode dontAsk --add-dir <workflow>`
+  and `agent -p --force --trust --workspace <attempt> --add-dir <workflow>`
+  (DES-006). `TASK_INSTRUCTIONS` is the absolute path to the instructions
+  file; the CLI prompt tells the agent to follow it.
 - `memory/*.md` listed on the task are copied into the task's
   `input/memory/` before launch.
 - Spawn: agent writes specs to `out/spawn/*.yaml`. Engine validates

@@ -23,21 +23,34 @@ export function agentPrompt(
   )
 }
 
+export type AgentLaunchPaths = {
+  workflowRoot: string
+  attemptRoot: string
+}
+
 /**
  * Headless Claude Code / Cursor CLI command for an agent attempt.
- * cwd must be the attempt dir when launched (DES-005).
+ * cwd must be the attempt dir when launched (DES-005). Allowed-dir /
+ * workspace flags keep the CLI inside the workflow (DES-006).
  */
 export function buildAgentShellCommand(
   task: AgentTask,
-  instructionsAbsPath: string
+  instructionsAbsPath: string,
+  paths: AgentLaunchPaths
 ): string {
   const prompt = shellSingleQuote(
     agentPrompt(instructionsAbsPath, task.spawn === true)
   )
+  const wf = shellSingleQuote(paths.workflowRoot)
+  const attempt = shellSingleQuote(paths.attemptRoot)
   if (task.cli === "claude") {
-    return `claude --print --permission-mode dontAsk -- ${prompt}`
+    return (
+      `claude --print --permission-mode dontAsk --add-dir ${wf} -- ${prompt}`
+    )
   }
-  return `agent -p --force --trust -- ${prompt}`
+  return (
+    `agent -p --force --trust --workspace ${attempt} --add-dir ${wf} -- ${prompt}`
+  )
 }
 
 /**

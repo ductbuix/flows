@@ -108,8 +108,7 @@ export function toRunDetail(
     status: state.status,
     startedAt: opts.startedAt,
     finishedAt: opts.finishedAt,
-    // Sandboxing is BL-010; until then every run is unrestricted.
-    sandboxed: false,
+    sandboxed: state.sandboxed,
     lastSeq: opts.lastSeq,
     graph: state.graph,
     tasks: toTaskViews(state),

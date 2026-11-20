@@ -111,7 +111,6 @@ tasks:
 
   it("waiting task survives restart and holds no running slot", async () => {
     const home = tempHome()
-    const marker = join(home, "free.txt")
     const workflowDir = writeWorkflow(
       home,
       "resume-gate",
@@ -124,9 +123,10 @@ tasks:
     approval: true
   - id: free
     kind: command
-    run: "printf done > \\"${marker.replaceAll('"', '\\"')}\\""
+    run: "printf done > \\"$WF_DIR/free.txt\\""
 `
     )
+    const marker = join(workflowDir, "free.txt")
     const engine = createEngine({ home })
     const handle = engine.startRun({ workflowDir, runId: "r3" })
 
@@ -156,7 +156,6 @@ tasks:
 describe("cancel run", () => {
   it("cancels unfinished tasks and ends running process groups", async () => {
     const home = tempHome()
-    const started = join(home, "started.txt")
     const workflowDir = writeWorkflow(
       home,
       "cancel",
@@ -165,13 +164,14 @@ id: cancel
 tasks:
   - id: slow
     kind: command
-    run: "printf x > \\"${started.replaceAll('"', '\\"')}\\" && sleep 30"
+    run: "printf x > \\"$WF_DIR/started.txt\\" && sleep 30"
   - id: later
     kind: command
     run: "echo later"
     needs: [slow]
 `
     )
+    const started = join(workflowDir, "started.txt")
     const engine = createEngine({ home })
     const handle = engine.startRun({ workflowDir, runId: "c1" })
 
