@@ -5,9 +5,18 @@
 Start here. Then open one section index, then only the doc you need.
 Schema and retrieval rules: [README.md](README.md).
 
+For direction (vision, architecture, decisions, roadmap) read these first.
+
+| ID | Direction | Summary |
+| --- | --- | --- |
+| DES-014 | [Vision, goals and principles](designs/des-014-vision.md) | What Flows is and is for, goals, non-goals, success criteria and the principles that guide every design choice. |
+| DES-015 | [Architecture](designs/des-015-architecture.md) | System context, containers, package boundaries and dependency direction, data flow, runtime processes and failure recovery. |
+| DES-016 | [Decision log](designs/des-016-decision-log.md) | One line per key decision with date, reason and the doc that holds it. Index only; the linked docs hold the detail. |
+| DES-017 | [Roadmap](designs/des-017-roadmap.md) | Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index. |
+
 | Section | Index | Size | Holds |
 | --- | --- | --- | --- |
-| Designs | [designs/INDEX.md](designs/INDEX.md) | 13 docs | direction docs, system designs and UI instructions |
+| Designs | [designs/INDEX.md](designs/INDEX.md) | 17 docs | direction docs, system designs and UI instructions |
 | Backlogs | [backlogs/INDEX.md](backlogs/INDEX.md) | 14 docs, 11 open | chunked work items, one per file |
 
 | ID | Guide | Summary |

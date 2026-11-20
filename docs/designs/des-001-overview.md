@@ -5,7 +5,7 @@ type: design
 status: active
 summary: What Flows is, the stack, and the core entities (workflow, task, run, attempt, event).
 tags: [overview, domain, stack]
-related: [DES-002, DES-003, DES-008]
+related: [DES-002, DES-003, DES-008, DES-014, DES-015]
 updated: 2026-11-21
 ---
 
@@ -52,6 +52,9 @@ is no `matrix` key.
 
 ## Where the rest lives
 
+- Vision, architecture, decisions, roadmap: [DES-014](des-014-vision.md),
+  [DES-015](des-015-architecture.md), [DES-016](des-016-decision-log.md),
+  [DES-017](des-017-roadmap.md)
 - Files on disk and `workflow.yaml`: [DES-002](des-002-workflow-files.md)
 - Lifecycle, engine, concurrency: [DES-003](des-003-engine.md)
 - Conditions and loops: [DES-004](des-004-conditions-loops.md)
