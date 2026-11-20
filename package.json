@@ -12,8 +12,8 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
-    "docs:index": "node scripts/docs.mjs index",
-    "docs:check": "node scripts/docs.mjs check"
+    "docs:index": "pnpm -s --filter @workspace/docs-tools run docs index",
+    "docs:check": "pnpm -s --filter @workspace/docs-tools run docs check"
   },
   "devDependencies": {
     "prettier": "^3.10.1",

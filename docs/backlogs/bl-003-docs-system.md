@@ -16,7 +16,8 @@ depends: [BL-002]
 ## Scope
 
 - `docs/README.md`: schema, retrieval and writing rules.
-- `scripts/docs.mjs`: `pnpm docs:index` and `pnpm docs:check`.
+- `packages/docs-tools`: `pnpm docs:index` and `pnpm docs:check`
+  (TypeScript, `yaml` plus zod, Vitest tests).
 - Old single design doc split into `docs/designs/`; build order chunked
   into `docs/backlogs/`.
 

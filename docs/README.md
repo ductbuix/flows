@@ -29,9 +29,11 @@ docs/
 
 ## Metadata schema
 
-Every doc except `INDEX.md` starts with this frontmatter. Values are a
-strict YAML subset: `key: value`, or an inline list `key: [a, b]`. Keep
-`summary` free of `: ` so it stays plain YAML.
+Every doc except `INDEX.md` starts with this frontmatter. It is plain YAML,
+parsed with the `yaml` package and validated with a zod schema in
+`packages/docs-tools/src/docs.ts`; unknown keys are errors. Quote a value
+that contains `: ` (standard YAML), for example
+`summary: "Engine: event log and scheduler"`.
 
 | Key      | Required | Value                                                    |
 | -------- | -------- | -------------------------------------------------------- |

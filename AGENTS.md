@@ -25,8 +25,9 @@ Built:
 - `packages/shared`: zod schemas and types shared by server and web
   (`healthSchema`, `Health`).
 - `apps/e2e`: Playwright tests that start server and web together.
+- `packages/docs-tools`: docs index generator and checker (`tsx`).
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with one frontmatter
-  schema and generated indexes; `scripts/docs.mjs` builds and checks them.
+  schema and generated indexes; `packages/docs-tools` builds and checks them.
 
 Not built yet:
 

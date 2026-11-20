@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/docs-tools",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "docs": "tsx src/cli.ts",
+    "lint": "eslint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tsx": "^4.23.15",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.1"
+  }
+}

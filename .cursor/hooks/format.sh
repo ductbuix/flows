@@ -44,7 +44,7 @@ fi
 
 # Keep generated docs indexes in sync with frontmatter.
 case "$file" in
-  "$root"/docs/*.md) node "$root/scripts/docs.mjs" index >&2 || true ;;
+  "$root"/docs/*.md) "$root/packages/docs-tools/node_modules/.bin/tsx" "$root/packages/docs-tools/src/cli.ts" index >&2 || true ;;
 esac
 
 exit 0
