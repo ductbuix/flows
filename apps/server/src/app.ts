@@ -36,6 +36,7 @@ import {
   readWorkflowDetail,
   writeWorkflowYaml,
 } from "./workflow-files.ts"
+import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { WsHub } from "./ws-hub.ts"
@@ -64,6 +65,7 @@ export function createApp({ engine }: { engine: Engine }) {
   return new Hono()
     .basePath("/api")
     .route("/", lifecycleRoutes(engine, hub))
+    .route("/", fileRoutes(engine))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
     )

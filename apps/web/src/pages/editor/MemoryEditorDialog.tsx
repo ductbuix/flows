@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useState } from "react"
-import CodeMirror from "@uiw/react-codemirror"
-import { markdown } from "@codemirror/lang-markdown"
+import { useEffect, useState } from "react"
 import { memoryFileDetailSchema } from "@workspace/shared"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
-import { Button } from "@workspace/ui/components/button"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog"
 import { api } from "@/lib/api"
+import { FileEditorDialog } from "./FileEditorDialog"
 
 type Props = {
   workflowId: string
@@ -19,6 +19,7 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSaved: () => void
+  onRemoved: () => void
 }
 
 export function MemoryEditorDialog({
@@ -27,12 +28,14 @@ export function MemoryEditorDialog({
   open,
   onOpenChange,
   onSaved,
+  onRemoved,
 }: Props) {
   const [content, setContent] = useState("")
   const [hash, setHash] = useState("")
+  const [referencedBy, setReferencedBy] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const extensions = useMemo(() => [markdown()], [])
+  const [confirmRemove, setConfirmRemove] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -45,6 +48,7 @@ export function MemoryEditorDialog({
       const detail = memoryFileDetailSchema.parse(await res.json())
       setContent(detail.content)
       setHash(detail.hash)
+      setReferencedBy(detail.referencedBy)
       setError(null)
     })()
     return () => {
@@ -77,38 +81,63 @@ export function MemoryEditorDialog({
     }
   }
 
+  async function remove() {
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await api.workflows[":workflowId"].memory[":file"].$delete({
+        param: { workflowId, file: fileName },
+      })
+      if (!res.ok) {
+        setError("Could not remove.")
+        return
+      }
+      setConfirmRemove(false)
+      onRemoved()
+      onOpenChange(false)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl" data-testid="memory-editor">
-        <DialogHeader>
-          <DialogTitle className="font-mono">{fileName}</DialogTitle>
-          <DialogDescription>
-            Edits apply to future launches only. Running and past attempts keep
-            the copy they got.
-          </DialogDescription>
-        </DialogHeader>
-        <CodeMirror
-          value={content}
-          height="280px"
-          extensions={extensions}
-          onChange={setContent}
-          basicSetup={{ lineNumbers: true }}
-          className="overflow-hidden rounded-md border text-xs"
-        />
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            data-testid="memory-save"
-            disabled={busy}
-            onClick={() => void save()}
-          >
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <>
+      <FileEditorDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title={fileName}
+        description="Edits apply to future launches only. Running and past attempts keep the copy they got."
+        editorTestId="memory-editor"
+        saveTestId="memory-save"
+        removeTestId="memory-remove"
+        content={content}
+        onContentChange={setContent}
+        error={error}
+        busy={busy}
+        onSave={() => void save()}
+        onRemove={() => setConfirmRemove(true)}
+      />
+      <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
+        <AlertDialogContent className="sm:max-w-md" size="default">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {fileName}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {referencedBy.length > 0
+                ? `Referenced by tasks: ${referencedBy.join(", ")}. Those tasks will fail validation until fixed.`
+                : "No tasks reference this file."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => void remove()}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

@@ -95,14 +95,61 @@ test.describe("workflow lifecycle", () => {
       "future launches only"
     )
 
-    const content = page.getByTestId("memory-editor").locator(".cm-content")
-    await content.click()
-    await page.keyboard.press("Meta+A")
-    await page.keyboard.insertText("# after\n")
+    const area = page.getByTestId("memory-editor").locator("textarea")
+    await area.fill("# after\n")
     await page.getByTestId("memory-save").click()
     await expect(page.getByTestId("memory-editor")).toBeHidden()
     expect(readFileSync(join(wf, "memory", "style.md"), "utf8")).toBe(
       "# after\n"
+    )
+  })
+
+  test("remove memory from editor and import with collision", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000)
+    const wf = join(HOME, "workflows", "diamond")
+    mkdirSync(join(wf, "memory"), { recursive: true })
+    writeFileSync(join(wf, "memory", "keep.md"), "# keep\n")
+    writeFileSync(join(wf, "memory", "gone.md"), "# gone\n")
+
+    await page.goto("/workflows/diamond")
+    await expect(page.getByTestId("memory-row-gone.md")).toBeVisible({
+      timeout: 15_000,
+    })
+    await page
+      .getByTestId("memory-row-gone.md")
+      .getByRole("button")
+      .first()
+      .click()
+    await expect(page.getByTestId("memory-editor")).toBeVisible()
+    await page.getByTestId("memory-remove").click()
+    await page.getByRole("button", { name: "Delete" }).click()
+    await expect(page.getByTestId("memory-editor")).toBeHidden()
+    await expect(page.getByTestId("memory-row-gone.md")).toHaveCount(0)
+    expect(existsSync(join(wf, "memory", "gone.md"))).toBe(false)
+
+    const pickDir = join(HOME, "picks")
+    mkdirSync(pickDir, { recursive: true })
+    const colliding = join(pickDir, "keep.md")
+    writeFileSync(colliding, "# imported\n")
+    await page.getByTestId("memory-pick").setInputFiles(colliding)
+    await expect(page.getByTestId("memory-collision")).toBeVisible()
+    await page.getByTestId("memory-collision-overwrite").click()
+    await expect(page.getByTestId("memory-editor")).toBeVisible()
+    expect(readFileSync(join(wf, "memory", "keep.md"), "utf8")).toBe(
+      "# imported\n"
+    )
+    await page.getByRole("button", { name: "Cancel" }).click()
+
+    writeFileSync(colliding, "# renamed import\n")
+    await page.getByTestId("memory-pick").setInputFiles(colliding)
+    await expect(page.getByTestId("memory-collision")).toBeVisible()
+    await page.locator("#memory-collision-name").fill("keep-copy.md")
+    await page.getByTestId("memory-collision-add").click()
+    await expect(page.getByTestId("memory-row-keep-copy.md")).toBeVisible()
+    expect(readFileSync(join(wf, "memory", "keep-copy.md"), "utf8")).toBe(
+      "# renamed import\n"
     )
   })
 })

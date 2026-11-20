@@ -1,3 +1,4 @@
+import { useState } from "react"
 import type { Task, Workflow, YamlDiagnosticDto } from "@workspace/shared"
 import { Input } from "@workspace/ui/components/input"
 import { Textarea } from "@workspace/ui/components/textarea"
@@ -10,6 +11,8 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
+import { AgentTaskFields } from "./AgentTaskFields"
+import { InstructionsEditorDialog } from "./InstructionsEditorDialog"
 import { MemoryPanel } from "./MemoryPanel"
 import { taskFieldErrors } from "./field-errors"
 
@@ -32,6 +35,7 @@ export function Inspector({
   onChangeTask,
   onRenameTask,
 }: Props) {
+  const [instructionsOpen, setInstructionsOpen] = useState(false)
   const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
   const task = taskIndex >= 0 ? workflow.tasks[taskIndex] : undefined
 
@@ -58,8 +62,6 @@ export function Inspector({
   }
 
   const runErrors = taskFieldErrors(errors, taskIndex, "run")
-  const cliErrors = taskFieldErrors(errors, taskIndex, "cli")
-  const instructionsErrors = taskFieldErrors(errors, taskIndex, "instructions")
 
   return (
     <div className="space-y-3 overflow-auto p-3" data-testid="inspector">
@@ -110,56 +112,13 @@ export function Inspector({
           <FieldError data-testid="field-error-run" errors={runErrors} />
         </Field>
       ) : (
-        <>
-          <Field data-invalid={cliErrors.length > 0 || undefined}>
-            <FieldLabel>CLI</FieldLabel>
-            <Select
-              value={task.cli}
-              onValueChange={(cli) => {
-                if (cli === "claude" || cli === "cursor") {
-                  onChangeTask(task.id, { cli })
-                }
-              }}
-            >
-              <SelectTrigger
-                data-testid="field-cli"
-                aria-invalid={cliErrors.length > 0 || undefined}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="claude">claude</SelectItem>
-                <SelectItem value="cursor">cursor</SelectItem>
-              </SelectContent>
-            </Select>
-            <FieldError data-testid="field-error-cli" errors={cliErrors} />
-          </Field>
-          <Field data-invalid={instructionsErrors.length > 0 || undefined}>
-            <FieldLabel htmlFor="field-instructions">Instructions</FieldLabel>
-            <Input
-              id="field-instructions"
-              data-testid="field-instructions"
-              value={task.instructions}
-              aria-invalid={instructionsErrors.length > 0 || undefined}
-              onChange={(e) =>
-                onChangeTask(task.id, { instructions: e.target.value })
-              }
-            />
-            <FieldError
-              data-testid="field-error-instructions"
-              errors={instructionsErrors}
-            />
-          </Field>
-          <Field className="flex items-center justify-between gap-2">
-            <FieldLabel htmlFor="field-spawn">Spawn</FieldLabel>
-            <Switch
-              id="field-spawn"
-              data-testid="field-spawn"
-              checked={Boolean(task.spawn)}
-              onCheckedChange={(spawn) => onChangeTask(task.id, { spawn })}
-            />
-          </Field>
-        </>
+        <AgentTaskFields
+          task={task}
+          taskIndex={taskIndex}
+          errors={errors}
+          onChangeTask={onChangeTask}
+          onEditInstructions={() => setInstructionsOpen(true)}
+        />
       )}
       <Field className="flex items-center justify-between gap-2">
         <FieldLabel htmlFor="field-approval">Approval</FieldLabel>
@@ -170,6 +129,14 @@ export function Inspector({
           onCheckedChange={(approval) => onChangeTask(task.id, { approval })}
         />
       </Field>
+      {task.kind === "agent" && (
+        <InstructionsEditorDialog
+          workflowId={workflowId}
+          path={task.instructions}
+          open={instructionsOpen}
+          onOpenChange={setInstructionsOpen}
+        />
+      )}
     </div>
   )
 }

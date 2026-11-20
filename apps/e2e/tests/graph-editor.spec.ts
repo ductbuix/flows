@@ -154,6 +154,37 @@ test.describe("graph editor", () => {
     expect(yaml).toMatch(/id: b[\s\S]*?run:/)
   })
 
+  test("edit instructions creates the file on disk", async ({ page }) => {
+    await page.goto("/workflows/fail-retry")
+    await expect(page.getByTestId("node-flaky")).toBeVisible({
+      timeout: 15_000,
+    })
+    await page.getByTestId("node-flaky").click()
+    await page.getByTestId("field-kind").click()
+    await page.getByRole("option", { name: "agent" }).click()
+    await expect(page.getByTestId("edit-instructions")).toBeEnabled()
+
+    await page.getByTestId("edit-instructions").click()
+    await expect(page.getByTestId("instructions-editor")).toBeVisible()
+    await page
+      .getByTestId("instructions-editor")
+      .locator("textarea")
+      .fill("# flaky instructions\n")
+    await page.getByTestId("instructions-save").click()
+    await expect(page.getByTestId("instructions-editor")).toBeHidden()
+
+    await page.reload()
+    await expect(page.getByTestId("node-flaky")).toBeVisible({
+      timeout: 15_000,
+    })
+    expect(
+      readFileSync(
+        join(HOME, "workflows", "fail-retry", "tasks", "flaky.md"),
+        "utf8"
+      )
+    ).toBe("# flaky instructions\n")
+  })
+
   test("disk change with dirty editor opens conflict dialog", async ({
     page,
   }) => {
