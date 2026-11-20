@@ -42,4 +42,9 @@ if [ "$lint" = 1 ]; then
   done
 fi
 
+# Keep generated docs indexes in sync with frontmatter.
+case "$file" in
+  "$root"/docs/*.md) node "$root/scripts/docs.mjs" index >&2 || true ;;
+esac
+
 exit 0

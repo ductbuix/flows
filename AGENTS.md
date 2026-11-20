@@ -25,10 +25,13 @@ Built:
 - `packages/shared`: zod schemas and types shared by server and web
   (`healthSchema`, `Health`).
 - `apps/e2e`: Playwright tests that start server and web together.
+- `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with one frontmatter
+  schema and generated indexes; `scripts/docs.mjs` builds and checks them.
 
 Not built yet:
 
-- `packages/engine` (event log, task state machine, scheduler). Next step.
+- `packages/engine` (event log, task state machine, scheduler). Next step:
+  BL-004 in `docs/backlogs/`.
 - Workflow and task API routes, YAML files, the visual editor, persistence.
 
 ## Commands
@@ -40,12 +43,14 @@ pnpm install
 pnpm dev            # server and web (turbo)
 pnpm build          # typecheck and build web
 pnpm typecheck
-pnpm lint           # eslint in every package
+pnpm lint           # eslint in every package, then docs:check
 pnpm lint:fix
 pnpm format         # prettier --write .
 pnpm format:check
 pnpm test           # vitest unit tests
 pnpm test:e2e       # playwright, records video and screenshots
+pnpm docs:index     # regenerate docs INDEX.md files from frontmatter
+pnpm docs:check     # validate docs schema, refs, links, 300 line limit
 ```
 
 One package: `pnpm --filter server test`. In zsh, quote specifiers such as
@@ -55,6 +60,15 @@ Playwright artifacts go to `apps/e2e/test-results` (video, screenshot) and
 `apps/e2e/playwright-report`. Set `PW_VIDEO=retain-on-failure` or
 `PW_SCREENSHOT=only-on-failure` to record less. Install the browser once
 with `pnpm --filter e2e exec playwright install chromium`.
+
+## Docs
+
+Read as little as possible: `docs/INDEX.md`, then one section `INDEX.md`,
+then only the docs you need (grep by id or tag, follow `related` one hop).
+Never read whole folders or edit `INDEX.md` by hand. Each doc stays under
+300 lines. Schema and writing rules: `docs/README.md`. When work moves,
+update the backlog item's `status`; when code changes a design, update
+that doc in the same change.
 
 ## Done means
 
@@ -79,9 +93,10 @@ and, for UI or API changes, `pnpm test:e2e`. All must pass.
 
 - `.cursor/hooks.json` runs `.cursor/hooks/format.sh` after each agent file
   edit: prettier, then eslint `--fix` with the nearest package config. It
-  never blocks the agent.
+  never blocks the agent. For files under `docs/` it also runs
+  `docs:index`.
 - `.cursor/rules/*.mdc` hold project rules: `general` (always), `server`,
-  `web`, `testing`, `engine` (scoped by globs).
+  `web`, `testing`, `engine`, `docs` (scoped by globs).
 
 ## Pointers
 
