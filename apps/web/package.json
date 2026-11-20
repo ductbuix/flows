@@ -7,9 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@workspace/shared": "workspace:*",
@@ -22,6 +22,8 @@
   "devDependencies": {
     "@eslint/js": "^10",
     "@tailwindcss/vite": "^4",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -30,9 +32,11 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.8",
     "globals": "^17",
+    "jsdom": "^31.0.1",
+    "server": "workspace:*",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8",
     "vite": "^8",
-    "server": "workspace:*"
+    "vitest": "^5.1.1"
   }
 }
