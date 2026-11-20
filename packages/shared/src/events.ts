@@ -147,6 +147,16 @@ export const runDeletedEventSchema = z.object({
   ...eventBase,
 })
 
+/**
+ * Manual retry from the UI (DES-011). Resets the task and its
+ * dependants to pending and reopens a finished run.
+ */
+export const taskRetryRequestedEventSchema = z.object({
+  type: z.literal("task_retry_requested"),
+  ...eventBase,
+  taskId: z.string().min(1),
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   attemptStartedEventSchema,
@@ -166,6 +176,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   runSucceededEventSchema,
   runFailedEventSchema,
   runDeletedEventSchema,
+  taskRetryRequestedEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>

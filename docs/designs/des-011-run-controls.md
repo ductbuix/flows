@@ -83,18 +83,22 @@ list.
 | Results and errors   | Toast, Alert                  |
 | In-flight state      | Spinner on the pressed button |
 
-## Data contracts (proposed)
+## Data contracts
 
-Placeholders; final zod schemas in `packages/shared`.
+Zod schemas in `packages/shared` (`requestIdBodySchema`,
+`okResponseSchema`, `apiErrorSchema`, `startRunResponseSchema`).
 
-- `POST /api/workflows/:workflowId/runs` with `{ requestId }`: start; returns the run id.
-- `POST /api/runs/:runId/cancel`
-- `POST /api/runs/:runId/rerun` with `{ requestId }`: returns the new run id.
+- `POST /api/workflows/:workflowId/runs` with `{ requestId }`: start; returns `{ runId }`.
+- `POST /api/runs/:runId/cancel` with `{ requestId }`: returns `{ ok: true }`.
+- `POST /api/runs/:runId/rerun` with `{ requestId }`: returns the new `{ runId }`.
 - `POST /api/runs/:runId/tasks/:taskId/retry` with `{ requestId }`
 - `POST /api/runs/:runId/tasks/:taskId/approve` and `.../reject` with `{ requestId }`; `409` unless the task is waiting.
-- `DELETE /api/runs/:runId`: `409` while the run is live.
+- `DELETE /api/runs/:runId` with `{ requestId }`: `409` while the run is live.
 
-Errors come back as `{ error, message }` and show in a Toast.
+Every mutating body includes `requestId`; the server is idempotent on it
+for the process lifetime. Errors come back as `{ error, message }` and
+show in a Toast. Manual retry appends `task_retry_requested`
+([DES-003](des-003-engine.md)).
 
 ## Test ids
 

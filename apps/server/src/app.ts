@@ -1,15 +1,12 @@
 import { upgradeWebSocket } from "@hono/node-server"
 import { zValidator } from "@hono/zod-validator"
-import { existsSync } from "node:fs"
-import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/engine"
 import {
   logChunkSchema,
   outListSchema,
   putWorkflowBodySchema,
   runDetailSchema,
   runSummarySchema,
-  startRunResponseSchema,
   summaryResponseSchema,
   workflowConflictSchema,
   workflowDetailSchema,
@@ -19,13 +16,13 @@ import {
   type OutList,
   type RunDetail,
   type RunSummary,
-  type StartRunResponse,
   type SummaryResponse,
   type WorkflowDetail,
   type WorkflowSummary,
 } from "@workspace/shared"
 import { Hono } from "hono"
 import { z } from "zod"
+import { IdempotencyStore } from "./idempotency.ts"
 import { buildRunDetail, buildRunSummaries } from "./run-detail.ts"
 import {
   listOutFiles,
@@ -33,6 +30,7 @@ import {
   readSummary,
   resolveAttemptRoot,
 } from "./run-files.ts"
+import { createRunControls } from "./run-controls.ts"
 import {
   promoteSpawnedTask,
   readWorkflowDetail,
@@ -60,6 +58,8 @@ const logQuery = z.object({
 
 export function createApp({ engine }: { engine: Engine }) {
   const hub = new WsHub(engine)
+  const idempotency = new IdempotencyStore()
+  const controls = createRunControls({ engine, idempotency })
 
   return new Hono()
     .basePath("/api")
@@ -133,16 +133,7 @@ export function createApp({ engine }: { engine: Engine }) {
         200
       )
     })
-    .post("/workflows/:workflowId/runs", zValidator("param", idParam), (c) => {
-      const { workflowId } = c.req.valid("param")
-      const dir = workflowDir(engine.home, workflowId)
-      if (!existsSync(join(dir, "workflow.yaml"))) {
-        return c.json({ message: "workflow not found" }, 404)
-      }
-      const handle = engine.startRun({ workflowDir: dir })
-      const body: StartRunResponse = { runId: handle.runId }
-      return c.json(startRunResponseSchema.parse(body), 200)
-    })
+    .route("/", controls)
     .get("/runs/:runId", zValidator("param", runParam), (c) => {
       const { runId } = c.req.valid("param")
       const detail = buildRunDetail(engine, runId)
