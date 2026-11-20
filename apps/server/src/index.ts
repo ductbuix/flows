@@ -1,10 +1,14 @@
 import { serve } from "@hono/node-server"
+import { createEngine } from "@workspace/engine"
 import { WebSocketServer } from "ws"
-import { app } from "./app.ts"
+import { createApp } from "./app.ts"
+
+const engine = createEngine()
+engine.resumeAll()
+const app = createApp({ engine })
 
 const port = Number(process.env.PORT ?? 8787)
 
-// Local only: bind to loopback, never 0.0.0.0.
 const server = serve(
   {
     fetch: app.fetch,
@@ -16,5 +20,8 @@ const server = serve(
 )
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  process.on(signal, () => server.close(() => process.exit(0)))
+  process.on(signal, () => {
+    engine.close()
+    server.close(() => process.exit(0))
+  })
 }

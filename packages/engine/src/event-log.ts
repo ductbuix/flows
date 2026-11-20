@@ -10,6 +10,7 @@ export type StoredEvent = {
 
 export class EventLog {
   private readonly db: DatabaseSync
+  private readonly listeners = new Set<(stored: StoredEvent) => void>()
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -26,6 +27,14 @@ export class EventLog {
     `)
   }
 
+  /** Subscribe to appends. Returns an unsubscribe function. */
+  onAppend(listener: (stored: StoredEvent) => void): () => void {
+    this.listeners.add(listener)
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+
   /** Append an event in a write transaction; returns its sequence number. */
   append(event: EngineEvent): number {
     const parsed = engineEventSchema.parse(event)
@@ -39,7 +48,10 @@ export class EventLog {
         .prepare(`SELECT last_insert_rowid() AS seq`)
         .get() as { seq: number | bigint }
       this.db.exec("COMMIT")
-      return Number(row.seq)
+      const seq = Number(row.seq)
+      const stored: StoredEvent = { seq, event: parsed }
+      for (const listener of this.listeners) listener(stored)
+      return seq
     } catch (error) {
       this.db.exec("ROLLBACK")
       throw error

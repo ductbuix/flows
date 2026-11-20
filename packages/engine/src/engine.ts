@@ -3,7 +3,7 @@ import type { EngineEvent, Workflow, WorkflowLimits } from "@workspace/shared"
 import { loadAppConfig } from "./config.ts"
 import { prepareRunDirs } from "./dirs.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
-import { EventLog } from "./event-log.ts"
+import { EventLog, type StoredEvent } from "./event-log.ts"
 import { foldEvents, type RunState } from "./fold.ts"
 import { appDbPath, resolveAppHome, runDir, workflowDir } from "./paths.ts"
 import { Scheduler } from "./scheduler.ts"
@@ -49,6 +49,16 @@ export class Engine {
     return this.log.listByRun(runId).map((e) => e.event)
   }
 
+  /** Events with sequence numbers for websocket catch-up (DES-009). */
+  eventsWithSeq(runId: string): StoredEvent[] {
+    return this.log.listByRun(runId)
+  }
+
+  /** Subscribe to every append across runs. */
+  onEvent(listener: (stored: StoredEvent) => void): () => void {
+    return this.log.onAppend(listener)
+  }
+
   fold(runId: string): RunState | null {
     return foldEvents(this.events(runId))
   }
@@ -61,6 +71,13 @@ export class Engine {
       if (state && !state.deleted) out.push(state)
     }
     return out
+  }
+
+  /** Non-deleted runs for one workflow, newest first. */
+  listRunsForWorkflow(workflowId: string): RunState[] {
+    return this.listRuns()
+      .filter((r) => r.workflowId === workflowId)
+      .reverse()
   }
 
   /** Start a run from workflow.yaml under workflowDir. */

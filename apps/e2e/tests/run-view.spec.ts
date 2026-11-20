@@ -1,0 +1,64 @@
+import { expect, test, type APIRequestContext } from "@playwright/test"
+
+const API = process.env.PW_API_BASE ?? "http://127.0.0.1:8787"
+
+async function startRun(
+  request: APIRequestContext,
+  workflowId: string
+): Promise<string> {
+  const res = await request.post(`${API}/api/workflows/${workflowId}/runs`)
+  expect(res.ok()).toBeTruthy()
+  const body = (await res.json()) as { runId: string }
+  return body.runId
+}
+
+test.describe("run view", () => {
+  test("diamond run shows live success, logs, summary, and keeps selection in graph", async ({
+    page,
+    request,
+  }) => {
+    const runId = await startRun(request, "diamond")
+
+    await page.goto(`/workflows/diamond/runs/${runId}?task=a`)
+
+    await expect(page.getByTestId("run-status")).toBeVisible()
+    await expect(page.getByTestId("ws-status")).toBeVisible()
+    await expect(page.getByTestId("sandbox-badge")).toBeVisible()
+
+    for (const id of ["a", "b", "c", "d"]) {
+      await expect(page.getByTestId(`task-state-${id}`)).toHaveText(
+        "succeeded",
+        { timeout: 30_000 }
+      )
+    }
+    await expect(page.getByTestId("run-status")).toHaveText("succeeded")
+
+    await page.getByTestId("task-tab-logs").click()
+    await expect(page.getByTestId("log-output")).toContainText("HELLO_STDOUT", {
+      timeout: 10_000,
+    })
+
+    await page.getByTestId("task-tab-summary").click()
+    const summary = page.getByTestId("summary-markdown")
+    await expect(summary.getByRole("heading", { name: "Report" })).toBeVisible()
+    await expect(summary.locator("table")).toBeVisible()
+
+    await page.getByTestId("run-view-graph").click()
+    await expect(page).toHaveURL(/view=graph/)
+    await expect(page).toHaveURL(/task=a/)
+    await expect(page.getByTestId("task-node-a")).toBeVisible()
+    await expect(page.getByTestId("run-graph")).toBeVisible()
+  })
+
+  test("failed retry shows Retry attempt badge", async ({ page, request }) => {
+    const runId = await startRun(request, "fail-retry")
+    await page.goto(`/workflows/fail-retry/runs/${runId}?task=flaky`)
+
+    await expect(page.getByTestId("task-state-flaky")).toHaveText("failed", {
+      timeout: 30_000,
+    })
+
+    await page.getByTestId("task-tab-attempts").click()
+    await expect(page.getByTestId("attempt-kind-2")).toContainText(/Retry/)
+  })
+})

@@ -1,9 +1,7 @@
 import { expect, test } from "@playwright/test"
 
-test("home page shows the server is healthy", async ({ page }) => {
+test("home lists workflows from FLOWAPP_HOME", async ({ page }) => {
   await page.goto("/")
-  await expect(page.getByRole("heading", { name: "Flows" })).toBeVisible()
-  await expect(page.getByTestId("health")).toHaveText(
-    /^server ok v\d+\.\d+\.\d+$/
-  )
+  await expect(page.getByRole("heading", { name: "Workflows" })).toBeVisible()
+  await expect(page.getByRole("link", { name: "diamond" })).toBeVisible()
 })

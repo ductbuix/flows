@@ -55,6 +55,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | CodeMirror 6 for the YAML pane                 | about 141 KB with diagnostics; Monaco is about 1.1 MB   | DES-012      |
 | 2026-11-21 | React Flow with dagre, automatic layout        | about 16 KB; no positions to sync                       | DES-012, 010 |
 | 2026-11-21 | Run view has full controls and list plus graph | answered in the run view review                         | DES-009, 011 |
+| 2026-11-21 | Server folds runs; web applies `run_snapshot`  | web must not import engine (DES-015); same fold result  | DES-009, 015 |
 | 2026-11-21 | YAML writes keep comments and key order        | hand edits must survive graph edits                     | DES-013      |
 
 ## Docs and tooling
