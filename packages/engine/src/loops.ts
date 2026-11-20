@@ -1,4 +1,4 @@
-import type { CommandTask, Condition } from "@workspace/shared"
+import type { Condition, Task } from "@workspace/shared"
 import { evaluateCondition, type ConditionContext } from "./conditions.ts"
 import type { AttemptState, TaskState } from "./fold.ts"
 
@@ -16,11 +16,11 @@ export type LoopDecision =
   | { action: "retry"; backoffMs: number }
   | { action: "repeat" }
 
-function retryMax(task: CommandTask): number {
+function retryMax(task: Task): number {
   return task.retry?.max ?? DEFAULT_RETRY_MAX
 }
 
-function repeatMax(task: CommandTask): number {
+function repeatMax(task: Task): number {
   return task.repeat?.max ?? DEFAULT_REPEAT_MAX
 }
 
@@ -46,7 +46,7 @@ export function loopCounts(attempts: AttemptState[]): {
  * Caller evaluates `until` and passes `untilPassed`.
  */
 export function decideLoop(
-  task: CommandTask,
+  task: Task,
   taskState: TaskState,
   untilPassed: boolean | undefined
 ): LoopDecision {
@@ -80,7 +80,7 @@ export function decideLoop(
   return { action: "succeed" }
 }
 
-export function untilCondition(task: CommandTask): Condition | undefined {
+export function untilCondition(task: Task): Condition | undefined {
   return task.repeat?.until
 }
 
@@ -93,7 +93,7 @@ export function attemptContext(
 }
 
 export function evalUntil(
-  task: CommandTask,
+  task: Task,
   attemptRoot: string,
   exitCode: number
 ): boolean {

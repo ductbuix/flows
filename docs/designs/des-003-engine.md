@@ -59,7 +59,7 @@ is waiting.
    hides deleted runs from every view. If the process dies between the
    event and the removal, resume finishes the removal.
 
-## Event kinds (BL-004, BL-005, BL-006, BL-014)
+## Event kinds (BL-004, BL-005, BL-006, BL-007, BL-014)
 
 Schemas live in `packages/shared`. The fold and the UI use the same set.
 
@@ -73,9 +73,10 @@ Schemas live in `packages/shared`. The fold and the UI use the same set.
 | `attempt_launched`    | Process spawned; includes `pid`                            |
 | `attempt_finished`    | Process exited; includes `exitCode`                        |
 | `attempt_interrupted` | Resume could not re-attach; no reliable exit code          |
-| `task_succeeded`      | Scheduler ended a looping task as succeeded                |
+| `task_succeeded`      | Scheduler ended a looping or spawn task as succeeded       |
 | `task_failed`         | Scheduler ended a looping task as failed                   |
 | `task_skipped`        | `when` false, branch miss, or upstream skip                |
+| `tasks_spawned`       | Agent added tasks to this run's graph (DES-005)            |
 | `cancel_requested`    | Cancel begun; stop scheduling, end process groups          |
 | `task_cancelled`      | Unfinished task moved to `cancelled`                       |
 | `run_cancelled`       | Run ended `cancelled`                                      |

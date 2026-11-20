@@ -21,16 +21,16 @@ Schema and writing rules: `docs/README.md`.
   Dev on `127.0.0.1:5173`, proxies `/api` to the server.
 - `apps/server`: Hono + `tsx` (no build step) on `127.0.0.1:8787`. Health
   and websocket routes today.
-- `packages/engine`: SQLite event log, fold, scheduler, command tasks,
-  resume, approval, cancel, conditions, retry and repeat.
+- `packages/engine`: SQLite event log, fold, scheduler, command and agent
+  tasks (Claude Code / Cursor CLI), spawn into `graph.json`, resume,
+  approval, cancel, conditions, retry, repeat, `agents` limits.
 - `packages/shared`: zod schemas and types for server, web and engine.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright tests that start server and web together.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.
 
-Not built yet: workflow/task API routes, visual editor, agent tasks
-(BL-007).
+Not built yet: workflow/task API routes, visual editor (BL-008+).
 
 ## Commands
 

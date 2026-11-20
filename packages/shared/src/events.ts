@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { workflowSchema } from "./workflow.ts"
+import { taskSchema, workflowSchema } from "./workflow.ts"
 
 export const taskStatusSchema = z.enum([
   "pending",
@@ -105,6 +105,14 @@ export const taskSkippedEventSchema = z.object({
   reason: z.enum(["when", "upstream_skip", "branch"]),
 })
 
+/** Agent spawned tasks into this run's graph (DES-005 / BL-007). */
+export const tasksSpawnedEventSchema = z.object({
+  type: z.literal("tasks_spawned"),
+  ...eventBase,
+  parentTaskId: z.string().min(1),
+  tasks: z.array(taskSchema).min(1),
+})
+
 export const cancelRequestedEventSchema = z.object({
   type: z.literal("cancel_requested"),
   ...eventBase,
@@ -149,6 +157,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   taskSucceededEventSchema,
   taskFailedEventSchema,
   taskSkippedEventSchema,
+  tasksSpawnedEventSchema,
   cancelRequestedEventSchema,
   taskCancelledEventSchema,
   runCancelledEventSchema,

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
-import type { EngineEvent, Workflow } from "@workspace/shared"
+import type { EngineEvent, Workflow, WorkflowLimits } from "@workspace/shared"
+import { loadAppConfig } from "./config.ts"
 import { prepareRunDirs } from "./dirs.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
 import { EventLog } from "./event-log.ts"
@@ -29,11 +30,13 @@ export type RunHandle = {
 export class Engine {
   readonly home: string
   private readonly log: EventLog
+  private readonly globalLimits: WorkflowLimits | undefined
   private readonly schedulers = new Map<string, Scheduler>()
 
   constructor(options: CreateEngineOptions = {}) {
     this.home = resolveAppHome(options.home)
     this.log = new EventLog(appDbPath(this.home))
+    this.globalLimits = loadAppConfig(this.home).limits
   }
 
   loadWorkflow(workflowDirPath: string): Workflow {
@@ -74,12 +77,7 @@ export class Engine {
       at: new Date().toISOString(),
     })
 
-    const scheduler = this.attachScheduler(
-      runId,
-      options.workflowDir,
-      runRoot,
-      graph
-    )
+    const scheduler = this.attachScheduler(runId, options.workflowDir, runRoot)
     scheduler.requestTick()
 
     return this.handleFor(runId, scheduler)
@@ -138,12 +136,7 @@ export class Engine {
 
     const workflowRoot = workflowDir(this.home, state.workflowId)
     const runRoot = runDir(workflowRoot, runId)
-    const scheduler = this.attachScheduler(
-      runId,
-      workflowRoot,
-      runRoot,
-      state.graph
-    )
+    const scheduler = this.attachScheduler(runId, workflowRoot, runRoot)
     scheduler.resumeCancelIfNeeded()
     if (scheduler.state().status !== "running") {
       return this.handleFor(runId, scheduler)
@@ -179,15 +172,14 @@ export class Engine {
   private attachScheduler(
     runId: string,
     workflowRoot: string,
-    runRoot: string,
-    graph: Workflow
+    runRoot: string
   ): Scheduler {
     const scheduler = new Scheduler({
       log: this.log,
       runId,
       workflowRoot,
       runRoot,
-      graph,
+      globalLimits: this.globalLimits,
     })
     this.schedulers.set(runId, scheduler)
     return scheduler

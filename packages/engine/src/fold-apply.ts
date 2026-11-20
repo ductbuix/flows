@@ -1,4 +1,9 @@
-import type { EngineEvent, Workflow } from "@workspace/shared"
+import {
+  isAgentTask,
+  type EngineEvent,
+  type Task,
+  type Workflow,
+} from "@workspace/shared"
 import type { RunState, TaskState } from "./fold.ts"
 
 const TERMINAL_TASK: ReadonlySet<string> = new Set([
@@ -25,9 +30,18 @@ function taskSpec(state: RunState, taskId: string) {
   return state.graph.tasks.find((t) => t.id === taskId)
 }
 
-function hasLoopPolicy(state: RunState, taskId: string): boolean {
-  const spec = taskSpec(state, taskId)
-  return Boolean(spec?.retry || spec?.repeat)
+/**
+ * Whether attempt_finished should leave the task running for the
+ * scheduler to settle (retry, repeat, or spawn accept on success).
+ */
+export function delaysTerminalOnFinish(
+  task: Task | undefined,
+  exitCode: number
+): boolean {
+  if (!task) return false
+  if (task.retry || task.repeat) return true
+  // Spawn post-step only applies after a successful attempt (DES-005).
+  return isAgentTask(task) && task.spawn === true && exitCode === 0
 }
 
 function hasRetryPolicy(state: RunState, taskId: string): boolean {
@@ -90,7 +104,11 @@ export function applyEvent(
       const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
       if (attempt) attempt.exitCode = event.exitCode
       if (!task || TERMINAL_TASK.has(task.status)) return state
-      if (hasLoopPolicy(state, event.taskId)) return state
+      if (
+        delaysTerminalOnFinish(taskSpec(state, event.taskId), event.exitCode)
+      ) {
+        return state
+      }
       setTaskStatus(task, event.exitCode === 0 ? "succeeded" : "failed")
       return state
     }
@@ -102,6 +120,19 @@ export function applyEvent(
       if (!task || TERMINAL_TASK.has(task.status)) return state
       if (hasRetryPolicy(state, event.taskId)) return state
       setTaskStatus(task, "failed")
+      return state
+    }
+    case "tasks_spawned": {
+      if (!state) return state
+      for (const spawned of event.tasks) {
+        if (state.graph.tasks.some((t) => t.id === spawned.id)) continue
+        state.graph.tasks.push(spawned)
+        state.tasks[spawned.id] = {
+          id: spawned.id,
+          status: "pending",
+          attempts: [],
+        }
+      }
       return state
     }
     case "task_succeeded": {

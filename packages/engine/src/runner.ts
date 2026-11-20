@@ -1,7 +1,12 @@
 import { spawn, type ChildProcess } from "node:child_process"
 import { closeSync, openSync } from "node:fs"
-import { join } from "node:path"
-import type { CommandTask, Workflow } from "@workspace/shared"
+import { join, resolve } from "node:path"
+import { isAgentTask, type Task, type Workflow } from "@workspace/shared"
+import {
+  buildAgentShellCommand,
+  copyTaskMemories,
+  prepareAgentAttemptOut,
+} from "./agents.ts"
 import { attemptDir, taskDir } from "./paths.ts"
 import { exitCodePath } from "./pid.ts"
 
@@ -17,15 +22,25 @@ export type TaskEnvPaths = {
   runId: string
 }
 
+/** Absolute path to a task's instructions file, or undefined. */
+export function instructionsAbsPath(
+  task: Task,
+  workflowRoot: string
+): string | undefined {
+  if (!("instructions" in task) || !task.instructions) return undefined
+  return resolve(workflowRoot, task.instructions)
+}
+
 /** Build the env vars a task process receives (DES-002). */
 export function buildTaskEnv(
-  task: CommandTask,
+  task: Task,
   attempt: number,
   paths: TaskEnvPaths,
   graph: Workflow
 ): NodeJS.ProcessEnv {
   const { workflowRoot, runRoot, runId } = paths
   const attemptRoot = attemptDir(runRoot, task.id, attempt)
+  const instructions = instructionsAbsPath(task, workflowRoot)
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     RUN_ID: runId,
@@ -36,6 +51,7 @@ export function buildTaskEnv(
     TASK_OUT: join(attemptRoot, "out"),
     PREV_ATTEMPT: attempt > 1 ? attemptDir(runRoot, task.id, attempt - 1) : "",
   }
+  if (instructions) env.TASK_INSTRUCTIONS = instructions
 
   for (const upstream of graph.tasks) {
     env[`UPSTREAM_${upstream.id}`] = join(
@@ -62,35 +78,30 @@ export function wrapCommandWithExitCode(run: string, codePath: string): string {
   ].join("\n")
 }
 
-/**
- * Launch a command task as a detached process in its own group.
- * Caller must keep the ChildProcess to observe exit (append-then-act).
- */
-export function launchCommand(
-  task: CommandTask,
-  attempt: number,
-  paths: TaskEnvPaths,
-  graph: Workflow
+function spawnWrapped(
+  shellCommand: string,
+  cwd: string,
+  env: NodeJS.ProcessEnv,
+  attemptRoot: string,
+  codePath: string
 ): LaunchResult {
-  const attemptRoot = attemptDir(paths.runRoot, task.id, attempt)
-  const codePath = exitCodePath(paths.runRoot, task.id, attempt)
   const stdoutFd = openSync(join(attemptRoot, "stdout.log"), "a")
   const stderrFd = openSync(join(attemptRoot, "stderr.log"), "a")
 
   try {
     const child = spawn(
       "/bin/sh",
-      ["-c", wrapCommandWithExitCode(task.run, codePath)],
+      ["-c", wrapCommandWithExitCode(shellCommand, codePath)],
       {
-        cwd: paths.workflowRoot,
-        env: buildTaskEnv(task, attempt, paths, graph),
+        cwd,
+        env,
         detached: true,
         stdio: ["ignore", stdoutFd, stderrFd],
       }
     )
 
     if (child.pid === undefined) {
-      throw new Error(`failed to spawn task ${task.id}`)
+      throw new Error("failed to spawn task process")
     }
 
     return { child, pid: child.pid, attemptRoot }
@@ -100,16 +111,56 @@ export function launchCommand(
   }
 }
 
+/**
+ * Launch a command or agent task as a detached process in its own group.
+ * Agents use cwd = attempt dir (DES-005); commands use the workflow root.
+ */
+export function launchTask(
+  task: Task,
+  attempt: number,
+  paths: TaskEnvPaths,
+  graph: Workflow
+): LaunchResult {
+  const attemptRoot = attemptDir(paths.runRoot, task.id, attempt)
+  const codePath = exitCodePath(paths.runRoot, task.id, attempt)
+  const env = buildTaskEnv(task, attempt, paths, graph)
+
+  if (isAgentTask(task)) {
+    const instructions = instructionsAbsPath(task, paths.workflowRoot)
+    if (!instructions) {
+      throw new Error(`agent task ${task.id} missing instructions`)
+    }
+    copyTaskMemories(
+      task,
+      paths.workflowRoot,
+      join(taskDir(paths.runRoot, task.id), "input")
+    )
+    prepareAgentAttemptOut(attemptRoot, task.spawn === true)
+    return spawnWrapped(
+      buildAgentShellCommand(task, instructions),
+      attemptRoot,
+      env,
+      attemptRoot,
+      codePath
+    )
+  }
+
+  return spawnWrapped(task.run, paths.workflowRoot, env, attemptRoot, codePath)
+}
+
+/** Alias used by older call sites and tests. */
+export const launchCommand = launchTask
+
 /** Wait for a child process to exit; resolves with the exit code. */
 export function waitForExit(child: ChildProcess): Promise<number> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolvePromise, reject) => {
     child.once("error", reject)
     child.once("exit", (code, signal) => {
       if (signal) {
-        resolve(1)
+        resolvePromise(1)
         return
       }
-      resolve(code ?? 1)
+      resolvePromise(code ?? 1)
     })
   })
 }

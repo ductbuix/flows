@@ -17,7 +17,36 @@ describe("workflowSchema", () => {
     expect(workflow.tasks[3]?.needs).toEqual(["b", "c"])
   })
 
-  it("rejects agent tasks until BL-007", () => {
+  it("accepts agent tasks with cli, instructions and memory", () => {
+    const workflow = workflowSchema.parse({
+      id: "agents",
+      limits: { agents: 2, maxTasks: 20, maxSpawnDepth: 2 },
+      tasks: [
+        {
+          id: "plan",
+          kind: "agent",
+          cli: "claude",
+          instructions: "tasks/plan.md",
+          memory: ["memory/style.md"],
+          spawn: true,
+          retry: { max: 2 },
+        },
+        {
+          id: "fetch",
+          kind: "command",
+          run: "echo fetch",
+          needs: ["plan"],
+        },
+      ],
+    })
+    expect(workflow.tasks[0]).toMatchObject({
+      kind: "agent",
+      cli: "claude",
+      spawn: true,
+    })
+  })
+
+  it("rejects agent tasks without instructions", () => {
     expect(
       workflowSchema.safeParse({
         id: "x",

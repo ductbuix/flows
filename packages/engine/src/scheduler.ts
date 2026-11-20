@@ -1,4 +1,4 @@
-import type { EngineEvent, Workflow } from "@workspace/shared"
+import type { EngineEvent, WorkflowLimits } from "@workspace/shared"
 import { cancelRun, finishCancel } from "./cancel.ts"
 import type { EventLog } from "./event-log.ts"
 import {
@@ -20,9 +20,11 @@ import {
   cancelHost,
   launchHost,
   resolveHost,
+  spawnHost,
   watchHost,
   type SchedulerCore,
 } from "./scheduler-hosts.ts"
+import { resolveSpawn } from "./spawn.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -33,19 +35,16 @@ export type SchedulerOptions = {
   runId: string
   workflowRoot: string
   runRoot: string
-  graph: Workflow
+  globalLimits?: WorkflowLimits
 }
 
-/**
- * Drives one run: ready tasks, when/skip, approval, launch, retry/repeat,
- * cancel (DES-003, DES-004).
- */
+/** One run: ready, skip, approval, launch, retry/repeat, spawn, cancel. */
 export class Scheduler {
   private readonly log: EventLog
   private readonly runId: string
   private readonly workflowRoot: string
   private readonly runRoot: string
-  private readonly graph: Workflow
+  private readonly globalLimits?: WorkflowLimits
   private ticking = false
   private again = false
   private readonly waiters: Array<(state: RunState) => void> = []
@@ -58,7 +57,7 @@ export class Scheduler {
     this.runId = options.runId
     this.workflowRoot = options.workflowRoot
     this.runRoot = options.runRoot
-    this.graph = options.graph
+    this.globalLimits = options.globalLimits
   }
 
   state(): RunState {
@@ -136,9 +135,9 @@ export class Scheduler {
       runId: this.runId,
       runRoot: this.runRoot,
       workflowRoot: this.workflowRoot,
-      graph: this.graph,
       watching: this.watching,
       retries: this.retries,
+      globalLimits: this.globalLimits,
       state: () => this.state(),
       append: (event) => this.append(event),
       requestTick: () => this.requestTick(),
@@ -182,6 +181,7 @@ export class Scheduler {
 
     const host = resolveHost(this.core())
     resolveLoops(host)
+    resolveSpawn(spawnHost(this.core()))
     resolveSkips(host)
     launchReadyTasks(launchHost(this.core()))
 

@@ -12,7 +12,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-004 | done | P0 | BL-001 | [Engine core](bl-004-engine-core.md) | packages/engine with workflow schema, SQLite event log, scheduler, command tasks, needs and parallelism. | engine, events, scheduler |
 | BL-005 | done | P0 | BL-004 | [Resume after restart](bl-005-resume.md) | Replay the log on start, re-attach or interrupt open attempts, never rerun finished tasks. | engine, resume, events |
 | BL-006 | done | P1 | BL-005 | [Conditions and loops](bl-006-conditions-loops.md) | exit and expr conditions for when, until and branches; retry and repeat with separate counters. | engine, conditions, loops, retry |
-| BL-007 | todo | P1 | BL-006 | [Agent tasks and spawn](bl-007-agent-tasks.md) | kind agent tasks via Claude Code and Cursor CLI adapters, memories, and runtime spawn of new tasks. | agents, spawn, cli |
+| BL-007 | done | P1 | BL-006 | [Agent tasks and spawn](bl-007-agent-tasks.md) | kind agent tasks via Claude Code and Cursor CLI adapters, memories, and runtime spawn of new tasks. | agents, spawn, cli |
 | BL-008 | todo | P2 | BL-007 | [Web run view](bl-008-run-view.md) | Run view with list and graph views, live task states, attempt kinds, logs and rendered SUMMARY.md. | ui, web, runs |
 | BL-009 | todo | P2 | BL-008 | [Graph editor with YAML sync](bl-009-graph-editor.md) | React Flow editor with dagre layout and a CodeMirror YAML pane, kept in sync with workflow.yaml both ways. | ui, web, editor, yaml |
 | BL-010 | todo | P2 | BL-009 | [Sandboxing](bl-010-sandboxing.md) | Restrict task writes to the workflow dir with sandbox-exec on macOS, with a warned fallback. | sandbox, security, process |

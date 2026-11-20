@@ -1,7 +1,8 @@
 import {
+  isAgentTask,
   needTaskId,
-  type CommandTask,
   type EngineEvent,
+  type Task,
   type When,
 } from "@workspace/shared"
 import { evaluateCondition } from "./conditions.ts"
@@ -68,7 +69,7 @@ export function resolveSkips(host: ResolveHost): void {
 }
 
 function branchWhenFails(
-  task: CommandTask,
+  task: Task,
   state: RunState,
   runRoot: string
 ): boolean {
@@ -96,7 +97,7 @@ function branchWhenFails(
 
 function evalWhen(
   when: When,
-  task: CommandTask,
+  task: Task,
   state: RunState,
   runRoot: string
 ): boolean {
@@ -143,6 +144,15 @@ export function resolveLoops(host: ResolveHost): void {
     if (live.attempts.length === 0) continue
 
     const last = live.attempts[live.attempts.length - 1]!
+    // Spawn agents: success path is resolveSpawn (DES-005).
+    if (
+      isAgentTask(task) &&
+      task.spawn === true &&
+      last.exitCode === 0 &&
+      !last.interrupted
+    ) {
+      continue
+    }
     const attemptRoot = attemptDir(host.runRoot, task.id, last.attempt)
     const untilPassed =
       last.exitCode === 0

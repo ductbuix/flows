@@ -1,8 +1,8 @@
 import {
   needTaskId,
-  type CommandTask,
   type Need,
   type NeedObject,
+  type Task,
 } from "@workspace/shared"
 import type { RunState, TaskState } from "./fold.ts"
 
@@ -25,10 +25,7 @@ export function needUpstreamTerminal(upstream: TaskState | undefined): boolean {
  * Structural readiness: every need's upstream is in a state where the
  * scheduler can launch or skip. Expr/exit `when` is decided later.
  */
-export function needsStructurallyReady(
-  task: CommandTask,
-  state: RunState
-): boolean {
+export function needsStructurallyReady(task: Task, state: RunState): boolean {
   for (const need of task.needs) {
     const up = state.tasks[needTaskId(need)]
     if (!needUpstreamTerminal(up)) return false
@@ -51,10 +48,7 @@ export function needsStructurallyReady(
 }
 
 /** True when a pending task should be skipped due to upstream skip. */
-export function shouldPropagateSkip(
-  task: CommandTask,
-  state: RunState
-): boolean {
+export function shouldPropagateSkip(task: Task, state: RunState): boolean {
   for (const need of task.needs) {
     const up = state.tasks[needTaskId(need)]
     if (!up || up.status !== "skipped") continue

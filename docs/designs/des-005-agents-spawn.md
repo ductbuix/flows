@@ -13,15 +13,22 @@ updated: 2026-11-21
 
 - Headless agent CLI (Claude Code or Cursor CLI), cwd in its attempt dir,
   stateless: knows only its instructions file (DES-002), input dir,
-  memories and upstream paths. No agent limits are defined yet.
-- `memory/*.md` listed on the task are copied into `input/memory/` before
-  launch.
-- Spawn: agent writes specs to `out/spawn/*.yaml` or calls
-  `flow add-task`. Engine validates schema, unique id, existing needs, no
-  cycles, `maxTasks`, `maxSpawnDepth`. Rejections are fed back in the
-  agent's next input.
-- Spawned tasks live only in the run's `graph.json`; a UI action can
-  promote them into `workflow.yaml`.
+  memories and upstream paths. Turn/token/cost agent limits are not
+  defined yet (DES-007); the `agents` concurrency cap still applies
+  (DES-003).
+- Adapters: `claude --print --permission-mode dontAsk` and
+  `agent -p --force --trust`. `TASK_INSTRUCTIONS` is the absolute path to
+  the instructions file; the CLI prompt tells the agent to follow it.
+- `memory/*.md` listed on the task are copied into the task's
+  `input/memory/` before launch.
+- Spawn: agent writes specs to `out/spawn/*.yaml`. Engine validates
+  schema, unique id, existing needs, no cycles, `maxTasks`,
+  `maxSpawnDepth`. Accepted specs emit `tasks_spawned` and update
+  `graph.json`. Rejections are written to `input/spawn-rejections.md` for
+  the next attempt (retry when `retry` is set).
+- Spawned tasks are stamped with `spawnDepth` and `spawnedBy`. They live
+  only in the run's `graph.json`; a UI action can promote them into
+  `workflow.yaml`.
 
 ## Fan-out through spawn
 
