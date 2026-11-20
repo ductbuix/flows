@@ -24,8 +24,9 @@ Everything shown comes from the engine model in
 
 - The runs of a workflow, newest first, with run status and start time.
   Runs are kept until the user deletes them (DES-011).
-- For one run: every task with its state (`pending`, `ready`, `running`,
-  `succeeded`, `failed`, `skipped`), including tasks spawned at runtime
+- For one run: every task with its state (`pending`, `ready`,
+  `awaiting_approval`, `running`, `succeeded`, `failed`, `skipped`,
+  `cancelled`; [DES-003](des-003-engine.md)), including tasks spawned at runtime
   ([DES-005](des-005-agents-spawn.md)), marked as spawned.
 - Progress: tasks finished out of the current total. The total can grow
   while the run is live because of spawn.
@@ -39,6 +40,8 @@ Everything shown comes from the engine model in
 - Spawn rejections fed back to an agent, on the agent task.
 - A warning badge when the run is not sandboxed
   ([DES-006](des-006-sandboxing.md)).
+- A run waiting on an approval gate: the run header says so and links to
+  the waiting tasks (actions in DES-011).
 - Websocket connection state.
 
 ## Two views of a run
