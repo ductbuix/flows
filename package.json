@@ -5,13 +5,15 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint",
+    "lint": "turbo lint && pnpm docs:check",
     "lint:fix": "turbo lint -- --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    "test:e2e": "turbo test:e2e"
+    "test:e2e": "turbo test:e2e",
+    "docs:index": "node scripts/docs.mjs index",
+    "docs:check": "node scripts/docs.mjs check"
   },
   "devDependencies": {
     "prettier": "^3.10.1",

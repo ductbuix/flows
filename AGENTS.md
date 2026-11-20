@@ -8,7 +8,7 @@ remove or rename a package, command or feature.
 
 Flows is a local-only web app for building and running workflows of tasks.
 A task runs a command, a script or an AI agent CLI as its own process. The
-engine design lives in `docs/design.md`; read it before engine work.
+designs live in `docs/designs/`; start at `docs/INDEX.md`.
 
 ## App state
 
@@ -85,6 +85,6 @@ and, for UI or API changes, `pnpm test:e2e`. All must pass.
 
 ## Pointers
 
-- Engine design: `docs/design.md`
+- Docs: `docs/INDEX.md` (designs, backlogs, schema in `docs/README.md`)
 - Rules: `.cursor/rules/`
 - Human overview: `README.md`

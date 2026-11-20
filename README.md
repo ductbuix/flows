@@ -1,6 +1,6 @@
 # Flows
 
-Local app for building and running workflows of tasks (commands, scripts, AI agent CLIs). See `docs/design.md`.
+Local app for building and running workflows of tasks (commands, scripts, AI agent CLIs). Docs: start at `docs/INDEX.md`.
 
 ## Layout
 

@@ -1,11 +1,13 @@
 ---
-description: Workflow engine, read the design doc first
+description: Workflow engine, read the design docs first
 globs: packages/engine/**
 alwaysApply: false
 ---
 
 - `packages/engine` is not built yet. Before creating or changing it, read
-  `docs/design.md` (event log, task state machine, conditions,
-  retry/repeat, spawn, concurrency, sandbox) and follow it.
-- If the code needs to differ from the design, update `docs/design.md` in
-  the same change.
+  the engine designs listed in `docs/designs/INDEX.md` (tag `engine`):
+  DES-003 lifecycle and engine, DES-004 conditions and loops, DES-005
+  agents and spawn, DES-006 sandboxing. Follow them.
+- Pick work from `docs/backlogs/INDEX.md` and update the item's status.
+- If the code needs to differ from a design, update that design doc and
+  its `updated` date in the same change.
