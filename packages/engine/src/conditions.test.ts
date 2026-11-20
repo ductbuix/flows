@@ -2,7 +2,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { evaluateCondition, evaluateExpr } from "./conditions.ts"
+import {
+  conditionIsSlow,
+  evaluateCondition,
+  evaluateExpr,
+} from "./conditions.ts"
 
 const dirs: string[] = []
 
@@ -20,48 +24,56 @@ function tempAttempt(): string {
 }
 
 describe("evaluateCondition", () => {
-  it("matches exit equals and sets", () => {
-    expect(evaluateCondition({ exit: 0 }, { exitCode: 0 })).toBe(true)
-    expect(evaluateCondition({ exit: 0 }, { exitCode: 1 })).toBe(false)
-    expect(evaluateCondition({ exit: [0, 2] }, { exitCode: 2 })).toBe(true)
+  it("matches exit equals and sets", async () => {
+    expect(await evaluateCondition({ exit: 0 }, { exitCode: 0 })).toBe(true)
+    expect(await evaluateCondition({ exit: 0 }, { exitCode: 1 })).toBe(false)
+    expect(await evaluateCondition({ exit: [0, 2] }, { exitCode: 2 })).toBe(
+      true
+    )
   })
 
-  it("matches exit against every need exit code", () => {
+  it("matches exit against every need exit code", async () => {
     expect(
-      evaluateCondition({ exit: 0 }, { needExitCodes: { a: 0, b: 0 } })
+      await evaluateCondition({ exit: 0 }, { needExitCodes: { a: 0, b: 0 } })
     ).toBe(true)
     expect(
-      evaluateCondition({ exit: 0 }, { needExitCodes: { a: 0, b: 1 } })
+      await evaluateCondition({ exit: 0 }, { needExitCodes: { a: 0, b: 1 } })
     ).toBe(false)
   })
 
-  it("combines with all and any", () => {
+  it("combines with all and any", async () => {
     expect(
-      evaluateCondition(
+      await evaluateCondition(
         { all: [{ exit: 0 }, { exit: [0, 1] }] },
         { exitCode: 0 }
       )
     ).toBe(true)
     expect(
-      evaluateCondition({ any: [{ exit: 1 }, { exit: 0 }] }, { exitCode: 0 })
+      await evaluateCondition(
+        { any: [{ exit: 1 }, { exit: 0 }] },
+        { exitCode: 0 }
+      )
     ).toBe(true)
     expect(
-      evaluateCondition({ all: [{ exit: 0 }, { exit: 1 }] }, { exitCode: 0 })
+      await evaluateCondition(
+        { all: [{ exit: 0 }, { exit: 1 }] },
+        { exitCode: 0 }
+      )
     ).toBe(false)
   })
 
-  it("evaluates expr over json and text outputs", () => {
+  it("evaluates expr over json and text outputs", async () => {
     const root = tempAttempt()
     writeFileSync(join(root, "out", "score.json"), '{"score":0.9}')
     writeFileSync(join(root, "out", "ok.txt"), "yes")
     expect(
-      evaluateCondition(
+      await evaluateCondition(
         { expr: "json('out/score.json').score >= 0.8" },
         { attemptRoot: root }
       )
     ).toBe(true)
     expect(
-      evaluateCondition(
+      await evaluateCondition(
         {
           all: [
             { expr: "json('out/score.json').score >= 0.8" },
@@ -72,5 +84,24 @@ describe("evaluateCondition", () => {
       )
     ).toBe(true)
     expect(evaluateExpr("text('out/ok.txt') != 'no'", root)).toBe(true)
+  })
+
+  it("marks agent leaves and groups containing them as slow", () => {
+    expect(
+      conditionIsSlow({
+        agent: { cli: "claude", instructions: "j.md" },
+      })
+    ).toBe(true)
+    expect(
+      conditionIsSlow({
+        all: [
+          { exit: 0 },
+          { agent: { cli: "cursor", instructions: "j.md" } },
+        ],
+      })
+    ).toBe(true)
+    expect(conditionIsSlow({ all: [{ exit: 0 }, { expr: "true" }] })).toBe(
+      false
+    )
   })
 })

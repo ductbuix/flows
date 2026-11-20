@@ -87,17 +87,21 @@ export function untilCondition(task: Task): Condition | undefined {
 export function attemptContext(
   attemptRoot: string | undefined,
   exitCode: number | undefined,
-  needExitCodes?: Record<string, number | undefined>
+  extras?: Pick<ConditionContext, "needExitCodes" | "workflowRoot" | "judgeCache">
 ): ConditionContext {
-  return { attemptRoot, exitCode, needExitCodes }
+  return { attemptRoot, exitCode, ...extras }
 }
 
-export function evalUntil(
+export async function evalUntil(
   task: Task,
   attemptRoot: string,
-  exitCode: number
-): boolean {
+  exitCode: number,
+  extras?: Pick<ConditionContext, "workflowRoot" | "judgeCache">
+): Promise<boolean> {
   const until = untilCondition(task)
   if (!until) return true
-  return evaluateCondition(until, attemptContext(attemptRoot, exitCode))
+  return evaluateCondition(
+    until,
+    attemptContext(attemptRoot, exitCode, extras)
+  )
 }
