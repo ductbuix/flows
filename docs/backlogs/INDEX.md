@@ -13,7 +13,8 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-005 | todo | P0 | BL-004 | [Resume after restart](bl-005-resume.md) | Replay the log on start, re-attach or interrupt open attempts, never rerun finished tasks. | engine, resume, events |
 | BL-006 | todo | P1 | BL-005 | [Conditions and loops](bl-006-conditions-loops.md) | exit and expr conditions for when, until and branches; retry and repeat with separate counters. | engine, conditions, loops, retry |
 | BL-007 | todo | P1 | BL-006 | [Agent tasks and spawn](bl-007-agent-tasks.md) | kind agent tasks via Claude Code and Cursor CLI adapters, memories, and runtime spawn of new tasks. | agents, spawn, cli |
-| BL-008 | todo | P2 | BL-007 | [Web run view](bl-008-run-view.md) | Web screen that lists runs and shows live task states and logs over the websocket. | ui, web, runs |
+| BL-008 | todo | P2 | BL-007 | [Web run view](bl-008-run-view.md) | Run view with list and graph views, live task states, attempt kinds, logs and rendered SUMMARY.md. | ui, web, runs |
 | BL-009 | todo | P2 | BL-008 | [Graph editor with YAML sync](bl-009-graph-editor.md) | React Flow editor for workflows that reads and writes workflow.yaml, kept in sync both ways. | ui, web, editor, yaml |
 | BL-010 | todo | P2 | BL-009 | [Sandboxing](bl-010-sandboxing.md) | Restrict task writes to the workflow dir with sandbox-exec or bubblewrap, with a warned fallback. | sandbox, security, process |
 | BL-011 | todo | P2 | BL-006, BL-007 | [Agent judge conditions](bl-011-agent-judge.md) | agent condition kind where an agent CLI judges output and returns pass or fail. | engine, conditions, agents |
+| BL-012 | todo | P2 | BL-008 | [Run controls and run deletion](bl-012-run-controls.md) | Start, cancel, rerun and retry-task actions and manual run deletion with confirm dialogs. | ui, web, runs, controls, engine |

@@ -2,34 +2,38 @@
 id: DES-009
 title: "UI: run view"
 type: ui
-status: draft
-summary: Run view screen with runs list, live task states, attempts, logs, outputs and spawned tasks over the websocket.
+status: active
+summary: Run view with list and graph views, live task states, attempts, logs, rendered SUMMARY.md, outputs and spawned tasks.
 tags: [ui, web, runs, logs]
-related: [DES-002, DES-003, DES-004, DES-005, DES-006, DES-008]
-updated: 2026-11-20
+related:
+  [DES-002, DES-003, DES-004, DES-005, DES-006, DES-008, DES-011, DES-012]
+updated: 2026-11-21
 ---
 
 # UI: run view
 
-Screen for BL-008. It shows what the engine is doing, live. Read-only in
-this step except where noted. Follow [DES-008](des-008-ui.md) for the UI
-system. Everything shown here comes from the engine model in
+Screen for BL-008. It shows what the engine is doing, live. Run actions
+(start, cancel, rerun, retry a task, delete a run) are in
+[DES-011](des-011-run-controls.md). Follow [DES-008](des-008-ui.md) for
+the UI system and [DES-012](des-012-ui-libraries.md) for libraries.
+Everything shown comes from the engine model in
 [DES-003](des-003-engine.md) and the files in
 [DES-002](des-002-workflow-files.md).
 
 ## What it must show
 
 - The runs of a workflow, newest first, with run status and start time.
+  Runs are kept until the user deletes them (DES-011).
 - For one run: every task with its state (`pending`, `ready`, `running`,
   `succeeded`, `failed`, `skipped`), including tasks spawned at runtime
   ([DES-005](des-005-agents-spawn.md)), marked as spawned.
 - Progress: tasks finished out of the current total. The total can grow
   while the run is live because of spawn.
 - For one task: its attempts (`attempt-<n>`: pid, exit code, start, end,
-  `interrupted` when resume could not re-attach), and whether each launch
-  was a retry or a repeat ([DES-004](des-004-conditions-loops.md)).
+  `interrupted` when resume could not re-attach) and why each was launched
+  (see "Attempt kinds").
 - For one attempt: `stdout.log` and `stderr.log` streaming, its
-  `SUMMARY.md`, and the files in `out/`.
+  `SUMMARY.md` rendered as markdown, and the files in `out/`.
 - Why a task was skipped (its `when` was false, or an upstream skip
   propagated) and why a task failed (exit code, timeout).
 - Spawn rejections fed back to an agent, on the agent task.
@@ -37,18 +41,51 @@ system. Everything shown here comes from the engine model in
   ([DES-006](des-006-sandboxing.md)).
 - Websocket connection state.
 
+## Two views of a run
+
+The run body switches between **List** and **Graph** with a Toggle Group
+in the run header (`run-view-list`, `run-view-graph`). The choice is kept
+in the URL (`?view=graph`) so a reload or a shared link keeps it.
+
+- List: a Table of tasks in topological order, spawned tasks under the
+  task that spawned them.
+- Graph: read-only React Flow canvas laid out with dagre (DES-012). Nodes
+  show task id, state and attempt count; edges are `needs`, labeled when
+  they carry a condition. No dragging, no editing; pan and zoom only.
+- Selection is shared: selecting a task in either view opens it in the
+  detail panel and stays selected after switching (`?task=<taskId>`).
+
 ## Layout
 
 ```
 +-----------+---------------------------------------------------+
 | Sidebar   | Breadcrumb: workflow / run / task                 |
-| workflows | Run header: status, progress, sandbox badge       |
-|  > runs   +----------------------+----------------------------+
-|           | Task list            | Task detail (tabs)         |
+| workflows | Run header: status, progress, sandbox badge,      |
+|  > runs   |   List|Graph toggle, run actions (DES-011)        |
+|           +----------------------+----------------------------+
+|           | Task list or graph   | Task detail (tabs)         |
 |           | (Resizable panel)    | Logs | Attempts | Summary  |
 |           |                      | Output | Spawn            |
 +-----------+----------------------+----------------------------+
 ```
+
+## Attempt kinds
+
+Each attempt shows why it was launched, with an icon and a text label so
+the meaning never depends on color alone. Icons are lucide.
+
+| Kind                                | Label          | Icon        | Badge variant      |
+| ----------------------------------- | -------------- | ----------- | ------------------ |
+| first launch                        | `Run`          | `Play`      | `outline`          |
+| retry after failure or timeout      | `Retry 2/3`    | `RotateCcw` | `destructive` tint |
+| repeat until a condition passes     | `Repeat 3/5`   | `Repeat`    | `secondary`        |
+| retry started by the user (DES-011) | `Manual retry` | `Hand`      | `outline`          |
+| interrupted by a restart            | `Interrupted`  | `Unplug`    | `outline`          |
+
+The counter is the count for that loop and its `max`
+([DES-004](des-004-conditions-loops.md)); retry and repeat counters are
+separate. The badge has an `aria-label` with the full sentence, for
+example "Retry 2 of 3 after exit code 1".
 
 ## Components
 
@@ -58,6 +95,7 @@ shadcn components (add with `pnpm dlx shadcn@latest add <name> -c apps/web`):
 | ----------------------------------------- | ------------------------ |
 | App shell and workflow and run navigation | Sidebar, Breadcrumb      |
 | Runs list and task list                   | Table, Badge             |
+| List and Graph switch                     | Toggle Group             |
 | Task list and detail split                | Resizable, Scroll Area   |
 | Run progress                              | Progress                 |
 | Task detail sections                      | Tabs                     |
@@ -67,6 +105,7 @@ shadcn components (add with `pnpm dlx shadcn@latest add <name> -c apps/web`):
 | Empty, loading                            | Empty, Skeleton, Spinner |
 | Websocket lost, request failed            | Alert                    |
 | Attempt metadata rows                     | Item                     |
+| Fenced code in `SUMMARY.md`               | Code Block               |
 
 AI Elements patterns (copy from
 `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`; keep the
@@ -80,11 +119,14 @@ comes from our server):
 | Files in `out/`                        | File Tree | per its page             |
 | Agent tasks and the tasks they spawned | Subagent  | Trace, Code Block, Badge |
 
+Other libraries: React Flow and dagre for the graph view, react-markdown
+with remark-gfm for `SUMMARY.md` (DES-012).
+
 ## States
 
 | State                 | What shows                                                        |
 | --------------------- | ----------------------------------------------------------------- |
-| No runs yet           | Empty with a short line about starting a run                      |
+| No runs yet           | Empty with a Start run action (DES-011)                           |
 | Loading run           | Skeleton rows in the task list and header                         |
 | Run live              | task states and logs update from websocket events                 |
 | Websocket lost        | Alert in the run header; data stays, marked stale until reconnect |
@@ -101,7 +143,8 @@ BL-008. Names below are placeholders to agree on, not decisions.
 - `GET /api/workflows/:workflowId/runs`: run summaries (id, status,
   started, finished, task counts).
 - `GET /api/runs/:runId`: the frozen graph from `graph.json` (spawned
-  tasks included, flagged) and the current state of each task.
+  tasks included, flagged) and the current state of each task, with each
+  attempt's kind and loop counters.
 - `GET /api/runs/:runId/tasks/:taskId/attempts/:n/log?stream=stdout&offset=`:
   log text from a byte offset, for the first load and for catching up.
 - `GET /api/runs/:runId/tasks/:taskId/attempts/:n/summary` and `.../out`:
@@ -114,26 +157,18 @@ BL-008. Names below are placeholders to agree on, not decisions.
 ## Test ids
 
 `run-list`, `run-row-<runId>`, `run-status`, `run-progress`,
-`sandbox-badge`, `ws-status`, `task-row-<taskId>`, `task-state-<taskId>`,
-`task-spawned-<taskId>`, `task-tab-<logs|attempts|summary|output|spawn>`,
-`attempt-row-<n>`, `log-output`.
+`run-view-list`, `run-view-graph`, `run-graph`, `sandbox-badge`,
+`ws-status`, `task-row-<taskId>`, `task-node-<taskId>`,
+`task-state-<taskId>`, `task-spawned-<taskId>`,
+`task-tab-<logs|attempts|summary|output|spawn>`, `attempt-row-<n>`,
+`attempt-kind-<n>`, `log-output`, `summary-markdown`.
 
 ## Playwright evidence
 
-- One e2e test runs a small fixture workflow (the BL-004 diamond) through
-  the server, opens the run, and waits until every `task-state-*` reads
-  `succeeded`, then checks `log-output` shows a known line.
-- One test for a failing task (non-zero exit) showing the failure reason.
+- E2e runs against a temporary app home (`FLOWAPP_HOME`, DES-002).
+- Run a small fixture workflow (the BL-004 diamond), open the run, wait
+  until every `task-state-*` reads `succeeded`, check `log-output` shows a
+  known line and `summary-markdown` renders a heading and a table.
+- Switch to the graph view, check the selected task stays selected.
+- A failing task shows its failure reason and a `Retry` attempt badge.
 - Video and screenshots go in the PR (`pnpm test:e2e`).
-
-## Open questions
-
-1. Run controls: should this screen start, cancel or rerun a run, or
-   retry a task? The design does not say. Read-only until decided.
-2. Task list or a read-only graph (React Flow) for the run, or both?
-3. How should `SUMMARY.md` render: plain text in a Code Block, or
-   markdown? Markdown needs a renderer that is not in shadcn.
-4. How far back to keep runs in the list, and is there run deletion?
-5. How does e2e point the app at a temporary `~/.flowapp`? Needs a config
-   option or env var that the design does not define yet.
-6. Should repeat attempts and retry attempts look different?

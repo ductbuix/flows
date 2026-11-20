@@ -6,7 +6,7 @@ status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
 related: [DES-001, DES-004, DES-005]
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Folder layout and workflow file
@@ -65,6 +65,11 @@ tasks:
 
 The visual editor and `workflow.yaml` stay in sync; the file is the source
 of truth.
+
+## App home
+
+The app home is `~/.flowapp`. `FLOWAPP_HOME` overrides it, so tests and
+e2e runs use a temporary directory and never touch the user's data.
 
 ## Task environment
 
