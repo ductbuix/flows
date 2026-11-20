@@ -23,7 +23,9 @@ export const renameWorkflowResponseSchema = z.object({
   id: workflowIdSchema,
 })
 
-export type RenameWorkflowResponse = z.infer<typeof renameWorkflowResponseSchema>
+export type RenameWorkflowResponse = z.infer<
+  typeof renameWorkflowResponseSchema
+>
 
 /** Basename only: *.md, no path separators (DES-013). */
 export const memoryFileNameSchema = z
@@ -75,3 +77,40 @@ export const memoryConflictSchema = z.object({
 })
 
 export type MemoryConflict = z.infer<typeof memoryConflictSchema>
+
+/**
+ * Workflow-relative text path (DES-018). Relative only; no `..`, absolute,
+ * backslashes, `workflow.yaml`, or anything under `runs/`.
+ */
+export function isAllowedWorkflowFilePath(rel: string): boolean {
+  if (!rel || rel.startsWith("/") || rel.includes("\\")) return false
+  const parts = rel.split("/")
+  if (parts.some((p) => !p || p === "." || p === "..")) return false
+  if (rel === "workflow.yaml") return false
+  if (parts[0] === "runs") return false
+  return true
+}
+
+export const workflowFilePathSchema = z
+  .string()
+  .min(1)
+  .refine(isAllowedWorkflowFilePath, "invalid workflow-relative path")
+
+export const workflowFileDetailSchema = z.object({
+  path: z.string().min(1),
+  content: z.string(),
+  hash: z.string().min(1),
+})
+
+export type WorkflowFileDetail = z.infer<typeof workflowFileDetailSchema>
+
+export const putWorkflowFileBodySchema = z.object({
+  content: z.string(),
+  baseHash: z.string().min(1).optional(),
+})
+
+export type PutWorkflowFileBody = z.infer<typeof putWorkflowFileBodySchema>
+
+export const workflowFileConflictSchema = memoryConflictSchema
+
+export type WorkflowFileConflict = MemoryConflict

@@ -118,6 +118,11 @@ export {
   putMemoryBodySchema,
   renameMemoryBodySchema,
   memoryConflictSchema,
+  isAllowedWorkflowFilePath,
+  workflowFilePathSchema,
+  workflowFileDetailSchema,
+  putWorkflowFileBodySchema,
+  workflowFileConflictSchema,
   type CreateWorkflowBody,
   type RenameWorkflowBody,
   type RenameWorkflowResponse,
@@ -127,6 +132,9 @@ export {
   type PutMemoryBody,
   type RenameMemoryBody,
   type MemoryConflict,
+  type WorkflowFileDetail,
+  type PutWorkflowFileBody,
+  type WorkflowFileConflict,
 } from "./api-lifecycle.ts"
 export {
   parseWorkflowYaml,

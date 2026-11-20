@@ -69,8 +69,9 @@ dir name. Rename changes both. Alert Dialog warning:
 in `memory:` and the engine copies them into the attempt's `input/memory/`
 at launch ([DES-005](des-005-agents-spawn.md)).
 
-- List, create, edit (CodeMirror with markdown), rename and delete files
-  in `memory/`.
+- List, create, edit (plain textarea; see [DES-018](des-018-agent-kind-and-file-editing.md)),
+  rename and delete files in `memory/`. Import a `.md` file from disk
+  with a native file picker; on name collision, overwrite or rename.
 - Edits apply to future launches only. Running and past attempts keep the
   copy they got. The editor says this under the file name.
 - Rename or delete warns with the tasks whose `memory:` list names the
@@ -121,13 +122,17 @@ Zod schemas in `packages/shared` (`api-lifecycle.ts`).
 - `GET /api/workflows/:workflowId/memory`, `GET`/`PUT`/`DELETE`
   `.../memory/:file`, and `POST .../memory/:file/rename` with
   `{ newName, updateReferences? }`
+- `GET`/`PUT /api/workflows/:workflowId/files/*` for instructions and
+  other workflow-relative text files ([DES-018](des-018-agent-kind-and-file-editing.md))
 - Websocket: file changed `{ workflowId, path, hash, content }`
 
 ## Test ids
 
 `workflow-create`, `workflow-rename`, `workflow-delete`,
 `delete-confirm-input`, `conflict-dialog`, `conflict-reload`,
-`conflict-keep`, `conflict-diff`, `memory-list`, `memory-row-<file>`.
+`conflict-keep`, `conflict-diff`, `memory-list`, `memory-row-<file>`,
+`memory-editor`, `memory-save`, `memory-remove`, `memory-pick`,
+`memory-collision`.
 
 ## Playwright evidence
 

@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react"
 import type { MemoryFileSummary } from "@workspace/shared"
-import { memoryListSchema } from "@workspace/shared"
+import { memoryFileNameSchema, memoryListSchema } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
 import { api } from "@/lib/api"
+import { MemoryCollisionDialog } from "./MemoryCollisionDialog"
+import { MemoryCreateBar } from "./MemoryCreateBar"
 import { MemoryEditorDialog } from "./MemoryEditorDialog"
 import { MemoryFileDialogs } from "./MemoryFileDialogs"
 
 type Props = {
   workflowId: string
 }
+
+type PendingPick = { basename: string; content: string }
 
 export function MemoryPanel({ workflowId }: Props) {
   const [files, setFiles] = useState<MemoryFileSummary[]>([])
@@ -21,6 +24,7 @@ export function MemoryPanel({ workflowId }: Props) {
   const [pendingRename, setPendingRename] = useState<MemoryFileSummary | null>(
     null
   )
+  const [pendingPick, setPendingPick] = useState<PendingPick | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -45,22 +49,45 @@ export function MemoryPanel({ workflowId }: Props) {
     setFiles(memoryListSchema.parse(await res.json()).files)
   }
 
+  async function putMemory(name: string, content: string) {
+    const res = await api.workflows[":workflowId"].memory[":file"].$put({
+      param: { workflowId, file: name },
+      json: { content },
+    })
+    if (!res.ok) {
+      setError("Could not create memory file.")
+      return false
+    }
+    await reload()
+    setEditing(name)
+    return true
+  }
+
   async function createFile() {
     setError(null)
     const name = newName.trim().endsWith(".md")
       ? newName.trim()
       : `${newName.trim()}.md`
-    const res = await api.workflows[":workflowId"].memory[":file"].$put({
-      param: { workflowId, file: name },
-      json: { content: "" },
-    })
-    if (!res.ok) {
-      setError("Could not create memory file.")
+    if (!(await putMemory(name, ""))) return
+    setNewName("")
+  }
+
+  function onPick(fileList: FileList | null) {
+    const file = fileList?.[0]
+    if (!file) return
+    const basename = file.name.split(/[/\\]/).pop() ?? ""
+    if (!memoryFileNameSchema.safeParse(basename).success) {
+      setError("Only .md files can be imported.")
       return
     }
-    setNewName("")
-    await reload()
-    setEditing(name)
+    setError(null)
+    void file.text().then((content) => {
+      if (files.some((f) => f.name === basename)) {
+        setPendingPick({ basename, content })
+        return
+      }
+      void putMemory(basename, content)
+    })
   }
 
   return (
@@ -101,22 +128,12 @@ export function MemoryPanel({ workflowId }: Props) {
           </li>
         ))}
       </ul>
-      <div className="flex gap-2">
-        <Input
-          data-testid="memory-new-name"
-          placeholder="notes.md"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <Button
-          size="sm"
-          data-testid="memory-create"
-          disabled={!newName.trim()}
-          onClick={() => void createFile()}
-        >
-          Add
-        </Button>
-      </div>
+      <MemoryCreateBar
+        newName={newName}
+        onNewNameChange={setNewName}
+        onCreate={() => void createFile()}
+        onPick={onPick}
+      />
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {editing && (
@@ -128,6 +145,29 @@ export function MemoryPanel({ workflowId }: Props) {
             if (!open) setEditing(null)
           }}
           onSaved={() => void reload()}
+          onRemoved={() => void reload()}
+        />
+      )}
+
+      {pendingPick && (
+        <MemoryCollisionDialog
+          key={pendingPick.basename}
+          open
+          basename={pendingPick.basename}
+          existingNames={files.map((f) => f.name)}
+          onOpenChange={(open) => {
+            if (!open) setPendingPick(null)
+          }}
+          onOverwrite={(name) => {
+            const content = pendingPick.content
+            setPendingPick(null)
+            void putMemory(name, content)
+          }}
+          onAdd={(name) => {
+            const content = pendingPick.content
+            setPendingPick(null)
+            void putMemory(name, content)
+          }}
         />
       )}
 

@@ -1,6 +1,5 @@
 import {
   existsSync,
-  mkdirSync,
   readdirSync,
   readFileSync,
   renameSync,
@@ -19,6 +18,10 @@ import {
 } from "@workspace/shared"
 import { hashContent } from "./hash.ts"
 import { workflowYamlPath } from "./workflow-files.ts"
+import {
+  readWorkflowScopedFile,
+  writeWorkflowScopedFile,
+} from "./workflow-scoped-files.ts"
 
 function memoryDir(engine: Engine, workflowId: string): string {
   return join(workflowDir(engine.home, workflowId), "memory")
@@ -81,21 +84,29 @@ export function readMemoryFile(
   workflowId: string,
   name: string
 ): MemoryFileDetail | null {
-  const path = memoryPath(engine, workflowId, name)
-  if (!path || !existsSync(path)) return null
-  if (!existsSync(workflowYamlPath(engine, workflowId))) return null
-  const content = readFileSync(path, "utf8")
+  const parsed = memoryFileNameSchema.safeParse(name)
+  if (!parsed.success) return null
+  const file = readWorkflowScopedFile(
+    engine,
+    workflowId,
+    memoryRefPath(parsed.data)
+  )
+  if (!file) return null
   return {
-    name: memoryFileNameSchema.parse(name),
-    content,
-    hash: hashContent(content),
-    referencedBy: tasksReferencingMemory(engine, workflowId, name),
+    name: parsed.data,
+    content: file.content,
+    hash: file.hash,
+    referencedBy: tasksReferencingMemory(engine, workflowId, parsed.data),
   }
 }
 
 export type MemoryWriteResult =
   | { ok: true; detail: MemoryFileDetail }
-  | { ok: false; kind: "not_found" | "invalid" | "conflict"; detail?: MemoryFileDetail }
+  | {
+      ok: false
+      kind: "not_found" | "invalid" | "conflict"
+      detail?: MemoryFileDetail
+    }
   | {
       ok: false
       kind: "hash_conflict"
@@ -110,25 +121,18 @@ export function writeMemoryFile(
   content: string,
   baseHash?: string
 ): MemoryWriteResult {
-  if (!existsSync(workflowYamlPath(engine, workflowId))) {
-    return { ok: false, kind: "not_found" }
-  }
-  const path = memoryPath(engine, workflowId, name)
-  if (!path) return { ok: false, kind: "invalid" }
-
-  const root = memoryDir(engine, workflowId)
-  mkdirSync(root, { recursive: true })
-
-  if (existsSync(path) && baseHash !== undefined) {
-    const diskContent = readFileSync(path, "utf8")
-    const diskHash = hashContent(diskContent)
-    if (diskHash !== baseHash) {
-      return { ok: false, kind: "hash_conflict", diskContent, diskHash }
-    }
-  }
-
-  writeFileSync(path, content, "utf8")
-  const detail = readMemoryFile(engine, workflowId, name)!
+  const parsed = memoryFileNameSchema.safeParse(name)
+  if (!parsed.success) return { ok: false, kind: "invalid" }
+  const result = writeWorkflowScopedFile(
+    engine,
+    workflowId,
+    memoryRefPath(parsed.data),
+    content,
+    baseHash
+  )
+  if (!result.ok) return result
+  const detail = readMemoryFile(engine, workflowId, parsed.data)
+  if (!detail) return { ok: false, kind: "not_found" }
   return { ok: true, detail }
 }
 
