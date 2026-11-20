@@ -6,12 +6,17 @@ import {
   setTaskField,
   setTaskNeeds,
   setWorkflowField,
+  switchTaskKind,
+  taskWithKind,
   type Need,
   type Task,
   type Workflow,
 } from "@workspace/shared"
 
-export function yamlAfterAddTask(yaml: string, workflow: Workflow): {
+export function yamlAfterAddTask(
+  yaml: string,
+  workflow: Workflow
+): {
   yaml: string
   taskId: string
 } {
@@ -52,9 +57,27 @@ export function yamlAfterTaskPatch(
   workflow: Workflow,
   taskId: string,
   patch: Partial<Task>
-): string {
+): { yaml: string; workflow: Workflow } {
   const current = workflow.tasks.find((t) => t.id === taskId)
-  if (!current) return yaml
+  if (!current) return { yaml, workflow }
+
+  if (
+    patch.kind !== undefined &&
+    (patch.kind === "command" || patch.kind === "agent") &&
+    patch.kind !== current.kind
+  ) {
+    const next = taskWithKind(current, patch.kind)
+    const nextYaml = switchTaskKind(yaml, taskId, patch.kind)
+    const parsed = parseWorkflowYaml(nextYaml)
+    return {
+      yaml: nextYaml,
+      workflow: parsed.workflow ?? {
+        ...workflow,
+        tasks: workflow.tasks.map((t) => (t.id === taskId ? next : t)),
+      },
+    }
+  }
+
   const next = { ...current, ...patch } as Task
   let nextYaml = yaml
   for (const [key, value] of Object.entries(patch)) {
@@ -62,11 +85,21 @@ export function yamlAfterTaskPatch(
     nextYaml = setTaskField(nextYaml, taskId, key, value)
   }
   const parsed = parseWorkflowYaml(nextYaml)
-  if (!parsed.workflow) return nextYaml
-  const tasks = parsed.workflow.tasks.map((t) =>
-    t.id === taskId ? next : t
-  )
-  return applyWorkflowDiff(yaml, { ...parsed.workflow, tasks })
+  if (parsed.workflow) {
+    const tasks = parsed.workflow.tasks.map((t) => (t.id === taskId ? next : t))
+    return {
+      yaml: applyWorkflowDiff(yaml, { ...parsed.workflow, tasks }),
+      workflow: { ...parsed.workflow, tasks },
+    }
+  }
+  // Keep an optimistic task so Inspector fields match the YAML (DES-018).
+  return {
+    yaml: nextYaml,
+    workflow: {
+      ...workflow,
+      tasks: workflow.tasks.map((t) => (t.id === taskId ? next : t)),
+    },
+  }
 }
 
 export function yamlAfterRename(

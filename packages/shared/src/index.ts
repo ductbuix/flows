@@ -149,5 +149,6 @@ export {
   setWorkflowField,
   upsertTask,
 } from "./workflow-yaml-edit.ts"
+export { taskWithKind, switchTaskKind } from "./workflow-yaml-kind.ts"
 export { replaceMemoryRef } from "./workflow-yaml-memory.ts"
 export { applyWorkflowDiff } from "./workflow-yaml-diff.ts"

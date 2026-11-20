@@ -6,7 +6,6 @@ import {
   type Task,
   type Workflow,
   type WorkflowDetail,
-  type YamlDiagnosticDto,
 } from "@workspace/shared"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
@@ -17,33 +16,17 @@ import {
   yamlAfterRename,
   yamlAfterTaskPatch,
 } from "./editor-mutations"
+import {
+  activeEditorView,
+  emptyEditorState,
+  type EditorState,
+} from "./editor-state"
 import { useWorkflowSocket } from "./useWorkflowSocket"
 
-export type EditorState = {
-  workflowId: string
-  loading: boolean
-  yaml: string
-  hash: string
-  workflow: Workflow | null
-  errors: YamlDiagnosticDto[]
-  dirty: boolean
-  selectedTaskId?: string
-  conflict: { diskYaml: string; diskHash: string } | null
-  showDiff: boolean
-}
+export type { EditorState } from "./editor-state"
 
 export function useWorkflowEditor(workflowId: string) {
-  const [state, setState] = useState<EditorState>({
-    workflowId: "",
-    loading: true,
-    yaml: "",
-    hash: "",
-    workflow: null,
-    errors: [],
-    dirty: false,
-    conflict: null,
-    showDiff: false,
-  })
+  const [state, setState] = useState<EditorState>(emptyEditorState)
 
   useEffect(() => {
     let alive = true
@@ -103,26 +86,24 @@ export function useWorkflowEditor(workflowId: string) {
   )
   useWorkflowSocket(workflowId, { onFileChanged })
 
-  const active = state.workflowId === workflowId
-  const yaml = active ? state.yaml : ""
-  const workflow = active ? state.workflow : null
-  const errors = active ? state.errors : []
-  const dirty = active ? state.dirty : false
-  const hash = active ? state.hash : ""
-  const loading = !active || state.loading
-  const selectedTaskId = active ? state.selectedTaskId : undefined
-  const conflict = active ? state.conflict : null
-  const showDiff = active ? state.showDiff : false
+  const { yaml, workflow, hash, conflict, ...view } = activeEditorView(
+    state,
+    workflowId
+  )
 
-  const withYaml = (nextYaml: string, extra?: Partial<EditorState>) => {
+  const withYaml = (
+    nextYaml: string,
+    extra?: Partial<EditorState> & { fallbackWorkflow?: Workflow }
+  ) => {
     const parsed = parseWorkflowYaml(nextYaml)
+    const { fallbackWorkflow, ...rest } = extra ?? {}
     setState((s) => ({
       ...s,
       yaml: nextYaml,
       dirty: true,
       errors: parsed.errors,
-      workflow: parsed.workflow ?? s.workflow,
-      ...extra,
+      workflow: parsed.workflow ?? fallbackWorkflow ?? s.workflow,
+      ...rest,
     }))
   }
 
@@ -169,21 +150,10 @@ export function useWorkflowEditor(workflowId: string) {
   }
 
   return {
-    state: {
-      loading,
-      yaml,
-      hash,
-      workflow,
-      errors,
-      dirty,
-      selectedTaskId,
-      conflict,
-      showDiff,
-    },
+    state: { ...view, yaml, workflow, hash, conflict },
     setSelectedTaskId: (id?: string) =>
       setState((s) => ({ ...s, selectedTaskId: id })),
-    setShowDiff: (show: boolean) =>
-      setState((s) => ({ ...s, showDiff: show })),
+    setShowDiff: (show: boolean) => setState((s) => ({ ...s, showDiff: show })),
     setYaml: (next: string) => withYaml(next),
     addCommandTask: () => {
       if (!workflow) return
@@ -198,7 +168,8 @@ export function useWorkflowEditor(workflowId: string) {
     changeGoal: (goal: string) => withYaml(yamlAfterGoal(yaml, goal)),
     changeTask: (taskId: string, patch: Partial<Task>) => {
       if (!workflow) return
-      withYaml(yamlAfterTaskPatch(yaml, workflow, taskId, patch))
+      const next = yamlAfterTaskPatch(yaml, workflow, taskId, patch)
+      withYaml(next.yaml, { fallbackWorkflow: next.workflow })
     },
     rename: (fromId: string, toId: string) =>
       withYaml(yamlAfterRename(yaml, fromId, toId), {

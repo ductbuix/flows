@@ -60,7 +60,9 @@ export function WorkflowEditorPage() {
     return (
       <Alert variant="destructive">
         <AlertTitle>Not found</AlertTitle>
-        <AlertDescription>Workflow {workflowId} was not found.</AlertDescription>
+        <AlertDescription>
+          Workflow {workflowId} was not found.
+        </AlertDescription>
       </Alert>
     )
   }
@@ -130,6 +132,7 @@ export function WorkflowEditorPage() {
               workflowId={workflowId}
               workflow={state.workflow}
               selectedTaskId={state.selectedTaskId}
+              errors={state.errors}
               onChangeGoal={editor.changeGoal}
               onChangeTask={editor.changeTask}
               onRenameTask={editor.rename}

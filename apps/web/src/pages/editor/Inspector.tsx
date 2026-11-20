@@ -1,4 +1,4 @@
-import type { Task, Workflow } from "@workspace/shared"
+import type { Task, Workflow, YamlDiagnosticDto } from "@workspace/shared"
 import { Input } from "@workspace/ui/components/input"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { Switch } from "@workspace/ui/components/switch"
@@ -9,13 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
-import { Field, FieldLabel } from "@workspace/ui/components/field"
+import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
 import { MemoryPanel } from "./MemoryPanel"
+import { taskFieldErrors } from "./field-errors"
 
 type Props = {
   workflowId: string
   workflow: Workflow
   selectedTaskId?: string
+  errors: YamlDiagnosticDto[]
   onChangeGoal: (goal: string) => void
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
   onRenameTask: (fromId: string, toId: string) => void
@@ -25,11 +27,13 @@ export function Inspector({
   workflowId,
   workflow,
   selectedTaskId,
+  errors,
   onChangeGoal,
   onChangeTask,
   onRenameTask,
 }: Props) {
-  const task = workflow.tasks.find((t) => t.id === selectedTaskId)
+  const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
+  const task = taskIndex >= 0 ? workflow.tasks[taskIndex] : undefined
 
   if (!task) {
     return (
@@ -52,6 +56,10 @@ export function Inspector({
       </div>
     )
   }
+
+  const runErrors = taskFieldErrors(errors, taskIndex, "run")
+  const cliErrors = taskFieldErrors(errors, taskIndex, "cli")
+  const instructionsErrors = taskFieldErrors(errors, taskIndex, "instructions")
 
   return (
     <div className="space-y-3 overflow-auto p-3" data-testid="inspector">
@@ -89,19 +97,21 @@ export function Inspector({
         </Select>
       </Field>
       {task.kind === "command" ? (
-        <Field>
+        <Field data-invalid={runErrors.length > 0 || undefined}>
           <FieldLabel htmlFor="field-run">Run</FieldLabel>
           <Textarea
             id="field-run"
             data-testid="field-run"
             value={task.run}
+            aria-invalid={runErrors.length > 0 || undefined}
             onChange={(e) => onChangeTask(task.id, { run: e.target.value })}
             rows={3}
           />
+          <FieldError data-testid="field-error-run" errors={runErrors} />
         </Field>
       ) : (
         <>
-          <Field>
+          <Field data-invalid={cliErrors.length > 0 || undefined}>
             <FieldLabel>CLI</FieldLabel>
             <Select
               value={task.cli}
@@ -111,7 +121,10 @@ export function Inspector({
                 }
               }}
             >
-              <SelectTrigger data-testid="field-cli">
+              <SelectTrigger
+                data-testid="field-cli"
+                aria-invalid={cliErrors.length > 0 || undefined}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -119,16 +132,22 @@ export function Inspector({
                 <SelectItem value="cursor">cursor</SelectItem>
               </SelectContent>
             </Select>
+            <FieldError data-testid="field-error-cli" errors={cliErrors} />
           </Field>
-          <Field>
+          <Field data-invalid={instructionsErrors.length > 0 || undefined}>
             <FieldLabel htmlFor="field-instructions">Instructions</FieldLabel>
             <Input
               id="field-instructions"
               data-testid="field-instructions"
               value={task.instructions}
+              aria-invalid={instructionsErrors.length > 0 || undefined}
               onChange={(e) =>
                 onChangeTask(task.id, { instructions: e.target.value })
               }
+            />
+            <FieldError
+              data-testid="field-error-instructions"
+              errors={instructionsErrors}
             />
           </Field>
           <Field className="flex items-center justify-between gap-2">

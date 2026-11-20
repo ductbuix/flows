@@ -63,11 +63,7 @@ export function removeTask(text: string, taskId: string): string {
   return emit(doc)
 }
 
-export function renameTask(
-  text: string,
-  fromId: string,
-  toId: string
-): string {
+export function renameTask(text: string, fromId: string, toId: string): string {
   const doc = parse(text)
   const seq = tasksSeq(doc)
   const idx = taskIndex(doc, fromId)
@@ -107,11 +103,7 @@ export function setTaskNeeds(
   return emit(doc)
 }
 
-export function setRetryMax(
-  text: string,
-  taskId: string,
-  max: number
-): string {
+export function setRetryMax(text: string, taskId: string, max: number): string {
   const doc = parse(text)
   const idx = taskIndex(doc, taskId)
   if (idx < 0) return text

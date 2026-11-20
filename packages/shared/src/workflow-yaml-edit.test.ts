@@ -10,6 +10,7 @@ import {
   setRetryMax,
   setTaskNeeds,
 } from "./workflow-yaml-edit.ts"
+import { switchTaskKind } from "./workflow-yaml-kind.ts"
 import { replaceMemoryRef } from "./workflow-yaml-memory.ts"
 import { parseWorkflowYaml } from "./workflow-yaml.ts"
 
@@ -107,5 +108,44 @@ tasks:
     const next = replaceMemoryRef(text, "memory/style.md", "memory/voice.md")
     expect(next).toContain("memory/voice.md")
     expect(next).not.toContain("memory/style.md")
+  })
+
+  it("switchTaskKind writes a valid agent or command shape", () => {
+    let text = fixture
+    text = switchTaskKind(text, "fetch", "agent")
+    // Other tasks and file-level comments stay (DES-018).
+    expect(text).toContain("# header: research workflow")
+    expect(text).toContain("# inline on goal")
+    expect(text).toContain("# first task is the planner")
+    expect(text).toMatch(/instructions:\s*tasks\/plan\.md/)
+    expect(text).toMatch(/when:\s*\{\s*exit:\s*0\s*\}/)
+
+    const toAgent = workflowSchema.parse(parseYaml(text))
+    const fetch = toAgent.tasks.find((t) => t.id === "fetch")
+    expect(fetch).toMatchObject({
+      kind: "agent",
+      cli: "claude",
+      instructions: "tasks/fetch.md",
+      needs: ["plan"],
+      continueOnError: false,
+    })
+    expect(fetch && "run" in fetch).toBe(false)
+    expect(toAgent.tasks.map((t) => t.id)).toEqual(["plan", "fetch", "publish"])
+
+    text = switchTaskKind(text, "fetch", "command")
+    expect(text).toContain("# header: research workflow")
+    expect(text).toContain("# first task is the planner")
+    const toCommand = workflowSchema.parse(parseYaml(text))
+    const cmd = toCommand.tasks.find((t) => t.id === "fetch")
+    expect(cmd).toMatchObject({
+      kind: "command",
+      run: "echo ok",
+      needs: ["plan"],
+      continueOnError: false,
+    })
+    expect(cmd && "cli" in cmd).toBe(false)
+    expect(cmd && "instructions" in cmd).toBe(false)
+    expect(cmd && "memory" in cmd).toBe(false)
+    expect(cmd && "spawn" in cmd).toBe(false)
   })
 })

@@ -2,7 +2,7 @@
 id: DES-018
 title: "UI: agent kind switch and plain file editing"
 type: ui
-status: draft
+status: active
 summary: "Fix switching a task to kind agent, and edit memory and instructions in a plain textarea, with a .md file picker."
 tags: [ui, web, editor, agent, memory, files]
 related: [DES-002, DES-005, DES-012, DES-013, BL-015, BL-016]
@@ -177,13 +177,13 @@ No new delete route for these files. Memory delete stays on
 
 ## Components
 
-| Need                          | Component                          |
-| ----------------------------- | ---------------------------------- |
-| Memory and instructions editor | Dialog, Textarea, Button          |
-| Remove memory file            | Alert Dialog (existing confirm)    |
-| Name collision on import      | Dialog, Input, Button              |
-| Pick a .md file               | native `<input type="file">`       |
-| Field errors on a task        | Field, text on the Inspector input |
+| Need                           | Component                          |
+| ------------------------------ | ---------------------------------- |
+| Memory and instructions editor | Dialog, Textarea, Button           |
+| Remove memory file             | Alert Dialog (existing confirm)    |
+| Name collision on import       | Dialog, Input, Button              |
+| Pick a .md file                | native `<input type="file">`       |
+| Field errors on a task         | Field, text on the Inspector input |
 
 ## Data contracts
 

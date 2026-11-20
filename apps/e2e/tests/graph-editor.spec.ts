@@ -64,6 +64,96 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("node-a")).toBeVisible()
   })
 
+  test("switch task kind to agent, save, reload, switch back", async ({
+    page,
+  }) => {
+    await page.goto("/workflows/fail-retry")
+    await expect(page.getByTestId("node-flaky")).toBeVisible({
+      timeout: 15_000,
+    })
+    await page.getByTestId("node-flaky").click()
+    await expect(page.getByTestId("field-kind")).toBeVisible()
+
+    await page.getByTestId("field-kind").click()
+    await page.getByRole("option", { name: "agent" }).click()
+    await expect(page.getByTestId("field-cli")).toBeVisible()
+    await expect(page.getByTestId("field-instructions")).toHaveValue(
+      "tasks/flaky.md"
+    )
+    await expect(page.getByTestId("yaml-pane")).toContainText("kind: agent")
+    await expect(page.getByTestId("yaml-pane")).toContainText("cli: claude")
+    await expect(page.getByTestId("yaml-pane")).toContainText(
+      "instructions: tasks/flaky.md"
+    )
+    await expect(page.getByTestId("yaml-pane")).not.toContainText("run:")
+
+    await page.getByTestId("save-button").click()
+    await expect(page.getByTestId("save-button")).toBeDisabled({
+      timeout: 10_000,
+    })
+
+    await page.reload()
+    await expect(page.getByTestId("node-flaky")).toBeVisible({
+      timeout: 15_000,
+    })
+    await page.getByTestId("node-flaky").click()
+    await expect(page.getByTestId("field-cli")).toBeVisible()
+    const onDisk = readFileSync(
+      join(HOME, "workflows", "fail-retry", "workflow.yaml"),
+      "utf8"
+    )
+    expect(onDisk).toContain("kind: agent")
+    expect(onDisk).toContain("cli: claude")
+    expect(onDisk).toContain("instructions: tasks/flaky.md")
+    expect(onDisk).not.toMatch(/\brun:/)
+    expect(onDisk).toContain("retry:")
+
+    await page.getByTestId("field-kind").click()
+    await page.getByRole("option", { name: "command" }).click()
+    await expect(page.getByTestId("field-run")).toHaveValue("echo ok")
+    await expect(page.getByTestId("yaml-pane")).toContainText("run: echo ok")
+    await expect(page.getByTestId("yaml-pane")).not.toContainText("cli:")
+    await expect(page.getByTestId("yaml-pane")).not.toContainText(
+      "instructions:"
+    )
+    await page.getByTestId("save-button").click()
+    await expect(page.getByTestId("save-button")).toBeDisabled({
+      timeout: 10_000,
+    })
+  })
+
+  test("cleared required field shows Inspector error", async ({ page }) => {
+    await page.goto("/workflows/diamond")
+    await expect(page.getByTestId("node-b")).toBeVisible({
+      timeout: 15_000,
+    })
+    await page.getByTestId("node-b").click()
+    await expect(page.getByTestId("field-run")).toBeVisible()
+
+    await page.getByTestId("field-run").fill("")
+    await expect(page.getByTestId("field-error-run")).toBeVisible()
+    await expect(page.getByTestId("save-button")).toBeDisabled()
+    await expect(page.getByTestId("yaml-errors")).toBeVisible()
+  })
+
+  test("kind switch keeps other tasks in diamond", async ({ page }) => {
+    await page.goto("/workflows/diamond")
+    await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
+    await page.getByTestId("node-a").click()
+
+    await page.getByTestId("field-kind").click()
+    await page.getByRole("option", { name: "agent" }).click()
+    await expect(page.getByTestId("field-instructions")).toHaveValue(
+      "tasks/a.md"
+    )
+
+    const yaml = await page.getByTestId("yaml-pane").innerText()
+    expect(yaml).toContain("id: b")
+    expect(yaml).toContain("id: c")
+    expect(yaml).toContain("id: d")
+    expect(yaml).toMatch(/id: b[\s\S]*?run:/)
+  })
+
   test("disk change with dirty editor opens conflict dialog", async ({
     page,
   }) => {
