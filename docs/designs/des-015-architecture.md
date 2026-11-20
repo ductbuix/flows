@@ -34,7 +34,7 @@ task processes.
 | -------------- | ------------------------------------------------------------ | ------------ |
 | `apps/web`     | Vite and React UI, shadcn, React Flow, CodeMirror            | DES-008, 012 |
 | `apps/server`  | Hono on `@hono/node-server`, `127.0.0.1:8787`, REST plus ws  | DES-001      |
-| engine         | `packages/engine` (BL-004): scheduler, event log, runner     | DES-003      |
+| engine         | `packages/engine`: scheduler, event log, runner              | DES-003      |
 | Event log      | SQLite `app.db`, append-only `events` table                  | DES-003      |
 | Files          | `FLOWAPP_HOME` (default `~/.flowapp`): workflows, runs, logs | DES-002      |
 | Task processes | commands, scripts, agent CLIs, each in its own process group | DES-003, 005 |

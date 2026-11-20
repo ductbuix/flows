@@ -23,7 +23,9 @@ Built:
   `app` and `AppType` for the typed `hc` client.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `packages/shared`: zod schemas and types shared by server and web
-  (`healthSchema`, `Health`).
+  (`healthSchema`, workflow and engine event schemas).
+- `packages/engine`: SQLite event log (`node:sqlite`), fold, scheduler,
+  command-task runner; `FLOWAPP_HOME` for app data. Next: BL-005 resume.
 - `apps/e2e`: Playwright tests that start server and web together.
 - `packages/docs-tools`: docs index generator and checker (`tsx`).
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with one frontmatter
@@ -31,9 +33,7 @@ Built:
 
 Not built yet:
 
-- `packages/engine` (event log, task state machine, scheduler). Next step:
-  BL-004 in `docs/backlogs/`.
-- Workflow and task API routes, YAML files, the visual editor, persistence.
+- Resume after restart (BL-005), workflow/task API routes, visual editor.
 
 ## Commands
 

@@ -1,5 +1,9 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": { "noEmit": true, "lib": ["ES2022"] },
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
   "include": ["src"]
 }

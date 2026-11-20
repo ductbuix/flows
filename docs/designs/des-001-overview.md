@@ -21,9 +21,9 @@ bound to 127.0.0.1.
   UI rules: [DES-008](des-008-ui.md).
 - `apps/server`: Hono on `@hono/node-server`, websockets for live events,
   typed RPC client (`hc<AppType>`) shared with web.
-- `packages/shared`: zod schemas and types.
-- `packages/engine` (next): scheduler, event log, process runner.
-- Storage: SQLite event log plus files on disk.
+- `packages/shared`: zod schemas and types (API, workflow, events).
+- `packages/engine`: scheduler, event log (`node:sqlite`), process runner.
+- Storage: SQLite event log plus files on disk (`FLOWAPP_HOME`).
 
 ## Domain model
 

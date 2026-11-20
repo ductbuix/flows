@@ -4,10 +4,12 @@ globs: packages/engine/**
 alwaysApply: false
 ---
 
-- `packages/engine` is not built yet. Before creating or changing it, read
-  the engine designs listed in `docs/designs/INDEX.md` (tag `engine`):
-  DES-003 lifecycle and engine, DES-004 conditions and loops, DES-005
-  agents and spawn, DES-006 sandboxing. Follow them.
+- Before creating or changing `packages/engine`, read the engine designs
+  listed in `docs/designs/INDEX.md` (tag `engine`): DES-003 lifecycle and
+  engine, DES-004 conditions and loops, DES-005 agents and spawn,
+  DES-006 sandboxing. Follow them.
+- Append, then act. State is only a fold over the SQLite event log.
+  Shared workflow and event schemas live in `packages/shared`.
 - Pick work from `docs/backlogs/INDEX.md` and update the item's status.
 - If the code needs to differ from a design, update that design doc and
   its `updated` date in the same change.

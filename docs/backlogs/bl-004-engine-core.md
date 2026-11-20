@@ -2,11 +2,11 @@
 id: BL-004
 title: Engine core
 type: backlog
-status: todo
+status: done
 summary: packages/engine with workflow schema, SQLite event log, scheduler, command tasks, needs and parallelism.
 tags: [engine, events, scheduler]
 related: [DES-002, DES-003]
-updated: 2026-11-20
+updated: 2026-11-21
 priority: P0
 depends: [BL-001]
 ---
@@ -31,7 +31,7 @@ Resume (BL-005), conditions and loops (BL-006), agents (BL-007).
 
 ## Done when
 
-- [ ] A diamond graph (a, then b and c in parallel, then d) runs to
+- [x] A diamond graph (a, then b and c in parallel, then d) runs to
       success.
-- [ ] Replaying the event log gives the same state as the live run.
-- [ ] Unit tests cover the fold and the scheduler; `pnpm test` passes.
+- [x] Replaying the event log gives the same state as the live run.
+- [x] Unit tests cover the fold and the scheduler; `pnpm test` passes.

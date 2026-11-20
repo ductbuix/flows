@@ -33,6 +33,7 @@ reversed, keep the row and add a new one that says so.
 | Date       | Decision                                         | Reason                                                   | Holds it     |
 | ---------- | ------------------------------------------------ | -------------------------------------------------------- | ------------ |
 | 2026-11-20 | SQLite append-only event log, state is a fold    | one source of truth, resume by replay                    | DES-003      |
+| 2026-11-21 | `node:sqlite` for `app.db` (no native addon)     | built into Node 22+; sync API fits append-then-act       | DES-003, 015 |
 | 2026-11-20 | Append, then act                                 | a crash can never act without a record, or act twice     | DES-003      |
 | 2026-11-20 | Tasks read upstream dirs by path                 | files are the context; no copying                        | DES-002, 007 |
 | 2026-11-20 | Retry and repeat are separate policies           | failure and "not done yet" are different loops           | DES-004      |
