@@ -19,12 +19,13 @@ the trigger fires and the choice changes.
 
 ## Engine design
 
-| Decision                         | Risk                            | Guard                                                 | Revisit when                        |
-| -------------------------------- | ------------------------------- | ----------------------------------------------------- | ----------------------------------- |
-| Tasks read upstream dirs by path | can read beyond declared needs  | writes limited to the workflow dir (DES-006)          | runs must move to another machine   |
-| SQLite log, no queue             | single-process engine           | append-then-act and replay on resume (DES-003)        | a second machine runs tasks         |
-| Sandbox best effort              | unsandboxed on unsupported OSes | warning badge on unsandboxed runs (DES-006)           | first Windows user                  |
-| Agent judge conditions           | slow, not deterministic         | cheap kinds evaluate first; loop max counts (DES-004) | judges disagree on identical output |
+| Decision                         | Risk                           | Guard                                                 | Revisit when                         |
+| -------------------------------- | ------------------------------ | ----------------------------------------------------- | ------------------------------------ |
+| Tasks read upstream dirs by path | can read beyond declared needs | writes limited to the workflow dir (DES-006)          | runs must move to another machine    |
+| SQLite log, no queue             | single-process engine          | append-then-act and replay on resume (DES-003)        | a second machine runs tasks          |
+| macOS only on day one            | no Linux or Windows users      | `sandbox-exec` is the one sandbox path to build       | first user asks for Linux or Windows |
+| Sandbox best effort              | a task runs unsandboxed        | warning badge on unsandboxed runs (DES-006)           | a run needs the sandbox to be safe   |
+| Agent judge conditions           | slow, not deterministic        | cheap kinds evaluate first; loop max counts (DES-004) | judges disagree on identical output  |
 
 ## Tooling and docs
 
@@ -110,19 +111,15 @@ the overhead grows with the longest summary in each table.
 
 ## Open questions
 
-1. Human approval gates between tasks?
-2. OS support on day one: macOS only?
-3. Per-task agent budget (tokens, time, cost)?
+Awaiting confirmation (answered, but the answers need confirming before
+they go into the design):
 
-Raised by the UI designs (DES-011, DES-010), to settle in BL-004 or
-before BL-012:
+1. Per-task agent budget (tokens, time, cost).
+2. Matrix semantics: how a value reaches the command, how several keys
+   expand, and how downstream `needs` wait on all instances.
 
-4. Cancel needs a terminal state for tasks and runs. Add `cancelled` to
-   the lifecycle in DES-003?
-5. The event log is append-only. When a user deletes a run, are its
-   events removed, or kept with a deleted marker while the files go?
-6. Matrix is only shown by example in DES-002. Undefined: how a value
-   reaches the command (env var or template), how several keys expand,
-   and how downstream `needs` wait on all instances.
+Settled on 2026-11-21: approval gates (yes), macOS only on day one,
+`cancelled` state for tasks and runs, and deleted runs kept in the log
+with a marker event. See DES-003 and DES-006.
 
 The UI design docs have no open questions as of 2026-11-21.

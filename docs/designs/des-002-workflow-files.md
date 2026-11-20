@@ -61,6 +61,7 @@ tasks:
     run: cp -r $UPSTREAM_check/out/* $WF_OUTPUT/
     needs: [check]
     when: { exit: 0 }
+    approval: true # wait for approval in the UI before running
 ```
 
 The visual editor and `workflow.yaml` stay in sync; the file is the source

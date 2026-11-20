@@ -3,10 +3,10 @@ id: DES-003
 title: Task lifecycle, engine and concurrency
 type: design
 status: active
-summary: Task state machine, append-then-act event log, scheduler tick, resume rules and nested limits.
-tags: [engine, lifecycle, events, resume, concurrency]
+summary: Task and run states (approval gates, cancelled), append-then-act event log, resume, run deletion and limits.
+tags: [engine, lifecycle, events, resume, concurrency, approval]
 related: [DES-001, DES-004, DES-005]
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Task lifecycle, engine and concurrency
@@ -17,6 +17,28 @@ updated: 2026-11-20
 `pending -> skipped` when `when` is false and `running -> running` for
 retry or repeat. Skips propagate unless a dependant allows `skipped`. A
 failure fails the run unless `continueOnError`.
+
+A task with an approval gate goes `ready -> awaiting_approval` and waits.
+Approve moves it to `running`; reject ends it `failed` with reason
+`rejected`, which then follows the normal failure rules.
+
+Cancelling a run moves every task that has not finished (`pending`,
+`ready`, `awaiting_approval`, `running`) to `cancelled`. Running attempts
+are stopped by ending their process group. `succeeded`, `failed`,
+`skipped` and `cancelled` are terminal.
+
+Run states: `running`, then `succeeded`, `failed` or `cancelled`. A run
+with a task in `awaiting_approval` stays `running`; the UI shows that it
+is waiting.
+
+## Approval gates
+
+- Declared per task with `approval: true` in `workflow.yaml`
+  ([DES-002](des-002-workflow-files.md)). The gate sits before the task's
+  first launch; retries and repeats do not ask again.
+- Approve and reject come from the UI (DES-011) and are events, so a gate
+  survives a restart: replay leaves the task in `awaiting_approval`.
+- A waiting task holds no concurrency slot.
 
 ## Engine
 
@@ -32,6 +54,10 @@ failure fails the run unless `continueOnError`.
    tasks never rerun.
 5. Attempt ids are written before launch so a crash cannot start a
    duplicate.
+6. Deleting a run appends a run deleted marker event and only then
+   removes `runs/<runId>/`. The log keeps the run's events; the fold
+   hides deleted runs from every view. If the process dies between the
+   event and the removal, resume finishes the removal.
 
 ## Concurrency
 

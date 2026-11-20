@@ -8,10 +8,10 @@ Holds system designs and UI instructions. Back to [docs index](../INDEX.md).
 | --- | --- | --- | --- | --- | --- |
 | DES-001 | design | active | [Overview and domain model](des-001-overview.md) | What Flows is, the stack, and the core entities (workflow, task, run, attempt, event). | overview, domain, stack |
 | DES-002 | design | active | [Folder layout and workflow file](des-002-workflow-files.md) | On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get. | storage, yaml, workflow, files |
-| DES-003 | design | active | [Task lifecycle, engine and concurrency](des-003-engine.md) | Task state machine, append-then-act event log, scheduler tick, resume rules and nested limits. | engine, lifecycle, events, resume, concurrency |
+| DES-003 | design | active | [Task lifecycle, engine and concurrency](des-003-engine.md) | Task and run states (approval gates, cancelled), append-then-act event log, resume, run deletion and limits. | engine, lifecycle, events, resume, concurrency, approval |
 | DES-004 | design | active | [Conditions and loops](des-004-conditions-loops.md) | Condition kinds (exit, expr, agent) shared by when, until and branches; retry and repeat policies. | engine, conditions, loops, retry |
 | DES-005 | design | active | [Agents and runtime spawn](des-005-agents-spawn.md) | How agent CLI tasks run stateless with memories, and how they add tasks to a running graph. | agents, spawn, memory, cli |
-| DES-006 | design | active | [Sandboxing](des-006-sandboxing.md) | Baseline process isolation, write-only-in-workflow-dir via OS sandboxes, and the fallback. | sandbox, security, process |
+| DES-006 | design | active | [Sandboxing](des-006-sandboxing.md) | macOS only on day one; baseline isolation, writes limited to the workflow dir via sandbox-exec, warned fallback. | sandbox, security, process |
 | DES-007 | design | active | [Trade-offs and open questions](des-007-tradeoffs.md) | Ledger of known risks (decision, risk, guard, revisit trigger) for the design and tooling, plus open questions. | tradeoffs, decisions, questions, tooling |
 | DES-008 | ui | active | [UI instructions](des-008-ui.md) | UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence. | ui, web, shadcn, ai-elements, testing |
 | DES-009 | ui | active | [UI: run view](des-009-run-view.md) | Run view with list and graph views, live task states, attempts, logs, rendered SUMMARY.md, outputs and spawned tasks. | ui, web, runs, logs |
