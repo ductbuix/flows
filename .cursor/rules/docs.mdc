@@ -9,6 +9,9 @@ alwaysApply: false
 - Retrieve in this order and stop as soon as you have enough:
   1. `docs/INDEX.md`, 2. the section `INDEX.md`, 3. only the docs you need.
      Follow `related` and `depends` one hop at a time.
+- Direction (vision, architecture, decisions, roadmap): the `direction`
+  table at the top of `docs/INDEX.md`, DES-014 to DES-017. Read it before
+  structural changes; add a DES-016 row when a decision lands.
 - Known id or tag: `rg -l '^id: DES-003' docs`, `rg -l '^tags: .*\bengine\b' docs`.
   To triage, read only the first 12 lines (frontmatter).
 - Never read whole folders. Never edit `INDEX.md` by hand.

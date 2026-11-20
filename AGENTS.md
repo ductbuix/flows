@@ -71,6 +71,11 @@ Never read whole folders or edit `INDEX.md` by hand. Each doc stays under
 update the backlog item's `status`; when code changes a design, update
 that doc in the same change.
 
+Direction: before a structural change, read the direction docs listed at
+the top of `docs/INDEX.md`: vision (DES-014), architecture (DES-015,
+package boundaries), decision log (DES-016), roadmap (DES-017). Add a
+decision log row when a decision lands.
+
 ## Done means
 
 Before calling work done, run `pnpm lint`, `pnpm typecheck`, `pnpm test`
@@ -101,6 +106,7 @@ and, for UI or API changes, `pnpm test:e2e`. All must pass.
 
 ## Pointers
 
-- Docs: `docs/INDEX.md` (designs, backlogs, schema in `docs/README.md`)
+- Docs: `docs/INDEX.md` (direction, designs, backlogs; schema in
+  `docs/README.md`)
 - Rules: `.cursor/rules/`
 - Human overview: `README.md`

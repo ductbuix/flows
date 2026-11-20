@@ -7,6 +7,8 @@ alwaysApply: true
 - Docs: start at `docs/INDEX.md`, then a section index, then only the doc
   you need. Pick work from `docs/backlogs/INDEX.md`. Rules in
   `docs/README.md`.
+- Direction (vision, architecture and package boundaries, decision log,
+  roadmap): DES-014 to DES-017, listed first in `docs/INDEX.md`.
 - KISS and YAGNI: build what the current step needs. No speculative
   abstractions, options or packages.
 - Use pnpm only (see `packageManager` in `package.json`). Add deps with
