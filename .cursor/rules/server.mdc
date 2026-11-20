@@ -1,0 +1,20 @@
+---
+description: Hono API server conventions
+globs: apps/server/**
+alwaysApply: false
+---
+
+- Hono on `@hono/node-server`, run with `tsx`. No build step.
+- Define routes by chaining on the `app` in `src/app.ts` (or chain
+  sub-apps with `.route()`), so `AppType` keeps full types for the web
+  `hc` client. Do not register routes in separate statements.
+- Keep `src/app.ts` free of side effects so tests can call
+  `app.request()`. Process setup (listen, signals) stays in `src/index.ts`.
+- Validate params, query and JSON bodies with zod via
+  `@hono/zod-validator` (add it when the first route needs it). Put
+  request and response schemas in `packages/shared`.
+- Return JSON with an explicit status: `c.json(body, 200)`.
+- Websockets use `upgradeWebSocket` from `@hono/node-server` with the
+  `ws` server passed to `serve`. Do not use `@hono/node-ws`.
+- Listen on `127.0.0.1` only. Port from `PORT`, default 8787.
+- Test routes with Vitest and `app.request()` in `src/*.test.ts`.

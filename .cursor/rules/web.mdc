@@ -1,0 +1,35 @@
+---
+description: Web app UI conventions, shadcn components and AI Elements
+globs: apps/web/**, packages/ui/**
+alwaysApply: false
+---
+
+- Prefer existing components over custom UI. Check, in order:
+  1. Components already in `packages/ui/src/components`.
+  2. shadcn components: https://ui.shadcn.com/docs/components.md
+  3. AI Elements patterns for agent UI (chat, reasoning, tool calls, plan,
+     task, terminal, test results, file tree, subagent and more):
+     https://ui.shadcn.com/docs/ai-elements.md
+- Write custom UI only when none of these fit, and build it from them.
+- Add a shadcn component from the repo root:
+  `pnpm dlx shadcn@latest add <name> -c apps/web`. The `ui` alias puts it
+  in `packages/ui/src/components`. Import it as
+  `@workspace/ui/components/<name>`. Some items also add hooks or libs
+  under `apps/web/src`. Preview with `--dry-run` first. Do not hand-copy
+  component code.
+- AI Elements have no package. Add the base components they build on,
+  e.g. `pnpm dlx shadcn@latest add trace code-block -c apps/web`, then
+  copy the pattern from its Base UI page,
+  `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`, into
+  `apps/web/src/components/ai-elements/`. Add any other components the
+  page lists the same way.
+- This project uses Base UI (style `base-nova`), not Radix. Use the Base UI
+  variant of docs and examples.
+- Style with Tailwind 4 and the theme tokens in
+  `packages/ui/src/styles/globals.css`. Use `cn()` from
+  `@workspace/ui/lib/utils`.
+- Call the API only through the typed client in `src/lib/api.ts`
+  (`hc<AppType>`). Never hardcode the server URL; Vite proxies `/api`.
+- Add `data-testid` to elements that e2e tests assert on.
+- UI changes need a Playwright test in `apps/e2e`, and the PR includes its
+  video and screenshots.

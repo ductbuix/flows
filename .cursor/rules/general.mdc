@@ -1,0 +1,23 @@
+---
+description: Core conventions for every change in the Flows repo
+alwaysApply: true
+---
+
+- Read `AGENTS.md` first. It holds the current app state and commands.
+- KISS and YAGNI: build what the current step needs. No speculative
+  abstractions, options or packages.
+- Use pnpm only (see `packageManager` in `package.json`). Add deps with
+  `pnpm --filter <pkg> add <dep>`; quote version specifiers in zsh.
+- TypeScript strict, ESM. Validate external input with zod. Shared types
+  live in `packages/shared`.
+- Local only: bind every server to `127.0.0.1`, never `0.0.0.0`.
+- Before calling work done, run `pnpm lint`, `pnpm typecheck`, `pnpm test`,
+  and `pnpm test:e2e` for UI or API changes. Report the results.
+- When you add, remove or rename a package, command, route or feature,
+  update the "App state" section of `AGENTS.md`. Keep `AGENTS.md` at 150
+  lines or fewer; trim old detail rather than exceed it.
+- Branch from `develop`, target PRs at `develop`. Commit in small,
+  verified steps with conventional messages. Never push or merge to
+  `main` without explicit approval for that change.
+- No person's name in code, docs or metadata. Never commit secrets or
+  `.env` files.

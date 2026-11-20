@@ -1,0 +1,11 @@
+---
+description: Workflow engine, read the design doc first
+globs: packages/engine/**
+alwaysApply: false
+---
+
+- `packages/engine` is not built yet. Before creating or changing it, read
+  `docs/design.md` (event log, task state machine, conditions,
+  retry/repeat, spawn, concurrency, sandbox) and follow it.
+- If the code needs to differ from the design, update `docs/design.md` in
+  the same change.

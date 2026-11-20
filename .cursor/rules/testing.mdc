@@ -1,0 +1,20 @@
+---
+description: Unit and e2e testing conventions with Vitest and Playwright
+globs: "**/*.test.ts, **/*.test.tsx, apps/e2e/**"
+alwaysApply: false
+---
+
+- Unit tests use Vitest, next to the code as `*.test.ts(x)`. Run all with
+  `pnpm test`, one package with `pnpm --filter <pkg> test`.
+- Server: call `app.request()`; do not start a real server.
+- Web: jsdom and Testing Library. Stub `fetch` with `vi.stubGlobal`.
+- Test behavior a user or caller sees, not internals.
+- E2E tests live in `apps/e2e/tests/*.spec.ts`. Playwright starts the
+  server (8787) and web (5173) itself and reuses them if already running.
+  Run with `pnpm test:e2e`.
+- Video and screenshots are recorded by default into
+  `apps/e2e/test-results`; attach them to UI PRs. `PW_VIDEO` and
+  `PW_SCREENSHOT` override the mode.
+- Prefer role and test id locators (`getByRole`, `getByTestId`) and
+  web-first assertions (`expect(locator).toHaveText`). No fixed sleeps.
+- After e2e runs, make sure nothing is left listening on 8787 or 5173.
