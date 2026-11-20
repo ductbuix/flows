@@ -14,10 +14,17 @@ updated: 2026-11-21
 Day one supports macOS only. Linux (`bubblewrap`) and Windows are out of
 scope for now (DES-007 ledger).
 
-- Baseline everywhere: cwd in attempt dir, scrubbed env, own process
-  group, timeout.
+- Baseline everywhere: own process group; `TMPDIR` under the attempt dir
+  so temp writes stay inside the workflow; timeout (DES-004).
 - File access: write only inside the workflow dir via `sandbox-exec`
-  (macOS).
-- Agent CLIs: use their own permission and allowed-dir flags.
-- Fallback: when the sandbox cannot be applied, run unrestricted with a
-  warning badge.
+  (macOS). Profile uses `-D WF_DIR=<realpath>` and denies other
+  `file-write*`.
+- Agent CLIs: Claude `--add-dir <workflow>`; Cursor
+  `--workspace <attempt> --add-dir <workflow>`, on top of the OS sandbox.
+- Fallback: when `sandbox-exec` cannot be applied (non-macOS, missing
+  binary, or `FLOWAPP_SANDBOX=0`), the task runs unrestricted.
+  `attempt_launched.sandboxed` records the choice; the run stays
+  `sandboxed` only while every launch was sandboxed. The run header shows
+  a warning badge when `sandboxed` is false (DES-009).
+- Events: `attempt_launched` carries optional `sandboxed`. Older events
+  without the field count as unrestricted.

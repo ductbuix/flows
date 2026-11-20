@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process"
-import { closeSync, openSync } from "node:fs"
+import { closeSync, mkdirSync, openSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { isAgentTask, type Task, type Workflow } from "@workspace/shared"
 import {
@@ -9,11 +9,13 @@ import {
 } from "./agents.ts"
 import { attemptDir, taskDir } from "./paths.ts"
 import { exitCodePath } from "./pid.ts"
+import { buildSandboxSpawn } from "./sandbox.ts"
 
 export type LaunchResult = {
   child: ChildProcess
   pid: number
   attemptRoot: string
+  sandboxed: boolean
 }
 
 export type TaskEnvPaths = {
@@ -31,7 +33,7 @@ export function instructionsAbsPath(
   return resolve(workflowRoot, task.instructions)
 }
 
-/** Build the env vars a task process receives (DES-002). */
+/** Build the env vars a task process receives (DES-002, DES-006). */
 export function buildTaskEnv(
   task: Task,
   attempt: number,
@@ -40,9 +42,14 @@ export function buildTaskEnv(
 ): NodeJS.ProcessEnv {
   const { workflowRoot, runRoot, runId } = paths
   const attemptRoot = attemptDir(runRoot, task.id, attempt)
+  const tmpDir = join(attemptRoot, "tmp")
+  mkdirSync(tmpDir, { recursive: true })
   const instructions = instructionsAbsPath(task, workflowRoot)
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    TMPDIR: tmpDir,
+    TMP: tmpDir,
+    TEMP: tmpDir,
     RUN_ID: runId,
     WF_DIR: workflowRoot,
     WF_INPUT: join(workflowRoot, "input"),
@@ -83,28 +90,32 @@ function spawnWrapped(
   cwd: string,
   env: NodeJS.ProcessEnv,
   attemptRoot: string,
-  codePath: string
+  codePath: string,
+  workflowRoot: string
 ): LaunchResult {
   const stdoutFd = openSync(join(attemptRoot, "stdout.log"), "a")
   const stderrFd = openSync(join(attemptRoot, "stderr.log"), "a")
 
   try {
-    const child = spawn(
-      "/bin/sh",
-      ["-c", wrapCommandWithExitCode(shellCommand, codePath)],
-      {
-        cwd,
-        env,
-        detached: true,
-        stdio: ["ignore", stdoutFd, stderrFd],
-      }
-    )
+    const wrapped = wrapCommandWithExitCode(shellCommand, codePath)
+    const sandboxedSpawn = buildSandboxSpawn(wrapped, workflowRoot)
+    const child = spawn(sandboxedSpawn.command, sandboxedSpawn.args, {
+      cwd,
+      env,
+      detached: true,
+      stdio: ["ignore", stdoutFd, stderrFd],
+    })
 
     if (child.pid === undefined) {
       throw new Error("failed to spawn task process")
     }
 
-    return { child, pid: child.pid, attemptRoot }
+    return {
+      child,
+      pid: child.pid,
+      attemptRoot,
+      sandboxed: sandboxedSpawn.sandboxed,
+    }
   } finally {
     closeSync(stdoutFd)
     closeSync(stderrFd)
@@ -114,6 +125,7 @@ function spawnWrapped(
 /**
  * Launch a command or agent task as a detached process in its own group.
  * Agents use cwd = attempt dir (DES-005); commands use the workflow root.
+ * Writes are limited to the workflow dir when sandbox-exec applies (DES-006).
  */
 export function launchTask(
   task: Task,
@@ -137,15 +149,26 @@ export function launchTask(
     )
     prepareAgentAttemptOut(attemptRoot, task.spawn === true)
     return spawnWrapped(
-      buildAgentShellCommand(task, instructions),
+      buildAgentShellCommand(task, instructions, {
+        workflowRoot: paths.workflowRoot,
+        attemptRoot,
+      }),
       attemptRoot,
       env,
       attemptRoot,
-      codePath
+      codePath,
+      paths.workflowRoot
     )
   }
 
-  return spawnWrapped(task.run, paths.workflowRoot, env, attemptRoot, codePath)
+  return spawnWrapped(
+    task.run,
+    paths.workflowRoot,
+    env,
+    attemptRoot,
+    codePath,
+    paths.workflowRoot
+  )
 }
 
 /** Alias used by older call sites and tests. */

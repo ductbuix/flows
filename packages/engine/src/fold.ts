@@ -25,6 +25,11 @@ export type RunState = {
   status: RunStatus
   graph: Workflow
   tasks: Record<string, TaskState>
+  /**
+   * True when every launched attempt was sandboxed. Flips to false on the
+   * first unrestricted launch (DES-006 warning badge).
+   */
+  sandboxed: boolean
   cancelRequested?: boolean
   deleted?: boolean
 }

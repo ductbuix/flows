@@ -28,6 +28,53 @@ describe("foldEvents", () => {
     expect(state?.status).toBe("running")
     expect(readyTaskIds(state!)).toEqual(["a"])
     expect(state?.tasks.a?.status).toBe("pending")
+    expect(state?.sandboxed).toBe(true)
+  })
+
+  it("clears sandboxed when an unrestricted attempt launches", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_launched",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        pid: 42,
+        sandboxed: false,
+        at: "t2",
+      },
+    ])
+    expect(state?.sandboxed).toBe(false)
+  })
+
+  it("keeps sandboxed when launches report sandboxed true", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_launched",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        pid: 42,
+        sandboxed: true,
+        at: "t2",
+      },
+    ])
+    expect(state?.sandboxed).toBe(true)
   })
 
   it("marks a task running then succeeded from attempt events", () => {
