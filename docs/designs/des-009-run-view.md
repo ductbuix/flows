@@ -12,8 +12,8 @@ updated: 2026-11-21
 
 # UI: run view
 
-Screen for BL-008. It shows what the engine is doing, live. Run actions
-(start, cancel, rerun, retry a task, delete a run) are in
+Screen for BL-008 (done). It shows what the engine is doing, live. Run
+actions (start, cancel, rerun, retry a task, delete a run) are in
 [DES-011](des-011-run-controls.md). Follow [DES-008](des-008-ui.md) for
 the UI system and [DES-012](des-012-ui-libraries.md) for libraries.
 Everything shown comes from the engine model in
@@ -138,24 +138,27 @@ with remark-gfm for `SUMMARY.md` (DES-012).
 | Log empty             | Empty in the Logs tab                                             |
 | Missing `SUMMARY.md`  | Alert in the Summary tab (the engine warns, DES-002)              |
 
-## Data contracts (proposed)
+## Data contracts
 
-Final shapes are zod schemas in `packages/shared`, written in BL-004 and
-BL-008. Names below are placeholders to agree on, not decisions.
+Zod schemas live in `packages/shared` (`api.ts`, `attempt-kind.ts`).
 
+- `GET /api/workflows`: workflow summaries from `FLOWAPP_HOME/workflows`.
 - `GET /api/workflows/:workflowId/runs`: run summaries (id, status,
-  started, finished, task counts).
-- `GET /api/runs/:runId`: the frozen graph from `graph.json` (spawned
-  tasks included, flagged) and the current state of each task, with each
-  attempt's kind and loop counters.
+  started, finished, task counts), newest first.
+- `POST /api/workflows/:workflowId/runs`: start a run (`{ runId }`). UI
+  start controls are DES-011 / BL-012; the route exists so the run view
+  and e2e can create runs.
+- `GET /api/runs/:runId`: folded `RunDetail` (graph with spawned tasks
+  flagged, task states, attempt kinds). The **server** folds with the
+  engine; the web does not import the engine (DES-015).
 - `GET /api/runs/:runId/tasks/:taskId/attempts/:n/log?stream=stdout&offset=`:
   log text from a byte offset, for the first load and for catching up.
 - `GET /api/runs/:runId/tasks/:taskId/attempts/:n/summary` and `.../out`:
   `SUMMARY.md` text and the `out/` file list.
-- `/api/ws`: the client subscribes to a run and gets engine events in
-  log order with a sequence number, plus log chunks. Event kinds come
-  from the engine (BL-004). The web folds events the same way the engine
-  does, so the view equals a replay.
+- `/api/ws`: the client sends `subscribe_run` / `subscribe_log`. The
+  server pushes `engine_event` (with `seq`), `run_snapshot` (folded
+  `RunDetail`), and `log_chunk`. Snapshots keep the view equal to a
+  replay without shipping fold code to the browser.
 
 ## Test ids
 

@@ -1,32 +1,44 @@
-import { useEffect, useState } from "react"
-import type { Health } from "@workspace/shared"
-import { api } from "@/lib/api"
+import { Link, Outlet, Route, Routes } from "react-router"
+import { HomePage } from "@/pages/HomePage"
+import { WorkflowRunsPage } from "@/pages/WorkflowRunsPage"
+import { RunViewPage } from "@/pages/run-view/RunViewPage"
+
+function AppShell() {
+  return (
+    <div className="flex min-h-svh">
+      <nav className="w-44 shrink-0 border-r p-4 text-sm">
+        <p className="mb-2 text-xs font-medium text-muted-foreground uppercase">
+          Flows
+        </p>
+        <ul className="space-y-1">
+          <li>
+            <Link
+              to="/"
+              className="text-foreground underline-offset-4 hover:underline"
+            >
+              Workflows
+            </Link>
+          </li>
+        </ul>
+      </nav>
+      <main className="min-w-0 flex-1 p-6">
+        <Outlet />
+      </main>
+    </div>
+  )
+}
 
 export function App() {
-  const [health, setHealth] = useState<Health | "down" | null>(null)
-
-  useEffect(() => {
-    api.health
-      .$get()
-      .then(async (res) => setHealth(await res.json()))
-      .catch(() => setHealth("down"))
-  }, [])
-
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-2 text-sm">
-        <h1 className="font-medium">Flows</h1>
-        <p
-          className="font-mono text-xs text-muted-foreground"
-          data-testid="health"
-        >
-          {health === null
-            ? "checking server"
-            : health === "down"
-              ? "server down"
-              : `server ok v${health.version}`}
-        </p>
-      </div>
-    </div>
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<HomePage />} />
+        <Route path="workflows/:workflowId" element={<WorkflowRunsPage />} />
+        <Route
+          path="workflows/:workflowId/runs/:runId"
+          element={<RunViewPage />}
+        />
+      </Route>
+    </Routes>
   )
 }

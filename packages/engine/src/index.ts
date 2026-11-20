@@ -18,5 +18,12 @@ export {
   type AttemptState,
 } from "./fold.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
-export { resolveAppHome } from "./paths.ts"
+export {
+  resolveAppHome,
+  appDbPath,
+  workflowDir,
+  runDir,
+  taskDir,
+  attemptDir,
+} from "./paths.ts"
 export { loadWorkflowFile, assertValidGraph } from "./workflow.ts"
