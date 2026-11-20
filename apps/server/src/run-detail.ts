@@ -11,7 +11,11 @@ export function buildRunDetail(
   const stored = engine.eventsWithSeq(runId)
   const ts = runTimestamps(stored.map((s) => s.event))
   const lastSeq = stored.length > 0 ? stored[stored.length - 1]!.seq : 0
-  return toRunDetail(state, { ...ts, lastSeq })
+  return toRunDetail(state, {
+    startedAt: ts.startedAt,
+    finishedAt: state.status === "running" ? undefined : ts.finishedAt,
+    lastSeq,
+  })
 }
 
 export function buildRunSummaries(
@@ -20,6 +24,9 @@ export function buildRunSummaries(
 ): RunSummary[] {
   return engine.listRunsForWorkflow(workflowId).map((state) => {
     const ts = runTimestamps(engine.events(state.runId))
-    return toRunSummary(state, ts)
+    return toRunSummary(state, {
+      startedAt: ts.startedAt,
+      finishedAt: state.status === "running" ? undefined : ts.finishedAt,
+    })
   })
 }

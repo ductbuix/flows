@@ -45,6 +45,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Approval gates with `approval: true`              | a human can hold a task; events make it survive restarts | DES-003      |
 | 2026-11-21 | `cancelled` terminal state for tasks and runs     | cancel is not failure                                    | DES-003      |
 | 2026-11-21 | Run delete keeps events with a deleted marker     | the log stays append-only; files are removed             | DES-003      |
+| 2026-11-21 | Manual retry via `task_retry_requested` event     | reopen finished runs; UI retry is not `retry.max`        | DES-003, 011 |
 
 ## UI
 

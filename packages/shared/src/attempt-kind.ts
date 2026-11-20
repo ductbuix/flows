@@ -29,6 +29,8 @@ export type AttemptLike = {
   attempt: number
   exitCode?: number
   interrupted?: boolean
+  /** Set when attempt_started follows task_retry_requested (DES-011). */
+  manualRetry?: boolean
 }
 
 function retryMax(task: Task): number {
@@ -51,7 +53,7 @@ function succeeded(a: AttemptLike): boolean {
 
 /**
  * Derive DES-009 attempt kind from prior attempts and the task policy.
- * Manual retry is reserved for BL-012; not produced here yet.
+ * Manual retry (DES-011) wins over automatic retry/repeat labels.
  */
 export function deriveAttemptKind(
   task: Task,
@@ -67,6 +69,13 @@ export function deriveAttemptKind(
       kind: "interrupted",
       label: "Interrupted",
       ariaLabel: "Interrupted by a restart",
+    }
+  }
+  if (current.manualRetry) {
+    return {
+      kind: "manual_retry",
+      label: "Manual retry",
+      ariaLabel: "Manual retry",
     }
   }
   if (index === 0) {

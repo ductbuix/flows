@@ -52,4 +52,19 @@ describe("deriveAttemptKind", () => {
       max: 5,
     })
   })
+
+  it("labels manual retry without counting against retry.max", () => {
+    const task = command({ retry: { max: 2 } })
+    const attempts = [
+      { attempt: 1, exitCode: 1 },
+      { attempt: 2, exitCode: 1 },
+      { attempt: 3, exitCode: 1 },
+      { attempt: 4, manualRetry: true },
+    ]
+    const info = deriveAttemptKind(task, attempts, 3)
+    expect(info).toMatchObject({
+      kind: "manual_retry",
+      label: "Manual retry",
+    })
+  })
 })

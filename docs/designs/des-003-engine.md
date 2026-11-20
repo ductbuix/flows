@@ -59,7 +59,7 @@ is waiting.
    hides deleted runs from every view. If the process dies between the
    event and the removal, resume finishes the removal.
 
-## Event kinds (BL-004, BL-005, BL-006, BL-007, BL-014)
+## Event kinds (BL-004, BL-005, BL-006, BL-007, BL-012, BL-014)
 
 Schemas live in `packages/shared`. The fold and the UI use the same set.
 
@@ -82,14 +82,19 @@ Schemas live in `packages/shared`. The fold and the UI use the same set.
 | `run_cancelled`       | Run ended `cancelled`                                      |
 | `run_succeeded`       | Every task terminal and none hard-failed                   |
 | `run_failed`          | At least one hard failure (no ready work left)             |
-| `run_deleted`         | Marker before removing `runs/<runId>/`; fold hides the run |
+| `run_deleted`          | Marker before removing `runs/<runId>/`; fold hides the run |
+| `task_retry_requested` | Manual retry (DES-011): reopen run, reset task + dependants |
 
 Each launch wraps the command so it writes `exit.code` under the attempt
 dir. On resume, a dead pid with that file becomes `attempt_finished`;
 otherwise `attempt_interrupted`. With a `retry` policy, interrupt stays
 `running` and the scheduler retries (DES-004); without it, the task
 fails. A terminal task status is never overwritten (so a late
-`attempt_finished` after cancel stays `cancelled`).
+`attempt_finished` after cancel stays `cancelled`), except
+`task_retry_requested`, which resets the task and its dependants to
+`pending` and sets the run back to `running`. The next
+`attempt_started` for that task is marked `manualRetry` and does not
+count against `retry.max`.
 
 ## Concurrency
 

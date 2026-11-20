@@ -2,9 +2,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine } from "@workspace/engine"
+import { randomUUID } from "node:crypto"
 import {
   healthSchema,
   logChunkSchema,
+  okResponseSchema,
   runDetailSchema,
   runSummarySchema,
   startRunResponseSchema,
@@ -13,6 +15,8 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { existsSync } from "node:fs"
+import { runDir, workflowDir } from "@workspace/engine"
 
 const fixtureYaml = `id: api-diamond
 goal: api test fixture
@@ -84,6 +88,8 @@ describe("run API", () => {
 
     const startRes = await app.request("/api/workflows/api-diamond/runs", {
       method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: randomUUID() }),
     })
     expect(startRes.status).toBe(200)
     const { runId } = startRunResponseSchema.parse(await startRes.json())
@@ -111,6 +117,8 @@ describe("run API", () => {
 
     const startRes = await app.request("/api/workflows/api-diamond/runs", {
       method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: randomUUID() }),
     })
     const { runId } = startRunResponseSchema.parse(await startRes.json())
     const handle = engine.resumeRun(runId)!
@@ -139,4 +147,40 @@ describe("run API", () => {
     expect(res.status).toBe(404)
     engine.close()
   })
+
+  it("is idempotent on start and deletes a finished run", async () => {
+    const { engine, app, home } = testStack()
+    const requestId = randomUUID()
+    const startOnce = () =>
+      app.request("/api/workflows/api-diamond/runs", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ requestId }),
+      })
+
+    const first = startRunResponseSchema.parse(await (await startOnce()).json())
+    const second = startRunResponseSchema.parse(
+      await (await startOnce()).json()
+    )
+    expect(second.runId).toBe(first.runId)
+
+    await engine.resumeRun(first.runId)!.wait()
+
+    const delId = randomUUID()
+    const delRes = await app.request(`/api/runs/${first.runId}`, {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: delId }),
+    })
+    expect(delRes.status).toBe(200)
+    expect(okResponseSchema.parse(await delRes.json())).toEqual({ ok: true })
+    expect(
+      existsSync(runDir(workflowDir(home, "api-diamond"), first.runId))
+    ).toBe(false)
+
+    const listRes = await app.request("/api/workflows/api-diamond/runs")
+    const summaries = runSummarySchema.array().parse(await listRes.json())
+    expect(summaries.find((r) => r.id === first.runId)).toBeUndefined()
+    engine.close()
+  }, 30_000)
 })

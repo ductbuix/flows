@@ -84,7 +84,16 @@ export function toTaskViews(state: RunState): TaskView[] {
       pid: a.pid,
       exitCode: a.exitCode,
       interrupted: a.interrupted,
-      kind: deriveAttemptKind(spec!, taskState!.attempts, index),
+      kind: deriveAttemptKind(
+        spec!,
+        taskState!.attempts.map((x) => ({
+          attempt: x.attempt,
+          exitCode: x.exitCode,
+          interrupted: x.interrupted,
+          manualRetry: x.manualRetry,
+        })),
+        index
+      ),
     }))
     return {
       id,

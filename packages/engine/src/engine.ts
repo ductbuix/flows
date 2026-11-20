@@ -5,6 +5,7 @@ import { prepareRunDirs } from "./dirs.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
 import { EventLog, type StoredEvent } from "./event-log.ts"
 import { foldEvents, type RunState } from "./fold.ts"
+import { requestManualRetry } from "./manual-retry.ts"
 import { appDbPath, resolveAppHome, runDir, workflowDir } from "./paths.ts"
 import { Scheduler } from "./scheduler.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
@@ -110,6 +111,22 @@ export class Engine {
 
   cancelRun(runId: string): void {
     this.requireScheduler(runId).cancel()
+  }
+
+  /**
+   * Manual retry: reopen a finished run if needed, reset the task and
+   * dependants, then schedule a new attempt (DES-011).
+   */
+  retryTask(runId: string, taskId: string): RunHandle {
+    const state = this.fold(runId)
+    if (!state) throw new Error(`unknown run ${runId}`)
+    requestManualRetry(runId, taskId, state, (event) => this.log.append(event))
+    this.schedulers.delete(runId)
+    const workflowRoot = workflowDir(this.home, state.workflowId)
+    const root = runDir(workflowRoot, runId)
+    const scheduler = this.attachScheduler(runId, workflowRoot, root)
+    scheduler.requestTick()
+    return this.handleFor(runId, scheduler)
   }
 
   /**

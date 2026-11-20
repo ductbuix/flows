@@ -7,6 +7,8 @@ export type AttemptState = {
   pid?: number
   exitCode?: number
   interrupted?: boolean
+  /** Next attempt after task_retry_requested (DES-011). */
+  manualRetry?: boolean
 }
 
 export type TaskState = {
@@ -16,6 +18,8 @@ export type TaskState = {
   approved?: boolean
   failReason?: "rejected"
   skipReason?: "when" | "upstream_skip" | "branch"
+  /** Next attempt_started is a manual retry (DES-011). */
+  manualRetryPending?: boolean
   attempts: AttemptState[]
 }
 

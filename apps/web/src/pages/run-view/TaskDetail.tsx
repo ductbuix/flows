@@ -31,6 +31,7 @@ import {
 } from "@workspace/ui/components/empty"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
 import { AttemptKindBadge } from "./AttemptKindBadge"
+import { TaskActions } from "./TaskActions"
 import { TaskDetailSummary } from "./TaskDetailSummary"
 import { TaskDetailOutput } from "./TaskDetailOutput"
 import { useTaskLog, type LogStream } from "./useTaskLog"
@@ -59,6 +60,7 @@ export function TaskDetail({ run, task }: Props) {
 
   return (
     <Tabs defaultValue="logs" className="flex h-full flex-col gap-2">
+      <TaskActions run={run} task={task} />
       <TabsList variant="line">
         <TabsTrigger value="logs" data-testid="task-tab-logs">
           Logs

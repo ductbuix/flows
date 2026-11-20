@@ -1,16 +1,5 @@
-import { expect, test, type APIRequestContext } from "@playwright/test"
-
-const API = process.env.PW_API_BASE ?? "http://127.0.0.1:8787"
-
-async function startRun(
-  request: APIRequestContext,
-  workflowId: string
-): Promise<string> {
-  const res = await request.post(`${API}/api/workflows/${workflowId}/runs`)
-  expect(res.ok()).toBeTruthy()
-  const body = (await res.json()) as { runId: string }
-  return body.runId
-}
+import { expect, test } from "@playwright/test"
+import { startRun } from "./helpers"
 
 test.describe("run view", () => {
   test("diamond run shows live success, logs, summary, and keeps selection in graph", async ({

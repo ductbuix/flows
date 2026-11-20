@@ -1,6 +1,8 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router"
+import { Toaster } from "@workspace/ui/components/sonner"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 import "@workspace/ui/globals.css"
 import { App } from "./App.tsx"
@@ -9,9 +11,12 @@ import { ThemeProvider } from "@/components/theme-provider.tsx"
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <TooltipProvider>
+        <BrowserRouter>
+          <App />
+          <Toaster />
+        </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   </StrictMode>
 )

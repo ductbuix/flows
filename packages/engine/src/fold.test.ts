@@ -213,4 +213,83 @@ describe("foldEvents", () => {
     expect(state?.deleted).toBe(true)
     expect(state?.status).toBe("succeeded")
   })
+
+  it("manual retry reopens the run and resets dependants", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_finished",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        exitCode: 1,
+        at: "t2",
+      },
+      { type: "task_skipped", runId: "r1", taskId: "b", reason: "when", at: "t3" },
+      { type: "task_skipped", runId: "r1", taskId: "c", reason: "when", at: "t4" },
+      {
+        type: "task_skipped",
+        runId: "r1",
+        taskId: "d",
+        reason: "upstream_skip",
+        at: "t5",
+      },
+      { type: "run_failed", runId: "r1", at: "t6" },
+      { type: "task_retry_requested", runId: "r1", taskId: "a", at: "t7" },
+    ])
+    expect(state?.status).toBe("running")
+    expect(state?.cancelRequested).toBe(false)
+    expect(state?.tasks.a?.status).toBe("pending")
+    expect(state?.tasks.a?.manualRetryPending).toBe(true)
+    expect(state?.tasks.b?.status).toBe("pending")
+    expect(state?.tasks.c?.status).toBe("pending")
+    expect(state?.tasks.d?.status).toBe("pending")
+    expect(state?.tasks.a?.attempts).toHaveLength(1)
+
+    const launched = foldEvents([
+      ...(state
+        ? [
+            started(),
+            {
+              type: "attempt_started" as const,
+              runId: "r1",
+              taskId: "a",
+              attempt: 1,
+              at: "t1",
+            },
+            {
+              type: "attempt_finished" as const,
+              runId: "r1",
+              taskId: "a",
+              attempt: 1,
+              exitCode: 1,
+              at: "t2",
+            },
+            { type: "run_failed" as const, runId: "r1", at: "t3" },
+            {
+              type: "task_retry_requested" as const,
+              runId: "r1",
+              taskId: "a",
+              at: "t4",
+            },
+            {
+              type: "attempt_started" as const,
+              runId: "r1",
+              taskId: "a",
+              attempt: 2,
+              at: "t5",
+            },
+          ]
+        : []),
+    ])
+    expect(launched?.tasks.a?.manualRetryPending).toBeUndefined()
+    expect(launched?.tasks.a?.attempts[1]?.manualRetry).toBe(true)
+  })
 })

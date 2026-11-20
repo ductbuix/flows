@@ -5,6 +5,7 @@ import {
   type Workflow,
 } from "@workspace/shared"
 import type { RunState, TaskState } from "./fold.ts"
+import { applyTaskRetryRequested } from "./fold-retry.ts"
 
 const TERMINAL_TASK: ReadonlySet<string> = new Set([
   "succeeded",
@@ -88,7 +89,12 @@ export function applyEvent(
       const task = state.tasks[event.taskId]
       if (!task) return state
       setTaskStatus(task, "running")
-      task.attempts.push({ attempt: event.attempt })
+      const manualRetry = task.manualRetryPending === true
+      if (manualRetry) delete task.manualRetryPending
+      task.attempts.push({
+        attempt: event.attempt,
+        ...(manualRetry ? { manualRetry: true } : {}),
+      })
       return state
     }
     case "attempt_launched": {
@@ -188,6 +194,10 @@ export function applyEvent(
       if (!state) return state
       state.deleted = true
       return state
+    }
+    case "task_retry_requested": {
+      if (!state) return state
+      return applyTaskRetryRequested(state, event.taskId)
     }
   }
 }
