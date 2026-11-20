@@ -8,6 +8,7 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { randomUUID } from "node:crypto"
 import { createEngine } from "@workspace/engine"
 import {
   memoryFileDetailSchema,
@@ -54,6 +55,8 @@ describe("workflow lifecycle API", () => {
 
     const startRes = await app.request("/api/workflows/alpha/runs", {
       method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: randomUUID() }),
     })
     expect(startRes.status).toBe(200)
     const { runId } = (await startRes.json()) as { runId: string }
@@ -82,7 +85,9 @@ describe("workflow lifecycle API", () => {
     const list = (await runs.json()) as Array<{ id: string }>
     expect(list.map((r) => r.id)).toContain(runId)
 
-    const delRes = await app.request("/api/workflows/beta", { method: "DELETE" })
+    const delRes = await app.request("/api/workflows/beta", {
+      method: "DELETE",
+    })
     expect(delRes.status).toBe(204)
     expect(existsSync(join(home, "workflows", "beta"))).toBe(false)
     engine.close()
@@ -105,6 +110,8 @@ tasks:
 
     const startRes = await app.request("/api/workflows/slow/runs", {
       method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: randomUUID() }),
     })
     expect(startRes.status).toBe(200)
     const { runId } = (await startRes.json()) as { runId: string }
@@ -119,7 +126,9 @@ tasks:
     })
     expect(renameRes.status).toBe(409)
 
-    const delRes = await app.request("/api/workflows/slow", { method: "DELETE" })
+    const delRes = await app.request("/api/workflows/slow", {
+      method: "DELETE",
+    })
     expect(delRes.status).toBe(409)
 
     engine.cancelRun(runId)
@@ -177,18 +186,18 @@ tasks:
       }
     )
     expect(renameRes.status).toBe(200)
-    expect(existsSync(join(home, "workflows", "mem-wf", "memory", "style.md"))).toBe(
-      false
-    )
+    expect(
+      existsSync(join(home, "workflows", "mem-wf", "memory", "style.md"))
+    ).toBe(false)
     expect(readFileSync(yamlPath, "utf8")).toContain("memory/voice.md")
 
     const delRes = await app.request("/api/workflows/mem-wf/memory/voice.md", {
       method: "DELETE",
     })
     expect(delRes.status).toBe(200)
-    expect(existsSync(join(home, "workflows", "mem-wf", "memory", "voice.md"))).toBe(
-      false
-    )
+    expect(
+      existsSync(join(home, "workflows", "mem-wf", "memory", "voice.md"))
+    ).toBe(false)
     engine.close()
   })
 })
