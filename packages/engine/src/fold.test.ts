@@ -121,4 +121,96 @@ describe("foldEvents", () => {
     expect(state?.tasks.a?.attempts[0]?.interrupted).toBe(true)
     expect(readyTaskIds(state!)).toEqual([])
   })
+
+  it("moves a gated task through approval and reject", () => {
+    const gated: Workflow = {
+      id: "g",
+      tasks: [
+        { id: "a", kind: "command", run: "echo a", needs: [], approval: true },
+      ],
+    }
+    const base = {
+      type: "run_started" as const,
+      runId: "r1",
+      workflowId: "g",
+      graph: gated,
+      at: "t0",
+    }
+    const waiting = foldEvents([
+      base,
+      { type: "approval_requested", runId: "r1", taskId: "a", at: "t1" },
+    ])
+    expect(waiting?.tasks.a?.status).toBe("awaiting_approval")
+
+    const approved = foldEvents([
+      base,
+      { type: "approval_requested", runId: "r1", taskId: "a", at: "t1" },
+      { type: "task_approved", runId: "r1", taskId: "a", at: "t2" },
+    ])
+    expect(approved?.tasks.a?.approved).toBe(true)
+    expect(approved?.tasks.a?.status).toBe("awaiting_approval")
+
+    const rejected = foldEvents([
+      base,
+      { type: "approval_requested", runId: "r1", taskId: "a", at: "t1" },
+      {
+        type: "task_rejected",
+        runId: "r1",
+        taskId: "a",
+        reason: "rejected",
+        at: "t2",
+      },
+    ])
+    expect(rejected?.tasks.a?.status).toBe("failed")
+    expect(rejected?.tasks.a?.failReason).toBe("rejected")
+  })
+
+  it("cancels unfinished tasks and keeps cancelled after attempt exit", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_launched",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        pid: 1,
+        at: "t2",
+      },
+      { type: "cancel_requested", runId: "r1", at: "t3" },
+      { type: "task_cancelled", runId: "r1", taskId: "a", at: "t4" },
+      { type: "task_cancelled", runId: "r1", taskId: "b", at: "t5" },
+      { type: "task_cancelled", runId: "r1", taskId: "c", at: "t6" },
+      { type: "task_cancelled", runId: "r1", taskId: "d", at: "t7" },
+      { type: "run_cancelled", runId: "r1", at: "t8" },
+      {
+        type: "attempt_finished",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        exitCode: 1,
+        at: "t9",
+      },
+    ])
+    expect(state?.status).toBe("cancelled")
+    expect(state?.tasks.a?.status).toBe("cancelled")
+    expect(state?.tasks.a?.attempts[0]?.exitCode).toBe(1)
+    expect(state?.deleted).toBeUndefined()
+  })
+
+  it("marks a run deleted", () => {
+    const state = foldEvents([
+      started(),
+      { type: "run_succeeded", runId: "r1", at: "t1" },
+      { type: "run_deleted", runId: "r1", at: "t2" },
+    ])
+    expect(state?.deleted).toBe(true)
+    expect(state?.status).toBe("succeeded")
+  })
 })

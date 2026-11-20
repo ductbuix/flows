@@ -25,4 +25,12 @@ describe("workflowSchema", () => {
       }).success
     ).toBe(false)
   })
+
+  it("accepts approval: true on a command task", () => {
+    const workflow = workflowSchema.parse({
+      id: "gated",
+      tasks: [{ id: "a", kind: "command", run: "echo a", approval: true }],
+    })
+    expect(workflow.tasks[0]?.approval).toBe(true)
+  })
 })

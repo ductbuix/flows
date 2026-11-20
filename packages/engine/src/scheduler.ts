@@ -1,15 +1,15 @@
 import type { EngineEvent, Workflow } from "@workspace/shared"
-import { watchChild } from "./attempt-watch.ts"
+import { cancelRun, finishCancel } from "./cancel.ts"
 import type { EventLog } from "./event-log.ts"
-import { prepareAttemptDirs } from "./dirs.ts"
 import {
+  approvedAwaitingIds,
   foldEvents,
   hasOpenAttempts,
   readyTaskIds,
   type RunState,
 } from "./fold.ts"
+import { launchReadyTasks } from "./launch.ts"
 import { resumeOpenAttempts } from "./resume.ts"
-import { launchCommand } from "./runner.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -24,9 +24,8 @@ export type SchedulerOptions = {
 }
 
 /**
- * Drives one run: ready tasks from needs, launch command processes in
- * parallel, append-then-act for every side effect. Resume re-attaches or
- * interrupts open attempts (DES-003).
+ * Drives one run: ready tasks from needs, approval gates, launch command
+ * processes, cancel. Resume re-attaches or interrupts (DES-003).
  */
 export class Scheduler {
   private readonly log: EventLog
@@ -76,6 +75,58 @@ export class Scheduler {
     resumeOpenAttempts(this.watchHost(), (event) => this.append(event))
   }
 
+  /** Finish cancel if cancel_requested was logged without run_cancelled. */
+  resumeCancelIfNeeded(): void {
+    const state = this.state()
+    if (state.status !== "running" || !state.cancelRequested) return
+    finishCancel(this.cancelHost())
+  }
+
+  approve(taskId: string): void {
+    const state = this.state()
+    const task = state.tasks[taskId]
+    if (!task || task.status !== "awaiting_approval") {
+      throw new Error(`task ${taskId} is not awaiting approval`)
+    }
+    if (task.approved) return
+    this.append({
+      type: "task_approved",
+      runId: this.runId,
+      taskId,
+      at: now(),
+    })
+    this.requestTick()
+  }
+
+  reject(taskId: string): void {
+    const state = this.state()
+    const task = state.tasks[taskId]
+    if (!task || task.status !== "awaiting_approval") {
+      throw new Error(`task ${taskId} is not awaiting approval`)
+    }
+    this.append({
+      type: "task_rejected",
+      runId: this.runId,
+      taskId,
+      reason: "rejected",
+      at: now(),
+    })
+    this.requestTick()
+  }
+
+  cancel(): void {
+    cancelRun(this.cancelHost())
+  }
+
+  private cancelHost() {
+    return {
+      runId: this.runId,
+      state: () => this.state(),
+      append: (event: EngineEvent) => this.append(event),
+      finish: (state: RunState) => this.finish(state),
+    }
+  }
+
   private watchHost() {
     return {
       runId: this.runId,
@@ -107,49 +158,24 @@ export class Scheduler {
     if (this.settled) return
 
     const state = this.state()
-    if (state.status !== "running") {
-      this.finish(state)
+    if (state.status !== "running" || state.cancelRequested) {
+      if (state.cancelRequested && state.status === "running") {
+        finishCancel(this.cancelHost())
+      } else {
+        this.finish(state)
+      }
       return
     }
 
-    const ready = readyTaskIds(state)
-    const byId = new Map(this.graph.tasks.map((t) => [t.id, t]))
-
-    for (const taskId of ready) {
-      const task = byId.get(taskId)
-      if (!task || task.kind !== "command") continue
-
-      const attempt = (state.tasks[taskId]?.attempts.length ?? 0) + 1
-      this.append({
-        type: "attempt_started",
-        runId: this.runId,
-        taskId,
-        attempt,
-        at: now(),
-      })
-      prepareAttemptDirs(this.runRoot, taskId, attempt)
-
-      const { child, pid } = launchCommand(
-        task,
-        attempt,
-        {
-          workflowRoot: this.workflowRoot,
-          runRoot: this.runRoot,
-          runId: this.runId,
-        },
-        this.graph
-      )
-
-      this.append({
-        type: "attempt_launched",
-        runId: this.runId,
-        taskId,
-        attempt,
-        pid,
-        at: now(),
-      })
-      watchChild(this.watchHost(), taskId, attempt, child)
-    }
+    launchReadyTasks({
+      runId: this.runId,
+      runRoot: this.runRoot,
+      workflowRoot: this.workflowRoot,
+      graph: this.graph,
+      state: () => this.state(),
+      append: (event) => this.append(event),
+      watchHost: () => this.watchHost(),
+    })
 
     const after = this.state()
     if (after.status !== "running") {
@@ -157,7 +183,15 @@ export class Scheduler {
       return
     }
 
-    if (!hasOpenAttempts(after) && readyTaskIds(after).length === 0) {
+    const waiting = Object.values(after.tasks).some(
+      (t) => t.status === "awaiting_approval" && !t.approved
+    )
+    if (
+      !hasOpenAttempts(after) &&
+      readyTaskIds(after).length === 0 &&
+      approvedAwaitingIds(after).length === 0 &&
+      !waiting
+    ) {
       const failed = Object.values(after.tasks).some(
         (t) => t.status === "failed"
       )

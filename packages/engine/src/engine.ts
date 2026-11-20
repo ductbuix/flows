@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
 import type { EngineEvent, Workflow } from "@workspace/shared"
 import { prepareRunDirs } from "./dirs.ts"
+import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
 import { EventLog } from "./event-log.ts"
 import { foldEvents, type RunState } from "./fold.ts"
 import { appDbPath, resolveAppHome, runDir, workflowDir } from "./paths.ts"
@@ -49,6 +50,16 @@ export class Engine {
     return foldEvents(this.events(runId))
   }
 
+  /** Non-deleted runs in log order (DES-003). */
+  listRuns(): RunState[] {
+    const out: RunState[] = []
+    for (const runId of this.log.listRunIds()) {
+      const state = this.fold(runId)
+      if (state && !state.deleted) out.push(state)
+    }
+    return out
+  }
+
   /** Start a run from workflow.yaml under workflowDir. */
   startRun(options: StartRunOptions): RunHandle {
     const graph = this.loadWorkflow(options.workflowDir)
@@ -74,11 +85,36 @@ export class Engine {
     return this.handleFor(runId, scheduler)
   }
 
+  approveTask(runId: string, taskId: string): void {
+    this.requireScheduler(runId).approve(taskId)
+  }
+
+  rejectTask(runId: string, taskId: string): void {
+    this.requireScheduler(runId).reject(taskId)
+  }
+
+  cancelRun(runId: string): void {
+    this.requireScheduler(runId).cancel()
+  }
+
+  /**
+   * Append run_deleted then remove runs/<runId>/. Blocked while live.
+   */
+  deleteRun(runId: string): void {
+    const state = this.fold(runId)
+    if (!state) throw new Error(`unknown run ${runId}`)
+    const root = runDir(workflowDir(this.home, state.workflowId), runId)
+    deleteRunFiles(root, (event) => this.log.append(event), state)
+    this.schedulers.delete(runId)
+  }
+
   /**
    * Resume every run still `running` in the log: re-attach live pids or
    * record interrupted, then continue scheduling (DES-003 / BL-005).
+   * Also finishes interrupted run deletions.
    */
   resumeAll(): RunHandle[] {
+    this.finishPendingRemovals()
     const handles: RunHandle[] = []
     for (const runId of this.log.listRunIds()) {
       const handle = this.resumeRun(runId)
@@ -89,7 +125,7 @@ export class Engine {
 
   /**
    * Resume one run if it is still running. Returns null if the run is
-   * missing or already terminal.
+   * missing, deleted, or already terminal.
    */
   resumeRun(runId: string): RunHandle | null {
     const existing = this.schedulers.get(runId)
@@ -98,7 +134,7 @@ export class Engine {
     }
 
     const state = this.fold(runId)
-    if (!state || state.status !== "running") return null
+    if (!state || state.deleted || state.status !== "running") return null
 
     const workflowRoot = workflowDir(this.home, state.workflowId)
     const runRoot = runDir(workflowRoot, runId)
@@ -108,6 +144,10 @@ export class Engine {
       runRoot,
       state.graph
     )
+    scheduler.resumeCancelIfNeeded()
+    if (scheduler.state().status !== "running") {
+      return this.handleFor(runId, scheduler)
+    }
     scheduler.resumeOpenAttempts()
     scheduler.requestTick()
     return this.handleFor(runId, scheduler)
@@ -115,6 +155,25 @@ export class Engine {
 
   close(): void {
     this.log.close()
+  }
+
+  private finishPendingRemovals(): void {
+    for (const runId of this.log.listRunIds()) {
+      const state = this.fold(runId)
+      if (!state?.deleted) continue
+      const root = runDir(workflowDir(this.home, state.workflowId), runId)
+      finishRunRemoval(root)
+    }
+  }
+
+  private requireScheduler(runId: string): Scheduler {
+    const existing = this.schedulers.get(runId)
+    if (existing) return existing
+    const handle = this.resumeRun(runId)
+    if (!handle) throw new Error(`run ${runId} is not live`)
+    const scheduler = this.schedulers.get(runId)
+    if (!scheduler) throw new Error(`run ${runId} is not live`)
+    return scheduler
   }
 
   private attachScheduler(

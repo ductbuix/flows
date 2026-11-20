@@ -3,12 +3,19 @@ import { workflowSchema } from "./workflow.ts"
 
 export const taskStatusSchema = z.enum([
   "pending",
+  "awaiting_approval",
   "running",
   "succeeded",
   "failed",
+  "cancelled",
 ])
 
-export const runStatusSchema = z.enum(["running", "succeeded", "failed"])
+export const runStatusSchema = z.enum([
+  "running",
+  "succeeded",
+  "failed",
+  "cancelled",
+])
 
 export type TaskStatus = z.infer<typeof taskStatusSchema>
 export type RunStatus = z.infer<typeof runStatusSchema>
@@ -56,6 +63,41 @@ export const attemptInterruptedEventSchema = z.object({
   attempt: z.number().int().positive(),
 })
 
+export const approvalRequestedEventSchema = z.object({
+  type: z.literal("approval_requested"),
+  ...eventBase,
+  taskId: z.string().min(1),
+})
+
+export const taskApprovedEventSchema = z.object({
+  type: z.literal("task_approved"),
+  ...eventBase,
+  taskId: z.string().min(1),
+})
+
+export const taskRejectedEventSchema = z.object({
+  type: z.literal("task_rejected"),
+  ...eventBase,
+  taskId: z.string().min(1),
+  reason: z.literal("rejected"),
+})
+
+export const cancelRequestedEventSchema = z.object({
+  type: z.literal("cancel_requested"),
+  ...eventBase,
+})
+
+export const taskCancelledEventSchema = z.object({
+  type: z.literal("task_cancelled"),
+  ...eventBase,
+  taskId: z.string().min(1),
+})
+
+export const runCancelledEventSchema = z.object({
+  type: z.literal("run_cancelled"),
+  ...eventBase,
+})
+
 export const runSucceededEventSchema = z.object({
   type: z.literal("run_succeeded"),
   ...eventBase,
@@ -66,14 +108,27 @@ export const runFailedEventSchema = z.object({
   ...eventBase,
 })
 
+/** Marker: run files removed; fold hides the run (DES-003). */
+export const runDeletedEventSchema = z.object({
+  type: z.literal("run_deleted"),
+  ...eventBase,
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   attemptStartedEventSchema,
   attemptLaunchedEventSchema,
   attemptFinishedEventSchema,
   attemptInterruptedEventSchema,
+  approvalRequestedEventSchema,
+  taskApprovedEventSchema,
+  taskRejectedEventSchema,
+  cancelRequestedEventSchema,
+  taskCancelledEventSchema,
+  runCancelledEventSchema,
   runSucceededEventSchema,
   runFailedEventSchema,
+  runDeletedEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>

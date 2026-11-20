@@ -15,6 +15,9 @@ export type AttemptState = {
 export type TaskState = {
   id: string
   status: TaskStatus
+  /** Set after task_approved; gate only asks once (DES-003). */
+  approved?: boolean
+  failReason?: "rejected"
   attempts: AttemptState[]
 }
 
@@ -24,7 +27,15 @@ export type RunState = {
   status: RunStatus
   graph: Workflow
   tasks: Record<string, TaskState>
+  cancelRequested?: boolean
+  deleted?: boolean
 }
+
+const TERMINAL_TASK: ReadonlySet<TaskStatus> = new Set([
+  "succeeded",
+  "failed",
+  "cancelled",
+])
 
 function emptyTasks(graph: Workflow): Record<string, TaskState> {
   const tasks: Record<string, TaskState> = {}
@@ -32,6 +43,11 @@ function emptyTasks(graph: Workflow): Record<string, TaskState> {
     tasks[task.id] = { id: task.id, status: "pending", attempts: [] }
   }
   return tasks
+}
+
+function setTaskStatus(task: TaskState, status: TaskStatus): void {
+  if (TERMINAL_TASK.has(task.status)) return
+  task.status = status
 }
 
 /** Fold engine events into run state. Pure; no I/O. */
@@ -50,11 +66,32 @@ export function foldEvents(events: EngineEvent[]): RunState | null {
         }
         break
       }
+      case "approval_requested": {
+        if (!state) break
+        const task = state.tasks[event.taskId]
+        if (task) setTaskStatus(task, "awaiting_approval")
+        break
+      }
+      case "task_approved": {
+        if (!state) break
+        const task = state.tasks[event.taskId]
+        if (task) task.approved = true
+        break
+      }
+      case "task_rejected": {
+        if (!state) break
+        const task = state.tasks[event.taskId]
+        if (task && !TERMINAL_TASK.has(task.status)) {
+          task.status = "failed"
+          task.failReason = "rejected"
+        }
+        break
+      }
       case "attempt_started": {
         if (!state) break
         const task = state.tasks[event.taskId]
         if (!task) break
-        task.status = "running"
+        setTaskStatus(task, "running")
         task.attempts.push({ attempt: event.attempt })
         break
       }
@@ -71,7 +108,7 @@ export function foldEvents(events: EngineEvent[]): RunState | null {
         const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
         if (attempt) attempt.exitCode = event.exitCode
         if (task) {
-          task.status = event.exitCode === 0 ? "succeeded" : "failed"
+          setTaskStatus(task, event.exitCode === 0 ? "succeeded" : "failed")
         }
         break
       }
@@ -81,7 +118,25 @@ export function foldEvents(events: EngineEvent[]): RunState | null {
         const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
         if (attempt) attempt.interrupted = true
         // Until BL-006 retry policy: interrupt ends the task as failed.
-        if (task) task.status = "failed"
+        if (task) setTaskStatus(task, "failed")
+        break
+      }
+      case "cancel_requested": {
+        if (!state) break
+        state.cancelRequested = true
+        break
+      }
+      case "task_cancelled": {
+        if (!state) break
+        const task = state.tasks[event.taskId]
+        if (task && !TERMINAL_TASK.has(task.status)) {
+          task.status = "cancelled"
+        }
+        break
+      }
+      case "run_cancelled": {
+        if (!state) break
+        state.status = "cancelled"
         break
       }
       case "run_succeeded": {
@@ -92,6 +147,11 @@ export function foldEvents(events: EngineEvent[]): RunState | null {
       case "run_failed": {
         if (!state) break
         state.status = "failed"
+        break
+      }
+      case "run_deleted": {
+        if (!state) break
+        state.deleted = true
         break
       }
     }
@@ -112,6 +172,16 @@ export function readyTaskIds(state: RunState): string[] {
     if (ok) ready.push(task.id)
   }
   return ready
+}
+
+/**
+ * Approved gated tasks waiting to launch. Holds no concurrency slot
+ * until attempt_started (DES-003).
+ */
+export function approvedAwaitingIds(state: RunState): string[] {
+  return Object.values(state.tasks)
+    .filter((t) => t.status === "awaiting_approval" && t.approved)
+    .map((t) => t.id)
 }
 
 /** Attempt started or launched with no finish and no interrupt. */
@@ -138,4 +208,12 @@ export function openAttempts(
     }
   }
   return out
+}
+
+export function isUnfinishedTask(status: TaskStatus): boolean {
+  return (
+    status === "pending" ||
+    status === "awaiting_approval" ||
+    status === "running"
+  )
 }

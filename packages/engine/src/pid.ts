@@ -12,6 +12,22 @@ export function isPidAlive(pid: number): boolean {
   }
 }
 
+/** End a detached task's process group (negative pid). */
+export function killProcessGroup(
+  pid: number,
+  signal: NodeJS.Signals = "SIGTERM"
+): void {
+  try {
+    process.kill(-pid, signal)
+  } catch {
+    try {
+      process.kill(pid, signal)
+    } catch {
+      // already gone
+    }
+  }
+}
+
 export function exitCodePath(
   runRoot: string,
   taskId: string,

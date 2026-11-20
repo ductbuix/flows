@@ -6,6 +6,8 @@ export const commandTaskSchema = z.object({
   kind: z.literal("command"),
   run: z.string().min(1),
   needs: z.array(z.string().min(1)).default([]),
+  /** Gate before the first launch; retries do not ask again (DES-003). */
+  approval: z.boolean().optional(),
 })
 
 export const workflowLimitsSchema = z.object({
