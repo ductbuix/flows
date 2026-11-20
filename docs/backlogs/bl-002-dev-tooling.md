@@ -20,7 +20,7 @@ Done in commits `eeb33e8`, `a9428ae`, `545754a`.
 - `.cursor/hooks.json`: prettier and `eslint --fix` after each agent edit.
 - `pnpm lint`, `lint:fix`, `format`, `format:check`, `test`, `test:e2e`.
 - `apps/e2e` Playwright package with video and screenshots on.
-- `AGENTS.md` (max 150 lines) and `.cursor/rules/*.mdc`.
+- `AGENTS.md` (under 100 lines) and `.cursor/rules/*.mdc`.
 
 ## Done when
 

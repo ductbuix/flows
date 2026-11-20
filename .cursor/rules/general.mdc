@@ -19,8 +19,8 @@ alwaysApply: true
 - Before calling work done, run `pnpm lint`, `pnpm typecheck`, `pnpm test`,
   and `pnpm test:e2e` for UI or API changes. Report the results.
 - When you add, remove or rename a package, command, route or feature,
-  update the "App state" section of `AGENTS.md`. Keep `AGENTS.md` at 150
-  lines or fewer; trim old detail rather than exceed it.
+  update the layout in `AGENTS.md`. Keep `AGENTS.md` under 100 lines;
+  trim old detail rather than exceed it.
 - Branch from `develop`, target PRs at `develop`. Commit in small,
   verified steps with conventional messages. Never push or merge to
   `main` without explicit approval for that change.
