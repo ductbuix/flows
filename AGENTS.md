@@ -20,22 +20,24 @@ Schema and writing rules: `docs/README.md`.
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`).
   Dev on `127.0.0.1:5173`, proxies `/api` to the server.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
-  GET/PUT (hash, 409), promote, run REST, log/summary/out, websocket
-  run snapshots, log chunks and workflow file watches.
+  create/rename/delete (409 while live), GET/PUT (hash, 409), memory
+  CRUD, promote, run REST, log/summary/out, websocket run snapshots,
+  log chunks and workflow file watches.
 - `packages/engine`: SQLite event log, fold, scheduler, command and agent
   tasks (Claude Code / Cursor CLI), spawn into `graph.json`, resume,
   approval, cancel, conditions (exit / expr / agent judge), retry,
-  repeat, `agents` limits.
+  repeat, `agents` limits, workflow id rebind on rename.
 - `packages/shared`: zod schemas for API, websocket, workflow, events and
   YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/web`: workflow list, graph editor (React Flow + CodeMirror YAML),
-  run list, run view (list/graph, attempts, logs, SUMMARY.md, promote).
+- `apps/web`: workflow list (create/rename/delete), graph editor (React
+  Flow + CodeMirror YAML), memory/*.md editor, run list, run view
+  (list/graph, attempts, logs, SUMMARY.md, promote).
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.
 
-Not built yet: run controls (BL-012), workflow lifecycle (BL-013).
+Not built yet: run controls (BL-012).
 
 ## Commands
 

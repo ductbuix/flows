@@ -10,6 +10,7 @@ import {
   setRetryMax,
   setTaskNeeds,
 } from "./workflow-yaml-edit.ts"
+import { replaceMemoryRef } from "./workflow-yaml-memory.ts"
 import { parseWorkflowYaml } from "./workflow-yaml.ts"
 
 const fixture = `# header: research workflow
@@ -92,5 +93,19 @@ describe("workflow yaml Document edits (DES-013)", () => {
     expect(workflow).toBeNull()
     expect(errors.length).toBeGreaterThan(0)
     expect(errors.some((e) => e.from >= 0 && e.to > e.from)).toBe(true)
+  })
+
+  it("replaceMemoryRef updates task memory paths", () => {
+    const text = `id: x
+tasks:
+  - id: plan
+    kind: agent
+    cli: claude
+    instructions: tasks/plan.md
+    memory: [memory/style.md]
+`
+    const next = replaceMemoryRef(text, "memory/style.md", "memory/voice.md")
+    expect(next).toContain("memory/voice.md")
+    expect(next).not.toContain("memory/style.md")
   })
 })

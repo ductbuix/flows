@@ -34,6 +34,9 @@ function mockFetch(handlers: Record<string, unknown>) {
           : input instanceof URL
             ? input.href
             : input.url
+      if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
+        return Response.json(handlers.runs ?? [])
+      }
       if (url.includes("/api/workflows") && !url.includes("/runs")) {
         return Response.json(handlers.workflows ?? [])
       }

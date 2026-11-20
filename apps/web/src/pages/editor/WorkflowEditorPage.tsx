@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router"
+import { useEffect, useState } from "react"
+import { Link, useNavigate, useParams } from "react-router"
 import { Button } from "@workspace/ui/components/button"
 import {
   ResizableHandle,
@@ -11,6 +12,11 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
+import { runSummarySchema } from "@workspace/shared"
+import { api } from "@/lib/api"
+import { DeleteWorkflowDialog } from "@/pages/DeleteWorkflowDialog"
+import { RenameWorkflowDialog } from "@/pages/RenameWorkflowDialog"
+import { WorkflowActions } from "@/pages/WorkflowActions"
 import { ConflictDialog } from "./ConflictDialog"
 import { EditorGraph } from "./EditorGraph"
 import { Inspector } from "./Inspector"
@@ -19,8 +25,27 @@ import { useWorkflowEditor } from "./useWorkflowEditor"
 
 export function WorkflowEditorPage() {
   const { workflowId } = useParams() as { workflowId: string }
+  const navigate = useNavigate()
   const editor = useWorkflowEditor(workflowId)
   const { state } = editor
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [runCount, setRunCount] = useState(0)
+
+  useEffect(() => {
+    let alive = true
+    void (async () => {
+      const res = await api.workflows[":workflowId"].runs.$get({
+        param: { workflowId },
+      })
+      if (!res.ok || !alive) return
+      const runs = runSummarySchema.array().parse(await res.json())
+      if (alive) setRunCount(runs.length)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [workflowId])
 
   if (state.loading) {
     return (
@@ -55,6 +80,11 @@ export function WorkflowEditorPage() {
         >
           Save
         </Button>
+        <WorkflowActions
+          workflowId={workflowId}
+          onRename={() => setRenameOpen(true)}
+          onDelete={() => setDeleteOpen(true)}
+        />
         <Link
           className="ml-auto text-xs text-muted-foreground underline-offset-4 hover:underline"
           to={`/workflows/${workflowId}/runs`}
@@ -97,6 +127,7 @@ export function WorkflowEditorPage() {
         <ResizablePanel defaultSize="42%" minSize="20%">
           {state.workflow ? (
             <Inspector
+              workflowId={workflowId}
               workflow={state.workflow}
               selectedTaskId={state.selectedTaskId}
               onChangeGoal={editor.changeGoal}
@@ -119,6 +150,19 @@ export function WorkflowEditorPage() {
         onReload={editor.reloadConflict}
         onKeep={editor.keepConflict}
         onShowDiff={() => editor.setShowDiff(!state.showDiff)}
+      />
+      <RenameWorkflowDialog
+        open={renameOpen}
+        workflowId={workflowId}
+        onOpenChange={setRenameOpen}
+        onRenamed={(newId) => navigate(`/workflows/${newId}`)}
+      />
+      <DeleteWorkflowDialog
+        open={deleteOpen}
+        workflowId={workflowId}
+        runCount={runCount}
+        onOpenChange={setDeleteOpen}
+        onDeleted={() => navigate("/")}
       />
     </div>
   )

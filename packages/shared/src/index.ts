@@ -100,6 +100,28 @@ export {
   type WsServerMessage,
 } from "./api.ts"
 export {
+  workflowIdSchema,
+  createWorkflowBodySchema,
+  renameWorkflowBodySchema,
+  renameWorkflowResponseSchema,
+  memoryFileNameSchema,
+  memoryFileSummarySchema,
+  memoryListSchema,
+  memoryFileDetailSchema,
+  putMemoryBodySchema,
+  renameMemoryBodySchema,
+  memoryConflictSchema,
+  type CreateWorkflowBody,
+  type RenameWorkflowBody,
+  type RenameWorkflowResponse,
+  type MemoryFileSummary,
+  type MemoryList,
+  type MemoryFileDetail,
+  type PutMemoryBody,
+  type RenameMemoryBody,
+  type MemoryConflict,
+} from "./api-lifecycle.ts"
+export {
   parseWorkflowYaml,
   stripSpawnMeta,
   taskIndex,
@@ -120,4 +142,5 @@ export {
   setWorkflowField,
   upsertTask,
 } from "./workflow-yaml-edit.ts"
+export { replaceMemoryRef } from "./workflow-yaml-memory.ts"
 export { applyWorkflowDiff } from "./workflow-yaml-diff.ts"

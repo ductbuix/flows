@@ -80,6 +80,43 @@ export class EventLog {
     return rows.map((row) => row.run_id)
   }
 
+  /**
+   * Rewrite workflowId (and graph.id on run_started) after a dir rename
+   * so past runs list under the new id (DES-013).
+   */
+  rebindWorkflowId(fromId: string, toId: string): void {
+    if (fromId === toId) return
+    const rows = this.db
+      .prepare(`SELECT seq, payload FROM events`)
+      .all() as Array<{ seq: number | bigint; payload: string }>
+    const update = this.db.prepare(
+      `UPDATE events SET payload = ? WHERE seq = ?`
+    )
+    this.db.exec("BEGIN")
+    try {
+      for (const row of rows) {
+        const event = JSON.parse(row.payload) as Record<string, unknown>
+        let changed = false
+        if (event.workflowId === fromId) {
+          event.workflowId = toId
+          changed = true
+        }
+        const graph = event.graph as { id?: string } | undefined
+        if (graph && graph.id === fromId) {
+          graph.id = toId
+          changed = true
+        }
+        if (!changed) continue
+        const parsed = engineEventSchema.parse(event)
+        update.run(JSON.stringify(parsed), Number(row.seq))
+      }
+      this.db.exec("COMMIT")
+    } catch (error) {
+      this.db.exec("ROLLBACK")
+      throw error
+    }
+  }
+
   close(): void {
     this.db.close()
   }

@@ -108,18 +108,20 @@ Test plan (unit tests on the module that applies edits):
 | Memory file list           | Item, Dropdown Menu                   |
 | Results                    | Toast                                 |
 
-## Data contracts (proposed)
+## Data contracts
 
-Placeholders; final zod schemas in `packages/shared`.
+Zod schemas in `packages/shared` (`api-lifecycle.ts`).
 
-- `POST /api/workflows` with `{ id, goal }`
-- `POST /api/workflows/:workflowId/rename` with `{ newId }`; `409` while live
+- `POST /api/workflows` with `{ id, goal }` → `201`
+- `POST /api/workflows/:workflowId/rename` with `{ newId }`; `409` while
+  live or if the new id exists
 - `DELETE /api/workflows/:workflowId`; `409` while live
 - `PUT /api/workflows/:workflowId` with `{ yaml, baseHash }`; `409` on a
   changed disk file
-- `GET`, `PUT`, `DELETE /api/workflows/:workflowId/memory/:file`, and
-  `POST .../memory/:file/rename`
-- Websocket: file changed `{ workflowId, path, hash }`
+- `GET /api/workflows/:workflowId/memory`, `GET`/`PUT`/`DELETE`
+  `.../memory/:file`, and `POST .../memory/:file/rename` with
+  `{ newName, updateReferences? }`
+- Websocket: file changed `{ workflowId, path, hash, content }`
 
 ## Test ids
 

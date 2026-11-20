@@ -1,0 +1,102 @@
+import { expect, test } from "@playwright/test"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
+
+const HOME = process.env.FLOWAPP_HOME!
+const API = process.env.PW_API_BASE!
+
+test.describe("workflow lifecycle", () => {
+  test("create, rename and delete a workflow", async ({ page, request }) => {
+    test.setTimeout(60_000)
+    await page.goto("/")
+    await page.getByTestId("workflow-create-open").click()
+    await expect(page.getByTestId("workflow-create")).toBeVisible()
+    await page.getByTestId("create-id-input").fill("life-e2e")
+    await page.getByTestId("create-goal-input").fill("lifecycle e2e")
+    await page.getByTestId("create-submit").click()
+
+    await expect(page).toHaveURL(/\/workflows\/life-e2e/)
+    await expect(page.getByTestId("graph-canvas")).toBeVisible({
+      timeout: 15_000,
+    })
+    expect(existsSync(join(HOME, "workflows", "life-e2e", "workflow.yaml"))).toBe(
+      true
+    )
+
+    // Seed a finished run so rename can rebind history.
+    const startRes = await request.post(`${API}/api/workflows/life-e2e/runs`)
+    expect(startRes.ok()).toBeTruthy()
+    const { runId } = (await startRes.json()) as { runId: string }
+    await expect
+      .poll(
+        async () => {
+          const res = await request.get(`${API}/api/runs/${runId}`)
+          const body = (await res.json()) as { status: string }
+          return body.status
+        },
+        { timeout: 20_000 }
+      )
+      .toBe("succeeded")
+
+    // Reload so action buttons re-check live status.
+    await page.goto("/workflows/life-e2e")
+    await expect(page.getByTestId("graph-canvas")).toBeVisible({
+      timeout: 15_000,
+    })
+
+    await page.getByTestId("workflow-rename-open-life-e2e").click()
+    await expect(page.getByTestId("workflow-rename")).toBeVisible()
+    await page.getByTestId("rename-id-input").fill("life-renamed")
+    await page.getByTestId("rename-submit").click()
+    await expect(page).toHaveURL(/\/workflows\/life-renamed/)
+    expect(existsSync(join(HOME, "workflows", "life-e2e"))).toBe(false)
+    expect(
+      existsSync(join(HOME, "workflows", "life-renamed", "workflow.yaml"))
+    ).toBe(true)
+    const yaml = readFileSync(
+      join(HOME, "workflows", "life-renamed", "workflow.yaml"),
+      "utf8"
+    )
+    expect(yaml).toMatch(/^id: life-renamed$/m)
+
+    const runs = await request.get(`${API}/api/workflows/life-renamed/runs`)
+    const list = (await runs.json()) as Array<{ id: string }>
+    expect(list.map((r) => r.id)).toContain(runId)
+
+    await page.getByTestId("workflow-delete-open-life-renamed").click()
+    await expect(page.getByTestId("workflow-delete")).toBeVisible()
+    await page.getByTestId("delete-confirm-input").fill("life-renamed")
+    await page.getByTestId("delete-submit").click()
+    await expect(page).toHaveURL("/")
+    expect(existsSync(join(HOME, "workflows", "life-renamed"))).toBe(false)
+  })
+
+  test("edit a memory file and show future-launch warning", async ({
+    page,
+  }) => {
+    const wf = join(HOME, "workflows", "diamond")
+    mkdirSync(join(wf, "memory"), { recursive: true })
+    writeFileSync(join(wf, "memory", "style.md"), "# before\n")
+
+    await page.goto("/workflows/diamond")
+    await expect(page.getByTestId("memory-list")).toBeVisible({
+      timeout: 15_000,
+    })
+    await expect(page.getByTestId("memory-row-style.md")).toBeVisible()
+    await page.getByTestId("memory-row-style.md").getByRole("button").first().click()
+    await expect(page.getByTestId("memory-editor")).toBeVisible()
+    await expect(page.getByTestId("memory-editor")).toContainText(
+      "future launches only"
+    )
+
+    const content = page.getByTestId("memory-editor").locator(".cm-content")
+    await content.click()
+    await page.keyboard.press("Meta+A")
+    await page.keyboard.insertText("# after\n")
+    await page.getByTestId("memory-save").click()
+    await expect(page.getByTestId("memory-editor")).toBeHidden()
+    expect(readFileSync(join(wf, "memory", "style.md"), "utf8")).toBe(
+      "# after\n"
+    )
+  })
+})

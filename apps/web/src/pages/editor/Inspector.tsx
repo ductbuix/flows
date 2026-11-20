@@ -10,8 +10,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
+import { MemoryPanel } from "./MemoryPanel"
 
 type Props = {
+  workflowId: string
   workflow: Workflow
   selectedTaskId?: string
   onChangeGoal: (goal: string) => void
@@ -20,6 +22,7 @@ type Props = {
 }
 
 export function Inspector({
+  workflowId,
   workflow,
   selectedTaskId,
   onChangeGoal,
@@ -30,7 +33,7 @@ export function Inspector({
 
   if (!task) {
     return (
-      <div className="space-y-3 p-3" data-testid="inspector">
+      <div className="space-y-3 overflow-auto p-3" data-testid="inspector">
         <h2 className="text-sm font-medium">Workflow</h2>
         <Field>
           <FieldLabel htmlFor="field-goal">Goal</FieldLabel>
@@ -45,6 +48,7 @@ export function Inspector({
         <p className="text-xs text-muted-foreground">
           Select a task to edit its fields.
         </p>
+        <MemoryPanel workflowId={workflowId} />
       </div>
     )
   }

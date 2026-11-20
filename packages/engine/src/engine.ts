@@ -80,6 +80,33 @@ export class Engine {
       .reverse()
   }
 
+  /** True when any non-deleted run of the workflow is still running. */
+  hasLiveRun(workflowId: string): boolean {
+    return this.listRunsForWorkflow(workflowId).some(
+      (r) => r.status === "running"
+    )
+  }
+
+  /** After workflows/<old>/ moves to <new>/, rebind event log ids (DES-013). */
+  rebindWorkflowId(fromId: string, toId: string): void {
+    this.log.rebindWorkflowId(fromId, toId)
+  }
+
+  /** Mark every non-deleted run of a workflow deleted (before dir removal). */
+  markWorkflowRunsDeleted(workflowId: string): void {
+    for (const state of this.listRunsForWorkflow(workflowId)) {
+      if (state.status === "running") {
+        throw new Error(`cannot delete live run ${state.runId}`)
+      }
+      this.log.append({
+        type: "run_deleted",
+        runId: state.runId,
+        at: new Date().toISOString(),
+      })
+      this.schedulers.delete(state.runId)
+    }
+  }
+
   /** Start a run from workflow.yaml under workflowDir. */
   startRun(options: StartRunOptions): RunHandle {
     const graph = this.loadWorkflow(options.workflowDir)
