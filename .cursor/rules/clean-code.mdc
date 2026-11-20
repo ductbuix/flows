@@ -1,0 +1,25 @@
+---
+description: Keep the code clean and refactor proactively, in bounded steps
+alwaysApply: true
+---
+
+Always keep the code clean. Refactor proactively, but only within reach
+of the change you are making. KISS and YAGNI from `general.mdc` still
+apply.
+
+- Leave every file you touch cleaner than you found it.
+- In or near the code you change, refactor when you see:
+  - the same logic a third time (rule of three): extract it once;
+  - dead code, unused exports, files or deps: delete them;
+  - unclear names: rename them;
+  - long functions doing several things: split them;
+  - leaky boundaries, such as a package importing past the direction in
+    DES-015: move the code to the package that owns it.
+- Refactors preserve behavior. Tests are green before and after; add a
+  test first when the code you refactor has none.
+- Commit refactors separately from features or fixes (`refactor: ...`),
+  so each diff does one thing.
+- No speculative abstractions, layers or options "for later".
+- Do not refactor code far from the task just because you saw it. Record a
+  bigger refactor you skip as a backlog item or a DES-007 ledger entry with
+  a revisit trigger, and mention it in your report.

@@ -57,8 +57,9 @@ reversed, keep the row and add a new one that says so.
 
 ## Docs and tooling
 
-| Date       | Decision                                        | Reason                                                   | Holds it |
-| ---------- | ----------------------------------------------- | -------------------------------------------------------- | -------- |
-| 2026-11-20 | One frontmatter schema, generated indexes       | agents find docs in few reads; checked by `docs:check`   | DOC-001  |
-| 2026-11-20 | Index files unpadded, skip prettier             | 33 to 60 percent smaller                                 | DES-007  |
-| 2026-11-21 | `direction` docs listed first in the root index | vision, architecture, decisions and roadmap in one place | DOC-001  |
+| Date       | Decision                                        | Reason                                                   | Holds it         |
+| ---------- | ----------------------------------------------- | -------------------------------------------------------- | ---------------- |
+| 2026-11-20 | One frontmatter schema, generated indexes       | agents find docs in few reads; checked by `docs:check`   | DOC-001          |
+| 2026-11-20 | Index files unpadded, skip prettier             | 33 to 60 percent smaller                                 | DES-007          |
+| 2026-11-21 | `direction` docs listed first in the root index | vision, architecture, decisions and roadmap in one place | DOC-001          |
+| 2026-11-21 | Keep code clean, refactor proactively, bounded  | cleaner code without churn; refactors in own commits     | `clean-code.mdc` |

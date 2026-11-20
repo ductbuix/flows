@@ -101,8 +101,8 @@ and, for UI or API changes, `pnpm test:e2e`. All must pass.
   edit: prettier, then eslint `--fix` with the nearest package config. It
   never blocks the agent. For files under `docs/` it also runs
   `docs:index`.
-- `.cursor/rules/*.mdc` hold project rules: `general` (always), `server`,
-  `web`, `testing`, `engine`, `docs` (scoped by globs).
+- `.cursor/rules/*.mdc` hold project rules: `general` and `clean-code`
+  (always), `server`, `web`, `testing`, `engine`, `docs` (scoped by globs).
 
 ## Pointers
 
