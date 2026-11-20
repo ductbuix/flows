@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015]
+related: [DES-014, DES-015, DES-018]
 updated: 2026-11-21
 ---
 
@@ -24,6 +24,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 4     | See and steer runs           | BL-008 run view, BL-012 run controls                    | live run view with every control                  |
 | 5     | Author workflows             | BL-009 graph editor, BL-013 workflow lifecycle          | edit graph and YAML in sync, manage workflows     |
 | 6     | Hardening                    | BL-011 agent judge, BL-010 sandboxing                   | judge conditions; writes held to the workflow dir |
+| 7     | Use the editor               | BL-015 agent kind, BL-016 file editing                  | switch a task to agent; edit memory and instructions  |
 
 ## Why this order
 
@@ -36,6 +37,9 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   YAML by hand, but runs cannot be watched without the UI.
 - Sandboxing is last in the list but is a safety feature; move it up if
   untrusted commands or agents run before phase 6.
+- Phase 7 is follow-up after the editor shipped (phase 5). BL-015 is
+  first because a kind switch must produce a valid agent task before
+  the instructions editor in BL-016 is useful.
 
 ## Not on the roadmap
 

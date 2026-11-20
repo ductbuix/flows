@@ -6,7 +6,8 @@ status: active
 summary: One line per key decision with date, reason and the doc that holds it. Index only; the linked docs hold the detail.
 tags: [direction, decisions, adr]
 related:
-  [DES-001, DES-003, DES-005, DES-006, DES-007, DES-012, DES-014, DOC-001]
+  [DES-001, DES-003, DES-005, DES-006, DES-007, DES-012, DES-013, DES-014,
+   DES-018, DOC-001]
 updated: 2026-11-21
 ---
 
@@ -59,6 +60,9 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Run view has full controls and list plus graph | answered in the run view review                         | DES-009, 011 |
 | 2026-11-21 | Server folds runs; web applies `run_snapshot`  | web must not import engine (DES-015); same fold result  | DES-009, 015 |
 | 2026-11-21 | YAML writes keep comments and key order        | hand edits must survive graph edits                     | DES-013      |
+| 2026-11-21 | Kind switch writes a valid shape for the new kind | Inspector only patched kind, so agent tasks failed save | DES-018      |
+| 2026-11-21 | Plain textarea for memory and instructions files  | quicker edit in the UI; YAML pane keeps CodeMirror      | DES-018      |
+| 2026-11-21 | Add memory .md files with a native file picker    | on a name collision, ask to overwrite or rename         | DES-018      |
 
 ## Docs and tooling
 

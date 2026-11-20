@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: Chosen libs with measured sizes; react-markdown for SUMMARY.md, CodeMirror 6 for YAML, React Flow with dagre.
 tags: [ui, web, libraries, markdown, editor, layout]
-related: [DES-008, DES-009, DES-010, DES-013, DES-007]
+related: [DES-008, DES-009, DES-010, DES-013, DES-007, DES-018]
 updated: 2026-11-21
 ---
 
