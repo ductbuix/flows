@@ -21,12 +21,7 @@ import { MoreHorizontal } from "lucide-react"
 import { toast } from "sonner"
 import { ActionButton } from "@/components/ActionButton"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
-import {
-  approveTask,
-  cancelRun,
-  deleteRun,
-  rerunRun,
-} from "@/lib/run-actions"
+import { approveTask, cancelRun, deleteRun, rerunRun } from "@/lib/run-actions"
 
 type Props = {
   run: RunDetail
@@ -70,7 +65,7 @@ export function RunControls({ run, workflowId }: Props) {
       return
     }
     toast.success("Run deleted")
-    void navigate(`/workflows/${workflowId}`)
+    void navigate(`/workflows/${workflowId}/runs`)
   }
 
   async function onApprove(taskId: string) {
@@ -172,11 +167,10 @@ export function RunControls({ run, workflowId }: Props) {
         title={`Delete run ${run.id}?`}
         description={
           <>
-            Started {run.startedAt}. Removes the run directory
-            runs/{run.id}/: graph.json, every task&apos;s input/, all
-            attempt dirs with out/, SUMMARY.md, stdout.log and stderr.log.
-            The run disappears from lists. Workflow files are not touched.
-            Cannot be undone.
+            Started {run.startedAt}. Removes the run directory runs/{run.id}/:
+            graph.json, every task&apos;s input/, all attempt dirs with out/,
+            SUMMARY.md, stdout.log and stderr.log. The run disappears from
+            lists. Workflow files are not touched. Cannot be undone.
           </>
         }
         confirmLabel="Delete run"

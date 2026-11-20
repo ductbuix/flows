@@ -92,7 +92,7 @@ test.describe("run controls", () => {
     request,
   }) => {
     const liveId = await startRun(request, "slow-cancel")
-    await page.goto(`/workflows/slow-cancel`)
+    await page.goto(`/workflows/slow-cancel/runs`)
     await expect(page.getByTestId(`run-row-${liveId}`)).toBeVisible({
       timeout: 10_000,
     })
@@ -120,16 +120,10 @@ test.describe("run controls", () => {
     await expect(dialog).toContainText("graph.json")
     await page.getByTestId("confirm-ok").click()
 
-    await expect(page).toHaveURL(/\/workflows\/diamond$/)
+    await expect(page).toHaveURL(/\/workflows\/diamond\/runs$/)
     await expect(page.getByTestId(`run-row-${finishedId}`)).toHaveCount(0)
 
-    const runRoot = join(
-      e2eHome(),
-      "workflows",
-      "diamond",
-      "runs",
-      finishedId
-    )
+    const runRoot = join(e2eHome(), "workflows", "diamond", "runs", finishedId)
     expect(existsSync(runRoot)).toBe(false)
   })
 })
