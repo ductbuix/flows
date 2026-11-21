@@ -18,8 +18,9 @@ related:
     DES-021,
     DES-023,
     DES-024,
+    DES-025,
   ]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # UI: run view
@@ -77,16 +78,20 @@ in the URL (`?view=graph`) so a reload or a shared link keeps it.
 
 ## Layout
 
+Waiting Confirmation or a failure Alert lead the page (DES-025). Plan
+sits beside the task Table. Task detail is a Card with Tabs; the
+selected tab is `?tab=` (default Output).
+
 ```
 +-----------+---------------------------------------------------+
-| Sidebar   | Breadcrumb: workflow / run / task                 |
-| workflows | Run header: status (including queued), progress,  |
-|  > runs   |   sandbox badge, input files (DES-021),           |
+| Sidebar   | Breadcrumb: workflow / run                        |
+|           | Confirmation or failure Alert (when needed)       |
+|           | Run header: status, progress, sandbox, inputs,    |
 |           |   List|Graph toggle, run actions (DES-011)        |
 |           +----------------------+----------------------------+
-|           | Task list or graph   | Task detail (tabs)         |
-|           | (Resizable panel)    | Logs | Attempts | Summary  |
-|           |                      | Output | Spawn            |
+|           | Plan | Task Table    | Task Card (tabs)           |
+|           | (or graph)           | Output | Terminal |        |
+|           |                      | Attempts | Environment     |
 +-----------+----------------------+----------------------------+
 ```
 
@@ -112,39 +117,39 @@ example "Retry 2 of 3 after exit code 1".
 
 shadcn components (add with `pnpm dlx shadcn@latest add <name> -c apps/web`):
 
-| Need                                      | Component                 |
-| ----------------------------------------- | ------------------------- |
-| App shell and workflow and run navigation | Sidebar, Breadcrumb       |
-| Runs list and task list                   | Table, Badge              |
-| List and Graph switch                     | Toggle Group              |
-| Task list and detail split                | Resizable, Scroll Area    |
-| Run progress                              | Progress                  |
-| Task detail sections                      | Tabs                      |
-| Advanced disclosure                       | Switch (`flows-advanced`) |
-| Exit codes, skip and fail reasons         | Alert, Tooltip            |
-| Sandbox warning                           | Badge, Tooltip            |
-| Empty, loading                            | Empty, Skeleton, Spinner  |
-| Websocket lost, request failed            | Alert                     |
-| Attempt metadata rows                     | Item                      |
-| Fenced code in `SUMMARY.md`               | Code Block                |
+| Need                                      | Component                |
+| ----------------------------------------- | ------------------------ |
+| App shell and workflow and run navigation | Sidebar, Breadcrumb      |
+| Runs list and task list                   | Table, Badge             |
+| List and Graph switch                     | Toggle Group             |
+| Task list and detail split                | Resizable, Scroll Area   |
+| Run progress                              | Progress                 |
+| Task detail sections                      | Tabs (`variant="line"`)  |
+| Waiting approval / run failed             | Confirmation / Alert     |
+| Exit codes, skip and fail reasons         | Alert, Tooltip           |
+| Sandbox warning                           | Badge, Tooltip           |
+| Empty, loading                            | Empty, Skeleton, Spinner |
+| Websocket lost, request failed            | Alert                    |
+| Attempt metadata rows                     | Item                     |
+| Fenced code in `SUMMARY.md`               | Code Block               |
 
 AI Elements patterns live in `apps/web/src/components/ai-elements/`
 (copy from `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`;
 drop chat and AI SDK wiring). Base: `shadcn add trace code-block`.
 
-| Need                                        | Pattern                         | Builds on         |
-| ------------------------------------------- | ------------------------------- | ----------------- |
-| Default attempt log                         | Terminal                        | Trace, Code Block |
-| Attempts as steps                           | Task                            | Trace             |
-| Retry plan progress                         | Plan                            | Trace             |
-| Failed attempt                              | Stack Trace                     | Trace             |
-| Files in `out/`                             | File Tree                       | Collapsible       |
-| Trust and approve or reject                 | Confirmation                    | Item, Button      |
-| Advanced: env, command, pid, raw stdout/err | Item, Badge, Switch, Code Block | —                 |
+| Need                              | Pattern         | Builds on         |
+| --------------------------------- | --------------- | ----------------- |
+| Default attempt log               | Terminal        | Trace, Code Block |
+| Attempts as steps                 | Task            | Trace             |
+| Retry plan progress               | Plan            | Trace             |
+| Failed attempt                    | Stack Trace     | Trace             |
+| Files in `out/`                   | File Tree       | Collapsible       |
+| Trust and approve or reject       | Confirmation    | Item, Button      |
+| Env, command, pid, raw stdout/err | Environment tab | Item, Code Block  |
 
-Advanced off by default. Env uses Flows-owned path templates from the
-frozen graph (not a live process dump). Tool, Reasoning and Subagent
-wait for a structured CLI event log (DES-024).
+Env uses Flows-owned path templates from the frozen graph (not a live
+process dump). Tool, Reasoning and Subagent wait for a structured CLI
+event log (DES-024).
 
 Other libraries: React Flow and dagre for the graph view, react-markdown
 with remark-gfm for `SUMMARY.md` (DES-012).
@@ -159,8 +164,8 @@ with remark-gfm for `SUMMARY.md` (DES-012).
 | Websocket lost        | Alert in the run header; data stays, marked stale until reconnect |
 | Request failed        | Alert with the server error text                                  |
 | Task with no attempts | Empty in the Attempts tab ("not started")                         |
-| Log empty             | Empty in the Logs tab                                             |
-| Missing `SUMMARY.md`  | Alert in the Summary tab (the engine warns, DES-002)              |
+| Log empty             | Empty in the Terminal tab                                         |
+| Missing `SUMMARY.md`  | Alert in the Output tab (the engine warns, DES-002)               |
 
 ## Data contracts
 

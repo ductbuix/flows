@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router"
+import { parseRunTaskTab, type RunTaskTab } from "@/lib/paths"
 
 export type RunBodyView = "list" | "graph"
 
@@ -9,6 +10,7 @@ export function useSearchView() {
   const view: RunBodyView =
     searchParams.get("view") === "graph" ? "graph" : "list"
   const taskId = searchParams.get("task") ?? undefined
+  const tab: RunTaskTab = parseRunTaskTab(searchParams.get("tab")) ?? "output"
 
   const setView = useCallback(
     (next: RunBodyView) => {
@@ -40,8 +42,23 @@ export function useSearchView() {
     [setSearchParams]
   )
 
+  const setTab = useCallback(
+    (next: RunTaskTab) => {
+      setSearchParams(
+        (prev) => {
+          const p = new URLSearchParams(prev)
+          if (next === "output") p.delete("tab")
+          else p.set("tab", next)
+          return p
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
+
   return useMemo(
-    () => ({ view, taskId, setView, setTaskId }),
-    [view, taskId, setView, setTaskId]
+    () => ({ view, taskId, tab, setView, setTaskId, setTab }),
+    [view, taskId, tab, setView, setTaskId, setTab]
   )
 }

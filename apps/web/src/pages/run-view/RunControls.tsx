@@ -12,18 +12,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@workspace/ui/components/alert"
 import { MoreHorizontal } from "lucide-react"
 import { toast } from "sonner"
 import { ActionButton } from "@/components/ActionButton"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { runPath, workflowPath } from "@/lib/paths"
-import { approveTask, cancelRun, deleteRun } from "@/lib/run-actions"
+import { cancelRun, deleteRun } from "@/lib/run-actions"
 
 type Props = {
   run: RunDetail
@@ -32,7 +27,6 @@ type Props = {
 export function RunControls({ run }: Props) {
   const navigate = useNavigate()
   const live = run.status === "running" || run.status === "queued"
-  const waiting = run.tasks.filter((t) => t.status === "awaiting_approval")
   const [cancelOpen, setCancelOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [pending, setPending] = useState<string | null>(null)
@@ -58,13 +52,6 @@ export function RunControls({ run }: Props) {
     void navigate(workflowPath(run.workflowId, "runs"))
   }
 
-  async function onApprove(taskId: string) {
-    setPending(`approve-${taskId}`)
-    const result = await approveTask(run.id, taskId)
-    setPending(null)
-    if (!result.ok) toast.error(result.error)
-  }
-
   return (
     <TrustStartGate
       onStarted={(_wfId, runId) => {
@@ -73,27 +60,6 @@ export function RunControls({ run }: Props) {
     >
       {({ begin, pending: trustPending }) => (
         <>
-          {waiting.length > 0 && (
-            <Alert data-testid="run-waiting">
-              <AlertTitle>Waiting for approval</AlertTitle>
-              <AlertDescription className="flex flex-wrap items-center gap-2">
-                {waiting.map((t) => (
-                  <span key={t.id} className="inline-flex items-center gap-2">
-                    <span className="font-mono text-sm">{t.id}</span>
-                    <Button
-                      size="sm"
-                      data-testid="task-approve"
-                      disabled={pending !== null || trustPending}
-                      onClick={() => void onApprove(t.id)}
-                    >
-                      Approve
-                    </Button>
-                  </span>
-                ))}
-              </AlertDescription>
-            </Alert>
-          )}
-
           <ButtonGroup>
             <ActionButton
               size="sm"

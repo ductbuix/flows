@@ -6,8 +6,33 @@ export function workflowPath(workflowId: string, tab?: WorkflowTab): string {
   return `/workflows/${workflowId}?tab=${tab}`
 }
 
+export type RunTaskTab = "output" | "terminal" | "attempts" | "environment"
+
 export function runPath(runId: string): string {
   return `/runs/${runId}`
+}
+
+/** Deep link to a run task tab (e.g. failed task Terminal). */
+export function runTaskPath(
+  runId: string,
+  taskId: string,
+  tab: RunTaskTab = "output"
+): string {
+  const params = new URLSearchParams({ task: taskId })
+  if (tab !== "output") params.set("tab", tab)
+  return `/runs/${runId}?${params.toString()}`
+}
+
+export function parseRunTaskTab(value: string | null): RunTaskTab | null {
+  if (
+    value === "output" ||
+    value === "terminal" ||
+    value === "attempts" ||
+    value === "environment"
+  ) {
+    return value
+  }
+  return null
 }
 
 export function parseWorkflowTab(value: string | null): WorkflowTab | null {

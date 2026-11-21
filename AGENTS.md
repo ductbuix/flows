@@ -46,10 +46,10 @@ Schema and writing rules: `docs/README.md`.
   Prompt Input, Model Selector, inputs, maxConcurrentRuns, PageTitle,
   Section, RunStatusBadge, dev-only `/dev/kit`),
   memory/*.md editor, run list, start/rerun input form, run view
-  (list/graph, Terminal/Task/Plan/Stack Trace/File Tree/Confirmation,
-  Advanced env/raw logs, SUMMARY.md, run inputs, promote) with live
-  websocket updates and run controls; Settings for theme, CLI info and
-  always-trust.
+  (Confirmation or failure Alert first, Plan beside Table, task Card
+  Tabs: Output/Terminal/Attempts/Environment, SUMMARY.md, run inputs,
+  promote) with live websocket updates and run controls; Settings for
+  theme, CLI info and always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.

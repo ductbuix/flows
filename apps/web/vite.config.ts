@@ -14,7 +14,11 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     proxy: {
-      "/api": { target: "http://127.0.0.1:8787", ws: true },
+      // PW_API_PORT lets parallel e2e agents point Vite at their API server.
+      "/api": {
+        target: `http://127.0.0.1:${process.env.PW_API_PORT ?? "8787"}`,
+        ws: true,
+      },
     },
   },
 })

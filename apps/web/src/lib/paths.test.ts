@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { parseWorkflowTab, runPath, workflowPath } from "./paths"
+import {
+  parseRunTaskTab,
+  parseWorkflowTab,
+  runPath,
+  runTaskPath,
+  workflowPath,
+} from "./paths"
 
 describe("paths", () => {
   it("builds workflow and run URLs", () => {
@@ -10,6 +16,10 @@ describe("paths", () => {
       "/workflows/demo?tab=overview"
     )
     expect(runPath("r1")).toBe("/runs/r1")
+    expect(runTaskPath("r1", "a")).toBe("/runs/r1?task=a")
+    expect(runTaskPath("r1", "a", "terminal")).toBe(
+      "/runs/r1?task=a&tab=terminal"
+    )
   })
 
   it("parses known tabs and rejects unknown", () => {
@@ -18,5 +28,9 @@ describe("paths", () => {
     expect(parseWorkflowTab("overview")).toBe("overview")
     expect(parseWorkflowTab(null)).toBeNull()
     expect(parseWorkflowTab("nope")).toBeNull()
+    expect(parseRunTaskTab("terminal")).toBe("terminal")
+    expect(parseRunTaskTab("environment")).toBe("environment")
+    expect(parseRunTaskTab(null)).toBeNull()
+    expect(parseRunTaskTab("logs")).toBeNull()
   })
 })
