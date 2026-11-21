@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
-/** E2E may set PW_API_PORT so parallel agents do not share 8787. */
+/** API port for the Vite proxy; e2e sets PW_API_PORT for parallel agents. */
 const apiPort = process.env.PW_API_PORT ?? "8787"
 
 // https://vite.dev/config/

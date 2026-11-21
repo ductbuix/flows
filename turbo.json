@@ -1,6 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalPassThroughEnv": [
+    "CI",
+    "FLOWAPP_HOME",
+    "FLOWAPP_CURSOR_PROJECTS",
+    "FLOWAPP_RETRY_BACKOFF_MS",
+    "PW_API_PORT",
+    "PW_WEB_PORT",
+    "PW_API_BASE",
+    "PW_VIDEO",
+    "PW_SCREENSHOT",
+    "PORT"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
