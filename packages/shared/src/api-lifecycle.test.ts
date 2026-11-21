@@ -16,6 +16,8 @@ describe("isAllowedWorkflowFilePath", () => {
     expect(isAllowedWorkflowFilePath("tasks//x.md")).toBe(false)
     expect(isAllowedWorkflowFilePath("workflow.yaml")).toBe(false)
     expect(isAllowedWorkflowFilePath("runs/r1/out.txt")).toBe(false)
+    expect(isAllowedWorkflowFilePath("tasks/.trash/x/prompt.md")).toBe(false)
+    expect(isAllowedWorkflowFilePath("tasks/.trash")).toBe(false)
     expect(isAllowedWorkflowFilePath("")).toBe(false)
   })
 })

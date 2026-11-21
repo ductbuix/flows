@@ -181,6 +181,7 @@ export {
   workflowFileDetailSchema,
   putWorkflowFileBodySchema,
   workflowFileConflictSchema,
+  taskInLiveRunErrorSchema,
   type CreateWorkflowBody,
   type RenameWorkflowBody,
   type RenameWorkflowResponse,
@@ -193,6 +194,7 @@ export {
   type WorkflowFileDetail,
   type PutWorkflowFileBody,
   type WorkflowFileConflict,
+  type TaskInLiveRunError,
 } from "./api-lifecycle.ts"
 export {
   parseWorkflowYaml,

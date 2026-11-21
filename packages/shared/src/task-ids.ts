@@ -2,11 +2,12 @@
 export const GENERATED_TASK_ID_RE = /^task-[0-9a-f]{8}$/
 
 /**
- * True when `id` is a single path segment (no `/`, `\`, or `..`).
+ * True when `id` is a single path segment (no `/`, `\`, or leading `.`).
  * Legacy ids such as `start` stay valid; only new ids use the pattern.
+ * Leading `.` is rejected so `.trash` cannot be a task id (DES-022).
  */
 export function isSafeTaskId(id: string): boolean {
-  if (!id || id === "." || id === "..") return false
+  if (!id || id.startsWith(".")) return false
   if (id.includes("/") || id.includes("\\")) return false
   return true
 }

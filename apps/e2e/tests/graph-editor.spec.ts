@@ -169,7 +169,9 @@ test.describe("graph editor", () => {
     await page.getByTestId("field-kind").click()
     await page.getByRole("option", { name: "command" }).click()
     await expect(page.getByTestId("field-run")).toHaveValue("echo ok")
-    await expect(page.getByTestId("yaml-pane")).toContainText("run: echo ok")
+    // Restore the fixture command so later fail-retry runs still fail.
+    await page.getByTestId("field-run").fill("exit 1")
+    await expect(page.getByTestId("yaml-pane")).toContainText("run: exit 1")
     await expect(page.getByTestId("yaml-pane")).not.toContainText("cli:")
     await expect(page.getByTestId("yaml-pane")).not.toContainText(
       "instructions:"

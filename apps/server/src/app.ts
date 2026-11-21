@@ -8,6 +8,7 @@ import {
   runDetailSchema,
   runSummarySchema,
   summaryResponseSchema,
+  taskInLiveRunErrorSchema,
   workflowConflictSchema,
   workflowDetailSchema,
   workflowSummarySchema,
@@ -121,6 +122,25 @@ export function createApp({ engine }: { engine: Engine }) {
           return c.json(
             workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
             400
+          )
+        }
+        if (result.ok === false && result.kind === "task_in_live_run") {
+          return c.json(
+            taskInLiveRunErrorSchema.parse({
+              error: "task_in_live_run",
+              taskIds: result.taskIds,
+              runIds: result.runIds,
+            }),
+            409
+          )
+        }
+        if (result.ok === false && result.kind === "trash_failed") {
+          return c.json(
+            {
+              message: "failed to move removed task folder",
+              path: result.path,
+            },
+            500
           )
         }
         hub.files.noteWrite(workflowId, "workflow.yaml", result.detail.hash)
