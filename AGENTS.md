@@ -23,7 +23,8 @@ Schema and writing rules: `docs/README.md`.
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
   preflight, GET `/cli/:cli/models`, connections CRUD/check and
-  `GET /connectors`, run REST (GET `/runs` summaries with
+  `GET /connectors`, work item CRUD (notes, attachments, trash on
+  delete), run REST (GET `/runs` summaries with
   status/workflowId/limit, start with trustGrant/values/files,
   confirmDuplicate, cancel, rerun, retry, approve, reject, delete), run
   input list/meta/files, log/summary/out, websocket run snapshots,
@@ -37,9 +38,10 @@ Schema and writing rules: `docs/README.md`.
   (exit / expr / agent judge), retry, repeat, `agents` limits, run
   deletion, workflow id rebind on rename, frozen `RUN_INPUT`, Manual
   source, queued runs under `maxConcurrentRuns`, run summary cache
-  (onEvent + rebuild after resume).
+  (onEvent + rebuild after resume), work item store under `workitems/`
+  (atomic yaml/notes, attachments, `.trash`).
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`), websocket (`runs_changed`), workflow (`inputs`,
+  `needsYou`, `workItemSchema`), websocket (`runs_changed`), workflow (`inputs`,
   `agent` defaults, model/effort, task `uses`), `connection.yaml`,
   events (`queued`, `run_activated`, attempt `model`/`effort`/
   `modelSource`) and YAML Document edits that keep comments and key

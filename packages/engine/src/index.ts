@@ -25,6 +25,8 @@ export {
   resolveAppHomeRealpath,
   appDbPath,
   workflowDir,
+  workItemsRoot,
+  workItemDir,
   runDir,
   taskDir,
   attemptDir,
@@ -54,6 +56,30 @@ export {
   type ConnectorChangeSet,
   type ConnectorPublishResult,
 } from "./connectors/index.ts"
+export {
+  hashText,
+  writeAtomic,
+  newWorkItemId,
+  readWorkItem,
+  listWorkItemSummaries,
+  createWorkItem,
+  updateWorkItem,
+  deleteWorkItem,
+  type CreateWorkItemInput,
+  type UpdateWorkItemInput,
+  type UpdateWorkItemResult,
+  type DeleteWorkItemResult,
+} from "./workitems.ts"
+export {
+  readWorkItemNotes,
+  writeWorkItemNotes,
+  listWorkItemAttachments,
+  writeWorkItemAttachment,
+  deleteWorkItemAttachment,
+  type WriteNotesResult,
+  type AttachmentWriteResult,
+  type AttachmentDeleteResult,
+} from "./workitem-files.ts"
 export { runInputDir } from "./run-input.ts"
 export { loadWorkflowFile, assertValidGraph } from "./workflow.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"
