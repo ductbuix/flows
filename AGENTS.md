@@ -22,7 +22,8 @@ Schema and writing rules: `docs/README.md`.
   items, Workflows, Runs, Connections), Workflows group, Settings;
   `/work-items` and `/work-items/:id` (Runs, Start, Notes, Attachments);
   `/connections` (Connections/Library tabs, size warning at 80%) and
-  `/connections/:id` (sign-in, local data, used by, refresh, policy);
+  `/connections/:id` (sign-in, MCP allow, local data, used by, refresh,
+  policy); Settings lists allowed MCP servers for revoke;
   `/workflows` and `/runs` (grouped by work item); Start picks work item
   or None; Home Needs you, expired sign-ins, Work items (Ad hoc or
   Rally source Badge); Impact/Freshness/Policy on `/dev/kit`;
@@ -30,17 +31,18 @@ Schema and writing rules: `docs/README.md`.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
-  `/cli/:cli/models`, connections CRUD/check/sign-in and
-  `GET /connectors`, library GET/pull/clear (usage + retention), work
-  item CRUD, run REST (list/start/cancel/rerun/retry/approve/reject/
-  delete, changes), run input/files, log/summary/out, websocket
-  snapshots, `runs_changed`, log chunks and file watches.
+  `/cli/:cli/models`, connections CRUD/check/sign-in,
+  `GET/PUT /mcp-trust`, `GET /connectors`, library GET/pull/clear
+  (usage + retention), work item CRUD, run REST (list/start/cancel/
+  rerun/retry/approve/reject/delete, changes), run input/files, log/
+  summary/out, websocket snapshots, `runs_changed`, log chunks and
+  file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-   scheduler, command/agent tasks (CliAdapter), connectors (github
-  draft PR publish, rally, fake), connections, library pull/pins/retention
-  (`library.ts`,
-  maxBytes, sweep, clear, `resources/` + `RESOURCE_*`), work items,
-  cookie secrets under `secrets/` (Chrome sign-in, sandbox denies),
+  scheduler, command/agent tasks (CliAdapter), connectors (github draft
+  PR, confluence via MCP, rally, fake), MCP trust allowlist, connections,
+  library pull/pins/retention (`library.ts`, maxBytes, sweep, clear,
+  `resources/` + `RESOURCE_*`), work items, cookie secrets under
+  `secrets/` (Chrome sign-in, sandbox denies),
   propose work copies (`work/`, serial lock, change sets),
   `kind: publish` tasks (policy gate, Cloud effects), model/
   effort resolve and preflight, trust markers, spawn, resume,

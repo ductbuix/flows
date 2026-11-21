@@ -15,6 +15,7 @@ import {
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
+import { McpTrustDialog } from "@/components/McpTrustDialog"
 import { PageHeader } from "@/components/PageHeader"
 import { PageTitle } from "@/components/PageTitle"
 import { PublishPolicyBadge } from "@/components/PublishPolicyBadge"
@@ -27,6 +28,10 @@ import { ConnectionSignInSection } from "./ConnectionSignInSection"
 import { ConnectionUsedBy } from "./ConnectionUsedBy"
 import { useConnectionSignIn } from "./useConnectionSignIn"
 
+function mcpKey(scope: Record<string, string>): string | null {
+  return scope.command?.trim() || scope.url?.trim() || null
+}
+
 export function ConnectionPage() {
   const { connectionId = "" } = useParams()
   const [detail, setDetail] = useState<ConnectionDetail | null>(null)
@@ -34,7 +39,7 @@ export function ConnectionPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const loadDetail = useCallback(async () => {
+  const loadDetail = useCallback(async (): Promise<ConnectionDetail | null> => {
     const [connRes, libRes] = await Promise.all([
       api.connections[":id"].$get({ param: { id: connectionId } }),
       api.library.$get(),
@@ -42,7 +47,7 @@ export function ConnectionPage() {
     if (connRes.status === 404) {
       setError("Connection not found.")
       setDetail(null)
-      return false
+      return null
     }
     if (!connRes.ok) throw new Error("failed")
     const parsed = connectionDetailSchema.parse(await connRes.json())
@@ -52,18 +57,20 @@ export function ConnectionPage() {
       const lib = libraryListSchema.parse(await libRes.json())
       setLocalData(lib.entities.filter((e) => e.connection === connectionId))
     }
-    return true
+    return parsed
   }, [connectionId])
 
-  const signIn = useConnectionSignIn(connectionId, loadDetail)
+  const signIn = useConnectionSignIn(connectionId, async () => {
+    await loadDetail()
+  })
 
   useEffect(() => {
     let cancelled = false
     void (async () => {
       setError(null)
       try {
-        const ok = await loadDetail()
-        if (!cancelled && ok) await signIn.loadSignInState()
+        const parsed = await loadDetail()
+        if (!cancelled && parsed) await signIn.loadSignInState(parsed.scope)
       } catch {
         if (!cancelled) {
           setError("Could not load connection.")
@@ -140,10 +147,32 @@ export function ConnectionPage() {
               signedIn={signIn.signedIn}
               check={signIn.check}
               busy={signIn.busy}
+              mcpAlwaysAllowed={signIn.mcpAlwaysAllowed}
               onSignIn={() => void signIn.signInWithBrowser()}
               onCheck={() => void signIn.checkAgain()}
               onRemoveSignIn={() => void signIn.removeSignIn()}
+              onAllowMcp={() => signIn.setMcpDialogOpen(true)}
+              onRevokeMcp={() => {
+                const key = mcpKey(detail.scope)
+                if (key) void signIn.revokeMcp(key, detail.scope)
+              }}
             />
+            {mcpKey(detail.scope) ? (
+              <McpTrustDialog
+                open={signIn.mcpDialogOpen}
+                onOpenChange={signIn.setMcpDialogOpen}
+                serverKey={mcpKey(detail.scope)!}
+                pending={signIn.busy === "mcp"}
+                onTrustOnce={() => {
+                  const key = mcpKey(detail.scope)
+                  if (key) void signIn.grantMcp(key, "once", detail.scope)
+                }}
+                onTrustAlways={() => {
+                  const key = mcpKey(detail.scope)
+                  if (key) void signIn.grantMcp(key, "always", detail.scope)
+                }}
+              />
+            ) : null}
             <ConnectionLocalData entities={localData} />
             <ConnectionUsedBy
               workflows={detail.usedByWorkflows}

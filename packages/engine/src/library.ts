@@ -59,6 +59,7 @@ export function resolveScopeEntity(connection: Connection): ScopeEntity {
     "signedOut",
     "remote",
     "host",
+    "command",
     "url",
     "domain",
   ])
