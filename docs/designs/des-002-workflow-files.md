@@ -5,7 +5,7 @@ type: design
 status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
-related: [DES-001, DES-004, DES-005, DES-020, DES-021]
+related: [DES-001, DES-004, DES-005, DES-020, DES-021, DES-022]
 updated: 2026-11-21
 ---
 
@@ -21,6 +21,7 @@ updated: 2026-11-21
     workflow.yaml             # source of truth; editor reads and writes it
     tasks/<taskId>/           # authored prompts and judge files (DES-020)
       prompt.md  when.md  until.md  need-<id>.md
+    tasks/.trash/<id>-<stamp>/  # removed task folders (DES-022)
     memory/*.md               # initial memories for agent tasks
     input/  output/  SUMMARY.md
     runs/<runId>/

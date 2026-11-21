@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021]
+related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022]
 updated: 2026-11-21
 ---
 
@@ -28,6 +28,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 8     | Safe agent runs              | BL-017 timeouts, BL-018 app trust                       | hung agents end; trust and pre-run check before CLIs  |
 | 9     | Fixed prompts and task ids   | BL-019 paths and ids, BL-020 prompt editor              | generated ids; prompts at tasks/<id>/prompt.md; drawer edits name and prompt |
 | 10    | Reuse a workflow with inputs | BL-021 run input engine, BL-022 start form              | start a run with declared inputs; extras queue; the run view shows the files |
+| 11    | Remove a task in the editor  | BL-023 trash on save, BL-024 editor delete              | delete one task, undo before save, folder moves to tasks/.trash              |
 
 ## Why this order
 
@@ -54,6 +55,10 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   the same graph should accept different inputs without sharing
   one `input/` folder. BL-021 comes first so the form in BL-022
   has a schema, a start API, and a queued state.
+- Phase 11 is a gap in the editor that is already safe to add:
+  `removeTask` exists, but the UI cannot use it, and folders were
+  left behind. BL-023 comes first so Save moves folders and
+  refuses a remove that a live or queued run still needs.
 
 ## Not on the roadmap
 
