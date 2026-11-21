@@ -46,9 +46,9 @@ Schema and writing rules: `docs/README.md`.
   (React Flow Card nodes, YAML behind Advanced, Prompt Input, Model
   Selector, inputs, maxConcurrentRuns, PageTitle, Section,
   RunStatusBadge, `/dev/kit`), memory/*.md editor, workflow run list,
-  start/rerun form, run view (list/graph, Terminal/Task/Plan/Stack
-  Trace/File Tree/Confirmation, SUMMARY.md, promote) with live
-  websocket updates; Settings for theme, CLI info and always-trust.
+  start/rerun form, run view (Confirmation or failure Alert first, Plan
+  beside Table, task Card Tabs Output/Terminal/Attempts/Environment,
+  SUMMARY.md, promote) with live websocket updates; Settings for theme, CLI info and always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.

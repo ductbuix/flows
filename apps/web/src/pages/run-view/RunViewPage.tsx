@@ -12,10 +12,11 @@ import {
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Spinner } from "@workspace/ui/components/spinner"
-import { AdvancedSwitch } from "@/components/AdvancedSwitch"
 import { PageHeader } from "@/components/PageHeader"
 import { workflowPath } from "@/lib/paths"
 import { RunHeader } from "./RunHeader"
+import { RunLead } from "./RunLead"
+import { RunPlan } from "./RunPlan"
 import { TaskList } from "./TaskList"
 import { TaskDetail } from "./TaskDetail"
 import { useSearchView } from "./useSearchView"
@@ -28,7 +29,7 @@ const TaskGraph = lazy(() =>
 
 export function RunViewPage() {
   const { runId } = useParams() as { runId: string }
-  const { view, taskId, setView, setTaskId } = useSearchView()
+  const { view, taskId, tab, setView, setTaskId, setTab } = useSearchView()
   const { run, loading, error, setRun } = useRunFetch(runId)
   const workflowId = run?.workflowId
 
@@ -53,12 +54,10 @@ export function RunViewPage() {
   const selectedTask =
     run && taskId ? run.tasks.find((t) => t.id === taskId) : undefined
 
-  const headerActions = <AdvancedSwitch />
-
   if (loading && !run) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
+        <PageHeader crumbs={[...crumbs]} />
         <div className="flex flex-col gap-4 p-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-100 w-full" />
@@ -70,7 +69,7 @@ export function RunViewPage() {
   if (error || !run) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
+        <PageHeader crumbs={[...crumbs]} />
         <div className="p-4">
           <Alert variant="destructive">
             <AlertTitle>Could not load run</AlertTitle>
@@ -83,8 +82,9 @@ export function RunViewPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[...crumbs]} actions={headerActions} />
+      <PageHeader crumbs={[...crumbs]} />
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
+        <RunLead run={run} />
         <RunHeader
           run={run}
           view={view}
@@ -98,11 +98,18 @@ export function RunViewPage() {
         >
           <ResizablePanel defaultSize={48} minSize={28}>
             {view === "list" ? (
-              <TaskList
-                run={run}
-                selectedTaskId={taskId}
-                onSelectTask={setTaskId}
-              />
+              <div className="flex h-full min-h-0 gap-4">
+                <div className="min-w-0 flex-1 overflow-auto">
+                  <RunPlan run={run} />
+                </div>
+                <div className="min-w-0 flex-[1.4]">
+                  <TaskList
+                    run={run}
+                    selectedTaskId={taskId}
+                    onSelectTask={setTaskId}
+                  />
+                </div>
+              </div>
             ) : (
               <Suspense
                 fallback={
@@ -122,10 +129,15 @@ export function RunViewPage() {
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={52} minSize={32}>
             {selectedTask ? (
-              <TaskDetail run={run} task={selectedTask} />
+              <TaskDetail
+                run={run}
+                task={selectedTask}
+                tab={tab}
+                onTabChange={setTab}
+              />
             ) : (
               <p className="p-4 text-sm text-muted-foreground">
-                Select a task to see logs, attempts, and output.
+                Select a task to see output, terminal, and attempts.
               </p>
             )}
           </ResizablePanel>

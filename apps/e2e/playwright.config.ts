@@ -61,7 +61,10 @@ export default defineConfig({
       url: WEB,
       reuseExistingServer: !process.env.CI,
       cwd: "../..",
-      env: stringEnv(),
+      env: {
+        ...stringEnv(),
+        PW_API_PORT: API_PORT,
+      },
     },
   ],
 })

@@ -20,7 +20,7 @@ related:
     BL-029,
     BL-030,
   ]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # UI on the shadcn baseline
@@ -182,7 +182,8 @@ Shell: `SidebarProvider`, `Sidebar` and `SidebarInset` from
 Page header, the same on every page: `SidebarTrigger`, a vertical
 `Separator`, a `Breadcrumb` (Workflows, workflow id, Runs, run
 id), then page actions on the right. The Advanced `Switch` sits
-here on the editor and run view.
+here on the editor until BL-037; the run view no longer uses it
+(BL-036 / DES-025).
 
 The index route shows an `Empty` ("Select a workflow or create
 one") instead of a second workflow table.
@@ -201,10 +202,10 @@ one") instead of a second workflow table.
 One UI. Advanced is a `Switch` stored in `localStorage` as
 `flows-advanced`, shared by all screens.
 
-| Screen   | Default                                   | Behind Advanced                               |
-| -------- | ----------------------------------------- | --------------------------------------------- |
-| Editor   | Graph, Inspector, prompts, memory, inputs | YAML pane                                     |
-| Run view | Status, summary, outputs, styled log      | Env, command line, pid, raw stdout and stderr |
+| Screen   | Default                                                                                  | Behind Advanced |
+| -------- | ---------------------------------------------------------------------------------------- | --------------- |
+| Editor   | Graph, Inspector, prompts, memory, inputs                                                | YAML pane       |
+| Run view | Output, Terminal, Attempts, Environment tabs for every user (BL-036); no Advanced switch | —               |
 
 A YAML parse error with Advanced off still shows an `Alert` with
 a button that opens Advanced.
