@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
   Alert,
@@ -33,6 +32,7 @@ import { deleteRun } from "@/lib/run-actions"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ActionButton } from "@/components/ActionButton"
 import { PageHeader } from "@/components/PageHeader"
+import { RunStatusBadge } from "@/components/RunStatusBadge"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { RunRowMenu } from "@/pages/RunRowMenu"
 
@@ -186,7 +186,10 @@ export function WorkflowRunsPage() {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{run.status}</Badge>
+                        <RunStatusBadge
+                          status={run.status}
+                          data-testid={`run-status-${run.id}`}
+                        />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {run.startedAt}

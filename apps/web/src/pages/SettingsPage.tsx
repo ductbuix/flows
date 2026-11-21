@@ -7,8 +7,6 @@ import {
   Field,
   FieldDescription,
   FieldGroup,
-  FieldLegend,
-  FieldSet,
 } from "@workspace/ui/components/field"
 import {
   Item,
@@ -31,6 +29,8 @@ import { Kbd } from "@workspace/ui/components/kbd"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/PageHeader"
+import { PageTitle } from "@/components/PageTitle"
+import { Section } from "@/components/Section"
 import { useTheme } from "@/components/theme-provider"
 import { api } from "@/lib/api"
 import { fetchTrustStatus, revokeTrust } from "@/lib/run-actions"
@@ -83,16 +83,22 @@ export function SettingsPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <PageHeader crumbs={[{ label: "Settings" }]} />
-      <div className="flex-1 overflow-auto p-4" data-testid="settings-page">
+      <div
+        className="flex flex-1 flex-col gap-6 overflow-auto p-4"
+        data-testid="settings-page"
+      >
+        <PageTitle
+          title="Settings"
+          description="Theme, agent CLIs and always-trust for this machine."
+        />
         {error ? (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <FieldGroup className="max-w-xl">
-            <FieldSet>
-              <FieldLegend>Theme</FieldLegend>
+          <FieldGroup className="max-w-xl gap-6">
+            <Section title="Theme">
               <Field>
                 <ToggleGroup
                   value={[theme]}
@@ -117,10 +123,9 @@ export function SettingsPage() {
                   Default is light. Press <Kbd>d</Kbd> to toggle light and dark.
                 </FieldDescription>
               </Field>
-            </FieldSet>
+            </Section>
 
-            <FieldSet>
-              <FieldLegend>Agent CLIs</FieldLegend>
+            <Section title="Agent CLIs">
               <FieldDescription>
                 Read-only. The app never writes CLI settings files. Model and
                 effort appear here when that API exists.
@@ -154,10 +159,9 @@ export function SettingsPage() {
                   ))}
                 </ItemGroup>
               )}
-            </FieldSet>
+            </Section>
 
-            <FieldSet>
-              <FieldLegend>Always-trust</FieldLegend>
+            <Section title="Always-trust">
               <Item variant="outline" data-testid="trust-settings">
                 <ItemContent>
                   <ItemTitle>Agent CLI trust for this app home</ItemTitle>
@@ -181,7 +185,7 @@ export function SettingsPage() {
                   ) : null}
                 </ItemActions>
               </Item>
-            </FieldSet>
+            </Section>
           </FieldGroup>
         )}
       </div>

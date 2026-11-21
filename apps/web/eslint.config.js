@@ -4,7 +4,10 @@ import reactHooks from "eslint-plugin-react-hooks"
 import reactRefresh from "eslint-plugin-react-refresh"
 import tseslint from "typescript-eslint"
 import { defineConfig, globalIgnores } from "eslint/config"
-import { restrictedSyntaxSelectors } from "./eslint-tailwind-guard.js"
+import {
+  noUiSizeRadiusClassRule,
+  restrictedSyntaxSelectors,
+} from "./eslint-tailwind-guard.js"
 
 export default defineConfig([
   globalIgnores(["dist"]),
@@ -23,14 +26,21 @@ export default defineConfig([
       "react-refresh/only-export-components": "off",
     },
   },
-  // DES-024: ban arbitrary values and palette colors in apps/web class strings.
-  // Allowed: data-/aria-/has-/group- variants (enforced via unit-tested helper;
-  // selectors catch the common banned forms). packages/ui is not covered.
+  // DES-024 / DES-025: ban arbitrary values, palette colors, and size/radius
+  // className on @workspace/ui parts. packages/ui is not covered.
   {
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    plugins: {
+      "tailwind-guard": {
+        rules: {
+          "no-ui-size-radius-class": noUiSizeRadiusClassRule,
+        },
+      },
+    },
     rules: {
       "no-restricted-syntax": ["error", ...restrictedSyntaxSelectors()],
+      "tailwind-guard/no-ui-size-radius-class": "error",
     },
   },
   // Soft limit per code file (clean-code.mdc): split by responsibility.
