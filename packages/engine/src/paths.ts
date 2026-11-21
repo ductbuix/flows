@@ -1,3 +1,4 @@
+import { mkdirSync, realpathSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
 
@@ -6,6 +7,15 @@ export function resolveAppHome(override?: string): string {
   if (override) return override
   if (process.env.FLOWAPP_HOME) return process.env.FLOWAPP_HOME
   return join(homedir(), ".flowapp")
+}
+
+/**
+ * Realpath of the app home. Creates the dir when missing so trust
+ * binding has a stable path (DES-019).
+ */
+export function resolveAppHomeRealpath(home: string): string {
+  mkdirSync(home, { recursive: true })
+  return realpathSync(home)
 }
 
 export function appDbPath(home: string): string {

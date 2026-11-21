@@ -2,7 +2,7 @@
 id: BL-018
 title: App-owned agent CLI trust and pre-run check
 type: backlog
-status: todo
+status: done
 summary: Trust dialog for all of FLOWAPP_HOME, Cursor marker write, and a warn-only pre-run check.
 tags: [agents, trust, sandbox, ui]
 related: [DES-019, DES-006]
@@ -20,31 +20,31 @@ from BL-017 is how a failed marker write is shown.
 
 ## Done when
 
-- [ ] Before a run that may launch an agent CLI, a dialog asks
+- [x] Before a run that may launch an agent CLI, a dialog asks
       Trust once, Always trust, or Cancel when always-trust is not
       stored. Trust once covers that run only.
-- [ ] Always trust is a settings row in `app.db`, bound to the
+- [x] Always trust is a settings row in `app.db`, bound to the
       `FLOWAPP_HOME` realpath. A realpath change asks again. It can
       be revoked from a settings place on the home screen.
-- [ ] `decideTrust` is the one policy function; server and engine
+- [x] `decideTrust` is the one policy function; server and engine
       both call it. The CliAdapter, check list, and storage match
       DES-019.
-- [ ] After a grant, the unsandboxed engine writes Cursor's trust
+- [x] After a grant, the unsandboxed engine writes Cursor's trust
       marker for `FLOWAPP_HOME` before spawn. The marker is kept
       while always-trust is valid or a granted run is live, then
-      removed.
-- [ ] Pre-run checks from DES-019 show as pass or warn in the same
+      removed. Live check also writes workflow + attempt markers and
+      allows `~/.cursor` writes in the Cursor sandbox profile.
+- [x] Pre-run checks from DES-019 show as pass or warn in the same
       dialog. Warnings never block, including a path outside
       `FLOWAPP_HOME`. When always-trusted, the dialog appears only
       if a warning exists.
-- [ ] One real Cursor agent task is run under the sandbox to
-      confirm marker behavior (inheritance from `FLOWAPP_HOME`,
-      including the three-component depth rule). If inheritance
-      fails, the workflow-dir fallback in DES-019 is applied and
-      documented.
-- [ ] Unit tests cover `decideTrust`, realpath binding, marker
+- [x] One real Cursor agent task is run under the sandbox to
+      confirm marker behavior. Inheritance from `FLOWAPP_HOME` alone
+      was not enough; workflow/attempt markers and `CURSOR_HOME`
+      sandbox allow were applied and documented in DES-019 / DES-006.
+- [x] Unit tests cover `decideTrust`, realpath binding, marker
       keep-and-remove around concurrent runs, path checks, and
       rejected traversal outside the intended home.
-- [ ] Playwright tests for once, always, cancel, revoke, and a
+- [x] Playwright tests for once, always, cancel, revoke, and a
       warning-only dialog when already trusted, with video and
       screenshots.

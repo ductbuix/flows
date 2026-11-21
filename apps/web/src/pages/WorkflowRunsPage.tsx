@@ -25,9 +25,10 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
-import { deleteRun, startRun } from "@/lib/run-actions"
+import { deleteRun } from "@/lib/run-actions"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ActionButton } from "@/components/ActionButton"
+import { TrustStartGate } from "@/components/TrustStartGate"
 import { RunRowMenu } from "@/pages/RunRowMenu"
 
 export function WorkflowRunsPage() {
@@ -35,7 +36,6 @@ export function WorkflowRunsPage() {
   const navigate = useNavigate()
   const [runs, setRuns] = useState<RunSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [starting, setStarting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<RunSummary | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -60,17 +60,6 @@ export function WorkflowRunsPage() {
       alive = false
     }
   }, [reload])
-
-  async function onStart() {
-    setStarting(true)
-    const result = await startRun(workflowId)
-    setStarting(false)
-    if (!result.ok) {
-      toast.error(result.error)
-      return
-    }
-    void navigate(`/workflows/${workflowId}/runs/${result.data.runId}`)
-  }
 
   async function onDelete() {
     if (!deleteTarget) return
@@ -102,105 +91,115 @@ export function WorkflowRunsPage() {
   if (!runs) return <Skeleton className="h-40 w-full" />
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
-          <Link
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            to={`/workflows/${workflowId}`}
-          >
-            Edit workflow
-          </Link>
-        </div>
-        <ActionButton
-          data-testid="run-start"
-          pending={starting}
-          onClick={() => void onStart()}
-        >
-          Start run
-        </ActionButton>
-      </div>
-
-      {runs.length === 0 ? (
-        <Empty data-testid="run-list">
-          <EmptyTitle>No runs yet</EmptyTitle>
-          <EmptyDescription>Start a run to see it here.</EmptyDescription>
-          <EmptyContent>
+    <TrustStartGate
+      onStarted={(wfId, runId) => {
+        void navigate(`/workflows/${wfId}/runs/${runId}`)
+      }}
+    >
+      {({ begin, pending }) => (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-baseline gap-3">
+              <h1 className="font-mono text-lg font-medium">{workflowId}</h1>
+              <Link
+                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                to={`/workflows/${workflowId}`}
+              >
+                Edit workflow
+              </Link>
+            </div>
             <ActionButton
               data-testid="run-start"
-              pending={starting}
-              onClick={() => void onStart()}
+              pending={pending}
+              onClick={() => begin({ mode: "start", workflowId })}
             >
               Start run
             </ActionButton>
-          </EmptyContent>
-        </Empty>
-      ) : (
-        <Table data-testid="run-list">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Run</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Started</TableHead>
-              <TableHead>Progress</TableHead>
-              <TableHead className="w-12" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {runs.map((run) => (
-              <TableRow key={run.id} data-testid={`run-row-${run.id}`}>
-                <TableCell>
-                  <Link
-                    className="font-mono text-sm underline-offset-4 hover:underline"
-                    to={`/workflows/${workflowId}/runs/${run.id}`}
-                  >
-                    {run.id}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{run.status}</Badge>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {run.startedAt}
-                </TableCell>
-                <TableCell>
-                  {run.taskCounts.finished}/{run.taskCounts.total}
-                </TableCell>
-                <TableCell>
-                  <RunRowMenu
-                    runId={run.id}
-                    live={run.status === "running"}
-                    onDelete={() => setDeleteTarget(run)}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+          </div>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
-        }}
-        title={deleteTarget ? `Delete run ${deleteTarget.id}?` : "Delete run?"}
-        description={
-          deleteTarget ? (
-            <>
-              Started {deleteTarget.startedAt}. Removes the run directory
-              runs/{deleteTarget.id}/: graph.json, every task&apos;s input/,
-              all attempt dirs with out/, SUMMARY.md, stdout.log and
-              stderr.log. The run disappears from lists. Workflow files are
-              not touched. Cannot be undone.
-            </>
-          ) : null
-        }
-        confirmLabel="Delete run"
-        pending={deleting}
-        onConfirm={() => void onDelete()}
-      />
-    </div>
+          {runs.length === 0 ? (
+            <Empty data-testid="run-list">
+              <EmptyTitle>No runs yet</EmptyTitle>
+              <EmptyDescription>Start a run to see it here.</EmptyDescription>
+              <EmptyContent>
+                <ActionButton
+                  data-testid="run-start"
+                  pending={pending}
+                  onClick={() => begin({ mode: "start", workflowId })}
+                >
+                  Start run
+                </ActionButton>
+              </EmptyContent>
+            </Empty>
+          ) : (
+            <Table data-testid="run-list">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Run</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Started</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead className="w-12" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {runs.map((run) => (
+                  <TableRow key={run.id} data-testid={`run-row-${run.id}`}>
+                    <TableCell>
+                      <Link
+                        className="font-mono text-sm underline-offset-4 hover:underline"
+                        to={`/workflows/${workflowId}/runs/${run.id}`}
+                      >
+                        {run.id}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{run.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {run.startedAt}
+                    </TableCell>
+                    <TableCell>
+                      {run.taskCounts.finished}/{run.taskCounts.total}
+                    </TableCell>
+                    <TableCell>
+                      <RunRowMenu
+                        runId={run.id}
+                        live={run.status === "running"}
+                        onDelete={() => setDeleteTarget(run)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          <ConfirmDialog
+            open={deleteTarget !== null}
+            onOpenChange={(open) => {
+              if (!open) setDeleteTarget(null)
+            }}
+            title={
+              deleteTarget ? `Delete run ${deleteTarget.id}?` : "Delete run?"
+            }
+            description={
+              deleteTarget ? (
+                <>
+                  Started {deleteTarget.startedAt}. Removes the run directory
+                  runs/{deleteTarget.id}/: graph.json, every task&apos;s input/,
+                  all attempt dirs with out/, SUMMARY.md, stdout.log and
+                  stderr.log. The run disappears from lists. Workflow files are
+                  not touched. Cannot be undone.
+                </>
+              ) : null
+            }
+            confirmLabel="Delete run"
+            pending={deleting}
+            onConfirm={() => void onDelete()}
+          />
+        </div>
+      )}
+    </TrustStartGate>
   )
 }

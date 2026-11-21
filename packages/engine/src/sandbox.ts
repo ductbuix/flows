@@ -1,13 +1,22 @@
-import { existsSync, realpathSync } from "node:fs"
-import { platform } from "node:os"
+import { existsSync, mkdirSync, realpathSync } from "node:fs"
+import { homedir, platform } from "node:os"
+import { join } from "node:path"
 
-/** Seatbelt profile: deny all writes except under WF_DIR (DES-006). */
+/**
+ * Seatbelt profile: deny writes except under WF_DIR, and optionally
+ * CURSOR_HOME (Cursor writes projects/, chats/, and related state under
+ * ~/.cursor even with --trust; BL-018 live check).
+ */
 export const SANDBOX_PROFILE = `(version 1)
 (allow default)
 (deny file-write*)
 (allow file-write* (subpath (param "WF_DIR")))
 (allow file-write-data (literal "/dev/null"))
 (allow file-ioctl (literal "/dev/null"))
+`
+
+export const SANDBOX_PROFILE_WITH_CURSOR = `${SANDBOX_PROFILE}
+(allow file-write* (subpath (param "CURSOR_HOME")))
 `
 
 const SANDBOX_EXEC = "/usr/bin/sandbox-exec"
@@ -30,18 +39,44 @@ export type SandboxSpawn =
   | { sandboxed: true; command: string; args: string[] }
   | { sandboxed: false; command: string; args: string[] }
 
+export type SandboxSpawnOptions = {
+  /** Allow writes under ~/.cursor (agent cursor tasks; BL-018). */
+  allowCursorHome?: boolean
+}
+
 /**
  * Build the argv for a task shell. When sandboxed, runs under sandbox-exec
  * with writes limited to the workflow dir.
  */
 export function buildSandboxSpawn(
   shellCommand: string,
-  workflowRoot: string
+  workflowRoot: string,
+  options: SandboxSpawnOptions = {}
 ): SandboxSpawn {
   if (!canApplySandbox()) {
     return { sandboxed: false, command: "/bin/sh", args: ["-c", shellCommand] }
   }
   const wfDir = sandboxWriteRoot(workflowRoot)
+  if (options.allowCursorHome) {
+    const cursorHome = join(homedir(), ".cursor")
+    mkdirSync(cursorHome, { recursive: true })
+    const cursorRoot = realpathSync(cursorHome)
+    return {
+      sandboxed: true,
+      command: SANDBOX_EXEC,
+      args: [
+        "-p",
+        SANDBOX_PROFILE_WITH_CURSOR,
+        "-D",
+        `WF_DIR=${wfDir}`,
+        "-D",
+        `CURSOR_HOME=${cursorRoot}`,
+        "/bin/sh",
+        "-c",
+        shellCommand,
+      ],
+    }
+  }
   return {
     sandboxed: true,
     command: SANDBOX_EXEC,

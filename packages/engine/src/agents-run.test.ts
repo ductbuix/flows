@@ -14,11 +14,17 @@ import { createEngine } from "./engine.ts"
 const homes: string[] = []
 const prevPath = process.env.PATH
 const prevBackoff = process.env.FLOWAPP_RETRY_BACKOFF_MS
+const prevCursorProjects = process.env.FLOWAPP_CURSOR_PROJECTS
 
 afterEach(() => {
   process.env.PATH = prevPath
   if (prevBackoff === undefined) delete process.env.FLOWAPP_RETRY_BACKOFF_MS
   else process.env.FLOWAPP_RETRY_BACKOFF_MS = prevBackoff
+  if (prevCursorProjects === undefined) {
+    delete process.env.FLOWAPP_CURSOR_PROJECTS
+  } else {
+    process.env.FLOWAPP_CURSOR_PROJECTS = prevCursorProjects
+  }
   for (const home of homes.splice(0)) {
     rmSync(home, { recursive: true, force: true })
   }
@@ -27,6 +33,7 @@ afterEach(() => {
 function tempHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-"))
   homes.push(home)
+  process.env.FLOWAPP_CURSOR_PROJECTS = join(home, ".cursor-projects")
   return home
 }
 
@@ -90,7 +97,7 @@ tasks:
     })
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r1" })
+    const handle = engine.startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
     const state = await handle.wait()
 
     expect(state.status).toBe("succeeded")
@@ -162,7 +169,7 @@ exit 0
     process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r2" })
+    const handle = engine.startRun({ workflowDir: wf, runId: "r2", trustGrant: "once" })
     const state = await handle.wait()
 
     expect(state.status).toBe("succeeded")
@@ -202,7 +209,7 @@ tasks:
     installStubBin(home, { name: "claude", sleepMs: 200 })
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r3" })
+    const handle = engine.startRun({ workflowDir: wf, runId: "r3", trustGrant: "once" })
     const state = await handle.wait()
     expect(state.status).toBe("succeeded")
 
@@ -255,7 +262,7 @@ exit 0
     process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r4" })
+    const handle = engine.startRun({ workflowDir: wf, runId: "r4", trustGrant: "once" })
     const state = await handle.wait()
     expect(state.status).toBe("succeeded")
     const path = readFileSync(

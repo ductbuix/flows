@@ -1,32 +1,15 @@
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import type { AgentTask } from "@workspace/shared"
+import { getCliAdapter } from "./cli-adapters.ts"
 
-/** Shell-safe single-quoted string. */
-export function shellSingleQuote(value: string): string {
-  return `'${value.replaceAll("'", "'\\''")}'`
-}
+import type { AgentLaunchPaths } from "./agent-prompt.ts"
 
-/** Prompt that points the CLI at the instructions file (DES-005). */
-export function agentPrompt(
-  instructionsAbsPath: string,
-  canSpawn: boolean
-): string {
-  const spawn = canSpawn
-    ? " To spawn tasks, write one YAML task spec per file under out/spawn/."
-    : ""
-  return (
-    `Read the file at ${instructionsAbsPath} and follow those instructions. ` +
-    `Your working directory is this attempt. Write outputs under out/. ` +
-    `Memories are under input/memory/. Upstream outputs are in the UPSTREAM_* env paths.` +
-    spawn
-  )
-}
-
-export type AgentLaunchPaths = {
-  workflowRoot: string
-  attemptRoot: string
-}
+export {
+  agentPrompt,
+  shellSingleQuote,
+  type AgentLaunchPaths,
+} from "./agent-prompt.ts"
 
 /**
  * Headless Claude Code / Cursor CLI command for an agent attempt.
@@ -38,18 +21,10 @@ export function buildAgentShellCommand(
   instructionsAbsPath: string,
   paths: AgentLaunchPaths
 ): string {
-  const prompt = shellSingleQuote(
-    agentPrompt(instructionsAbsPath, task.spawn === true)
-  )
-  const wf = shellSingleQuote(paths.workflowRoot)
-  const attempt = shellSingleQuote(paths.attemptRoot)
-  if (task.cli === "claude") {
-    return (
-      `claude --print --permission-mode dontAsk --add-dir ${wf} -- ${prompt}`
-    )
-  }
-  return (
-    `agent -p --force --trust --workspace ${attempt} --add-dir ${wf} -- ${prompt}`
+  return getCliAdapter(task.cli).buildAgentCommand(
+    task,
+    instructionsAbsPath,
+    paths
   )
 }
 

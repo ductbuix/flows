@@ -15,6 +15,8 @@ const API = `http://127.0.0.1:${API_PORT}`
 
 const FLOWAPP_HOME = process.env.FLOWAPP_HOME ?? createE2eHome()
 process.env.FLOWAPP_HOME = FLOWAPP_HOME
+process.env.FLOWAPP_CURSOR_PROJECTS =
+  process.env.FLOWAPP_CURSOR_PROJECTS ?? `${FLOWAPP_HOME}/.cursor-projects`
 process.env.PW_API_BASE = API
 
 const stringEnv = (): Record<string, string> =>
@@ -47,6 +49,7 @@ export default defineConfig({
       env: {
         ...stringEnv(),
         FLOWAPP_HOME,
+        FLOWAPP_CURSOR_PROJECTS: process.env.FLOWAPP_CURSOR_PROJECTS!,
         FLOWAPP_RETRY_BACKOFF_MS: "50",
         PORT: API_PORT,
       },

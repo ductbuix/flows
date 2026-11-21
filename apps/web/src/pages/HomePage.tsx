@@ -23,7 +23,9 @@ import {
 } from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Button } from "@workspace/ui/components/button"
+import { toast } from "sonner"
 import { api } from "@/lib/api"
+import { fetchTrustStatus, revokeTrust } from "@/lib/run-actions"
 import { CreateWorkflowDialog } from "@/pages/CreateWorkflowDialog"
 import { DeleteWorkflowDialog } from "@/pages/DeleteWorkflowDialog"
 import { RenameWorkflowDialog } from "@/pages/RenameWorkflowDialog"
@@ -35,6 +37,8 @@ export function HomePage() {
   const [error, setError] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [renameId, setRenameId] = useState<string | null>(null)
+  const [alwaysTrusted, setAlwaysTrusted] = useState(false)
+  const [revoking, setRevoking] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string
     runCount: number
@@ -44,6 +48,12 @@ export function HomePage() {
     const res = await api.workflows.$get()
     if (!res.ok) throw new Error("request failed")
     setWorkflows(workflowSummarySchema.array().parse(await res.json()))
+    try {
+      const trust = await fetchTrustStatus()
+      if (trust.ok) setAlwaysTrusted(trust.data.alwaysTrusted)
+    } catch {
+      setAlwaysTrusted(false)
+    }
   }
 
   useEffect(() => {
@@ -59,6 +69,18 @@ export function HomePage() {
       alive = false
     }
   }, [])
+
+  async function onRevokeTrust() {
+    setRevoking(true)
+    const result = await revokeTrust()
+    setRevoking(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    setAlwaysTrusted(false)
+    toast.success("Always-trust revoked")
+  }
 
   async function openDelete(id: string) {
     const res = await api.workflows[":workflowId"].runs.$get({
@@ -100,12 +122,28 @@ export function HomePage() {
         </Button>
       </div>
 
+      {alwaysTrusted && (
+        <div
+          className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
+          data-testid="trust-settings"
+        >
+          <span>Agent CLIs: always trusted for this app home</span>
+          <Button
+            size="sm"
+            variant="outline"
+            data-testid="trust-revoke"
+            disabled={revoking}
+            onClick={() => void onRevokeTrust()}
+          >
+            Revoke always-trust
+          </Button>
+        </div>
+      )}
+
       {workflows.length === 0 ? (
         <Empty>
           <EmptyTitle>No workflows</EmptyTitle>
-          <EmptyDescription>
-            Create a workflow to get started.
-          </EmptyDescription>
+          <EmptyDescription>Create a workflow to get started.</EmptyDescription>
           <EmptyContent />
         </Empty>
       ) : (

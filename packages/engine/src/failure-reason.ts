@@ -1,23 +1,19 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import type { AgentTask } from "@workspace/shared"
+import { getCliAdapter, type CliKind } from "./cli-adapters.ts"
+
+export type { CliKind }
 
 /** Cursor stderr substrings → readable reason (DES-019). */
-export const CURSOR_FAILURE_PATTERNS = [
-  "Failed to create trust marker",
-  "Failed to trust workspace",
-  "Workspace Trust Required",
-] as const
-
-export type CliKind = AgentTask["cli"]
+export const CURSOR_FAILURE_PATTERNS = getCliAdapter("cursor").failurePatterns
 
 /** Map known CLI stderr patterns to a failure reason, else undefined. */
 export function mapStderrReason(
   stderr: string,
   cli: CliKind | undefined
 ): string | undefined {
-  if (!cli || cli !== "cursor") return undefined
-  for (const pattern of CURSOR_FAILURE_PATTERNS) {
+  if (!cli) return undefined
+  for (const pattern of getCliAdapter(cli).failurePatterns) {
     if (stderr.includes(pattern)) return pattern
   }
   return undefined

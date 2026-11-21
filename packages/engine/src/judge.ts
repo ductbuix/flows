@@ -2,30 +2,18 @@ import { spawn, type ChildProcess } from "node:child_process"
 import { existsSync } from "node:fs"
 import { resolve } from "node:path"
 import type { AgentJudge } from "@workspace/shared"
-import { shellSingleQuote } from "./agents.ts"
+import { getCliAdapter } from "./cli-adapters.ts"
 import { killProcessGroup } from "./pid.ts"
 import { DEFAULT_ATTEMPT_TIMEOUT_SECONDS } from "./timeout.ts"
 
-/** Prompt: inspect the attempt and exit 0/non-zero (DES-004). */
-export function judgePrompt(instructionsAbsPath: string): string {
-  return (
-    `Read the file at ${instructionsAbsPath} and follow those instructions ` +
-    `to judge this attempt. Your working directory is this attempt. ` +
-    `Inspect out/ and any paths mentioned. Exit with code 0 if the ` +
-    `condition passes, or a non-zero code if it fails.`
-  )
-}
+export { judgePrompt } from "./agent-prompt.ts"
 
 /** Headless Claude / Cursor CLI command for a condition judge. */
 export function buildJudgeShellCommand(
   judge: AgentJudge,
   instructionsAbsPath: string
 ): string {
-  const prompt = shellSingleQuote(judgePrompt(instructionsAbsPath))
-  if (judge.cli === "claude") {
-    return `claude --print --permission-mode dontAsk -- ${prompt}`
-  }
-  return `agent -p --force --trust -- ${prompt}`
+  return getCliAdapter(judge.cli).buildJudgeCommand(judge, instructionsAbsPath)
 }
 
 export type RunJudgeOptions = {

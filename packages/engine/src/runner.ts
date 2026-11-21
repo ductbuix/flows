@@ -7,6 +7,7 @@ import {
   copyTaskMemories,
   prepareAgentAttemptOut,
 } from "./agents.ts"
+import { writeCursorTrustMarker } from "./cursor-trust.ts"
 import { attemptDir, taskDir } from "./paths.ts"
 import { exitCodePath } from "./pid.ts"
 import { buildSandboxSpawn } from "./sandbox.ts"
@@ -91,14 +92,17 @@ function spawnWrapped(
   env: NodeJS.ProcessEnv,
   attemptRoot: string,
   codePath: string,
-  workflowRoot: string
+  workflowRoot: string,
+  allowCursorHome = false
 ): LaunchResult {
   const stdoutFd = openSync(join(attemptRoot, "stdout.log"), "a")
   const stderrFd = openSync(join(attemptRoot, "stderr.log"), "a")
 
   try {
     const wrapped = wrapCommandWithExitCode(shellCommand, codePath)
-    const sandboxedSpawn = buildSandboxSpawn(wrapped, workflowRoot)
+    const sandboxedSpawn = buildSandboxSpawn(wrapped, workflowRoot, {
+      allowCursorHome,
+    })
     const child = spawn(sandboxedSpawn.command, sandboxedSpawn.args, {
       cwd,
       env,
@@ -148,6 +152,13 @@ export function launchTask(
       join(taskDir(paths.runRoot, task.id), "input")
     )
     prepareAgentAttemptOut(attemptRoot, task.spawn === true)
+    // Cursor may write a trust marker for --workspace (attempt). Do that
+    // unsandboxed; inheritance from FLOWAPP_HOME alone is not enough
+    // (BL-018 live check).
+    if (task.cli === "cursor") {
+      writeCursorTrustMarker(paths.workflowRoot)
+      writeCursorTrustMarker(attemptRoot)
+    }
     return spawnWrapped(
       buildAgentShellCommand(task, instructions, {
         workflowRoot: paths.workflowRoot,
@@ -157,7 +168,8 @@ export function launchTask(
       env,
       attemptRoot,
       codePath,
-      paths.workflowRoot
+      paths.workflowRoot,
+      task.cli === "cursor"
     )
   }
 

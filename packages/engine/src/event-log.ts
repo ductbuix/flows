@@ -2,6 +2,13 @@ import { mkdirSync } from "node:fs"
 import { dirname } from "node:path"
 import { DatabaseSync } from "node:sqlite"
 import { engineEventSchema, type EngineEvent } from "@workspace/shared"
+import {
+  clearCliTrust,
+  ensureSettingsTable,
+  readCliTrust,
+  writeCliTrust,
+  type CliTrustValue,
+} from "./settings.ts"
 
 export type StoredEvent = {
   seq: number
@@ -25,6 +32,19 @@ export class EventLog {
       );
       CREATE INDEX IF NOT EXISTS events_run_id ON events (run_id);
     `)
+    ensureSettingsTable(this.db)
+  }
+
+  getCliTrust(): CliTrustValue | null {
+    return readCliTrust(this.db)
+  }
+
+  setCliTrust(value: CliTrustValue): void {
+    writeCliTrust(this.db, value)
+  }
+
+  clearCliTrust(): void {
+    clearCliTrust(this.db)
   }
 
   /** Subscribe to appends. Returns an unsubscribe function. */

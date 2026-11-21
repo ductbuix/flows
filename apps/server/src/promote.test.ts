@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { chmodSync } from "node:fs"
@@ -55,7 +61,11 @@ tasks:
 
     const engine = createEngine({ home })
     const app = createApp({ engine })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r1" })
+    const handle = engine.startRun({
+      workflowDir: wf,
+      runId: "r1",
+      trustGrant: "once",
+    })
     await handle.wait()
 
     const res = await app.request("/api/runs/r1/tasks/fetch/promote", {

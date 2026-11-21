@@ -12,6 +12,7 @@ import { createEngine } from "./engine.ts"
 
 const homes: string[] = []
 const prevPath = process.env.PATH
+const prevCursorProjects = process.env.FLOWAPP_CURSOR_PROJECTS
 
 beforeEach(() => {
   process.env.FLOWAPP_RETRY_BACKOFF_MS = "20"
@@ -20,6 +21,11 @@ beforeEach(() => {
 afterEach(() => {
   process.env.PATH = prevPath
   delete process.env.FLOWAPP_RETRY_BACKOFF_MS
+  if (prevCursorProjects === undefined) {
+    delete process.env.FLOWAPP_CURSOR_PROJECTS
+  } else {
+    process.env.FLOWAPP_CURSOR_PROJECTS = prevCursorProjects
+  }
   for (const home of homes.splice(0)) {
     rmSync(home, { recursive: true, force: true })
   }
@@ -28,6 +34,7 @@ afterEach(() => {
 function tempHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-judge-"))
   homes.push(home)
+  process.env.FLOWAPP_CURSOR_PROJECTS = join(home, ".cursor-projects")
   return home
 }
 
@@ -37,9 +44,7 @@ function installJudgeStub(
 ): void {
   const bin = join(home, "bin")
   mkdirSync(bin, { recursive: true })
-  const marker = opts.marker
-    ? `printf 'ran' >> "${opts.marker}"\n`
-    : ""
+  const marker = opts.marker ? `printf 'ran' >> "${opts.marker}"\n` : ""
   writeFileSync(
     join(bin, opts.name),
     `#!/bin/sh\n${marker}exit ${opts.exitCode}\n`,
@@ -82,7 +87,9 @@ tasks:
     )
     writeFileSync(join(wf, "tasks", "judge.md"), "Pass if out/ok.txt exists.\n")
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await engine
+      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
+      .wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.produce?.status).toBe("succeeded")
     expect(state.tasks.next?.status).toBe("succeeded")
@@ -113,7 +120,9 @@ tasks:
     )
     writeFileSync(join(wf, "tasks", "judge.md"), "Always fail.\n")
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await engine
+      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
+      .wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.produce?.status).toBe("succeeded")
     expect(state.tasks.next?.status).toBe("skipped")
@@ -146,7 +155,9 @@ tasks:
     )
     writeFileSync(join(wf, "tasks", "judge.md"), "Pass.\n")
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await engine
+      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
+      .wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.ok?.status).toBe("succeeded")
     engine.close()
@@ -177,7 +188,9 @@ tasks:
     )
     writeFileSync(join(wf, "tasks", "judge.md"), "Pass when score is ready.\n")
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await engine
+      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
+      .wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.work?.status).toBe("succeeded")
     expect(state.tasks.work?.attempts.length).toBe(1)
@@ -214,7 +227,9 @@ tasks:
     )
     writeFileSync(join(wf, "tasks", "judge.md"), "Should not run.\n")
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await engine
+      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
+      .wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.next?.status).toBe("skipped")
     expect(state.tasks.next?.skipReason).toBe("branch")

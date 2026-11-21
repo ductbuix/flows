@@ -64,6 +64,7 @@ export function applyEvent(
         tasks: emptyTasks(event.graph),
         // Optimistic until an unrestricted attempt_launched (DES-006).
         sandboxed: true,
+        trustGrant: event.trustGrant,
       }
     case "approval_requested": {
       if (!state) return state
