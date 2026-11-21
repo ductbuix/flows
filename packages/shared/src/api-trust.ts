@@ -22,6 +22,8 @@ export const startRunBodySchema = z.object({
   values: z.record(z.string(), z.string()).optional(),
   /** Start anyway when an item key already exists (DES-021). */
   confirmDuplicate: z.boolean().optional(),
+  /** Rerun: pull and pin again instead of reusing prior pins (BL-043). */
+  refreshPins: z.boolean().optional(),
   /** Optional work item; unknown id is 400 unknown_work_item (BL-039). */
   workItemId: workItemIdSchema.optional(),
 })

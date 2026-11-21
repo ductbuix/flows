@@ -46,6 +46,10 @@ export type StartRunOptions = {
   trustGrant?: TrustGrant
   values?: Record<string, string>
   files?: ManualFilePart[]
+  /** Prior run to reuse library pins from (rerun; BL-043). */
+  pinFromRunId?: string
+  /** Pull and pin again instead of reusing prior pins (BL-043). */
+  refreshPins?: boolean
   workItemId?: string
 }
 
@@ -142,6 +146,11 @@ export class Engine {
     return this.log.listByRun(runId).map((e) => e.event)
   }
 
+  /** Append a library_pulled (or similar) effect event (BL-043). */
+  appendLibraryEvent(event: EngineEvent): void {
+    this.log.append(event)
+  }
+
   eventsWithSeq(runId: string): StoredEvent[] {
     return this.log.listByRun(runId)
   }
@@ -203,10 +212,19 @@ export class Engine {
     }
   }
 
-  startRun(options: StartRunOptions): RunHandle {
+  async startRun(options: StartRunOptions): Promise<RunHandle> {
     const graph = this.loadWorkflow(options.workflowDir)
     const runId = options.runId ?? randomUUID()
-    const started = appendRunStarted({
+    const pinFromRunRoot = (() => {
+      if (!options.pinFromRunId) return undefined
+      const prior = this.fold(options.pinFromRunId)
+      if (!prior) return undefined
+      return runDir(
+        workflowDir(this.home, prior.workflowId),
+        options.pinFromRunId
+      )
+    })()
+    const started = await appendRunStarted({
       log: this.log,
       graph,
       params: {
@@ -215,6 +233,9 @@ export class Engine {
         trustGrant: options.trustGrant,
         values: options.values,
         files: options.files,
+        home: this.home,
+        pinFromRunRoot,
+        refreshPins: options.refreshPins,
         workItemId: options.workItemId,
       },
       homeRealpath: this.homeRealpath(),
@@ -320,6 +341,7 @@ export class Engine {
   }
 
   close(): void {
+    for (const scheduler of this.schedulers.values()) scheduler.dispose()
     this.schedulers.clear()
     this.log.close()
   }

@@ -13,7 +13,7 @@ if (!home || !workflowDir || !runId) {
 }
 
 const engine = createEngine({ home })
-const handle = engine.startRun({ workflowDir, runId })
+const handle = await engine.startRun({ workflowDir, runId })
 const state = await handle.wait()
 engine.close()
 process.exit(state.status === "succeeded" ? 0 : 1)

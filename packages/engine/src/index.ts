@@ -33,7 +33,23 @@ export {
   connectionsDir,
   connectionDir,
   secretsDir,
+  libraryDir,
+  libraryEntityDir,
+  encodeEntityId,
+  decodeEntityId,
 } from "./paths.ts"
+export {
+  LIBRARY_EVENT_RUN_ID,
+  resolveScopeEntity,
+  pullEntity,
+  linkRunResources,
+  readResourcesJson,
+  type ScopeEntity,
+  type PullEntityResult,
+} from "./library.ts"
+export { materializeRunResources, pullNow } from "./library-run.ts"
+export { listLibrary } from "./library-list.ts"
+export { isFresh, currentRevision, readRevisionMeta } from "./library-paths.ts"
 export {
   listConnections,
   readConnection,

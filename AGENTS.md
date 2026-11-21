@@ -23,31 +23,30 @@ Schema and writing rules: `docs/README.md`.
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
   preflight, GET `/cli/:cli/models`, connections CRUD/check and
-  `GET /connectors`, work item CRUD (notes, attachments, trash on
-  delete), run REST (GET `/runs` summaries with
+  `GET /connectors`, library GET/pull, work item CRUD (notes,
+  attachments, trash), run REST (GET `/runs` with
   status/workflowId/workItemId/limit, start with
   trustGrant/values/files/workItemId, confirmDuplicate, cancel, rerun
-  keeps workItemId, retry, approve, reject, delete), run input
-  list/meta/files, log/summary/out, websocket run snapshots,
+  with refreshPins keeping workItemId, retry, approve, reject, delete),
+  run input list/meta/files, log/summary/out, websocket run snapshots,
   `runs_changed`, log chunks and workflow file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
   scheduler, command and agent tasks (CliAdapter: trust, catalog,
   `composeFlags`), connector registry (`connectors/`, fake for tests),
-  connections store, model/effort resolve and preflight warns
-  (including connection uses), app-owned trust markers, spawn into
-  `graph.json`, resume, approval, cancel, manual retry, conditions
-  (exit / expr / agent judge), retry, repeat, `agents` limits, run
-  deletion, workflow id rebind on rename, frozen `RUN_INPUT`, Manual
-  source, queued runs under `maxConcurrentRuns`, run summary cache
-  (onEvent + rebuild after resume), work item store under `workitems/`
-  (atomic yaml/notes, attachments, `.trash`), per-attempt port leases
-  (`PORT` / `FLOWS_PORT_*`) and `<workflow>/.cache` package dirs.
+  connections store, library revisions/pull/pins (`library.ts`, run
+  `resources/` + `RESOURCE_*`), work item store under `workitems/`,
+  model/effort resolve and preflight warns (including connection uses),
+  app-owned trust markers, spawn into `graph.json`, resume, approval,
+  cancel, manual retry, conditions, retry, repeat, `agents` limits, run
+  deletion, workflow id rebind, frozen `RUN_INPUT`, Manual source,
+  queued runs, run summary cache, port leases and `<workflow>/.cache`.
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`/`workItemId`, `workItemSchema`), websocket (`runs_changed`),
-  workflow (`inputs`, `agent` defaults, model/effort, task `uses`),
-  `connection.yaml`, events (`queued`, `run_activated`, `workItemId` on
-  `run_started`, attempt `model`/`effort`/`modelSource`) and YAML
-  Document edits that keep comments and key order.
+  `needsYou`/`workItemId`, `workItemSchema`), websocket
+  (`runs_changed`), workflow (`inputs`, `agent` defaults, model/effort,
+  task `uses`), `connection.yaml`, library list/pull and
+  `resources.json`, events (`queued`, `run_activated`, `library_pulled`,
+  `workItemId` on `run_started`, attempt `model`/`effort`/`modelSource`)
+  and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: Sidebar Platform (Home, Workflows, Runs) plus Workflows
   group and Settings; `/workflows` and `/runs` tables; workflow detail

@@ -29,6 +29,24 @@ export {
   type ConnectionsList,
   type ConnectionCheckResult,
 } from "./api-connections.ts"
+export {
+  resourcePinSchema,
+  resourcesJsonSchema,
+  resourcesIndexSchema,
+  libraryPullBodySchema,
+  libraryRevisionSchema,
+  libraryEntitySchema,
+  libraryListSchema,
+  libraryPullResultSchema,
+  type ResourcePin,
+  type ResourcesJson,
+  type ResourcesIndex,
+  type LibraryPullBody,
+  type LibraryRevision,
+  type LibraryEntity,
+  type LibraryList,
+  type LibraryPullResult,
+} from "./library.ts"
 export { healthSchema, type Health } from "./health.ts"
 export {
   commandTaskSchema,
@@ -143,6 +161,7 @@ export {
   runFailedEventSchema,
   runDeletedEventSchema,
   taskRetryRequestedEventSchema,
+  libraryPulledEventSchema,
   type TaskStatus,
   type RunStatus,
   type EngineEvent,

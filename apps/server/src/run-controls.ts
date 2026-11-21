@@ -103,7 +103,7 @@ export function createRunControls({
           )
           if (dup) return dup
           try {
-            const handle = engine.startRun({
+            const handle = await engine.startRun({
               workflowDir: dir,
               trustGrant: body.trustGrant,
               values: validated.values,
@@ -177,11 +177,13 @@ export function createRunControls({
         )
         if (dup) return dup
         try {
-          const handle = engine.startRun({
+          const handle = await engine.startRun({
             workflowDir: dir,
             trustGrant: body.trustGrant,
             values: validated.values,
             files: validated.files,
+            pinFromRunId: runId,
+            refreshPins: body.refreshPins,
             workItemId,
           })
           const resBody: StartRunResponse = {

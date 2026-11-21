@@ -61,3 +61,25 @@ export function connectionDir(home: string, connectionId: string): string {
 export function secretsDir(home: string, connectionId: string): string {
   return join(home, "secrets", connectionId)
 }
+
+export function libraryDir(home: string): string {
+  return join(home, "library")
+}
+
+export function libraryEntityDir(
+  home: string,
+  connectionId: string,
+  kind: string,
+  entityId: string
+): string {
+  return join(libraryDir(home), connectionId, kind, encodeEntityId(entityId))
+}
+
+/** One path segment; `/` in entity ids becomes `%2F` (DES-026). */
+export function encodeEntityId(entityId: string): string {
+  return entityId.replaceAll("/", "%2F")
+}
+
+export function decodeEntityId(segment: string): string {
+  return segment.replaceAll("%2F", "/")
+}

@@ -66,7 +66,7 @@ tasks:
     const homeReal = engine.homeRealpath()
     expect(pathComponentCount(homeReal)).toBeGreaterThanOrEqual(3)
 
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "live1",
       trustGrant: "once",

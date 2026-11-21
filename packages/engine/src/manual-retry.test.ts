@@ -40,7 +40,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "r1" })
+    const handle = await engine.startRun({ workflowDir, runId: "r1" })
     const failed = await handle.wait()
     expect(failed.status).toBe("failed")
     expect(failed.tasks.a?.status).toBe("failed")

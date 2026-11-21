@@ -69,7 +69,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "r1" })
+    const handle = await engine.startRun({ workflowDir, runId: "r1" })
 
     await waitFor(() => handle.state().tasks.a?.status === "awaiting_approval")
     expect(handle.state().status).toBe("running")
@@ -98,7 +98,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "r2" })
+    const handle = await engine.startRun({ workflowDir, runId: "r2" })
     await waitFor(() => handle.state().tasks.a?.status === "awaiting_approval")
 
     engine.rejectTask("r2", "a")
@@ -128,7 +128,7 @@ tasks:
     )
     const marker = join(workflowDir, "free.txt")
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "r3" })
+    const handle = await engine.startRun({ workflowDir, runId: "r3" })
 
     await waitFor(
       () => handle.state().tasks.gated?.status === "awaiting_approval"
@@ -173,7 +173,7 @@ tasks:
     )
     const started = join(workflowDir, "started.txt")
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "c1" })
+    const handle = await engine.startRun({ workflowDir, runId: "c1" })
 
     await waitFor(() => existsSync(started))
     await waitFor(() => handle.state().tasks.slow?.status === "running")
@@ -207,7 +207,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "d1" })
+    const handle = await engine.startRun({ workflowDir, runId: "d1" })
     await handle.wait()
 
     const runRoot = join(workflowDir, "runs", "d1")
@@ -234,7 +234,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    await engine.startRun({ workflowDir, runId: "d2" }).wait()
+    await (await engine.startRun({ workflowDir, runId: "d2" })).wait()
 
     const log = new EventLog(appDbPath(home))
     log.append({
@@ -269,7 +269,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "d3" })
+    const handle = await engine.startRun({ workflowDir, runId: "d3" })
     await waitFor(() => handle.state().tasks.a?.status === "awaiting_approval")
     expect(() => engine.deleteRun("d3")).toThrow(/live/)
     engine.cancelRun("d3")
