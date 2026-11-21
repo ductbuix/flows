@@ -6,8 +6,20 @@ status: active
 summary: Workflow list and React Flow graph editor synced with workflow.yaml (CodeMirror pane), auto layout, spawn marker.
 tags: [ui, web, editor, yaml]
 related:
-  [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013,
-   DES-020, DES-021, DES-022, DES-023]
+  [
+    DES-001,
+    DES-002,
+    DES-004,
+    DES-005,
+    DES-008,
+    DES-009,
+    DES-012,
+    DES-013,
+    DES-020,
+    DES-021,
+    DES-022,
+    DES-023,
+  ]
 updated: 2026-11-21
 ---
 
@@ -132,7 +144,9 @@ Final shapes are zod schemas in `packages/shared`. Names are placeholders.
 
 `workflow-list`, `workflow-row-<id>`, `graph-canvas`, `node-<taskId>`,
 `edge-<from>-<to>`, `inspector`, `field-<name>`, `yaml-pane`,
-`yaml-errors`, `save-button`, `promote-<taskId>`.
+`yaml-errors`, `save-button`, `promote-<taskId>`, `delete-task`,
+`delete-task-body` (with shared `confirm-dialog` / `confirm-ok` /
+`confirm-cancel`).
 Workflow and memory actions add their own ids in DES-013.
 
 ## Playwright evidence
@@ -142,6 +156,8 @@ Workflow and memory actions add their own ids in DES-013.
 - Edit a task's `name` (or the YAML `name`) and assert the node
   label changes.
 - Break the YAML and assert `yaml-errors` shows and the graph is kept.
+- Delete a task from the drawer and with Delete/Backspace, confirm
+  dependents, undo, guard the last task, and save (DES-022).
 - Video and screenshots go in the PR.
 
 ## Resolved questions

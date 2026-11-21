@@ -55,6 +55,14 @@ export {
   type JudgeSlot,
 } from "./task-ids.ts"
 export {
+  taskLabel,
+  dependentsOf,
+  collectMentionHits,
+  removedTaskIds,
+  type TaskLabel,
+  type MentionHit,
+} from "./task-remove.ts"
+export {
   countAgentJudges,
   collectRawWorkflowIssues,
   collectWorkflowIssues,

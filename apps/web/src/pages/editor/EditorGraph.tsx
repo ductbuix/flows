@@ -56,10 +56,7 @@ export function EditorGraph({
   onSelectTask,
   onConnect,
 }: Props) {
-  const { nodes, edges } = useMemo(
-    () => buildEditorGraph(workflow),
-    [workflow]
-  )
+  const { nodes, edges } = useMemo(() => buildEditorGraph(workflow), [workflow])
   const flowNodes = useMemo(
     () =>
       nodes.map((n) => ({
@@ -81,6 +78,8 @@ export function EditorGraph({
         nodesDraggable={false}
         nodesConnectable
         elementsSelectable
+        deleteKeyCode={null}
+        multiSelectionKeyCode={null}
         fitView
         onNodeClick={(_e, node) => onSelectTask(node.id)}
         onPaneClick={() => onSelectTask(undefined)}

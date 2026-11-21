@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
+import { ActionButton } from "@/components/ActionButton"
 import { AgentTaskFields } from "./AgentTaskFields"
 import { InputsPanel } from "./InputsPanel"
 import { MemoryPanel } from "./MemoryPanel"
@@ -30,6 +31,7 @@ type Props = {
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
   onChangeInputs: (inputs: WorkflowInputDecl[] | undefined) => void
   onChangeLimits: (limits: WorkflowLimits | undefined) => void
+  onDeleteTask: (taskId: string) => void
 }
 
 export function Inspector({
@@ -41,6 +43,7 @@ export function Inspector({
   onChangeTask,
   onChangeInputs,
   onChangeLimits,
+  onDeleteTask,
 }: Props) {
   const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
   const task = taskIndex >= 0 ? workflow.tasks[taskIndex] : undefined
@@ -150,6 +153,19 @@ export function Inspector({
           onCheckedChange={(approval) => onChangeTask(task.id, { approval })}
         />
       </Field>
+      <div className="border-t pt-3">
+        <ActionButton
+          type="button"
+          variant="destructive"
+          size="sm"
+          data-testid="delete-task"
+          disabled={workflow.tasks.length <= 1}
+          disabledReason="A workflow needs at least one task"
+          onClick={() => onDeleteTask(task.id)}
+        >
+          Delete task
+        </ActionButton>
+      </div>
     </div>
   )
 }
