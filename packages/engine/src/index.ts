@@ -32,8 +32,25 @@ export {
   attemptDir,
   connectionsDir,
   connectionDir,
+  secretsRoot,
   secretsDir,
 } from "./paths.ts"
+export {
+  cookiesPath,
+  profileDir,
+  ensureSecretsDir,
+  readCookies,
+  writeCookies,
+  isSignedIn,
+  removeSignIn,
+  type StoredCookie,
+} from "./secrets.ts"
+export {
+  BrowserSignInError,
+  connectionSignInHost,
+  signInWithBrowser,
+  type BrowserSignInResult,
+} from "./browser-sign-in.ts"
 export {
   listConnections,
   readConnection,

@@ -58,7 +58,7 @@ export function RunHeader({ run, view, onViewChange, wsState, stale }: Props) {
           <Badge
             data-testid="sandbox-badge"
             variant="destructive"
-            title="Run is not sandboxed"
+            title="Secrets protection is off; run is not sandboxed"
           >
             not sandboxed
           </Badge>

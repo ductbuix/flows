@@ -58,6 +58,10 @@ export function connectionDir(home: string, connectionId: string): string {
   return join(connectionsDir(home), connectionId)
 }
 
+export function secretsRoot(home: string): string {
+  return join(home, "secrets")
+}
+
 export function secretsDir(home: string, connectionId: string): string {
-  return join(home, "secrets", connectionId)
+  return join(secretsRoot(home), connectionId)
 }

@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -9,9 +10,14 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { createEngine } from "./engine.ts"
+import { loadWorkflowFile } from "./workflow.ts"
+import { resolveAppHomeRealpath } from "./paths.ts"
+import { runPreflightChecks } from "./preflight.ts"
+import { cookiesPath, writeCookies } from "./secrets.ts"
 import {
   buildSandboxSpawn,
   canApplySandbox,
+  sandboxSecretsRoot,
   sandboxWriteRoot,
 } from "./sandbox.ts"
 
@@ -84,9 +90,7 @@ describe("sandbox write boundary", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await engine
-      .startRun({ workflowDir: wf, runId: "r1" })
-      .wait()
+    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
 
     expect(state.status).toBe("succeeded")
     expect(state.tasks.inside?.status).toBe("succeeded")
@@ -126,11 +130,84 @@ describe("sandbox write boundary", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await engine
-      .startRun({ workflowDir: wf, runId: "r1" })
-      .wait()
+    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
 
     expect(state.status).toBe("succeeded")
     expect(state.sandboxed).toBe(false)
+
+    const checks = await runPreflightChecks({
+      homeRealpath: resolveAppHomeRealpath(home),
+      home,
+      workflowDir: wf,
+      workflow: loadWorkflowFile(wf),
+    })
+    const sandbox = checks.find((c) => c.id === "sandbox")
+    expect(sandbox?.status).toBe("warn")
+    expect(sandbox?.message).toMatch(/secrets\/ protection is off/)
+  })
+
+  it("denies sandboxed tasks from reading secrets/cookies.json", async () => {
+    if (!canApplySandbox()) return
+
+    const home = tempHome()
+    writeCookies(home, "rally-payments", [
+      {
+        name: "sid",
+        value: "sandbox-secret-cookie",
+        domain: "example.com",
+        path: "/",
+      },
+    ])
+    const cookieFile = cookiesPath(home, "rally-payments")
+    const wf = join(home, "workflows", "secrets-deny")
+    mkdirSync(wf, { recursive: true })
+    const escaped = cookieFile.replaceAll("'", "'\\''")
+    writeFileSync(
+      join(wf, "workflow.yaml"),
+      [
+        "id: secrets-deny",
+        "tasks:",
+        "  - id: read-secret",
+        "    kind: command",
+        `    run: "cat '${escaped}' > \\"$TASK_OUT/leak.txt\\""`,
+        "    continueOnError: true",
+        "",
+      ].join("\n")
+    )
+
+    const engine = createEngine({ home })
+    engines.push(engine)
+    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+
+    expect(state.status).toBe("succeeded")
+    expect(state.tasks["read-secret"]?.status).toBe("failed")
+    expect(state.sandboxed).toBe(true)
+    const leakPath = join(
+      wf,
+      "runs",
+      "r1",
+      "tasks",
+      "read-secret",
+      "latest",
+      "out",
+      "leak.txt"
+    )
+    // Redirect may create an empty file before cat is denied.
+    if (existsSync(leakPath)) {
+      expect(readFileSync(leakPath, "utf8")).not.toContain(
+        "sandbox-secret-cookie"
+      )
+    }
+    const stderr = readFileSync(
+      join(wf, "runs", "r1", "tasks", "read-secret", "attempt-1", "stderr.log"),
+      "utf8"
+    )
+    expect(stderr).toMatch(/Operation not permitted|Permission denied/)
+
+    const spawn = buildSandboxSpawn("true", wf)
+    expect(spawn.sandboxed).toBe(true)
+    if (spawn.sandboxed) {
+      expect(spawn.args).toContain(`SECRETS_DIR=${sandboxSecretsRoot(wf)}`)
+    }
   })
 })

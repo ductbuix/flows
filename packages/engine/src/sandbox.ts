@@ -1,11 +1,12 @@
 import { existsSync, mkdirSync, realpathSync } from "node:fs"
 import { homedir, platform } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 
 /**
- * Seatbelt profile: deny writes except under WF_DIR, and optionally
- * CURSOR_HOME (Cursor writes projects/, chats/, and related state under
- * ~/.cursor even with --trust; BL-018 live check).
+ * Seatbelt profile: deny writes except under WF_DIR, deny reads under
+ * SECRETS_DIR, and optionally allow writes under CURSOR_HOME (Cursor
+ * writes projects/, chats/, and related state under ~/.cursor even with
+ * --trust; BL-018 live check).
  */
 export const SANDBOX_PROFILE = `(version 1)
 (allow default)
@@ -13,6 +14,7 @@ export const SANDBOX_PROFILE = `(version 1)
 (allow file-write* (subpath (param "WF_DIR")))
 (allow file-write-data (literal "/dev/null"))
 (allow file-ioctl (literal "/dev/null"))
+(deny file-read* (subpath (param "SECRETS_DIR")))
 `
 
 export const SANDBOX_PROFILE_WITH_CURSOR = `${SANDBOX_PROFILE}
@@ -35,6 +37,17 @@ export function sandboxWriteRoot(workflowRoot: string): string {
   return realpathSync(workflowRoot)
 }
 
+/**
+ * Secrets root for the seatbelt deny. Workflows live at
+ * `<home>/workflows/<id>`; secrets at `<home>/secrets`.
+ */
+export function sandboxSecretsRoot(workflowRoot: string): string {
+  const home = dirname(dirname(workflowRoot))
+  const secrets = join(home, "secrets")
+  mkdirSync(secrets, { recursive: true })
+  return realpathSync(secrets)
+}
+
 export type SandboxSpawn =
   | { sandboxed: true; command: string; args: string[] }
   | { sandboxed: false; command: string; args: string[] }
@@ -46,7 +59,7 @@ export type SandboxSpawnOptions = {
 
 /**
  * Build the argv for a task shell. When sandboxed, runs under sandbox-exec
- * with writes limited to the workflow dir.
+ * with writes limited to the workflow dir and secrets/ unreadable.
  */
 export function buildSandboxSpawn(
   shellCommand: string,
@@ -57,6 +70,15 @@ export function buildSandboxSpawn(
     return { sandboxed: false, command: "/bin/sh", args: ["-c", shellCommand] }
   }
   const wfDir = sandboxWriteRoot(workflowRoot)
+  const secretsDirPath = sandboxSecretsRoot(workflowRoot)
+  const baseArgs = [
+    "-p",
+    options.allowCursorHome ? SANDBOX_PROFILE_WITH_CURSOR : SANDBOX_PROFILE,
+    "-D",
+    `WF_DIR=${wfDir}`,
+    "-D",
+    `SECRETS_DIR=${secretsDirPath}`,
+  ]
   if (options.allowCursorHome) {
     const cursorHome = join(homedir(), ".cursor")
     mkdirSync(cursorHome, { recursive: true })
@@ -65,10 +87,7 @@ export function buildSandboxSpawn(
       sandboxed: true,
       command: SANDBOX_EXEC,
       args: [
-        "-p",
-        SANDBOX_PROFILE_WITH_CURSOR,
-        "-D",
-        `WF_DIR=${wfDir}`,
+        ...baseArgs,
         "-D",
         `CURSOR_HOME=${cursorRoot}`,
         "/bin/sh",
@@ -80,14 +99,6 @@ export function buildSandboxSpawn(
   return {
     sandboxed: true,
     command: SANDBOX_EXEC,
-    args: [
-      "-p",
-      SANDBOX_PROFILE,
-      "-D",
-      `WF_DIR=${wfDir}`,
-      "/bin/sh",
-      "-c",
-      shellCommand,
-    ],
+    args: [...baseArgs, "/bin/sh", "-c", shellCommand],
   }
 }

@@ -18,44 +18,22 @@ Schema and writing rules: `docs/README.md`.
 ## Layout
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`).
-  Dev on `127.0.0.1:5173`, proxies `/api` to the server.
-- `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
-  create/rename/delete (409 while live), GET/PUT (hash, 409), memory
-  CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
-  preflight, GET `/cli/:cli/models`, connections CRUD/check and
-  `GET /connectors`, work item CRUD (notes, attachments, trash on
-  delete), run REST (GET `/runs` summaries with
-  status/workflowId/limit, start with trustGrant/values/files,
-  confirmDuplicate, cancel, rerun, retry, approve, reject, delete), run
-  input list/meta/files, log/summary/out, websocket run snapshots,
-  `runs_changed`, log chunks and workflow file watches.
-- `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command and agent tasks (CliAdapter: trust, catalog,
-  `composeFlags`), connector registry (`connectors/`, fake for tests),
-  connections store, model/effort resolve and preflight warns
-  (including connection uses), app-owned trust markers, spawn into
-  `graph.json`, resume, approval, cancel, manual retry, conditions
-  (exit / expr / agent judge), retry, repeat, `agents` limits, run
-  deletion, workflow id rebind on rename, frozen `RUN_INPUT`, Manual
-  source, queued runs under `maxConcurrentRuns`, run summary cache
-  (onEvent + rebuild after resume), work item store under `workitems/`
-  (atomic yaml/notes, attachments, `.trash`), per-attempt port leases
-  (`PORT` / `FLOWS_PORT_*`) and `<workflow>/.cache` package dirs.
-- `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`, `workItemSchema`), websocket (`runs_changed`), workflow (`inputs`,
-  `agent` defaults, model/effort, task `uses`), `connection.yaml`,
-  events (`queued`, `run_activated`, attempt `model`/`effort`/
-  `modelSource`) and YAML Document edits that keep comments and key
-  order.
+  Dev on `127.0.0.1:5173`, proxies `/api` to the server. Sidebar Platform
+  (Home, Workflows, Runs) plus Workflows group and Settings; graph editor;
+  run view; `/connections` and `/connections/:id` (browser sign-in /
+  remove); Settings for theme, CLI info and always-trust.
+- `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflows,
+  memory, files, promote, trust, CLI models, connections
+  CRUD/check/sign-in and `GET /connectors`, work items, run REST and
+  websockets.
+- `packages/engine`: SQLite event log + settings, fold, scheduler,
+  command/agent tasks, connector registry (fake for tests), connections,
+  cookie secrets under `secrets/` (Chrome sign-in, sandbox denies reads),
+  preflight, trust markers, spawn, resume, approval, conditions, retry,
+  ports/caches, work items.
+- `packages/shared`: zod schemas for API, websocket, workflow,
+  `connection.yaml`, events and YAML Document edits.
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/web`: Sidebar Platform (Home, Workflows, Runs) plus Workflows
-  group and Settings; `/workflows` and `/runs` tables; graph editor
-  (React Flow Card nodes, YAML behind Advanced, Prompt Input, Model
-  Selector, inputs, maxConcurrentRuns, PageTitle, Section,
-  RunStatusBadge, `/dev/kit`), memory/*.md editor, workflow run list,
-  start/rerun form, run view (Confirmation or failure Alert first, Plan
-  beside Table, task Card Tabs Output/Terminal/Attempts/Environment,
-  SUMMARY.md, promote) with live websocket updates; Settings for theme, CLI info and always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.

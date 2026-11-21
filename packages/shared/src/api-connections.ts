@@ -37,3 +37,22 @@ export const connectionCheckResultSchema = z.object({
 })
 
 export type ConnectionCheckResult = z.infer<typeof connectionCheckResultSchema>
+
+/** Sign-in status for a connection (cookies under secrets/; DES-026). */
+export const connectionSignInStatusSchema = z.object({
+  signedIn: z.boolean(),
+})
+
+export type ConnectionSignInStatus = z.infer<
+  typeof connectionSignInStatusSchema
+>
+
+/** Response after browser sign-in completes and check runs. */
+export const connectionBrowserSignInResultSchema = z.object({
+  signedIn: z.boolean(),
+  check: connectionCheckResultSchema,
+})
+
+export type ConnectionBrowserSignInResult = z.infer<
+  typeof connectionBrowserSignInResultSchema
+>

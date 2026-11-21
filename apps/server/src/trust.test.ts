@@ -66,7 +66,7 @@ describe("trust API", () => {
   })
 
   it("preflight and 409 trust_required on start", async () => {
-    const { app, engine } = setup()
+    const { app, engine, home } = setup()
     const pre = await app.request("/api/workflows/agent-hi/runs/preflight", {
       method: "POST",
     })
@@ -89,12 +89,21 @@ describe("trust API", () => {
     const err = (await start.json()) as { error: string }
     expect(err.error).toBe("trust_required")
 
-    const ok = await app.request("/api/workflows/agent-hi/runs", {
+    // Grant once against a command workflow so the run finishes before close.
+    const cmd = join(home, "workflows", "cmd-hi")
+    mkdirSync(cmd, { recursive: true })
+    writeFileSync(
+      join(cmd, "workflow.yaml"),
+      "id: cmd-hi\ntasks:\n  - id: a\n    kind: command\n    run: echo ok\n"
+    )
+    const ok = await app.request("/api/workflows/cmd-hi/runs", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ requestId: "r2", trustGrant: "once" }),
     })
     expect(ok.status).toBe(200)
+    const started = (await ok.json()) as { runId: string }
+    await engine.resumeRun(started.runId)!.wait()
     engine.close()
   })
 })
