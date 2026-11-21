@@ -119,6 +119,7 @@ export class Engine {
     const workflow = this.loadWorkflow(options.workflowDir)
     const input: PreflightInput = {
       homeRealpath: this.homeRealpath(),
+      home: this.home,
       workflowDir: options.workflowDir,
       workflow,
       attemptDir: options.attemptDir,

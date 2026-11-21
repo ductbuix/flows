@@ -180,6 +180,27 @@ describe("workflowSchema", () => {
       }).success
     ).toBe(false)
   })
+
+  it("accepts task uses with read and propose access", () => {
+    const workflow = workflowSchema.parse({
+      id: "with-uses",
+      tasks: [
+        {
+          id: "a",
+          kind: "agent",
+          cli: "claude",
+          uses: [
+            { connection: "rally-payments", access: "read" },
+            { connection: "github-acme", access: "propose" },
+          ],
+        },
+      ],
+    })
+    expect(workflow.tasks[0]?.uses).toEqual([
+      { connection: "rally-payments", access: "read" },
+      { connection: "github-acme", access: "propose" },
+    ])
+  })
 })
 
 describe("parseWorkflowYaml DES-020 checks", () => {

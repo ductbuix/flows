@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { taskUsesSchema } from "./connection.ts"
 import { isSafeTaskId } from "./task-ids.ts"
 import {
   effortSchema,
@@ -86,6 +87,8 @@ const taskBaseFields = {
    * (DES-020). Authored tasks omit this and use `tasks/<id>/`.
    */
   promptDir: z.string().min(1).optional(),
+  /** Outside systems this task reads or proposes against (DES-026). */
+  uses: taskUsesSchema.optional(),
 }
 
 /** Command task (BL-004, BL-006, BL-014). */

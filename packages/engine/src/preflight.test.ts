@@ -34,6 +34,7 @@ tasks:
     const workflow = loadWorkflowFile(wf)
     const checks = await runPreflightChecks({
       homeRealpath: resolveAppHomeRealpath(home),
+      home,
       workflowDir: wf,
       workflow,
     })
@@ -67,6 +68,7 @@ tasks:
     const workflow = loadWorkflowFile(wf)
     const checks = await runPreflightChecks({
       homeRealpath: resolveAppHomeRealpath(home),
+      home,
       workflowDir: wf,
       workflow,
     })
@@ -96,6 +98,7 @@ tasks:
     const workflow = loadWorkflowFile(wf)
     const checks = await runPreflightChecks({
       homeRealpath: resolveAppHomeRealpath(home),
+      home,
       workflowDir: wf,
       workflow,
     })

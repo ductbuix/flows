@@ -41,3 +41,15 @@ export function attemptDir(
 ): string {
   return join(taskDir(runRoot, taskId), `attempt-${attempt}`)
 }
+
+export function connectionsDir(home: string): string {
+  return join(home, "connections")
+}
+
+export function connectionDir(home: string, connectionId: string): string {
+  return join(connectionsDir(home), connectionId)
+}
+
+export function secretsDir(home: string, connectionId: string): string {
+  return join(home, "secrets", connectionId)
+}
