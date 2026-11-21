@@ -48,6 +48,25 @@ describe("agent adapters", () => {
     expect(cmd).toContain(
       shellSingleQuote(agentPrompt("/wf/tasks/plan.md", true))
     )
+    expect(cmd).not.toContain("--model")
+    expect(cmd).not.toContain("--effort")
+  })
+
+  it("adds Claude model and effort flags from task and workflow", () => {
+    const cmd = buildAgentShellCommand(
+      {
+        id: "plan",
+        kind: "agent",
+        cli: "claude",
+        model: "opus",
+        needs: [],
+      },
+      "/wf/tasks/plan.md",
+      { workflowRoot: "/wf", attemptRoot: "/wf/runs/r/tasks/plan/attempt-1" },
+      { claude: { effort: "high" } }
+    )
+    expect(cmd).toContain(`--model ${shellSingleQuote("opus")}`)
+    expect(cmd).toContain(`--effort ${shellSingleQuote("high")}`)
   })
 
   it("builds a headless Cursor CLI command", () => {
@@ -67,6 +86,23 @@ describe("agent adapters", () => {
     expect(cmd).toContain(`--workspace ${shellSingleQuote(attempt)}`)
     expect(cmd).toContain(`--add-dir ${shellSingleQuote("/wf")}`)
     expect(cmd).not.toContain("out/spawn")
+    expect(cmd).not.toMatch(/--model/)
+  })
+
+  it("adds a composed Cursor --model flag", () => {
+    const cmd = buildAgentShellCommand(
+      {
+        id: "plan",
+        kind: "agent",
+        cli: "cursor",
+        model: "grok-4.7",
+        effort: "high",
+        needs: [],
+      },
+      "/wf/tasks/plan.md",
+      { workflowRoot: "/wf", attemptRoot: "/wf/runs/r/tasks/plan/attempt-1" }
+    )
+    expect(cmd).toContain(`--model ${shellSingleQuote("grok-4.7-high")}`)
   })
 
   it("copies listed memory files into input/memory/", () => {

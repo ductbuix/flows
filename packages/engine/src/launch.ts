@@ -6,6 +6,7 @@ import type {
   WorkflowLimits,
 } from "@workspace/shared"
 import { isAgentTask } from "@workspace/shared"
+import { resolveAttemptModelFields } from "./attempt-model.ts"
 import { watchChild, type AttemptWatchHost } from "./attempt-watch.ts"
 import { prepareAttemptDirs } from "./dirs.ts"
 import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
@@ -114,6 +115,7 @@ export function launchTaskAttempt(
     host.state().graph
   )
 
+  const modelFields = resolveAttemptModelFields(task, host.state().graph)
   host.append({
     type: "attempt_launched",
     runId: host.runId,
@@ -122,6 +124,7 @@ export function launchTaskAttempt(
     pid,
     sandboxed,
     timeout,
+    ...(modelFields ?? {}),
     at: now(),
   })
   watchChild(host.watchHost(), taskId, attempt, child, {

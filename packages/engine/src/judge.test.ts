@@ -2,7 +2,14 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { buildJudgeShellCommand, judgePrompt, runAgentJudge } from "./judge.ts"
+import { shellSingleQuote } from "./agent-prompt.ts"
+import {
+  buildJudgeShellCommand,
+  judgeCacheKey,
+  judgePrompt,
+  resolveJudgeModelEffort,
+  runAgentJudge,
+} from "./judge.ts"
 
 const dirs: string[] = []
 const prevPath = process.env.PATH
@@ -43,6 +50,39 @@ describe("judge adapters", () => {
       "agent -p --force --trust"
     )
     expect(judgePrompt("/wf/j.md")).toContain("Exit with code 0")
+  })
+
+  it("adds resolved model flags to judge commands", () => {
+    const claude = buildJudgeShellCommand(
+      { cli: "claude", model: "haiku", effort: "low" },
+      "/wf/j.md"
+    )
+    expect(claude).toContain(`--model ${shellSingleQuote("haiku")}`)
+    expect(claude).toContain(`--effort ${shellSingleQuote("low")}`)
+    const cursor = buildJudgeShellCommand(
+      { cli: "cursor", model: "auto" },
+      "/wf/j.md",
+      {
+        parentTask: {
+          id: "t",
+          kind: "agent",
+          cli: "cursor",
+          effort: "high",
+          needs: [],
+        },
+      }
+    )
+    expect(cursor).toContain(`--model ${shellSingleQuote("auto-high")}`)
+  })
+
+  it("includes resolved model and effort in the cache key", () => {
+    const a = resolveJudgeModelEffort({ cli: "claude", model: "opus" })
+    const b = resolveJudgeModelEffort({ cli: "claude", model: "haiku" })
+    const keyA = judgeCacheKey({ cli: "claude" }, "/j.md", "/wf", "/a", a)
+    const keyB = judgeCacheKey({ cli: "claude" }, "/j.md", "/wf", "/a", b)
+    expect(keyA).not.toBe(keyB)
+    expect(keyA).toContain("opus")
+    expect(keyB).toContain("haiku")
   })
 
   it("passes when the stub CLI exits 0", async () => {

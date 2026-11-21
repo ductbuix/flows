@@ -1,6 +1,10 @@
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
-import type { AgentTask } from "@workspace/shared"
+import {
+  resolveModelEffort,
+  type AgentTask,
+  type WorkflowAgent,
+} from "@workspace/shared"
 import { getCliAdapter } from "./cli-adapters.ts"
 
 import type { AgentLaunchPaths } from "./agent-prompt.ts"
@@ -19,12 +23,15 @@ export {
 export function buildAgentShellCommand(
   task: AgentTask,
   instructionsAbsPath: string,
-  paths: AgentLaunchPaths
+  paths: AgentLaunchPaths,
+  workflowAgent?: WorkflowAgent
 ): string {
+  const resolved = resolveModelEffort({ task, workflowAgent })
   return getCliAdapter(task.cli).buildAgentCommand(
     task,
     instructionsAbsPath,
-    paths
+    paths,
+    resolved
   )
 }
 

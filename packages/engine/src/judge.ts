@@ -1,19 +1,48 @@
 import { spawn, type ChildProcess } from "node:child_process"
 import { existsSync } from "node:fs"
 import { resolve } from "node:path"
-import type { AgentJudge } from "@workspace/shared"
+import {
+  resolveModelEffort,
+  type AgentJudge,
+  type AgentTask,
+  type ResolvedModelEffort,
+  type WorkflowAgent,
+} from "@workspace/shared"
 import { getCliAdapter } from "./cli-adapters.ts"
 import { killProcessGroup } from "./pid.ts"
 import { DEFAULT_ATTEMPT_TIMEOUT_SECONDS } from "./timeout.ts"
 
 export { judgePrompt } from "./agent-prompt.ts"
 
+export type JudgeResolveOpts = {
+  parentTask?: AgentTask
+  workflowAgent?: WorkflowAgent
+}
+
 /** Headless Claude / Cursor CLI command for a condition judge. */
 export function buildJudgeShellCommand(
   judge: AgentJudge,
-  instructionsAbsPath: string
+  instructionsAbsPath: string,
+  opts?: JudgeResolveOpts
 ): string {
-  return getCliAdapter(judge.cli).buildJudgeCommand(judge, instructionsAbsPath)
+  const resolved = resolveJudgeModelEffort(judge, opts)
+  return getCliAdapter(judge.cli).buildJudgeCommand(
+    judge,
+    instructionsAbsPath,
+    resolved
+  )
+}
+
+export function resolveJudgeModelEffort(
+  judge: AgentJudge,
+  opts?: JudgeResolveOpts
+): ResolvedModelEffort {
+  return resolveModelEffort({
+    judge,
+    judgeCli: judge.cli,
+    task: opts?.parentTask,
+    workflowAgent: opts?.workflowAgent,
+  })
 }
 
 export type RunJudgeOptions = {
@@ -24,6 +53,8 @@ export type RunJudgeOptions = {
   attemptRoot: string
   /** Seconds; defaults to 900 (DES-019). */
   timeoutSeconds?: number
+  parentTask?: AgentTask
+  workflowAgent?: WorkflowAgent
 }
 
 /**
@@ -44,7 +75,10 @@ export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
   }
   if (!existsSync(attemptRoot)) return Promise.resolve(false)
 
-  const cmd = buildJudgeShellCommand(judge, instructionsAbs)
+  const cmd = buildJudgeShellCommand(judge, instructionsAbs, {
+    parentTask: options.parentTask,
+    workflowAgent: options.workflowAgent,
+  })
   return new Promise((resolvePromise) => {
     let settled = false
     const finish = (ok: boolean) => {
@@ -75,7 +109,15 @@ export function judgeCacheKey(
   judge: AgentJudge,
   instructionsAbsPath: string,
   workflowRoot: string,
-  attemptRoot: string
+  attemptRoot: string,
+  resolved: ResolvedModelEffort
 ): string {
-  return `${judge.cli}\0${instructionsAbsPath}\0${workflowRoot}\0${attemptRoot}`
+  return [
+    judge.cli,
+    resolved.model ?? "",
+    resolved.effort ?? "",
+    instructionsAbsPath,
+    workflowRoot,
+    attemptRoot,
+  ].join("\0")
 }

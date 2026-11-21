@@ -98,6 +98,37 @@ describe("foldEvents", () => {
     expect(state?.sandboxed).toBe(true)
   })
 
+  it("records model, effort, and modelSource on attempt_launched", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_launched",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        pid: 7,
+        sandboxed: true,
+        model: "opus",
+        effort: "high",
+        modelSource: "task",
+        at: "t2",
+      },
+    ])
+    const attempt = state?.tasks.a?.attempts[0]
+    expect(attempt).toMatchObject({
+      model: "opus",
+      effort: "high",
+      modelSource: "task",
+    })
+  })
+
   it("marks a task running then succeeded from attempt events", () => {
     const state = foldEvents([
       started(),

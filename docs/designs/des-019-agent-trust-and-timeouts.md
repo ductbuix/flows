@@ -5,7 +5,18 @@ type: design
 status: active
 summary: App-owned trust for ~/.flowapp, a warn-only pre-run check, and a per-attempt timeout with mapped failure reasons.
 tags: [agents, trust, sandbox, timeout, engine, ui]
-related: [DES-003, DES-004, DES-005, DES-006, DES-007, DES-015, DES-023, BL-017, BL-018]
+related:
+  [
+    DES-003,
+    DES-004,
+    DES-005,
+    DES-006,
+    DES-007,
+    DES-015,
+    DES-023,
+    BL-017,
+    BL-018,
+  ]
 updated: 2026-11-21
 ---
 
@@ -134,6 +145,9 @@ Checks:
 - Each needed CLI is installed; show its version.
 - The exact flags the adapter will use, including that Cursor
   `--force` auto-approves actions.
+- Resolved `model` and `effort` for each agent task and judge
+  (DES-023). Warn when a model is unknown or an effort is not
+  offered for that model; never block.
 
 A path whose realpath falls outside `FLOWAPP_HOME` is a warning
 only, like every other check. That is an accepted risk: the user can

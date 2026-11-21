@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { effortSchema } from "./model-effort.ts"
 import { taskSchema, workflowSchema } from "./workflow.ts"
 
 export const taskStatusSchema = z.enum([
@@ -67,6 +68,12 @@ export const attemptLaunchedEventSchema = z.object({
   sandboxed: z.boolean().optional(),
   /** Resolved timeout in seconds for this attempt (DES-019). */
   timeout: z.number().int().positive().optional(),
+  /** Resolved model for agent attempts (DES-023). */
+  model: z.string().min(1).optional(),
+  /** Resolved effort for agent attempts (DES-023). */
+  effort: effortSchema.optional(),
+  /** Where model/effort came from (DES-023). */
+  modelSource: z.enum(["task", "workflow", "cli"]).optional(),
 })
 
 export const attemptFinishedEventSchema = z.object({

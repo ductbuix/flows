@@ -27,16 +27,16 @@ Schema and writing rules: `docs/README.md`.
   approve, reject, delete), run input list/meta/files, log/summary/out,
   websocket run snapshots, log chunks and workflow file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command and agent tasks (CliAdapter for Claude / Cursor),
-  model catalog (`listCliModels`, Cursor families), app-owned trust
-  markers, preflight checks, spawn into `graph.json`, resume, approval,
-  cancel, manual retry, conditions (exit / expr / agent judge), retry,
-  repeat, `agents` limits, run deletion, workflow id rebind on rename,
-  frozen `RUN_INPUT`, Manual source, queued runs under
-  `maxConcurrentRuns`.
+  scheduler, command and agent tasks (CliAdapter: trust, catalog,
+  `composeFlags`), model/effort resolve and preflight warns, app-owned
+  trust markers, spawn into `graph.json`, resume, approval, cancel,
+  manual retry, conditions (exit / expr / agent judge), retry, repeat,
+  `agents` limits, run deletion, workflow id rebind on rename, frozen
+  `RUN_INPUT`, Manual source, queued runs under `maxConcurrentRuns`.
 - `packages/shared`: zod schemas for API, websocket, workflow (`inputs`,
-  `agent` defaults, model/effort), events (`queued`, `run_activated`)
-  and YAML Document edits that keep comments and key order.
+  `agent` defaults, model/effort), events (`queued`, `run_activated`,
+  attempt `model`/`effort`/`modelSource`) and YAML Document edits that
+  keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: Sidebar shell (workflows, Settings), graph editor (React
   Flow Card nodes + Button Group controls, YAML behind Advanced,
