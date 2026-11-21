@@ -8,6 +8,7 @@ import type {
   Workflow,
   WorkflowLimits,
 } from "@workspace/shared"
+import { collectWorkflowIssues } from "@workspace/shared"
 import { cancelQueuedRun } from "./cancel-queued.ts"
 import { loadAppConfig } from "./config.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
@@ -31,6 +32,7 @@ import { freeRunSlots, nextQueuedRun } from "./run-queue.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
 import { Scheduler } from "./scheduler.ts"
 import type { ManualFilePart } from "./source-manual.ts"
+import { assertPublishTasksValid } from "./publish.ts"
 import { appendRunStarted } from "./start-run.ts"
 import {
   LIBRARY_RETENTION_INTERVAL_MS,
@@ -144,6 +146,9 @@ export class Engine {
   loadWorkflow(workflowDirPath: string): Workflow {
     const workflow = loadWorkflowFile(workflowDirPath)
     assertValidGraph(workflow)
+    const issues = collectWorkflowIssues(workflow)
+    if (issues[0]) throw new Error(issues[0].message)
+    assertPublishTasksValid(this.home, workflow)
     return workflow
   }
 

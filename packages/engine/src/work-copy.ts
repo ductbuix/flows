@@ -9,7 +9,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs"
-import { dirname, join } from "node:path"
+import { basename, dirname, join } from "node:path"
 import type {
   ChangeSet,
   EngineEvent,
@@ -148,13 +148,59 @@ export function changesDir(runRoot: string, connectionId: string): string {
   return join(runRoot, "changes", connectionId)
 }
 
-/** Diff a connection's work copy against its pinned base. */
+/** Publish task change set folder (DES-026 / BL-049). */
+export function publishChangesDir(runRoot: string, taskId: string): string {
+  return join(runRoot, "changes", taskId)
+}
+
+/**
+ * Snapshot of the last published work copy; lives beside `work/` so
+ * connector diffs do not walk it (DES-026 / BL-049).
+ */
+export function workPublishBaseDir(
+  runRoot: string,
+  connectionId: string
+): string {
+  return join(runRoot, "publish-base", connectionId)
+}
+
+function resolveDiffBaseDir(runRoot: string, connectionId: string): string {
+  const published = workPublishBaseDir(runRoot, connectionId)
+  if (existsSync(published)) return published
+  return join(runRoot, "resources", connectionId)
+}
+
+/**
+ * After a successful publish, move the work copy's base to the published
+ * state so a later publish task only sends newer changes (DES-026).
+ */
+export function advanceWorkCopyBase(
+  runRoot: string,
+  connectionId: string
+): void {
+  const workRoot = workConnectionDir(runRoot, connectionId)
+  if (!existsSync(workRoot)) return
+  const base = workPublishBaseDir(runRoot, connectionId)
+  rmSync(base, { recursive: true, force: true })
+  mkdirSync(dirname(base), { recursive: true })
+  try {
+    execFileSync("cp", ["-cR", workRoot, base], { stdio: "ignore" })
+  } catch {
+    cpSync(workRoot, base, { recursive: true })
+  }
+}
+
+/** Diff a connection's work copy against its pinned or published base. */
 export async function diffWorkCopy(options: {
   home: string
   runRoot: string
   connectionId: string
+  /** When set, write changeset/preview under changes/<taskId>/ (BL-049). */
+  publishTaskId?: string
+  runId?: string
 }): Promise<{ changeSet: ChangeSet; previewMd: string }> {
-  const { home, runRoot, connectionId } = options
+  const { home, runRoot, connectionId, publishTaskId } = options
+  const runId = options.runId ?? basename(runRoot)
   const conn = readConnection(home, connectionId)
   if (!conn) throw new Error(`unknown connection ${connectionId}`)
   const connector = getConnector(conn.connector)
@@ -171,15 +217,19 @@ export async function diffWorkCopy(options: {
     return { changeSet: empty, previewMd: previewFromChangeSet(empty) }
   }
 
-  const baseRoot = join(runRoot, "resources", connectionId)
+  const baseRoot = resolveDiffBaseDir(runRoot, connectionId)
   const raw = await connector.diff({
     connection: conn,
     workCopyDir: workRoot,
     baseDir: baseRoot,
+    runId,
+    publishTaskId,
   })
   const changeSet = raw as ChangeSet
   const previewMd = previewFromChangeSet(changeSet)
-  const out = changesDir(runRoot, connectionId)
+  const out = publishTaskId
+    ? publishChangesDir(runRoot, publishTaskId)
+    : changesDir(runRoot, connectionId)
   mkdirSync(out, { recursive: true })
   writeFileSync(join(out, "changeset.json"), JSON.stringify(changeSet, null, 2))
   writeFileSync(join(out, "preview.md"), previewMd)
@@ -198,8 +248,8 @@ export function listWorkConnections(runRoot: string): string[] {
 
 /**
  * At run end, record a Local effect for each work copy with unpublished
- * changes (DES-026 / BL-048). Publish is BL-049, so every non-empty
- * diff is unpublished.
+ * changes (DES-026 / BL-048). Diff uses the advanced base after publish,
+ * so only unsent ops remain.
  */
 export async function recordUnpublishedLocalEffects(options: {
   home: string
@@ -210,7 +260,12 @@ export async function recordUnpublishedLocalEffects(options: {
   const { home, runRoot, runId, append } = options
   for (const connectionId of listWorkConnections(runRoot)) {
     try {
-      const { changeSet } = await diffWorkCopy({ home, runRoot, connectionId })
+      const { changeSet } = await diffWorkCopy({
+        home,
+        runRoot,
+        connectionId,
+        runId,
+      })
       if (changeSet.ops.length === 0) continue
       append({
         type: "work_copy_changed",

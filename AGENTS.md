@@ -21,7 +21,8 @@ Schema and writing rules: `docs/README.md`.
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
   items, Workflows, Runs, Connections), Workflows group, Settings;
   `/work-items` and `/work-items/:id` (Context links + Freshness, Runs,
-  Start, Notes, Attachments; create from Library sets source Badge);
+  Start, Notes, Attachments; create from Library sets source Badge;
+  Ad hoc / Library / Rally source Badge);
   `/connections` (Connections/Library tabs, size warning at 80%) and
   `/connections/:id` (sign-in, local data, used by, refresh, policy);
   `/workflows` and `/runs` (grouped by work item); Start picks work item
@@ -38,17 +39,19 @@ Schema and writing rules: `docs/README.md`.
   delete, changes), run input/files, log/summary/out, websocket
   snapshots, `runs_changed`, log chunks and file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command/agent tasks (CliAdapter), connectors (github,
-  fake), connections, library pull/pins/retention (`library.ts`,
+  scheduler, command/agent tasks (CliAdapter), connectors (github
+  draft PR publish, rally, fake), connections, library pull/pins/retention
+  (`library.ts`,
   maxBytes, sweep, clear, `resources/` + `RESOURCE_*`), work items,
   cookie secrets under `secrets/` (Chrome sign-in, sandbox denies),
-  propose work copies (`work/`, serial lock, change sets), model/
+  propose work copies (`work/`, serial lock, change sets),
+  `kind: publish` tasks (policy gate, Cloud effects), model/
   effort resolve and preflight, trust markers, spawn, resume,
   approval, cancel, retry, repeat, `agents` limits, run deletion,
   frozen `RUN_INPUT`, queued runs, summary cache, port leases,
   `<workflow>/.cache`.
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
-  websocket, workflow, `connection.yaml`, library list/pull/clear/
+  websocket, workflow (incl. `kind: publish`), `connection.yaml`, library list/pull/clear/
   usage, `resources.json`, `config.yaml` `library.maxBytes`, events
   and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.

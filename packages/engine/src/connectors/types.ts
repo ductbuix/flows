@@ -24,6 +24,15 @@ export type ConnectorDiffInput = {
   connection: Connection
   workCopyDir: string
   baseDir: string
+  /** Run id for branch names like `flows/<runId>/<publishTaskId>` (BL-050). */
+  runId?: string
+  publishTaskId?: string
+}
+
+/** Optional paths so publish can push from the run's work copy (BL-050). */
+export type ConnectorPublishContext = {
+  runRoot?: string
+  workCopyDir?: string
 }
 
 export type ConnectorChangeSet = {
@@ -40,7 +49,12 @@ export type ConnectorChangeSet = {
 }
 
 export type ConnectorPublishResult =
-  | { status: "applied"; result: Record<string, unknown> }
+  | {
+      status: "applied"
+      result: Record<string, unknown>
+      /** How to undo this Cloud effect (DES-026 / BL-049). */
+      undoNote: string
+    }
   | { status: "conflict"; message: string }
   | { status: "rejected"; message: string }
 
@@ -60,6 +74,7 @@ export type Connector = {
   publish: (
     connection: Connection,
     changeSet: ConnectorChangeSet,
-    home: string
+    home: string,
+    context?: ConnectorPublishContext
   ) => Promise<ConnectorPublishResult>
 }

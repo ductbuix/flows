@@ -19,7 +19,10 @@ export const workItemLinkSchema = z
 
 export type WorkItemLink = z.infer<typeof workItemLinkSchema>
 
-/** Ad hoc or created from a library entity (DES-026 / BL-046). */
+/**
+ * Ad hoc, library entity, or Rally story/defect (DES-026 / BL-046 /
+ * BL-055).
+ */
 export const workItemSourceSchema = z.discriminatedUnion("kind", [
   z
     .object({
@@ -31,6 +34,14 @@ export const workItemSourceSchema = z.discriminatedUnion("kind", [
       kind: z.literal("library"),
       connection: connectionIdSchema,
       entityKind: z.string().min(1),
+      entityId: z.string().min(1),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("rally"),
+      connection: connectionIdSchema,
+      entityKind: z.enum(["story", "defect"]),
       entityId: z.string().min(1),
     })
     .strict(),

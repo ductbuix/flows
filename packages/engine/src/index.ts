@@ -105,6 +105,8 @@ export {
   fakeConnector,
   githubConnector,
   createGithubConnector,
+  rallyConnector,
+  createRallyConnector,
   type Connector,
   type ConnectorChangeSet,
   type ConnectorPublishResult,
@@ -193,7 +195,16 @@ export {
   listWorkConnections,
   removeWorkCopies,
   ensureLibraryGcAutoOff,
+  advanceWorkCopyBase,
+  publishChangesDir,
+  workPublishBaseDir,
 } from "./work-copy.ts"
+export {
+  assertPublishTasksValid,
+  runPublishTask,
+  resumeInFlightPublishes,
+  hasOpenPublish,
+} from "./publish.ts"
 export {
   workflowCacheEnv,
   WORKFLOW_CACHE_ENV_TEMPLATES,

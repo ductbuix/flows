@@ -23,7 +23,25 @@ describe("workItemSchema", () => {
     )
   })
 
-  it("rejects an unknown source kind", () => {
+  it("accepts a Rally story source", () => {
+    const item = workItemSchema.parse({
+      ...base,
+      source: {
+        kind: "rally",
+        connection: "rally-payments",
+        entityKind: "story",
+        entityId: "US123",
+      },
+    })
+    expect(item.source).toEqual({
+      kind: "rally",
+      connection: "rally-payments",
+      entityKind: "story",
+      entityId: "US123",
+    })
+  })
+
+  it("rejects an incomplete Rally source", () => {
     expect(
       workItemSchema.safeParse({
         ...base,

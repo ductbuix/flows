@@ -147,6 +147,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Work item ids are generated slugs from the title          | POST creates the id; callers do not choose one                 | DES-026         |
 | 2026-11-22 | Delete moves a work item to `workitems/.trash/`           | keep files; never delete runs when removing an item            | DES-026         |
 | 2026-11-22 | Run `itemKey` comes from `workItemId` when set            | duplicate warn is per work item and workflow; ad hoc unchanged | DES-026, BL-039 |
+| 2026-11-22 | GitHub publish branch is `flows/<runId>/<publishTaskId>`  | unique per publish; clash with other commits is conflict       | DES-026, BL-050 |
 
 ## Docs and tooling
 

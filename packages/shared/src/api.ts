@@ -74,7 +74,7 @@ export const taskViewSchema = z.object({
   status: taskStatusSchema,
   spawned: z.boolean(),
   spawnedBy: z.string().optional(),
-  failReason: z.enum(["rejected"]).optional(),
+  failReason: z.enum(["rejected", "conflict"]).optional(),
   skipReason: z.enum(["when", "upstream_skip", "branch"]).optional(),
   /** Why a ready task has not launched yet (e.g. serial lock, BL-048). */
   waitingReason: z.string().min(1).optional(),
