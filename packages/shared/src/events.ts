@@ -216,6 +216,30 @@ export const workCopyChangedEventSchema = z.object({
   destructive: z.boolean(),
 })
 
+/** Publish call about to start (DES-026 / BL-049). */
+export const publishStartedEventSchema = z.object({
+  type: z.literal("publish_started"),
+  ...eventBase,
+  taskId: z.string().min(1),
+  connection: connectionIdSchema,
+})
+
+/**
+ * Publish result: applied is a Cloud effect; conflict/rejected fail the
+ * task (DES-026 / BL-049).
+ */
+export const publishFinishedEventSchema = z.object({
+  type: z.literal("publish_finished"),
+  ...eventBase,
+  taskId: z.string().min(1),
+  connection: connectionIdSchema,
+  status: z.enum(["applied", "conflict", "rejected"]),
+  message: z.string().min(1).optional(),
+  result: z.record(z.string(), z.unknown()).optional(),
+  undoNote: z.string().min(1).optional(),
+  impact: z.literal("cloud").optional(),
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   runActivatedEventSchema,
@@ -239,6 +263,8 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   taskRetryRequestedEventSchema,
   libraryPulledEventSchema,
   workCopyChangedEventSchema,
+  publishStartedEventSchema,
+  publishFinishedEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>

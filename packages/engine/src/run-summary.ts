@@ -1,4 +1,8 @@
-import type { RunSummary, RunStatus } from "@workspace/shared"
+import {
+  isPublishTask,
+  type RunSummary,
+  type RunStatus,
+} from "@workspace/shared"
 import type { RunState } from "./fold.ts"
 
 const DONE = new Set(["succeeded", "failed", "skipped", "cancelled"])
@@ -17,7 +21,10 @@ export function summarizeRun(state: RunState): RunSummary | null {
     const status = task?.status ?? "pending"
     if (DONE.has(status)) done += 1
     if (status === "awaiting_approval") {
-      needsYou.push({ taskId: spec.id })
+      needsYou.push({
+        taskId: spec.id,
+        ...(isPublishTask(spec) ? { connectionId: spec.connection } : {}),
+      })
     }
     if (status === "failed" && firstFailedTaskId === undefined) {
       firstFailedTaskId = spec.id

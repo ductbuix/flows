@@ -40,13 +40,14 @@ Schema and writing rules: `docs/README.md`.
   fake), connections, library pull/pins/retention (`library.ts`,
   maxBytes, sweep, clear, `resources/` + `RESOURCE_*`), work items,
   cookie secrets under `secrets/` (Chrome sign-in, sandbox denies),
-  propose work copies (`work/`, serial lock, change sets), model/
+  propose work copies (`work/`, serial lock, change sets),
+  `kind: publish` tasks (policy gate, Cloud effects), model/
   effort resolve and preflight, trust markers, spawn, resume,
   approval, cancel, retry, repeat, `agents` limits, run deletion,
   frozen `RUN_INPUT`, queued runs, summary cache, port leases,
   `<workflow>/.cache`.
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
-  websocket, workflow, `connection.yaml`, library list/pull/clear/
+  websocket, workflow (incl. `kind: publish`), `connection.yaml`, library list/pull/clear/
   usage, `resources.json`, `config.yaml` `library.maxBytes`, events
   and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.

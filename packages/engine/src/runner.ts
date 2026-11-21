@@ -4,6 +4,7 @@ import { join } from "node:path"
 import {
   connectionEnvName,
   isAgentTask,
+  isCommandTask,
   upstreamEnvName,
   type Task,
   type Workflow,
@@ -216,6 +217,10 @@ export function launchTask(
       paths.workflowRoot,
       task.cli === "cursor"
     )
+  }
+
+  if (!isCommandTask(task)) {
+    throw new Error(`cannot launch task kind ${task.kind}`)
   }
 
   return spawnWrapped(

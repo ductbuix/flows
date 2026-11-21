@@ -1,6 +1,6 @@
 import { upstreamEnvName } from "./task-ids.ts"
 import type { Condition, Task, Workflow } from "./workflow.ts"
-import { needTaskId } from "./workflow.ts"
+import { isPublishTask, needTaskId } from "./workflow.ts"
 import {
   leftoverInstructionsMessage,
   collectRawWorkflowIssues,
@@ -43,6 +43,7 @@ export function collectWorkflowIssues(workflow: Workflow): WorkflowIssue[] {
     pushJudgeSlotIssues(task, i, issues)
   }
   pushProposeOrderIssues(workflow, issues)
+  pushPublishProposeIssues(workflow, issues)
   return issues
 }
 
@@ -107,6 +108,39 @@ function reachesViaNeeds(
     return false
   }
   return walk(from)
+}
+
+/**
+ * A publish task needs an earlier propose task on the same connection
+ * (DES-026 / BL-049). Read-only policy is checked with the connection
+ * store in the engine.
+ */
+function pushPublishProposeIssues(
+  workflow: Workflow,
+  issues: WorkflowIssue[]
+): void {
+  const byId = new Map(workflow.tasks.map((t) => [t.id, t]))
+  const indexById = new Map(workflow.tasks.map((t, i) => [t.id, i]))
+
+  for (const task of workflow.tasks) {
+    if (!isPublishTask(task)) continue
+    const connection = task.connection
+    const hasEarlierPropose = workflow.tasks.some((other) => {
+      if (other.id === task.id) return false
+      const proposes = (other.uses ?? []).some(
+        (u) => u.connection === connection && u.access === "propose"
+      )
+      if (!proposes) return false
+      // Walk publish → needs → … → propose (propose is an ancestor).
+      return reachesViaNeeds(task.id, other.id, byId)
+    })
+    if (hasEarlierPropose) continue
+    const pathTask = indexById.get(task.id) ?? 0
+    issues.push({
+      message: `publish task ${task.id} needs an earlier propose task on ${connection}`,
+      path: ["tasks", pathTask, "connection"],
+    })
+  }
 }
 
 function pushJudgeSlotIssues(
