@@ -12,6 +12,7 @@ describe("browser sign-in helpers", () => {
         signIn: "cookies",
         refresh: "never",
         policy: "read-only",
+        serial: false,
       })
     ).toBe("rally1.rallydev.com")
 
@@ -24,6 +25,7 @@ describe("browser sign-in helpers", () => {
         signIn: "cookies",
         refresh: "never",
         policy: "read-only",
+        serial: false,
       })
     ).toBe("rally1.rallydev.com")
   })
@@ -38,6 +40,7 @@ describe("browser sign-in helpers", () => {
         signIn: "cookies",
         refresh: "never",
         policy: "read-only",
+        serial: false,
       })
     ).toThrow(BrowserSignInError)
   })
