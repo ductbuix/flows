@@ -38,9 +38,7 @@ test.describe("sidebar shell and settings", () => {
     await page.getByTestId("rename-id-input").fill(renamed)
     await page.getByTestId("rename-submit").click()
     await expect(page).toHaveURL(new RegExp(`/workflows/${renamed}$`))
-    await expect(
-      page.getByTestId(`sidebar-workflow-${renamed}`)
-    ).toBeVisible()
+    await expect(page.getByTestId(`sidebar-workflow-${renamed}`)).toBeVisible()
 
     await page.getByTestId(`sidebar-workflow-menu-${renamed}`).click()
     await page.getByTestId(`workflow-delete-open-${renamed}`).click()
@@ -63,6 +61,10 @@ test.describe("sidebar shell and settings", () => {
     await expect(page.getByTestId("cli-cursor")).toBeVisible()
     await expect(page.getByTestId("trust-settings")).toBeVisible()
     await expect(page.getByTestId("trust-revoke")).toBeVisible()
+    await expect(page.getByTestId("theme-shortcut-hint")).toContainText("d")
+    await expect(
+      page.getByTestId("theme-shortcut-hint").locator("kbd")
+    ).toHaveText("d")
 
     await page.getByTestId("theme-toggle").getByText("Dark").click()
     await expect(page.locator("html")).toHaveClass(/dark/)

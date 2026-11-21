@@ -27,6 +27,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
+import { Kbd } from "@workspace/ui/components/kbd"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/PageHeader"
@@ -112,8 +113,8 @@ export function SettingsPage() {
                   <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
                   <ToggleGroupItem value="system">System</ToggleGroupItem>
                 </ToggleGroup>
-                <FieldDescription>
-                  Default is light. Press d to toggle light and dark.
+                <FieldDescription data-testid="theme-shortcut-hint">
+                  Default is light. Press <Kbd>d</Kbd> to toggle light and dark.
                 </FieldDescription>
               </Field>
             </FieldSet>

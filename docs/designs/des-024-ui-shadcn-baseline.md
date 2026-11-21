@@ -2,7 +2,7 @@
 id: DES-024
 title: UI on the shadcn baseline
 type: ui
-status: draft
+status: active
 summary: shadcn base-nova defaults are the only style source; align our components, add a Sidebar shell and Settings, then AI Elements.
 tags: [ui, web, shadcn, ai-elements, lint]
 related:
@@ -224,6 +224,26 @@ Flow with Card and Button Group (DES-010, DES-012).
 | 2 Run view   | BL-028  | Terminal, Task, Plan, Stack Trace, File Tree, Confirmation; env as Item, Badge and Switch |
 | 3 Editor     | BL-029  | Model Selector (DES-023), Prompt Input, Advanced YAML                                     |
 | 4 Polish     | BL-030  | Sidebar list states, Kbd hints; command palette later                                     |
+
+### Phase 4 polish (BL-030)
+
+Done: `SidebarMenuSkeleton` while loading, `Empty` when the
+workflow list is empty, long lists scroll in `SidebarContent`
+with Settings in `SidebarFooter`, and Settings shows the `d`
+theme shortcut with `Kbd`.
+
+BL-030 sweep residual (fixed or accepted):
+
+| Finding                                                                                  | Disposition                                      |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Helper / meta `text-xs` in app screens                                                   | Fixed to `text-sm` or Card default               |
+| Inline `Button variant="link"` with `h-auto p-0` in table and Item titles                | Accepted: link size has no unpadded option       |
+| `DialogContent className="sm:max-w-*"`                                                   | Accepted: Dialog has no matching width size prop |
+| CodeMirror, file Textarea, conflict/preview `pre`, SummaryMarkdown inline code `text-xs` | Accepted: code density                           |
+| `apps/web/src/components/ai-elements/*` shipped classes                                  | Accepted: keep AI Elements as copied             |
+| `PageHeader` Separator `h-4`                                                             | Accepted: matches the shadcn sidebar recipe      |
+
+No hand-rolled copy of an installed shadcn component was found.
 
 Tool, Reasoning and Subagent wait for a structured CLI event log.
 

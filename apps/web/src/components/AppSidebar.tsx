@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
-import { MoreHorizontal, Plus, Settings } from "lucide-react"
+import { Plus, Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,19 +11,12 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
-import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { useWorkflows } from "@/lib/workflows-context"
+import { WorkflowSidebarList } from "@/components/WorkflowSidebarList"
 import { CreateWorkflowDialog } from "@/pages/CreateWorkflowDialog"
 import { DeleteWorkflowDialog } from "@/pages/DeleteWorkflowDialog"
 import { RenameWorkflowDialog } from "@/pages/RenameWorkflowDialog"
@@ -71,59 +64,11 @@ export function AppSidebar() {
               <span className="sr-only">Create workflow</span>
             </SidebarGroupAction>
             <SidebarGroupContent>
-              {!workflows ? (
-                <div className="space-y-2 px-2">
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
-                </div>
-              ) : (
-                <SidebarMenu data-testid="sidebar-workflow-list">
-                  {workflows.map((wf) => {
-                    const active = location.pathname.startsWith(
-                      `/workflows/${wf.id}`
-                    )
-                    return (
-                      <SidebarMenuItem key={wf.id}>
-                        <SidebarMenuButton
-                          isActive={active}
-                          render={<Link to={`/workflows/${wf.id}`} />}
-                          data-testid={`sidebar-workflow-${wf.id}`}
-                        >
-                          <span className="font-mono">{wf.id}</span>
-                        </SidebarMenuButton>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <SidebarMenuAction
-                                showOnHover
-                                data-testid={`sidebar-workflow-menu-${wf.id}`}
-                              />
-                            }
-                          >
-                            <MoreHorizontal />
-                            <span className="sr-only">Workflow actions</span>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent side="right" align="start">
-                            <DropdownMenuItem
-                              data-testid={`workflow-rename-open-${wf.id}`}
-                              onClick={() => setRenameId(wf.id)}
-                            >
-                              Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              variant="destructive"
-                              data-testid={`workflow-delete-open-${wf.id}`}
-                              onClick={() => void openDelete(wf.id)}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </SidebarMenuItem>
-                    )
-                  })}
-                </SidebarMenu>
-              )}
+              <WorkflowSidebarList
+                workflows={workflows}
+                onRename={setRenameId}
+                onDelete={(id) => void openDelete(id)}
+              />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>

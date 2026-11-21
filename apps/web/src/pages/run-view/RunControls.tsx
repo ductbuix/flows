@@ -79,7 +79,7 @@ export function RunControls({ run, workflowId }: Props) {
               <AlertDescription className="flex flex-wrap items-center gap-2">
                 {waiting.map((t) => (
                   <span key={t.id} className="inline-flex items-center gap-2">
-                    <span className="font-mono text-xs">{t.id}</span>
+                    <span className="font-mono text-sm">{t.id}</span>
                     <Button
                       size="sm"
                       data-testid="task-approve"

@@ -47,7 +47,7 @@ export function TaskList({ run, selectedTaskId, onSelectTask }: Props) {
               onClick={() => onSelectTask(task.id)}
             >
               <TableCell className={spawnedIndent(task)}>
-                <span className="font-mono text-xs">
+                <span className="font-mono text-sm">
                   {labels.get(task.id) ?? task.id}
                 </span>
                 {task.spawned && (

@@ -34,7 +34,7 @@ export function YamlPane({ value, errors, onChange }: Props) {
         <Alert variant="destructive" className="mb-2" data-testid="yaml-errors">
           <AlertTitle>YAML errors</AlertTitle>
           <AlertDescription>
-            <ul className="list-inside list-disc text-xs">
+            <ul className="list-inside list-disc text-sm">
               {errors.slice(0, 5).map((e, i) => (
                 <li key={`${e.from}-${i}`}>{e.message}</li>
               ))}

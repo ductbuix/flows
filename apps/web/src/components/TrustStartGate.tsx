@@ -164,7 +164,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
           description={
             <>
               A run with the same inputs already exists:{" "}
-              <span className="font-mono text-xs">
+              <span className="font-mono text-sm">
                 {duplicateIds.join(", ")}
               </span>
               .

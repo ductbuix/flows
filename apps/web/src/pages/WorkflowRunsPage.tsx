@@ -175,7 +175,6 @@ export function WorkflowRunsPage() {
                       <TableCell>
                         <Button
                           variant="link"
-                          size="sm"
                           className="h-auto p-0 font-mono"
                           render={
                             <Link
