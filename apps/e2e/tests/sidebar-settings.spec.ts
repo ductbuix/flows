@@ -14,7 +14,11 @@ test.describe("sidebar shell and settings", () => {
     await page.goto("/")
     await expect(page.getByTestId("app-sidebar")).toBeVisible()
     await expect(page.getByTestId("home-page")).toBeVisible()
-    await expect(page.getByTestId("home-running")).toBeVisible()
+    await expect(
+      page
+        .getByTestId("home-create-work-item")
+        .or(page.getByTestId("home-running"))
+    ).toBeVisible()
     await page.screenshot({
       path: "test-results/sidebar-home-light.png",
       fullPage: true,

@@ -21,8 +21,10 @@ Schema and writing rules: `docs/README.md`.
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
   items, Workflows, Runs), Workflows group, Settings; `/work-items`
   and `/work-items/:id` (Runs, Start with workItemId, Notes,
-  Attachments); `/workflows` and `/runs`; workflow Overview/Editor/Runs;
-  graph editor, start/rerun, run view with live websocket; Settings.
+  Attachments); `/workflows` and `/runs` (grouped by work item title);
+  workflow Overview Start picks work item or None ad hoc and prefills;
+  Home Work items section / New work item empty; graph editor, start/
+  rerun, run view with live websocket; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run

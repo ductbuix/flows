@@ -97,24 +97,63 @@ describe("App", () => {
     mockFetch({
       workflows: [demoWorkflow],
       allRuns: [],
+      workitems: [
+        {
+          id: "story-one",
+          title: "Story one",
+          source: { kind: "adhoc" },
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
     })
     renderApp("/")
     expect(await screen.findByTestId("sidebar-workflow-demo")).toBeTruthy()
     expect(await screen.findByTestId("home-page")).toBeTruthy()
     expect(await screen.findByTestId("home-running")).toBeTruthy()
+    expect(screen.getByTestId("home-work-items")).toBeTruthy()
     expect(screen.getByTestId("home-recent")).toBeTruthy()
     expect(screen.queryByTestId("home-empty")).toBeNull()
     expect(await screen.findByTestId("sidebar-platform")).toBeTruthy()
   })
 
   it("shows home empty create action when there are no workflows", async () => {
-    mockFetch({ workflows: [] })
+    mockFetch({ workflows: [], workitems: [] })
     renderApp("/")
     expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
     expect(await screen.findByTestId("home-empty")).toBeTruthy()
     expect(screen.getByTestId("home-create-workflow")).toBeTruthy()
     expect(screen.getByTestId("sidebar-settings")).toBeTruthy()
     expect(screen.getByTestId("sidebar-home")).toBeTruthy()
+  })
+
+  it("shows home New work item when workflows exist but no work items or runs", async () => {
+    mockFetch({ workflows: [demoWorkflow], allRuns: [], workitems: [] })
+    renderApp("/")
+    expect(await screen.findByTestId("home-empty")).toBeTruthy()
+    expect(screen.getByTestId("home-create-work-item")).toBeTruthy()
+    expect(screen.queryByTestId("home-create-workflow")).toBeNull()
+  })
+
+  it("shows home sections for ad hoc runs without work items", async () => {
+    mockFetch({
+      workflows: [demoWorkflow],
+      workitems: [],
+      allRuns: [
+        {
+          id: "run-1",
+          workflowId: "demo",
+          workflowName: "demo",
+          status: "running",
+          needsYou: [],
+          taskCounts: { done: 0, total: 1 },
+          startedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    })
+    renderApp("/")
+    expect(await screen.findByTestId("home-running")).toBeTruthy()
+    expect(screen.getByTestId("home-work-items")).toBeTruthy()
+    expect(screen.queryByTestId("home-empty")).toBeNull()
   })
 
   it("shows sidebar skeletons while workflows load", async () => {
@@ -133,6 +172,9 @@ describe("App", () => {
               : input.url
         if (url.includes("/api/workflows") && !url.includes("/runs")) {
           return workflowsPromise
+        }
+        if (url.includes("/api/workitems")) {
+          return Response.json([])
         }
         if (
           url.includes("/api/runs") &&

@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { StartRunFormFields } from "@/components/StartRunFormFields"
 import { TrustDialog } from "@/components/TrustDialog"
+import { WorkItemSelect } from "@/components/WorkItemSelect"
 import { useOverviewStart } from "@/pages/useOverviewStart"
 
 type Props = {
@@ -17,10 +18,11 @@ type Props = {
   onStarted: (runId: string) => void
 }
 
-/** Overview Start card: form fields plus trust / duplicate gates (DES-025). */
+/** Overview Start card: work item, form fields, trust / duplicate gates. */
 export function WorkflowStartCard({ workflowId, onStarted }: Props) {
   const start = useOverviewStart(workflowId, onStarted)
   const attachOnly = start.decls.length === 0
+  const hasWorkItem = start.workItemId !== null
 
   return (
     <>
@@ -29,6 +31,12 @@ export function WorkflowStartCard({ workflowId, onStarted }: Props) {
           <CardTitle>Start</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          <WorkItemSelect
+            items={start.workItems}
+            value={start.workItemId}
+            onChange={start.setWorkItemId}
+            disabled={start.pending}
+          />
           {start.loading && (
             <p className="text-sm text-muted-foreground">Loading workflow…</p>
           )}
@@ -42,7 +50,9 @@ export function WorkflowStartCard({ workflowId, onStarted }: Props) {
               <p className="text-sm text-muted-foreground">
                 {attachOnly
                   ? "Optional files are copied into the run input folder."
-                  : "Fill required fields before the run starts."}
+                  : hasWorkItem
+                    ? "Inputs are prefilled from the work item and stay editable for this run."
+                    : "Fill required fields before the run starts."}
               </p>
               <StartRunFormFields
                 decls={start.decls}
