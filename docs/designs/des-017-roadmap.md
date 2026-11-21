@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022]
+related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022, DES-023]
 updated: 2026-11-21
 ---
 
@@ -29,6 +29,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 9     | Fixed prompts and task ids   | BL-019 paths and ids, BL-020 prompt editor              | generated ids; prompts at tasks/<id>/prompt.md; drawer edits name and prompt |
 | 10    | Reuse a workflow with inputs | BL-021 run input engine, BL-022 start form              | start a run with declared inputs; extras queue; the run view shows the files |
 | 11    | Remove a task in the editor  | BL-023 trash on save, BL-024 editor delete              | delete one task, undo before save, folder moves to tasks/.trash              |
+| 12    | Pick model and effort        | BL-025 adapters and records, BL-026 editor selects      | each agent task and judge can set model and effort, or use the CLI default   |
 
 ## Why this order
 
@@ -59,6 +60,10 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   `removeTask` exists, but the UI cannot use it, and folders were
   left behind. BL-023 comes first so Save moves folders and
   refuses a remove that a live or queued run still needs.
+- Phase 12 follows once agent tasks run reliably: the CLI should
+  use a chosen model and effort, not only the user's global
+  settings. BL-025 comes first so the selects in BL-026 have a
+  schema, a catalog API, and attempt records.
 
 ## Not on the roadmap
 

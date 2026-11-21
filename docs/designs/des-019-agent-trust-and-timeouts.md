@@ -5,7 +5,7 @@ type: design
 status: active
 summary: App-owned trust for ~/.flowapp, a warn-only pre-run check, and a per-attempt timeout with mapped failure reasons.
 tags: [agents, trust, sandbox, timeout, engine, ui]
-related: [DES-003, DES-004, DES-005, DES-006, DES-007, DES-015, BL-017, BL-018]
+related: [DES-003, DES-004, DES-005, DES-006, DES-007, DES-015, DES-023, BL-017, BL-018]
 updated: 2026-11-21
 ---
 
@@ -150,10 +150,11 @@ No new framework.
 trust, stderr, and version logic, would copy that branch. One
 `CliAdapter` record per CLI owns `buildAgentCommand`,
 `buildJudgeCommand`, `prepareTrust`, `cleanupTrust`,
-`failurePatterns`, and `probeVersion`. `agents.ts` and `judge.ts`
-look the adapter up by `cli`. Adding a CLI is one record and one
-map entry. Cursor owns the marker; Claude's `prepareTrust` is a
-no-op.
+`failurePatterns`, `probeVersion`, and, from DES-023,
+`readDefaults`, `listModels`, and `composeFlags`. `agents.ts` and
+`judge.ts` look the adapter up by `cli`. Adding a CLI is one
+record and one map entry. Cursor owns the marker; Claude's
+`prepareTrust` is a no-op.
 
 **Pre-run checks (list of functions).** More checks will appear.
 Each check is a small pure function from input to

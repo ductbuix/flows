@@ -7,7 +7,7 @@ summary: Run view with list and graph views, live task states, attempts, logs, r
 tags: [ui, web, runs, logs]
 related:
   [DES-002, DES-003, DES-004, DES-005, DES-006, DES-008, DES-011, DES-012,
-   DES-021]
+   DES-021, DES-023]
 updated: 2026-11-21
 ---
 
@@ -35,7 +35,9 @@ Everything shown comes from the engine model in
   `interrupted` when resume could not re-attach) and why each was launched
   (see "Attempt kinds").
 - For one attempt: `stdout.log` and `stderr.log` streaming, its
-  `SUMMARY.md` rendered as markdown, and the files in `out/`.
+  `SUMMARY.md` rendered as markdown, and the files in `out/`. An
+  agent attempt also shows the recorded `model`, `effort`, and
+  source ([DES-023](des-023-model-effort.md)).
 - Why a task was skipped (its `when` was false, or an upstream skip
   propagated) and why a task failed (exit code, timeout).
 - Spawn rejections fed back to an agent, on the agent task.

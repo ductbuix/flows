@@ -17,6 +17,7 @@ related:
     BL-019,
     BL-020,
     DES-022,
+    DES-023,
   ]
 updated: 2026-11-21
 ---
@@ -155,7 +156,8 @@ to leave orphan folders in place is reversed.
 
 ## Judges
 
-The judge object is `{ cli }` only. The file is named by slot under
+The judge object is `{ cli }` plus optional `model` and `effort`
+([DES-023](des-023-model-effort.md)). The file is named by slot under
 the owning task's folder, as above. At most one agent judge per
 slot, including inside `all` / `any`. A second agent leaf in the
 same slot is a schema error with a clear message. That is a

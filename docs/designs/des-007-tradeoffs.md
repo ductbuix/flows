@@ -18,6 +18,7 @@ related:
     DES-020,
     DES-021,
     DES-022,
+    DES-023,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -58,6 +59,8 @@ the trigger fires and the choice changes.
 | Connectors are not run sources yet  | ticket reuse still uses the Manual form | a later adapter can add a connector with no engine change (DES-021)        | a connector is needed as a source                                                               |
 | Cursor agents may write `~/.cursor` | CLI can write outside the workflow | pre-written trust markers; seatbelt still denies other paths (DES-006, 019)    | Cursor stops needing chats/projects writes, or a tighter path list is enough                    |
 | Agent judge conditions              | slow, not deterministic            | cheap kinds evaluate first; loop max counts (DES-004)                          | judges disagree on identical output                                                             |
+| No Fast toggle for Cursor models    | `-fast` ids are hidden unless typed | composition prefers the non-fast id (DES-023)                                  | users want Fast next to Effort                                                                  |
+| Cursor model families are parsed from suffixes | a new id shape may group wrong | parser is fixture-tested; unknown models are a warning, not a block (DES-023) | Cursor lists ids that do not follow the suffix pattern                                          |
 
 ## Tooling and docs
 
