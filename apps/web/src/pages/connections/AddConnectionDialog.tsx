@@ -85,6 +85,7 @@ export function AddConnectionDialog({ open, onOpenChange, onCreated }: Props) {
       signIn,
       refresh,
       policy: "read-only",
+      serial: false,
     })
     if (!body.success) {
       setError("Could not validate connection.")

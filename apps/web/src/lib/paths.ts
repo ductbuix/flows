@@ -31,6 +31,14 @@ export function runPath(runId: string): string {
   return `/runs/${runId}`
 }
 
+export function workItemsPath(): string {
+  return "/work-items"
+}
+
+export function workItemPath(id: string): string {
+  return `/work-items/${id}`
+}
+
 /** Deep link to a run task tab (e.g. failed task Terminal). */
 export function runTaskPath(
   runId: string,

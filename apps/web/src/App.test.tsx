@@ -69,6 +69,9 @@ function mockFetch(handlers: Record<string, unknown>) {
           }
         )
       }
+      if (url.includes("/api/workitems")) {
+        return Response.json(handlers.workitems ?? [])
+      }
       if (url.includes("/api/workflows") && !url.includes("/runs")) {
         return Response.json(handlers.workflows ?? [])
       }
@@ -169,5 +172,13 @@ describe("App", () => {
     renderApp("/runs")
     expect(await screen.findByTestId("runs-page")).toBeTruthy()
     expect(await screen.findByTestId("runs-empty")).toBeTruthy()
+  })
+
+  it("shows the work items page empty state", async () => {
+    mockFetch({ workflows: [demoWorkflow], allRuns: [], workitems: [] })
+    renderApp("/work-items")
+    expect(await screen.findByTestId("work-items-page")).toBeTruthy()
+    expect(await screen.findByTestId("work-items-empty")).toBeTruthy()
+    expect(screen.getByTestId("sidebar-platform-work-items")).toBeTruthy()
   })
 })

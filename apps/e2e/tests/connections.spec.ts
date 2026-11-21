@@ -45,14 +45,14 @@ test.describe("connections and library (BL-045 / J7)", () => {
 
     await expect(page).toHaveURL(new RegExp(`/connections/${id}$`))
     await expect(page.getByTestId("connection-page")).toBeVisible()
-    await expect(page.getByTestId("connection-signin-status")).toContainText(
+    await expect(page.getByTestId("connection-sign-in-status")).toContainText(
       /fake sign-in ok|Signed in/,
       { timeout: 10_000 }
     )
     await expect(page.getByTestId("connection-policy")).toBeVisible()
     await expect(page.getByTestId("connection-check")).toBeVisible()
     await page.getByTestId("connection-check").click()
-    await expect(page.getByTestId("connection-signin-status")).toContainText(
+    await expect(page.getByTestId("connection-sign-in-status")).toContainText(
       /fake sign-in ok|Signed in/
     )
     await screenshotThemes(page, "connection-page")
@@ -91,7 +91,7 @@ test.describe("connections and library (BL-045 / J7)", () => {
     await screenshotThemes(page, "home-expired-signin")
     await page.getByTestId(`home-fix-signin-${expiredId}`).click()
     await expect(page).toHaveURL(new RegExp(`/connections/${expiredId}$`))
-    await expect(page.getByTestId("connection-signin-status")).toContainText(
+    await expect(page.getByTestId("connection-sign-in-status")).toContainText(
       "fake signed out",
       { timeout: 10_000 }
     )

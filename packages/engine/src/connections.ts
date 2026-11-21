@@ -17,12 +17,8 @@ import {
   type Workflow,
 } from "@workspace/shared"
 import { getConnector } from "./connectors/registry.ts"
-import {
-  connectionDir,
-  secretsDir,
-  workflowDir,
-  connectionsDir,
-} from "./paths.ts"
+import { connectionDir, workflowDir, connectionsDir } from "./paths.ts"
+import { removeSignIn } from "./secrets.ts"
 import { loadWorkflowFile } from "./workflow.ts"
 
 export type ConnectionStoreError =
@@ -166,7 +162,7 @@ export function deleteConnection(
     return { ok: false, error: { kind: "in_use", workflowIds } }
   }
   rmSync(connectionDir(home, id), { recursive: true, force: true })
-  rmSync(secretsDir(home, id), { recursive: true, force: true })
+  removeSignIn(home, id)
   return { ok: true, value: undefined }
 }
 

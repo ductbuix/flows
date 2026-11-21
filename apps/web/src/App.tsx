@@ -14,6 +14,8 @@ import {
   LegacyWorkflowRunsRedirect,
 } from "@/pages/LegacyRedirects"
 import { RunViewPage } from "@/pages/run-view/RunViewPage"
+import { WorkItemPage } from "@/pages/WorkItemPage"
+import { WorkItemsPage } from "@/pages/WorkItemsPage"
 import { WorkflowPage } from "@/pages/WorkflowPage"
 import { WorkflowsPage } from "@/pages/WorkflowsPage"
 
@@ -40,6 +42,8 @@ export function App() {
         {import.meta.env.DEV ? (
           <Route path="dev/kit" element={<DevKitPage />} />
         ) : null}
+        <Route path="work-items" element={<WorkItemsPage />} />
+        <Route path="work-items/:workItemId" element={<WorkItemPage />} />
         <Route path="workflows" element={<WorkflowsPage />} />
         <Route path="workflows/:workflowId" element={<WorkflowPage />} />
         <Route

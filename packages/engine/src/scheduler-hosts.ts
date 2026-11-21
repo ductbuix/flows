@@ -9,6 +9,7 @@ export type SchedulerCore = {
   runId: string
   runRoot: string
   workflowRoot: string
+  home: string
   watching: Set<string>
   retries: RetryQueue
   judgeCache: Map<string, Promise<boolean>>
@@ -45,10 +46,12 @@ export function launchHost(core: SchedulerCore) {
     runId: core.runId,
     runRoot: core.runRoot,
     workflowRoot: core.workflowRoot,
+    home: core.home,
     graph: core.state().graph,
     state: core.state,
     append: core.append,
     watchHost: () => watchHost(core),
+    requestTick: core.requestTick,
     globalLimits: core.globalLimits,
   }
 }

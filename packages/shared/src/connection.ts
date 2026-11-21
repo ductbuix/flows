@@ -49,6 +49,8 @@ export const connectionSchema = z.strictObject({
   signIn: signInMethodSchema,
   refresh: refreshRuleSchema,
   policy: publishPolicySchema.default("read-only"),
+  /** Propose tasks run one at a time across runs (DES-026 / BL-048). */
+  serial: z.boolean().default(false),
 })
 
 export type Connection = z.infer<typeof connectionSchema>
@@ -60,3 +62,32 @@ export type ConnectionInput = z.input<typeof connectionSchema>
 export const connectionWriteSchema = connectionSchema
 
 export type ConnectionWrite = ConnectionInput
+
+/** One op in a change set envelope (DES-026). */
+export const changeSetOpSchema = z.object({
+  op: z.string().min(1),
+  target: z.string().min(1),
+  summary: z.string().min(1),
+  destructive: z.boolean(),
+  payload: z.unknown(),
+})
+
+export type ChangeSetOp = z.infer<typeof changeSetOpSchema>
+
+/** Connector change set envelope (DES-026 / BL-048). */
+export const changeSetSchema = z.object({
+  v: z.literal(1),
+  connection: connectionIdSchema,
+  base: z.string().min(1),
+  ops: z.array(changeSetOpSchema),
+})
+
+export type ChangeSet = z.infer<typeof changeSetSchema>
+
+/** GET /runs/:runId/changes/:connectionId (BL-048). */
+export const runChangesResponseSchema = z.object({
+  changeSet: changeSetSchema,
+  previewMd: z.string(),
+})
+
+export type RunChangesResponse = z.infer<typeof runChangesResponseSchema>

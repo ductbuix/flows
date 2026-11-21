@@ -3,6 +3,7 @@ export type {
   ConnectorChangeSet,
   ConnectorDiffInput,
   ConnectorPullInput,
+  ConnectorPullResult,
   ConnectorPublishResult,
 } from "./types.ts"
 export {
@@ -13,3 +14,5 @@ export {
   clearConnectors,
 } from "./registry.ts"
 export { fakeConnector } from "./fake.ts"
+export { githubConnector, createGithubConnector } from "./github/index.ts"
+export { registerBuiltinConnectors } from "./builtins.ts"

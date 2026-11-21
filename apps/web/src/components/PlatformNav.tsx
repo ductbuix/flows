@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router"
-import { Cable, Home, Layers, Play } from "lucide-react"
+import { Briefcase, Cable, Home, Layers, Play } from "lucide-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -11,6 +11,13 @@ import {
 
 const ITEMS = [
   { to: "/", label: "Home", testId: "sidebar-home", icon: Home, match: "home" },
+  {
+    to: "/work-items",
+    label: "Work items",
+    testId: "sidebar-platform-work-items",
+    icon: Briefcase,
+    match: "work-items",
+  },
   {
     to: "/workflows",
     label: "Workflows",
@@ -36,6 +43,9 @@ const ITEMS = [
 
 function isActive(pathname: string, match: (typeof ITEMS)[number]["match"]) {
   if (match === "home") return pathname === "/"
+  if (match === "work-items") {
+    return pathname === "/work-items" || pathname.startsWith("/work-items/")
+  }
   if (match === "workflows") {
     return pathname === "/workflows" || pathname.startsWith("/workflows/")
   }
@@ -45,7 +55,7 @@ function isActive(pathname: string, match: (typeof ITEMS)[number]["match"]) {
   return pathname === "/connections" || pathname.startsWith("/connections/")
 }
 
-/** Platform group: Home, Workflows, Runs, Connections (DES-025). */
+/** Platform group: Home, Work items, Workflows, Runs, Connections (DES-025). */
 export function PlatformNav() {
   const { pathname } = useLocation()
 

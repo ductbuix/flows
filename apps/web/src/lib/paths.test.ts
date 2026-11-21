@@ -7,6 +7,8 @@ import {
   parseWorkflowTab,
   runPath,
   runTaskPath,
+  workItemPath,
+  workItemsPath,
   workflowPath,
 } from "./paths"
 
@@ -21,6 +23,8 @@ describe("paths", () => {
     expect(runTaskPath("r1", "a", "terminal")).toBe(
       "/runs/r1?task=a&tab=terminal"
     )
+    expect(workItemsPath()).toBe("/work-items")
+    expect(workItemPath("story-one")).toBe("/work-items/story-one")
     expect(connectionsPath()).toBe("/connections")
     expect(connectionsPath("library")).toBe("/connections?tab=library")
     expect(connectionPath("github-acme")).toBe("/connections/github-acme")

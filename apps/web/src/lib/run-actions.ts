@@ -58,6 +58,7 @@ export type StartRunOptions = {
   values?: Record<string, string>
   files?: { field: string; file: File }[]
   confirmDuplicate?: boolean
+  workItemId?: string
 }
 
 export type StartRunResult =
@@ -74,6 +75,7 @@ function startRunJsonBody(options: StartRunOptions) {
     ...(options.trustGrant !== undefined && { trustGrant: options.trustGrant }),
     ...(options.values !== undefined && { values: options.values }),
     ...(options.confirmDuplicate === true && { confirmDuplicate: true }),
+    ...(options.workItemId !== undefined && { workItemId: options.workItemId }),
   }
 }
 

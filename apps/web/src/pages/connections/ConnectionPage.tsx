@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useParams } from "react-router"
 import {
   connectionDetailSchema,
-  connectionCheckResultSchema,
   connectionSchema,
   libraryListSchema,
-  type ConnectionCheckResult,
   type ConnectionDetail,
   type LibraryEntity,
   type RefreshRule,
@@ -25,72 +23,60 @@ import { api } from "@/lib/api"
 import { connectionsPath } from "@/lib/paths"
 import { ConnectionLocalData } from "./ConnectionLocalData"
 import { ConnectionRefreshField } from "./ConnectionRefreshField"
-import { ConnectionSignIn } from "./ConnectionSignIn"
+import { ConnectionSignInSection } from "./ConnectionSignInSection"
 import { ConnectionUsedBy } from "./ConnectionUsedBy"
+import { useConnectionSignIn } from "./useConnectionSignIn"
 
 export function ConnectionPage() {
   const { connectionId = "" } = useParams()
   const [detail, setDetail] = useState<ConnectionDetail | null>(null)
-  const [check, setCheck] = useState<ConnectionCheckResult | null>(null)
   const [localData, setLocalData] = useState<LibraryEntity[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [checking, setChecking] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  async function load() {
-    setError(null)
-    try {
-      const [connRes, libRes] = await Promise.all([
-        api.connections[":id"].$get({ param: { id: connectionId } }),
-        api.library.$get(),
-      ])
-      if (connRes.status === 404) {
-        setError("Connection not found.")
-        setDetail(null)
-        return
-      }
-      if (!connRes.ok) throw new Error("failed")
-      const parsed = connectionDetailSchema.parse(await connRes.json())
-      setDetail(parsed)
-      if (libRes.ok) {
-        const lib = libraryListSchema.parse(await libRes.json())
-        setLocalData(
-          lib.entities.filter((e) => e.connection === connectionId)
-        )
-      }
-      const checkRes = await api.connections[":id"].check.$post({
-        param: { id: connectionId },
-      })
-      if (checkRes.ok) {
-        setCheck(connectionCheckResultSchema.parse(await checkRes.json()))
-      }
-    } catch {
-      setError("Could not load connection.")
+  const loadDetail = useCallback(async () => {
+    const [connRes, libRes] = await Promise.all([
+      api.connections[":id"].$get({ param: { id: connectionId } }),
+      api.library.$get(),
+    ])
+    if (connRes.status === 404) {
+      setError("Connection not found.")
       setDetail(null)
+      return false
     }
-  }
-
-  useEffect(() => {
-    void load()
+    if (!connRes.ok) throw new Error("failed")
+    const parsed = connectionDetailSchema.parse(await connRes.json())
+    setDetail(parsed)
+    setError(null)
+    if (libRes.ok) {
+      const lib = libraryListSchema.parse(await libRes.json())
+      setLocalData(lib.entities.filter((e) => e.connection === connectionId))
+    }
+    return true
   }, [connectionId])
 
-  async function checkAgain() {
-    setChecking(true)
-    try {
-      const res = await api.connections[":id"].check.$post({
-        param: { id: connectionId },
-      })
-      if (!res.ok) {
-        toast.error("Check failed")
-        return
+  const signIn = useConnectionSignIn(connectionId, loadDetail)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      setError(null)
+      try {
+        const ok = await loadDetail()
+        if (!cancelled && ok) await signIn.loadSignInState()
+      } catch {
+        if (!cancelled) {
+          setError("Could not load connection.")
+          setDetail(null)
+        }
       }
-      setCheck(connectionCheckResultSchema.parse(await res.json()))
-    } catch {
-      toast.error("Check failed")
-    } finally {
-      setChecking(false)
+    })()
+    return () => {
+      cancelled = true
     }
-  }
+    // Reload when the route id changes; sign-in helpers bind to that id.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
+  }, [connectionId, loadDetail])
 
   async function saveRefresh(refresh: RefreshRule) {
     if (!detail) return
@@ -149,11 +135,14 @@ export function ConnectionPage() {
                 />
               }
             />
-            <ConnectionSignIn
-              signIn={detail.signIn}
-              check={check}
-              checking={checking}
-              onCheck={() => void checkAgain()}
+            <ConnectionSignInSection
+              conn={detail}
+              signedIn={signIn.signedIn}
+              check={signIn.check}
+              busy={signIn.busy}
+              onSignIn={() => void signIn.signInWithBrowser()}
+              onCheck={() => void signIn.checkAgain()}
+              onRemoveSignIn={() => void signIn.removeSignIn()}
             />
             <ConnectionLocalData entities={localData} />
             <ConnectionUsedBy
