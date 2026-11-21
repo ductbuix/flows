@@ -1,13 +1,12 @@
-import { join } from "node:path"
 import type {
   EngineEvent,
   LibraryPullResult,
   ResourcePin,
   ResourcesJson,
+  WorkItemLink,
   Workflow,
 } from "@workspace/shared"
-import { collectWorkflowUses, readConnection } from "./connections.ts"
-import { currentRevision, readRevisionMeta } from "./library-paths.ts"
+import { readConnection } from "./connections.ts"
 import {
   LIBRARY_EVENT_RUN_ID,
   linkRunResources,
@@ -15,13 +14,15 @@ import {
   readResourcesJson,
   resolveScopeEntity,
 } from "./library.ts"
-import { libraryEntityDir } from "./paths.ts"
+import { collectPullTargets, pullOneTarget } from "./library-run-targets.ts"
 
 export type MaterializeResourcesOptions = {
   home: string
   workflow: Workflow
   runRoot: string
   runId: string
+  /** Work item context links pulled with uses (BL-046). */
+  workItemLinks?: WorkItemLink[]
   /** Prior run root to copy pins from (rerun without refreshPins). */
   pinFromRunRoot?: string
   refreshPins?: boolean
@@ -33,16 +34,23 @@ export type MaterializeResourcesResult = {
 }
 
 /**
- * Resolve entities from task uses (scope entity per connection), pull or
- * reuse pins, write resources.json before run_started (BL-043).
+ * Resolve entities from task uses and work item links, pull or reuse pins,
+ * write resources.json before run_started (BL-043 / BL-046).
  */
 export async function materializeRunResources(
   options: MaterializeResourcesOptions
 ): Promise<MaterializeResourcesResult> {
-  const { home, workflow, runRoot, runId, pinFromRunRoot, refreshPins } =
-    options
-  const uses = collectWorkflowUses(workflow)
-  if (uses.length === 0) {
+  const {
+    home,
+    workflow,
+    runRoot,
+    runId,
+    workItemLinks = [],
+    pinFromRunRoot,
+    refreshPins,
+  } = options
+  const targets = collectPullTargets(home, workflow, workItemLinks)
+  if (targets.length === 0) {
     const empty: ResourcesJson = { v: 1, pins: [], warnings: [] }
     linkRunResources(home, runRoot, empty)
     return { resources: empty, pulledEvents: [] }
@@ -57,78 +65,21 @@ export async function materializeRunResources(
     }
   }
 
-  const byConn = new Map<
-    string,
-    ReturnType<typeof resolveScopeEntity> & {
-      connection: NonNullable<ReturnType<typeof readConnection>>
-    }
-  >()
-  for (const entry of uses) {
-    if (byConn.has(entry.connection)) continue
-    const conn = readConnection(home, entry.connection)
-    if (!conn) throw new Error(`unknown connection ${entry.connection}`)
-    byConn.set(entry.connection, {
-      ...resolveScopeEntity(conn),
-      connection: conn,
-    })
-  }
-
   const pins: ResourcePin[] = []
   const warnings: string[] = []
   const pulledEvents: EngineEvent[] = []
   const at = new Date().toISOString()
-
-  for (const { connection, kind, entityId, title } of byConn.values()) {
-    try {
-      const pulled = await pullEntity({
-        home,
-        connection,
-        kind,
-        entityId,
-        title,
-        force: refreshPins === true,
-      })
-      pins.push({
-        connection: connection.id,
-        kind,
-        entityId,
-        revision: pulled.revision,
-        title: pulled.title,
-      })
-      if (!pulled.fromCache) {
-        pulledEvents.push({
-          type: "library_pulled",
-          runId,
-          at,
-          connection: connection.id,
-          kind,
-          entityId,
-          revision: pulled.revision,
-          impact: "read",
-        })
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      const existing = currentRevision(home, connection.id, kind, entityId)
-      if (!existing) {
-        throw new Error(
-          `library pull failed for ${connection.id}/${kind}/${entityId}: ${message}`
-        )
-      }
-      const meta = readRevisionMeta(
-        join(libraryEntityDir(home, connection.id, kind, entityId), existing)
-      )
-      pins.push({
-        connection: connection.id,
-        kind,
-        entityId,
-        revision: existing,
-        title: meta?.title ?? title,
-      })
-      warnings.push(
-        `pull failed for ${connection.id}/${kind}/${entityId}: ${message}; using revision ${existing}`
-      )
-    }
+  for (const target of targets) {
+    const result = await pullOneTarget(
+      home,
+      runId,
+      at,
+      target,
+      refreshPins === true
+    )
+    pins.push(result.pin)
+    if (result.event) pulledEvents.push(result.event)
+    if (result.warning) warnings.push(result.warning)
   }
 
   const resources: ResourcesJson = { v: 1, pins, warnings }

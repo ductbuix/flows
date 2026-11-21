@@ -210,6 +210,7 @@ export {
   runSummarySchema,
   attemptViewSchema,
   taskViewSchema,
+  runLibraryPinSchema,
   runDetailSchema,
   logChunkSchema,
   summaryResponseSchema,
@@ -230,6 +231,7 @@ export {
   type RunSummary,
   type AttemptView,
   type TaskView,
+  type RunLibraryPin,
   type RunDetail,
   type LogChunk,
   type SummaryResponse,
@@ -321,6 +323,7 @@ export {
 } from "./api-lifecycle.ts"
 export {
   workItemIdSchema,
+  workItemLinkSchema,
   workItemSourceSchema,
   workItemSchema,
   workItemSummarySchema,
@@ -335,6 +338,7 @@ export {
   workItemAttachmentSchema,
   workItemAttachmentListSchema,
   type WorkItem,
+  type WorkItemLink,
   type WorkItemSource,
   type WorkItemSummary,
   type WorkItemDetail,

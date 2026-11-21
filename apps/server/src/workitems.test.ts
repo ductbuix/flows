@@ -87,6 +87,39 @@ describe("work items API", () => {
     engine.close()
   })
 
+  it("creates a work item from a library entity (BL-046)", async () => {
+    const { engine, app } = stack()
+    const createRes = await app.request("/api/workitems", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        title: "Story PAY-1",
+        source: {
+          kind: "library",
+          connection: "rally-pay",
+          entityKind: "item",
+          entityId: "PAY-1",
+        },
+      }),
+    })
+    expect(createRes.status).toBe(201)
+    const created = workItemDetailSchema.parse(await createRes.json())
+    expect(created.item.source).toEqual({
+      kind: "library",
+      connection: "rally-pay",
+      entityKind: "item",
+      entityId: "PAY-1",
+    })
+    expect(created.item.links).toEqual([
+      {
+        connection: "rally-pay",
+        kind: "item",
+        entityId: "PAY-1",
+      },
+    ])
+    engine.close()
+  })
+
   it("returns 409 on stale hash update", async () => {
     const { engine, app } = stack()
     const createRes = await app.request("/api/workitems", {

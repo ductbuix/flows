@@ -8,6 +8,7 @@ import {
   roundTripYaml,
   setApproval,
   setRetryMax,
+  setTaskField,
   setTaskNeeds,
   setWorkflowField,
 } from "./workflow-yaml-edit.ts"
@@ -108,6 +109,20 @@ tasks:
     const next = replaceMemoryRef(text, "memory/style.md", "memory/voice.md")
     expect(next).toContain("memory/voice.md")
     expect(next).not.toContain("memory/style.md")
+  })
+
+  it("setTaskField uses keeps comments", () => {
+    let text = fixture
+    text = setTaskField(text, "fetch", "uses", [
+      { connection: "github-acme", access: "read" },
+    ])
+    expect(text).toContain("# header: research workflow")
+    expect(text).toContain("# first task is the planner")
+    expect(text).toContain("connection: github-acme")
+    const parsed = workflowSchema.parse(parseYaml(text))
+    expect(parsed.tasks.find((t) => t.id === "fetch")?.uses).toEqual([
+      { connection: "github-acme", access: "read" },
+    ])
   })
 
   it("setWorkflowField inputs and maxConcurrentRuns keep comments", () => {

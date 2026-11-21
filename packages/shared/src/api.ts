@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { attemptKindInfoSchema } from "./attempt-kind.ts"
+import { connectionIdSchema } from "./connection.ts"
 import {
   engineEventSchema,
   runStatusSchema,
@@ -82,6 +83,19 @@ export const taskViewSchema = z.object({
 
 export type TaskView = z.infer<typeof taskViewSchema>
 
+/** One library pin on a run view (DES-025 / BL-046). */
+export const runLibraryPinSchema = z.object({
+  connection: connectionIdSchema,
+  kind: z.string().min(1),
+  entityId: z.string().min(1),
+  revision: z.string().min(1),
+  title: z.string().min(1),
+  fresh: z.boolean(),
+  usedByTaskIds: z.array(z.string().min(1)),
+})
+
+export type RunLibraryPin = z.infer<typeof runLibraryPinSchema>
+
 export const runDetailSchema = z.object({
   id: z.string().min(1),
   workflowId: z.string().min(1),
@@ -99,6 +113,8 @@ export const runDetailSchema = z.object({
   }),
   /** Relative paths under runs/<id>/input/ (DES-021). */
   inputFiles: z.array(z.string()).default([]),
+  /** Frozen library pins for this run (BL-046). */
+  pins: z.array(runLibraryPinSchema).default([]),
 })
 
 export type RunDetail = z.infer<typeof runDetailSchema>

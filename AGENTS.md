@@ -20,14 +20,17 @@ Schema and writing rules: `docs/README.md`.
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
   items, Workflows, Runs, Connections), Workflows group, Settings;
-  `/work-items` and `/work-items/:id` (Runs, Start, Notes, Attachments);
+  `/work-items` and `/work-items/:id` (Context links + Freshness, Runs,
+  Start, Notes, Attachments; create from Library sets source Badge;
+  Ad hoc / Library / Rally source Badge);
   `/connections` (Connections/Library tabs, size warning at 80%) and
   `/connections/:id` (sign-in, MCP allow, local data, used by, refresh,
   policy); Settings lists allowed MCP servers for revoke;
   `/workflows` and `/runs` (grouped by work item); Start picks work item
-  or None; Home Needs you, expired sign-ins, Work items (Ad hoc or
-  Rally source Badge); Impact/Freshness/Policy on `/dev/kit`;
-  Overview/Editor/Runs; graph editor, run view; Settings.
+  or None; Home Needs you, expired sign-ins, Work items; Impact/
+  Freshness/Policy on `/dev/kit`; Overview (Connections + impact)/
+  Editor (Connections FieldSet, node badges)/Runs; run view Library
+  pins; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET

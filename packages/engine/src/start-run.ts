@@ -9,6 +9,7 @@ import { materializeRunInput } from "./run-input.ts"
 import { shouldQueueRun } from "./run-queue.ts"
 import type { ManualFilePart } from "./source-manual.ts"
 import type { CliTrustValue } from "@workspace/shared"
+import { readWorkItem } from "./workitems.ts"
 
 export type StartRunParams = {
   workflowDir: string
@@ -54,11 +55,16 @@ export async function appendRunStarted(options: {
   }
 
   const runRoot = prepareRunDirs(params.workflowDir, params.runId, graph)
+  const workItemLinks =
+    params.workItemId !== undefined
+      ? (readWorkItem(params.home, params.workItemId)?.item.links ?? [])
+      : []
   const { pulledEvents } = await materializeRunResources({
     home: params.home,
     workflow: graph,
     runRoot,
     runId: params.runId,
+    workItemLinks,
     pinFromRunRoot: params.pinFromRunRoot,
     refreshPins: params.refreshPins,
   })

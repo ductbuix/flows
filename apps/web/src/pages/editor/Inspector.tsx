@@ -29,6 +29,7 @@ import { Separator } from "@workspace/ui/components/separator"
 import { ActionButton } from "@/components/ActionButton"
 import { AgentDefaultsFields } from "./AgentDefaultsFields"
 import { AgentTaskFields } from "./AgentTaskFields"
+import { ConnectionsFieldSet } from "./ConnectionsFieldSet"
 import { InputsPanel } from "./InputsPanel"
 import { LoneAgentJudges } from "./LoneAgentJudges"
 import { MemoryPanel } from "./MemoryPanel"
@@ -175,6 +176,7 @@ export function Inspector({
           />
         </Field>
         <LoneAgentJudges task={task} onChangeTask={onChangeTask} />
+        <ConnectionsFieldSet task={task} onChangeTask={onChangeTask} />
         <Separator />
         <ActionButton
           type="button"

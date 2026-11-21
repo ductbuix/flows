@@ -63,9 +63,7 @@ test.describe("rally work item source (BL-055)", () => {
     await page.goto("/work-items")
     await expect(page.getByText(title)).toBeVisible()
     await expect(
-      page
-        .getByTestId(`work-items-row-${detail.item.id}`)
-        .getByTestId("work-item-source")
+      page.getByTestId(`work-items-source-${detail.item.id}`)
     ).toHaveText("Rally US42")
   })
 })

@@ -26,6 +26,7 @@ import {
   resolveScopeEntity,
 } from "./library.ts"
 import { libraryEntityDir } from "./paths.ts"
+import { createWorkItem } from "./workitems.ts"
 
 const homes: string[] = []
 
@@ -175,6 +176,45 @@ tasks:
       .findIndex((e) => e.type === "library_pulled")
     expect(startedIdx).toBeGreaterThanOrEqual(0)
     expect(pulledIdx).toBeGreaterThan(startedIdx)
+    engine.close()
+  })
+
+  it("pulls work item links at run start (BL-046)", async () => {
+    const home = tempHome()
+    writeConn(home, "ctx-src", { label: "CTX-1" })
+    const { item } = createWorkItem(home, {
+      title: "From context",
+      links: [{ connection: "ctx-src", kind: "item", entityId: "CTX-1" }],
+    })
+    const wf = writeWorkflow(
+      home,
+      "link-only",
+      `
+id: link-only
+tasks:
+  - id: a
+    kind: command
+    run: "test -f \\"$RESOURCES_DIR/ctx-src/item/CTX-1/data.txt\\""
+`
+    )
+    const engine = createEngine({ home })
+    const handle = await engine.startRun({
+      workflowDir: wf,
+      runId: "r-link",
+      workItemId: item.id,
+    })
+    const resources = JSON.parse(
+      readFileSync(join(wf, "runs", "r-link", "resources.json"), "utf8")
+    )
+    expect(resources.pins).toEqual([
+      expect.objectContaining({
+        connection: "ctx-src",
+        kind: "item",
+        entityId: "CTX-1",
+      }),
+    ])
+    const state = await handle.wait()
+    expect(state.status).toBe("succeeded")
     engine.close()
   })
 

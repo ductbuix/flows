@@ -49,7 +49,10 @@ export function WorkItemsTable({ items, lastRuns, onOpen }: Props) {
                 </Link>
               </TableCell>
               <TableCell>
-                <WorkItemSourceBadge source={item.source} />
+                <WorkItemSourceBadge
+                  source={item.source}
+                  data-testid={`work-items-source-${item.id}`}
+                />
               </TableCell>
               <TableCell className="font-mono text-sm">
                 {item.workflowId ?? "—"}

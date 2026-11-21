@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/PageHeader"
 import { workflowPath } from "@/lib/paths"
 import { RunHeader } from "./RunHeader"
 import { RunLead } from "./RunLead"
+import { RunLibraryPins } from "./RunLibraryPins"
 import { RunPlan } from "./RunPlan"
 import { TaskList } from "./TaskList"
 import { TaskDetail } from "./TaskDetail"
@@ -92,6 +93,7 @@ export function RunViewPage() {
           wsState={wsState}
           stale={stale}
         />
+        <RunLibraryPins pins={run.pins ?? []} />
         <ResizablePanelGroup
           orientation="horizontal"
           className="min-h-0 flex-1"

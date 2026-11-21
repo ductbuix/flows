@@ -46,6 +46,15 @@ function EditorTaskNode({
             {m}
           </Badge>
         ))}
+        {data.connections.map((connection) => (
+          <Badge
+            key={connection}
+            variant="outline"
+            data-testid={`node-connection-${id}-${connection}`}
+          >
+            {connection}
+          </Badge>
+        ))}
       </div>
       <Handle type="source" position={Position.Right} />
     </Card>

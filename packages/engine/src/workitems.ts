@@ -66,7 +66,30 @@ export type CreateWorkItemInput = {
   inputs?: Record<string, string>
   notes?: string
   source?: WorkItem["source"]
+  links?: WorkItem["links"]
   now?: Date
+}
+
+function linksForCreate(
+  source: WorkItem["source"],
+  links: WorkItem["links"]
+): WorkItem["links"] {
+  if (source.kind !== "library") return links
+  const hasSource = links.some(
+    (l) =>
+      l.connection === source.connection &&
+      l.kind === source.entityKind &&
+      l.entityId === source.entityId
+  )
+  if (hasSource) return links
+  return [
+    {
+      connection: source.connection,
+      kind: source.entityKind,
+      entityId: source.entityId,
+    },
+    ...links,
+  ]
 }
 
 export function createWorkItem(
@@ -75,13 +98,14 @@ export function createWorkItem(
 ): { item: WorkItem; hash: string } {
   const id = newWorkItemId(home, input.title)
   const now = (input.now ?? new Date()).toISOString()
+  const source = input.source ?? { kind: "adhoc" }
   const item = workItemSchema.parse({
     id,
     title: input.title,
-    source: input.source ?? { kind: "adhoc" },
+    source,
     workflowId: input.workflowId,
     inputs: input.inputs ?? {},
-    links: [],
+    links: linksForCreate(source, input.links ?? []),
     createdAt: now,
     updatedAt: now,
   })
@@ -96,6 +120,7 @@ export type UpdateWorkItemInput = {
   title: string
   workflowId?: string
   inputs: Record<string, string>
+  links: WorkItem["links"]
   baseHash: string
   now?: Date
 }
@@ -121,6 +146,7 @@ export function updateWorkItem(
     title: input.title,
     workflowId: input.workflowId,
     inputs: input.inputs,
+    links: input.links,
     updatedAt: now,
   })
   const yaml = workItemToYaml(item)
