@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs"
 import type {
   EngineEvent,
+  Task,
   TaskStatus,
   Workflow,
   WorkflowLimits,
@@ -8,13 +9,16 @@ import type {
 import { isAgentTask } from "@workspace/shared"
 import { resolveAttemptModelFields } from "./attempt-model.ts"
 import { watchChild, type AttemptWatchHost } from "./attempt-watch.ts"
+import { readConnection } from "./connections.ts"
 import { prepareAttemptDirs } from "./dirs.ts"
 import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
 import { fitsLimits, limitCaps } from "./limits.ts"
 import { portLeaseKey, portLeases, type PortBlock } from "./port-lease.ts"
 import { taskPromptAbs } from "./prompt-paths.ts"
 import { launchTask } from "./runner.ts"
+import { serialLocks } from "./serial-lock.ts"
 import { resolveAttemptTimeout } from "./timeout.ts"
+import { ensureWorkCopies } from "./work-copy.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -24,11 +28,24 @@ export type LaunchHost = {
   runId: string
   runRoot: string
   workflowRoot: string
+  home: string
   graph: Workflow
   state: () => RunState
   append: (event: EngineEvent) => void
   watchHost: () => AttemptWatchHost
+  requestTick: () => void
   globalLimits?: WorkflowLimits
+}
+
+/** Propose connections on this task that require a serial lock. */
+export function serialProposeConnections(home: string, task: Task): string[] {
+  const out: string[] = []
+  for (const use of task.uses ?? []) {
+    if (use.access !== "propose") continue
+    const conn = readConnection(home, use.connection)
+    if (conn?.serial === true) out.push(use.connection)
+  }
+  return out
 }
 
 /** Request approval or launch ready / approved-awaiting tasks under limits. */
@@ -89,6 +106,51 @@ export async function launchTaskAttempt(
   const attempt = live.attempts.length + 1
   const startedAt = now()
   const timeout = resolveAttemptTimeout(task, graph)
+
+  const serialIds = serialProposeConnections(host.home, task)
+  if (serialIds.length > 0) {
+    const acquired = serialLocks.tryAcquire(serialIds, {
+      runId: host.runId,
+      taskId,
+      attempt,
+    })
+    if (!acquired.ok) {
+      serialLocks.waitFor(acquired.connectionId, {
+        runId: host.runId,
+        taskId,
+        onReady: () => host.requestTick(),
+      })
+      return
+    }
+  } else {
+    serialLocks.clearWaiting(host.runId, taskId)
+  }
+
+  // Work copies before attempt_started so a failed copy does not leave
+  // a running attempt (DES-026 / BL-048).
+  try {
+    ensureWorkCopies(host.runRoot, task)
+  } catch (err) {
+    host.append({
+      type: "attempt_started",
+      runId: host.runId,
+      taskId,
+      attempt,
+      at: startedAt,
+    })
+    host.append({
+      type: "attempt_finished",
+      runId: host.runId,
+      taskId,
+      attempt,
+      exitCode: 1,
+      reason: err instanceof Error ? err.message : "work_copy_failed",
+      at: now(),
+    })
+    serialLocks.release(host.runId, taskId, attempt)
+    return
+  }
+
   host.append({
     type: "attempt_started",
     runId: host.runId,
@@ -109,6 +171,7 @@ export async function launchTaskAttempt(
         reason: "missing_prompt",
         at: now(),
       })
+      serialLocks.release(host.runId, taskId, attempt)
       return
     }
   }
@@ -131,6 +194,7 @@ export async function launchTaskAttempt(
     } catch {
       /* engine closed during lease */
     }
+    serialLocks.release(host.runId, taskId, attempt)
     return
   }
 
@@ -153,6 +217,7 @@ export async function launchTaskAttempt(
     )
   } catch (err) {
     portLeases.release(leaseKey)
+    serialLocks.release(host.runId, taskId, attempt)
     if (
       err instanceof Error &&
       (err.message.includes("database is not open") ||
@@ -180,6 +245,7 @@ export async function launchTaskAttempt(
     })
   } catch {
     portLeases.release(leaseKey)
+    serialLocks.release(host.runId, taskId, attempt)
     return
   }
   watchChild(host.watchHost(), taskId, attempt, launched.child, {

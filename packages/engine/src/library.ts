@@ -52,7 +52,7 @@ export function resolveScopeEntity(connection: Connection): ScopeEntity {
   if (!kind) {
     throw new Error(`connector ${connection.connector} has no entity kinds`)
   }
-  const skip = new Set(["ambient", "failPull", "signedOut"])
+  const skip = new Set(["ambient", "failPull", "signedOut", "remote", "host"])
   const parts: string[] = []
   for (const field of desc.scopeFields) {
     if (skip.has(field)) continue
@@ -106,17 +106,25 @@ export async function pullEntity(options: {
   const check = await connector.check(connection, home)
   if (!check.ok) throw new Error(check.message)
 
-  const revision = randomUUID()
-  const destDir = join(entityRoot, revision)
-  mkdirSync(destDir, { recursive: true })
+  mkdirSync(entityRoot, { recursive: true })
+  const staging = join(entityRoot, `.pull-${randomUUID()}`)
+  mkdirSync(staging, { recursive: true })
   try {
-    await connector.pull({
+    const pulled = await connector.pull({
       connection,
       entityKind: kind,
       entityId,
-      destDir,
+      entityRoot,
+      destDir: staging,
       home,
     })
+    const revision = pulled?.revision?.trim() || randomUUID()
+    const destDir = join(entityRoot, revision)
+    if (!existsSync(destDir)) {
+      renameSync(staging, destDir)
+    } else {
+      rmSync(staging, { recursive: true, force: true })
+    }
     const pulledAt = new Date().toISOString()
     const meta: RevisionMeta = {
       pulledAt,
@@ -129,7 +137,7 @@ export async function pullEntity(options: {
     setCurrent(entityRoot, revision)
     return { revision, title, pulledAt, fromCache: false }
   } catch (err) {
-    rmSync(destDir, { recursive: true, force: true })
+    rmSync(staging, { recursive: true, force: true })
     throw err
   }
 }

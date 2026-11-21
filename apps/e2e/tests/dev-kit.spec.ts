@@ -5,6 +5,8 @@ test.describe("dev kit", () => {
     await page.goto("/dev/kit")
     await expect(page.getByTestId("dev-kit")).toBeVisible()
     await expect(page.getByTestId("kit-status-succeeded")).toBeVisible()
+    await expect(page.getByTestId("kit-impact-read")).toBeVisible()
+    await expect(page.getByTestId("kit-freshness-fresh")).toBeVisible()
     await expect(page.getByTestId("kit-confirmation")).toBeVisible()
     await expect(page.getByTestId("kit-plan")).toBeVisible()
 

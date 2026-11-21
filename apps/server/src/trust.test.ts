@@ -89,8 +89,8 @@ describe("trust API", () => {
     const err = (await start.json()) as { error: string }
     expect(err.error).toBe("trust_required")
 
-    // Grant once is accepted by the route (200). Starting an agent here leaves
-    // scheduler ticks racing engine.close(); engine trust tests cover the grant.
+    // Grant once is accepted (200). Cancel immediately so scheduler ticks
+    // do not race engine.close(); a finished command path also works.
     const granted = await app.request("/api/workflows/agent-hi/runs", {
       method: "POST",
       headers: { "content-type": "application/json" },

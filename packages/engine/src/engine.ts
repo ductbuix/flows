@@ -417,6 +417,7 @@ export class Engine {
       runId,
       workflowRoot,
       runRoot,
+      home: this.home,
       globalLimits: this.globalLimits,
     })
     this.schedulers.set(runId, scheduler)

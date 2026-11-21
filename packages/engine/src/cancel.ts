@@ -2,6 +2,7 @@ import type { EngineEvent } from "@workspace/shared"
 import { isUnfinishedTask, openAttempts, type RunState } from "./fold.ts"
 import { killProcessGroup } from "./pid.ts"
 import { portLeaseKey, portLeases } from "./port-lease.ts"
+import { serialLocks } from "./serial-lock.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -31,6 +32,7 @@ export function cancelRun(host: CancelHost): void {
     for (const { taskId, attempt } of openAttempts(state)) {
       if (attempt.pid !== undefined) killProcessGroup(attempt.pid)
       portLeases.release(portLeaseKey(host.runId, taskId, attempt.attempt))
+      serialLocks.release(host.runId, taskId, attempt.attempt)
     }
   }
 

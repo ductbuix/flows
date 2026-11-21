@@ -35,6 +35,7 @@ import { collectHomeWorkItems } from "@/pages/home/home-work-items"
 import { NeedsYouSection } from "@/pages/home/NeedsYouSection"
 import { RecentRunsSection } from "@/pages/home/RecentRunsSection"
 import { RunningSection } from "@/pages/home/RunningSection"
+import { useExpiredSignIns } from "@/pages/home/use-expired-sign-ins"
 import { WorkItemsSection } from "@/pages/home/WorkItemsSection"
 
 export function HomePage() {
@@ -44,6 +45,8 @@ export function HomePage() {
   const [workItems, setWorkItems] = useState<WorkItemSummary[] | null>(null)
   const [createWorkflowOpen, setCreateWorkflowOpen] = useState(false)
   const [createWorkItemOpen, setCreateWorkItemOpen] = useState(false)
+  const showDashboard = Boolean(workflows && workflows.length > 0)
+  const expiredSignIns = useExpiredSignIns(showDashboard)
 
   useEffect(() => {
     let alive = true
@@ -112,7 +115,9 @@ export function HomePage() {
               </EmptyContent>
             </Empty>
           </div>
-        ) : workItems.length === 0 && (runs?.length ?? 0) === 0 ? (
+        ) : workItems.length === 0 &&
+          (runs?.length ?? 0) === 0 &&
+          expiredSignIns.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <Empty data-testid="home-empty">
               <EmptyHeader>
@@ -138,9 +143,12 @@ export function HomePage() {
           <>
             <PageTitle
               title="Home"
-              description="Approvals waiting on you, work items, live runs and recent finished runs."
+              description="Approvals waiting on you, expired sign-ins, work items, live runs and recent finished runs."
             />
-            <NeedsYouSection items={collectNeedsYou(runs ?? [])} />
+            <NeedsYouSection
+              items={collectNeedsYou(runs ?? [])}
+              expiredSignIns={expiredSignIns}
+            />
             <RunningSection runs={collectRunning(runs ?? [])} />
             <WorkItemsSection items={homeWorkItems} />
             <RecentRunsSection runs={collectRecent(runs ?? [])} />

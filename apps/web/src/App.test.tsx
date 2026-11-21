@@ -72,6 +72,9 @@ function mockFetch(handlers: Record<string, unknown>) {
       if (url.includes("/api/workitems")) {
         return Response.json(handlers.workitems ?? [])
       }
+      if (url.includes("/api/connections")) {
+        return Response.json(handlers.connections ?? { connections: [] })
+      }
       if (url.includes("/api/workflows") && !url.includes("/runs")) {
         return Response.json(handlers.workflows ?? [])
       }
