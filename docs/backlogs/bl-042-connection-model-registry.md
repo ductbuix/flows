@@ -20,18 +20,21 @@ connector yet: tests register a `fake` connector. Nothing is pulled.
 
 - [ ] `packages/shared/src/connection.ts`: zod for `connection.yaml`
       (id, connector, name, scope, sign-in method `cli`, `mcp` or
-      `cookies`, refresh rule `15m`,
-      `1h`, `1d` or `never`, policy `read-only` default) and task
+      `cookies`, refresh rule `15m`, `1h`, `1d` or `never`, policy
+      `read-only` (default) or `approve-each-publish`) and task
       `uses: [{ connection, access: read | propose }]`.
+- [ ] Connection ids are slugs (`[a-z0-9-]`); an id whose env name
+      (`RESOURCE_` plus upper snake case) equals another's is 409.
 - [ ] `packages/engine/src/connectors/` holds the interface
       (`describe`, `check`, `pull`, `diff`, `publish`) and a registry
       keyed by connector id, the same pattern as `CliAdapter`.
       Connectors are in-repo modules only; there is no loading from
-      `FLOWAPP_HOME`.
+      `FLOWAPP_HOME`. `connectors/README.md` lists the steps to add
+      one (J12): folder, interface, registry line, fake-backed tests.
 - [ ] Routes: `GET /connectors` (describe of each),
       `GET/POST /connections`, `GET/PUT/DELETE /connections/:id`,
       `POST /connections/:id/check`. Delete is 409 while a workflow
-      uses the connection.
+      uses the connection, and removes `secrets/<connectionId>/`.
 - [ ] Workflow parse accepts `uses`. Preflight warns on an unknown
       connection, on `propose` (not built yet), and on an ambient
       login the connector reports.

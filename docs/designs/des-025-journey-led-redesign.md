@@ -2,10 +2,22 @@
 id: DES-025
 title: Journey-led UI redesign
 type: ui
-status: draft
+status: active
 summary: User journeys, one shell, one component per job, and pages for work items, library and connections, built from shadcn and AI Elements.
 tags: [ui, web, ux, journeys, work-items, connections, ai-elements]
-related: [DES-008, DES-009, DES-010, DES-012, DES-014, DES-016, DES-017, DES-019, DES-024, DES-026]
+related:
+  [
+    DES-008,
+    DES-009,
+    DES-010,
+    DES-012,
+    DES-014,
+    DES-016,
+    DES-017,
+    DES-019,
+    DES-024,
+    DES-026,
+  ]
 updated: 2026-11-22
 ---
 
@@ -24,31 +36,31 @@ an artifact in the session that wrote this doc; they are not in the repo.
 | Topic       | Decision                                                                                      |
 | ----------- | --------------------------------------------------------------------------------------------- |
 | Audience    | Non-tech users (product owner, analyst) and developers, one UI for both                       |
-| Modes       | None. The Advanced switch goes; its content moves into Tabs (Terminal, Attempts)              |
+| Modes       | None. The Advanced switch goes; its content moves into Tabs (Terminal, Attempts, Environment) |
 | Style       | shadcn `base-nova` and AI Elements only (DES-024); no new tokens, no custom scale             |
 | Build rule  | One component per job (table below); compose, never restyle                                   |
-| Scope       | All pages in one pass so they share one shell, header and card pattern                        |
+| Scope       | One shell, header and card pattern for all pages, built in phases 14 to 18 (DES-017)          |
 | Entry point | The work item, not the workflow: pick the work, then a workflow to apply                      |
 | Navigation  | Home, Work items, Workflows, Runs, Connections (Library is a tab); later Bots and Logs        |
-| Safety      | Tasks work on pulled data; anything that leaves the machine is a visible, gated publish       |
+| Safety      | Tasks work on pulled data; only a publish task the user placed sends anything out, gated      |
 
 ## User journeys
 
-| Id  | Who              | Goal                                               | Path                                                                  |
-| --- | ---------------- | -------------------------------------------------- | --------------------------------------------------------------------- |
-| J1  | Product owner    | Go from an empty first launch to a first result    | Empty Home, new work item, work item page, trust check, watch the run |
-| J2  | Product owner    | Pick up a work item and run a workflow on it       | Work items, open one, check context freshness, start                  |
-| J3  | Business analyst | Reuse one workflow for many work items             | Workflow Start card asks the work item; second item; runs by item     |
-| J4  | Product owner    | Approve work that is waiting                       | Home "Needs you", open run, read summary and output, approve          |
-| J5  | Business analyst | Find out why a run failed and fix it               | Runs, failed run, Terminal, Stack Trace, jump to the task             |
-| J6  | Business analyst | Build a workflow and change a task                 | Editor graph, pick a task, write the prompt, Save                     |
-| J7  | Business analyst | Connect a source and decide how changes go back    | Connections, add, fix a sign-in, set the publish policy               |
-| J8  | Business analyst | Use different sources in different tasks           | Impact summary, task one (Rally, Confluence), task two (GitHub), pins |
-| J9  | Product owner    | Review changes before they reach a shared system   | Home, changes to publish with warning and preview, publish, ledger    |
-| J10 | Developer        | See what is pulled, how fresh, and what uses it    | Library tab, refresh rule, run pins                                   |
-| J11 | Developer        | Know the impact of a mistake and undo it           | Effects ledger, clear an entity, tighten a policy                     |
-| J12 | Developer        | Add a source Flows does not know yet               | Add an in-repo connector adapter; same pages as built-ins             |
-| J13 | Developer        | Set up the machine and inspect a run               | Settings, Attempts, Terminal                                          |
+| Id  | Who              | Goal                                             | Path                                                                  |
+| --- | ---------------- | ------------------------------------------------ | --------------------------------------------------------------------- |
+| J1  | Product owner    | Go from an empty first launch to a first result  | Empty Home, new work item, work item page, trust check, watch the run |
+| J2  | Product owner    | Pick up a work item and run a workflow on it     | Work items, open one, check context freshness, start                  |
+| J3  | Business analyst | Reuse one workflow for many work items           | Workflow Start card asks the work item; second item; runs by item     |
+| J4  | Product owner    | Approve work that is waiting                     | Home "Needs you", open run, read summary and output, approve          |
+| J5  | Business analyst | Find out why a run failed and fix it             | Runs, failed run, Terminal, Stack Trace, jump to the task             |
+| J6  | Business analyst | Build a workflow and change a task               | Editor graph, pick a task, write the prompt, Save                     |
+| J7  | Business analyst | Connect a source and decide how changes go back  | Connections, add, fix a sign-in, set the publish policy               |
+| J8  | Business analyst | Use different sources in different tasks         | Impact summary, task one (Rally, Confluence), task two (GitHub), pins |
+| J9  | Product owner    | Review changes before they reach a shared system | Home, publish task waiting with warning and preview, publish, ledger  |
+| J10 | Developer        | See what is pulled, how fresh, and what uses it  | Library tab, refresh rule, run pins                                   |
+| J11 | Developer        | Know the impact of a mistake and undo it         | Effects ledger, clear an entity, tighten a policy                     |
+| J12 | Developer        | Add a source Flows does not know yet             | Add an in-repo connector adapter; same pages as built-ins             |
+| J13 | Developer        | Set up the machine and inspect a run             | Settings, Attempts, Terminal                                          |
 
 What the journeys demand of the UI:
 
@@ -68,28 +80,28 @@ What the journeys demand of the UI:
 
 ## One component per job
 
-| Job                          | Component (shadcn core or AI Elements)                        |
-| ---------------------------- | ------------------------------------------------------------- |
-| App shell                    | `Sidebar` + `SidebarInset`, `PageHeader` (Trigger, Separator, Breadcrumb) |
-| Page title                   | `font-heading text-xl` title, one muted sentence, optional Badge |
-| Section                      | `h2 font-heading text-base`, content below with `gap-3`       |
-| Group of facts or actions    | `Card` (`size="sm"` in grids), `CardAction` for the badge     |
-| Rows you click               | `ItemGroup` + `Item`, or `Table` when columns matter          |
+| Job                          | Component (shadcn core or AI Elements)                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| App shell                    | `Sidebar` + `SidebarInset`, `PageHeader` (Trigger, Separator, Breadcrumb)                         |
+| Page title                   | `font-heading text-xl` title, one muted sentence, optional Badge                                  |
+| Section                      | `h2 font-heading text-base`, content below with `gap-3`                                           |
+| Group of facts or actions    | `Card` (`size="sm"` in grids), `CardAction` for the badge                                         |
+| Rows you click               | `ItemGroup` + `Item`, or `Table` when columns matter                                              |
 | Run status                   | `Badge` with icon: secondary done, outline running, default awaiting approval, destructive failed |
-| Impact                       | `Badge`: secondary Read, outline Local, default Cloud         |
-| Publish policy               | `Badge` with icon; chosen with `Select`, explained in `FieldDescription` |
-| Freshness                    | `Badge`: secondary Fresh, outline Stale                       |
-| Source of a work item        | outline `Badge` with the system icon, or secondary "Ad hoc"   |
-| Forms                        | `FieldGroup`, `Field`, `Input`, `Textarea`, `Select`, `Switch` |
-| Prompt with model and effort | Prompt Input with Model Selector in its footer                |
-| Waiting on a person          | Confirmation (`Item variant="outline"`, Reject and Approve)   |
-| Task progress                | Plan (known steps) and `Progress`; Task for live steps        |
-| Logs and failures            | Terminal, Stack Trace, Code Block inside `Tabs variant="line"` |
-| Change preview               | Code Block with a diff                                        |
-| Outputs                      | File Tree or `Item` list                                      |
-| Empty and loading            | `Empty` with `EmptyHeader`, `EmptyMedia`; `Skeleton`          |
-| Add or confirm               | `Dialog` with `DialogFooter`; `AlertDialog` only to delete    |
-| Graph                        | React Flow with `Card size="sm"` nodes, `ButtonGroup` controls |
+| Impact                       | `Badge`: secondary Read, outline Local, default Cloud                                             |
+| Publish policy               | `Badge` with icon; chosen with `Select`, explained in `FieldDescription`                          |
+| Freshness                    | `Badge`: secondary Fresh, outline Stale                                                           |
+| Source of a work item        | outline `Badge` with the system icon, or secondary "Ad hoc"                                       |
+| Forms                        | `FieldGroup`, `Field`, `Input`, `Textarea`, `Select`, `Switch`                                    |
+| Prompt with model and effort | Prompt Input with Model Selector in its footer                                                    |
+| Waiting on a person          | Confirmation (`Item variant="outline"`, Reject and Approve)                                       |
+| Task progress                | Plan (known steps) and `Progress`; Task for live steps                                            |
+| Logs and failures            | Terminal, Stack Trace, Code Block inside `Tabs variant="line"`                                    |
+| Change preview               | Code Block with a diff                                                                            |
+| Outputs                      | File Tree or `Item` list                                                                          |
+| Empty and loading            | `Empty` with `EmptyHeader`, `EmptyMedia`; `Skeleton`                                              |
+| Add or confirm               | `Dialog` with `DialogFooter`; `AlertDialog` only to delete                                        |
+| Graph                        | React Flow with `Card size="sm"` nodes, `ButtonGroup` controls                                    |
 
 AI Elements has no canvas pattern; the graph stays React Flow. Queue,
 Chain of Thought, Tool and Subagent wait until Bots exist.
@@ -133,24 +145,26 @@ flowchart LR
 
 ## Pages
 
-- **Home**: Needs you (approvals, pending publishes, expired sign-ins),
+- **Home**: Needs you (approvals, waiting publish tasks, expired sign-ins),
   Running, Work items, Recent runs.
 - **Work items**: search plus a Table (source, workflow, last run).
 - **Work item**: Context (library entities with freshness), Runs, a Start
-  card (workflow, notes), and Notes.
+  card (workflow, prefilled inputs, trust check), and Notes.
 - **Workflows**: search plus a Table with last-run Badge.
 - **Workflow Overview**: Tasks with their connections, Connections and
   impact, Inputs, and a Start card that asks for the work item.
 - **Editor**: graph canvas plus an Inspector Card with a Connections
-  FieldSet (use it, and Read or Propose changes).
+  FieldSet (use it, and Read or Propose changes). A publish task is a
+  node like any other, added from the canvas with a connection Select.
 - **Runs**: one Table by work item.
-- **Run view**: Confirmation or Alert, Progress, Changes to publish or
-  Effects, Plan beside a task Table, a task Card with Tabs, and Library
-  pins (revision, freshness, used by).
+- **Run view**: Confirmation or Alert, Progress, Changes to publish (a
+  waiting publish task) or Effects and unpublished local changes, Plan
+  beside a task Table, a task Card with Tabs, and Library pins
+  (revision, freshness, used by).
 - **Connections**: the three-step explainer and a Table; **Library** tab:
   entities, revisions, freshness, pinned by; **Connection**: local data,
   used by, publish policy, sign-in.
-- **Settings**: theme, agent CLIs, always-trust.
+- **Settings**: theme, agent CLIs, always-trust, allowed MCP servers.
 
 ## Developer experience
 
@@ -170,16 +184,19 @@ flowchart LR
   item (or "None, ad hoc"). Declared inputs are prefilled from it and
   stay editable for this run. A run keeps what was submitted; the work
   item's own values do not change.
-- **Conflict and escalation states.** A publish conflict is an Alert on the
-  run with two actions (pull again and rerun, or discard). An agent
+- **Conflict and escalation states.** A publish conflict fails the
+  publish task and shows an Alert with "Rerun with fresh pull". An agent
   review that escalates becomes the same "Awaiting approval" Confirmation
-  as a person-reviewed policy. Both reuse existing parts.
+  as a person-reviewed policy; Discard is Reject. Both reuse existing
+  parts.
 - **Waiting on a person.** Run status does not change. The run summary
-  has `needsYou` (approvals, later pending publishes), derived from
-  tasks and publish events; the "Awaiting approval" Badge and Home's
+  has `needsYou`, derived from tasks in `awaiting_approval` (a publish
+  task carries its connection); the "Awaiting approval" Badge and Home's
   Needs you read it.
-- Model questions (secrets, change sets, agent review, retention, work
-  copies, first source) are resolved in DES-026.
+- **When to publish.** The user decides by placing a publish task in
+  the graph (DES-026). Without one, changes stay Local.
+- Model questions (secrets, resources on disk, change sets, agent
+  review, retention, work copies, first source) are resolved in DES-026.
 
 ## Done when
 

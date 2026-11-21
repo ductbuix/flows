@@ -24,7 +24,7 @@ editable.
 - [ ] Connections tab: the three-step explainer (connect, pull,
       publish), a Table (name, connector, sign-in status, refresh
       rule, used by), and an Add connection Dialog built from `GET
-    /connectors`.
+  /connectors`.
 - [ ] Library tab: entities with revisions, Freshness Badge (secondary
       Fresh, outline Stale), pinned by runs, and Pull now.
 - [ ] `/connections/:id`: sign-in (status, Check again), local data,

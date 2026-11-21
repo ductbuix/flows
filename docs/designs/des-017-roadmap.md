@@ -5,7 +5,20 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022, DES-023, DES-024, DES-025, DES-026]
+related:
+  [
+    DES-014,
+    DES-015,
+    DES-018,
+    DES-019,
+    DES-020,
+    DES-021,
+    DES-022,
+    DES-023,
+    DES-024,
+    DES-025,
+    DES-026,
+  ]
 updated: 2026-11-22
 ---
 
@@ -15,27 +28,27 @@ Phases follow the backlog order (priority, then `depends`). Status lives
 in the [backlogs index](../backlogs/INDEX.md); this doc only says why the
 order is what it is. Goals come from [DES-014](des-014-vision.md).
 
-| Phase | Goal                         | Backlog items                                           | Done when                                         |
-| ----- | ---------------------------- | ------------------------------------------------------- | ------------------------------------------------- |
-| 0     | Foundation                   | BL-001 scaffold, BL-002 tooling, BL-003 docs            | done                                              |
-| 1     | A run that is reliable       | BL-004 engine core, BL-005 resume                       | a workflow runs and survives a restart            |
-| 2     | Control flow                 | BL-014 approval and cancel, BL-006 conditions and loops | gates, cancel, when, retry and repeat work        |
-| 3     | Agents and dynamic workflows | BL-007 agent tasks and spawn                            | an agent fans out by spawning tasks               |
-| 4     | See and steer runs           | BL-008 run view, BL-012 run controls                    | live run view with every control                  |
-| 5     | Author workflows             | BL-009 graph editor, BL-013 workflow lifecycle          | edit graph and YAML in sync, manage workflows     |
-| 6     | Hardening                    | BL-011 agent judge, BL-010 sandboxing                   | judge conditions; writes held to the workflow dir |
-| 7     | Use the editor               | BL-015 agent kind, BL-016 file editing                  | switch a task to agent; edit memory and instructions  |
-| 8     | Safe agent runs              | BL-017 timeouts, BL-018 app trust                       | hung agents end; trust and pre-run check before CLIs  |
-| 9     | Fixed prompts and task ids   | BL-019 paths and ids, BL-020 prompt editor              | generated ids; prompts at tasks/<id>/prompt.md; drawer edits name and prompt |
-| 10    | Reuse a workflow with inputs | BL-021 run input engine, BL-022 start form              | start a run with declared inputs; extras queue; the run view shows the files |
-| 11    | Remove a task in the editor  | BL-023 trash on save, BL-024 editor delete              | delete one task, undo before save, folder moves to tasks/.trash              |
-| 12    | Pick model and effort        | BL-025 adapters and records, BL-026 editor selects      | each agent task and judge can set model and effort, or use the CLI default   |
-| 13    | UI on the shadcn baseline    | BL-027 shell and alignment, BL-028 run view, BL-029 editor, BL-030 polish | one shadcn look everywhere; sidebar, Settings, Advanced and AI Elements |
-| 14    | Journey shell on today's data | BL-031 kit, BL-032 routes, BL-033 runs API, BL-034 pages, BL-035 Home, BL-036 run view, BL-037 workflow tabs | Home, Workflows, Runs and flat URLs; no Advanced switch |
-| 15    | Work items                   | BL-038 store, BL-039 run link, BL-040 pages, BL-041 Start card | pick a work item, run a workflow on it, see its runs   |
-| 16    | Connections and library (read) | BL-042 model, BL-043 library, BL-044 GitHub read, BL-045 pages, BL-046 editor and pins, BL-047 retention | tasks read pinned GitHub data; freshness and pins visible |
-| 17    | Gated publish                | BL-048 change sets, BL-049 policy gate, BL-050 GitHub publish, BL-051 publish UI, BL-052 agent review, BL-056 ports and caches | a draft PR is published only after approval, with a ledger |
-| 18    | More sources                 | BL-053 cookie store, BL-054 Confluence, BL-055 Rally    | MCP and cookie sign-ins work; tasks cannot read cookies |
+| Phase | Goal                           | Backlog items                                                                                                                   | Done when                                                                    |
+| ----- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 0     | Foundation                     | BL-001 scaffold, BL-002 tooling, BL-003 docs                                                                                    | done                                                                         |
+| 1     | A run that is reliable         | BL-004 engine core, BL-005 resume                                                                                               | a workflow runs and survives a restart                                       |
+| 2     | Control flow                   | BL-014 approval and cancel, BL-006 conditions and loops                                                                         | gates, cancel, when, retry and repeat work                                   |
+| 3     | Agents and dynamic workflows   | BL-007 agent tasks and spawn                                                                                                    | an agent fans out by spawning tasks                                          |
+| 4     | See and steer runs             | BL-008 run view, BL-012 run controls                                                                                            | live run view with every control                                             |
+| 5     | Author workflows               | BL-009 graph editor, BL-013 workflow lifecycle                                                                                  | edit graph and YAML in sync, manage workflows                                |
+| 6     | Hardening                      | BL-011 agent judge, BL-010 sandboxing                                                                                           | judge conditions; writes held to the workflow dir                            |
+| 7     | Use the editor                 | BL-015 agent kind, BL-016 file editing                                                                                          | switch a task to agent; edit memory and instructions                         |
+| 8     | Safe agent runs                | BL-017 timeouts, BL-018 app trust                                                                                               | hung agents end; trust and pre-run check before CLIs                         |
+| 9     | Fixed prompts and task ids     | BL-019 paths and ids, BL-020 prompt editor                                                                                      | generated ids; prompts at tasks/<id>/prompt.md; drawer edits name and prompt |
+| 10    | Reuse a workflow with inputs   | BL-021 run input engine, BL-022 start form                                                                                      | start a run with declared inputs; extras queue; the run view shows the files |
+| 11    | Remove a task in the editor    | BL-023 trash on save, BL-024 editor delete                                                                                      | delete one task, undo before save, folder moves to tasks/.trash              |
+| 12    | Pick model and effort          | BL-025 adapters and records, BL-026 editor selects                                                                              | each agent task and judge can set model and effort, or use the CLI default   |
+| 13    | UI on the shadcn baseline      | BL-027 shell and alignment, BL-028 run view, BL-029 editor, BL-030 polish                                                       | one shadcn look everywhere; sidebar, Settings, Advanced and AI Elements      |
+| 14    | Journey shell on today's data  | BL-031 kit, BL-032 routes, BL-033 runs API, BL-034 pages, BL-035 Home, BL-036 run view, BL-037 workflow tabs                    | Home, Workflows, Runs and flat URLs; no Advanced switch                      |
+| 15    | Work items                     | BL-038 store, BL-039 run link, BL-040 pages, BL-041 Start card                                                                  | pick a work item, run a workflow on it, see its runs                         |
+| 16    | Connections and library (read) | BL-042 model, BL-043 library, BL-044 GitHub read, BL-045 pages, BL-046 editor and pins, BL-047 retention                        | tasks read pinned GitHub data; freshness and pins visible                    |
+| 17    | Gated publish                  | BL-048 change sets, BL-049 publish task, BL-050 GitHub publish, BL-051 publish UI, BL-052 agent review, BL-056 ports and caches | a draft PR is published only after approval, with a ledger                   |
+| 18    | More sources                   | BL-053 cookie store, BL-054 Confluence, BL-055 Rally                                                                            | MCP and cookie sign-ins work; tasks cannot read cookies                      |
 
 ## Why this order
 

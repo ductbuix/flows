@@ -19,7 +19,7 @@ a branch and draft pull request is BL-050.
 ## Done when
 
 - [ ] `describe` lists entity kind `repo` with scope `owner/name` and
-      sign-in method `gh` (delegated).
+      sign-in method `cli` (the GitHub CLI owns the login).
 - [ ] `check` runs `gh auth status` for the host and reports signed
       in, signed out or missing CLI. Flows stores nothing.
 - [ ] `pull` keeps one shared clone per repo under the library,

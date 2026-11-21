@@ -26,7 +26,8 @@ The label is "Work items" everywhere, with no short form.
       takes title, optional workflow and notes.
 - [ ] `/work-items/:id`: PageTitle with source Badge; Runs (Table
       filtered by `workItemId`); a Start card (workflow Select,
-      declared inputs prefilled from the work item and editable);
+      declared inputs prefilled from the work item and editable, and
+      the existing trust gate);
       Notes (Textarea, save with hash); Attachments as an `Item` list.
 - [ ] Starting from the work item page sends `workItemId`; the new run
       appears in its Runs live.

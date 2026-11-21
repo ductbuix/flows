@@ -1,9 +1,9 @@
 ---
 id: BL-056
-title: Port leases, repo lock and per-workflow caches
+title: Port leases and per-workflow caches
 type: backlog
 status: todo
-summary: Each attempt gets a leased port block in env, a connection can run one task at a time, and package caches go to <workflow>/.cache.
+summary: Each attempt gets a leased port block in env, package caches go to <workflow>/.cache, and the watcher skips runs and caches.
 tags: [engine, sandbox, process, ports]
 related: [DES-026, DES-006]
 updated: 2026-11-22
@@ -11,13 +11,13 @@ priority: P1
 depends: []
 ---
 
-# Port leases, repo lock and per-workflow caches
+# Port leases and per-workflow caches
 
 Design: [DES-026](../designs/des-026-work-items-library-connections.md)
 (Work copies). Repo copies have their own files, but servers and
 tests can still clash on ports, and installs write to global caches
-that the sandbox blocks. The lease and caches help any command task,
-so this item does not wait for connectors; the lock needs BL-042.
+that the sandbox blocks. This helps any command task, so it does not
+wait for connectors. The per-connection `serial` lock is in BL-048.
 
 ## Done when
 
@@ -30,9 +30,9 @@ so this item does not wait for connectors; the lock needs BL-042.
 - [ ] Tasks get `npm_config_cache`, `PNPM_STORE_DIR`, `YARN_CACHE_FOLDER`,
       `XDG_CACHE_HOME` and `PIP_CACHE_DIR` under `<workflow>/.cache/`,
       which the sandbox already allows. A task's own env overrides them.
-- [ ] Once BL-042 lands, `connection.yaml` accepts `serial: true`: tasks
-      that use that connection with `propose` run one at a time across
-      runs, and a waiting task shows why.
+- [ ] The workflow file watcher no longer watches `runs/` or `.cache/`
+      (it watches `workflow.yaml` and `memory/` only), and workflow
+      export or copy skips `.cache/`.
 - [ ] Tests cover two parallel attempts getting disjoint blocks, release
       on finish and on resume, and `pnpm install` succeeding in a
       sandboxed task.

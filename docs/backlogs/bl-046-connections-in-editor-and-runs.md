@@ -25,7 +25,8 @@ Design: [DES-025](../designs/des-025-journey-led-redesign.md) (J6, J8, J10, Page
 - [ ] Graph nodes show an outline Badge per connection the task uses.
 - [ ] Overview lists Connections and impact for the workflow.
 - [ ] Work item Context links library entities (pick from the Library)
-      and shows Freshness; links are saved in `workitem.yaml`. A work
+      and shows Freshness; links are saved in `workitem.yaml` and
+      pulled and pinned at run start (BL-043). A work
       item can be created from a library entity, which sets its source
       Badge.
 - [ ] Run view shows Library pins: entity, revision, Freshness, used

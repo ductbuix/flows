@@ -20,15 +20,15 @@ and comes with BL-046. Runs do not reference work items yet (BL-039).
 ## Done when
 
 - [ ] Shared zod `workItemSchema`: id, title, `source` (`{ kind:
-  adhoc }` for now), optional `workflowId`, `inputs` (name to
+adhoc }` for now), optional `workflowId`, `inputs` (name to
       value), `links` (empty list until BL-046), createdAt, updatedAt.
       Unknown keys are errors.
 - [ ] Files live at `FLOWAPP_HOME/workitems/<id>/workitem.yaml`,
       `notes.md` and `attachments/`. Ids are generated slugs; writes
       are atomic (temp file then rename).
 - [ ] Routes: `GET /workitems`, `POST /workitems`, `GET/PUT
-  /workitems/:id` (hash, 409 on mismatch like workflows), `GET/PUT
-  /workitems/:id/notes`, attachment list, upload and delete,
+/workitems/:id` (hash, 409 on mismatch like workflows), `GET/PUT
+/workitems/:id/notes`, attachment list, upload and delete,
       `DELETE /workitems/:id`.
 - [ ] Delete moves the folder to `workitems/.trash/` and never deletes
       runs.
