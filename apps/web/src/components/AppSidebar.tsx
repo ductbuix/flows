@@ -17,6 +17,7 @@ import {
 import { api } from "@/lib/api"
 import { workflowPath } from "@/lib/paths"
 import { useWorkflows } from "@/lib/workflows-context"
+import { PlatformNav } from "@/components/PlatformNav"
 import { WorkflowSidebarList } from "@/components/WorkflowSidebarList"
 import { CreateWorkflowDialog } from "@/pages/CreateWorkflowDialog"
 import { DeleteWorkflowDialog } from "@/pages/DeleteWorkflowDialog"
@@ -54,6 +55,7 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
+          <PlatformNav />
           <SidebarGroup>
             <SidebarGroupLabel>Workflows</SidebarGroupLabel>
             <SidebarGroupAction

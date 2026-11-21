@@ -34,7 +34,7 @@ export function WorkflowEditorPage() {
     usePendingTaskDelete(workflowId, state.workflow)
 
   const crumbs = [
-    { label: "Workflows", to: "/" },
+    { label: "Workflows", to: "/workflows" },
     { label: workflowId },
   ] as const
 

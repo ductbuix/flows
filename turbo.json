@@ -21,7 +21,17 @@
       "outputs": []
     },
     "test:e2e": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "CI",
+        "FLOWAPP_HOME",
+        "FLOWAPP_CURSOR_PROJECTS",
+        "PW_WEB_PORT",
+        "PW_API_PORT",
+        "PW_API_BASE",
+        "PW_VIDEO",
+        "PW_SCREENSHOT"
+      ]
     }
   }
 }

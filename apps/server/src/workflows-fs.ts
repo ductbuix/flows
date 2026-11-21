@@ -14,7 +14,11 @@ export function listWorkflowSummaries(engine: Engine): WorkflowSummary[] {
     if (!existsSync(join(dir, "workflow.yaml"))) continue
     try {
       const wf = engine.loadWorkflow(dir)
-      summaries.push({ id: wf.id, goal: wf.goal })
+      summaries.push({
+        id: wf.id,
+        goal: wf.goal,
+        taskCount: wf.tasks.length,
+      })
     } catch {
       continue
     }
