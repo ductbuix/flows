@@ -15,6 +15,7 @@ export type StartRunParams = {
   trustGrant?: TrustGrant
   values?: Record<string, string>
   files?: ManualFilePart[]
+  workItemId?: string
 }
 
 export type StartRunResult = {
@@ -47,14 +48,15 @@ export function appendRunStarted(options: {
   }
 
   const runRoot = prepareRunDirs(params.workflowDir, params.runId, graph)
-  const { itemKey, inputHash, files } = materializeRunInput(
+  const { itemKey, inputHash, files, workItemId } = materializeRunInput(
     params.workflowDir,
     runRoot,
     {
       decls: graph.inputs ?? [],
       values: params.values ?? {},
       files: params.files ?? [],
-    }
+    },
+    params.workItemId
   )
 
   const queued = shouldQueueRun(graph, options.workflowRuns)
@@ -73,6 +75,7 @@ export function appendRunStarted(options: {
     files,
     ...(queued ? { queued: true } : {}),
     ...(trustOnce ? { trustGrant: trustOnce } : {}),
+    ...(workItemId !== undefined ? { workItemId } : {}),
   }
   log.append(event)
 

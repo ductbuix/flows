@@ -3,6 +3,7 @@ import {
   applyInputDefaults,
   buildManualValuesSchema,
   canonicalManualItemPayload,
+  canonicalWorkItemKeyPayload,
   normalizeInputText,
 } from "./run-inputs.ts"
 import type { WorkflowInputDecl } from "./workflow.ts"
@@ -19,6 +20,17 @@ describe("canonicalManualItemPayload", () => {
     ])
     expect(a).toBe(b)
     expect(JSON.parse(a)).toMatchObject({ v: 1, source: "manual" })
+  })
+})
+
+describe("canonicalWorkItemKeyPayload", () => {
+  it("is stable for a work item id", () => {
+    const payload = canonicalWorkItemKeyPayload("story-one")
+    expect(JSON.parse(payload)).toEqual({
+      v: 1,
+      source: "workItem",
+      workItemId: "story-one",
+    })
   })
 })
 

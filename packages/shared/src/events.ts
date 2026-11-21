@@ -43,6 +43,8 @@ export const runStartedEventSchema = z.object({
   files: z.array(z.string()).optional(),
   /** True when the run waits under maxConcurrentRuns (DES-021). */
   queued: z.boolean().optional(),
+  /** Work item this run belongs to (DES-026 / BL-039). */
+  workItemId: z.string().min(1).optional(),
 })
 
 /** Queued run becomes running when a slot frees (DES-021). */
