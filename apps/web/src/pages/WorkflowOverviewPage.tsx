@@ -1,83 +1,21 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import {
-  needTaskId,
-  workflowDetailSchema,
-  type Workflow,
-  type WorkflowInputDecl,
-} from "@workspace/shared"
+import { workflowDetailSchema, type Workflow } from "@workspace/shared"
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/PageHeader"
 import { PageTitle } from "@/components/PageTitle"
-import { Section } from "@/components/Section"
 import { api } from "@/lib/api"
 import { runPath } from "@/lib/paths"
+import { OverviewConnectionsSection } from "@/pages/OverviewConnectionsSection"
+import { OverviewInputsSection } from "@/pages/OverviewInputsSection"
+import { OverviewTasksSection } from "@/pages/OverviewTasksSection"
 import { WorkflowDetailTabs } from "@/pages/WorkflowDetailTabs"
 import { WorkflowStartCard } from "@/pages/WorkflowStartCard"
-
-function needsLabel(task: Workflow["tasks"][number]): string {
-  const needs = task.needs ?? []
-  if (needs.length === 0) return "—"
-  return needs.map((n) => needTaskId(n)).join(", ")
-}
-
-function InputsSection({ inputs }: { inputs: WorkflowInputDecl[] }) {
-  if (inputs.length === 0) {
-    return (
-      <Section title="Inputs">
-        <Empty data-testid="overview-inputs-empty">
-          <EmptyHeader>
-            <EmptyTitle>No inputs</EmptyTitle>
-            <EmptyDescription>
-              This workflow has no declared start-run inputs.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      </Section>
-    )
-  }
-  return (
-    <Section title="Inputs">
-      <Table data-testid="overview-inputs">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Required</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {inputs.map((input) => (
-            <TableRow key={input.name}>
-              <TableCell className="font-mono">{input.name}</TableCell>
-              <TableCell>{input.type}</TableCell>
-              <TableCell>{input.required ? "Yes" : "No"}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Section>
-  )
-}
 
 export function WorkflowOverviewPage() {
   const { workflowId } = useParams() as { workflowId: string }
@@ -144,32 +82,9 @@ export function WorkflowOverviewPage() {
                 workflow.goal?.trim() || "Tasks, inputs and start a run."
               }
             />
-            <Section title="Tasks">
-              <Table data-testid="overview-tasks">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Kind</TableHead>
-                    <TableHead>Needs</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {workflow.tasks.map((task) => (
-                    <TableRow
-                      key={task.id}
-                      data-testid={`overview-task-${task.id}`}
-                    >
-                      <TableCell>{task.name ?? task.id}</TableCell>
-                      <TableCell>{task.kind}</TableCell>
-                      <TableCell className="font-mono text-muted-foreground">
-                        {needsLabel(task)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Section>
-            <InputsSection inputs={workflow.inputs ?? []} />
+            <OverviewTasksSection workflow={workflow} />
+            <OverviewConnectionsSection workflow={workflow} />
+            <OverviewInputsSection inputs={workflow.inputs ?? []} />
             <WorkflowStartCard
               workflowId={workflowId}
               onStarted={(runId) => {

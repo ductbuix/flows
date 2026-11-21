@@ -15,6 +15,7 @@ export type EditorNodeData = {
   label: string
   kind: string
   markers: string[]
+  connections: string[]
 }
 
 export function buildEditorGraph(workflow: Workflow): {
@@ -28,11 +29,17 @@ export function buildEditorGraph(workflow: Workflow): {
     if (task.repeat) markers.push("repeat")
     if (task.when !== undefined) markers.push("when")
     if (task.approval) markers.push("approval")
+    const connections = (task.uses ?? []).map((u) => u.connection)
     return {
       id: task.id,
       type: "editorTask",
       position: { x: 0, y: 0 },
-      data: { label: task.name ?? task.id, kind: task.kind, markers },
+      data: {
+        label: task.name ?? task.id,
+        kind: task.kind,
+        markers,
+        connections,
+      },
       draggable: false,
       selectable: true,
     }

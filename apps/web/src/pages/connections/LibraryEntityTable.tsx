@@ -39,9 +39,16 @@ type Props = {
   busy: string | null
   onPull: (entity: LibraryEntity) => void
   onClear: (entity: LibraryEntity) => void
+  onCreateWorkItem: (entity: LibraryEntity) => void
 }
 
-export function LibraryEntityTable({ entities, busy, onPull, onClear }: Props) {
+export function LibraryEntityTable({
+  entities,
+  busy,
+  onPull,
+  onClear,
+  onCreateWorkItem,
+}: Props) {
   return (
     <Table data-testid="library-table">
       <TableHeader>
@@ -86,6 +93,15 @@ export function LibraryEntityTable({ entities, busy, onPull, onClear }: Props) {
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    data-testid={`library-work-item-${entity.entityId}`}
+                    disabled={busy === `wi:${id}`}
+                    onClick={() => onCreateWorkItem(entity)}
+                  >
+                    New work item
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"

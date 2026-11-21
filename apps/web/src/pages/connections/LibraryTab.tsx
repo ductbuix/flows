@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router"
 import {
   libraryListSchema,
+  workItemDetailSchema,
   type LibraryEntity,
   type LibraryUsage,
 } from "@workspace/shared"
@@ -20,9 +22,11 @@ import { toast } from "sonner"
 import { LibraryUsageAlert } from "@/components/LibraryUsageAlert"
 import { Section } from "@/components/Section"
 import { api } from "@/lib/api"
+import { workItemPath } from "@/lib/paths"
 import { LibraryEntityTable } from "./LibraryEntityTable"
 
 export function LibraryTab() {
+  const navigate = useNavigate()
   const [entities, setEntities] = useState<LibraryEntity[] | null>(null)
   const [usage, setUsage] = useState<LibraryUsage | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -69,6 +73,42 @@ export function LibraryTab() {
       await load()
     } catch {
       toast.error("Pull failed")
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function createWorkItem(entity: LibraryEntity) {
+    const key = `wi:${entity.connection}/${entity.kind}/${entity.entityId}`
+    setBusy(key)
+    try {
+      const res = await api.workitems.$post({
+        json: {
+          title: entity.title,
+          source: {
+            kind: "library",
+            connection: entity.connection,
+            entityKind: entity.kind,
+            entityId: entity.entityId,
+          },
+          links: [
+            {
+              connection: entity.connection,
+              kind: entity.kind,
+              entityId: entity.entityId,
+            },
+          ],
+        },
+      })
+      if (!res.ok) {
+        toast.error("Could not create work item")
+        return
+      }
+      const detail = workItemDetailSchema.parse(await res.json())
+      toast.success("Work item created")
+      void navigate(workItemPath(detail.item.id))
+    } catch {
+      toast.error("Could not create work item")
     } finally {
       setBusy(null)
     }
@@ -133,6 +173,7 @@ export function LibraryTab() {
             busy={busy}
             onPull={(e) => void pull(e)}
             onClear={(e) => void clearUnused(e)}
+            onCreateWorkItem={(e) => void createWorkItem(e)}
           />
         )}
       </Section>

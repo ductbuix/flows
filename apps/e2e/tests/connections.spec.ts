@@ -66,7 +66,11 @@ test.describe("connections and library (BL-045 / J7)", () => {
 
     await page.getByTestId("connections-tab-library").click()
     await expect(page).toHaveURL(/tab=library/)
-    await expect(page.getByTestId("library-empty")).toBeVisible()
+    await expect(page.getByTestId("library-tab")).toBeVisible()
+    // Shared e2e home may already hold pulls from other specs (e.g. BL-046).
+    await expect(
+      page.getByTestId("library-empty").or(page.getByTestId("library-table"))
+    ).toBeVisible()
     await screenshotThemes(page, "library-tab")
 
     // Seed an expired sign-in for Home Needs you.

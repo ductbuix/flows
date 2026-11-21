@@ -23,7 +23,7 @@ describe("workItemSchema", () => {
     )
   })
 
-  it("rejects a non-adhoc source", () => {
+  it("rejects an unknown source kind", () => {
     expect(
       workItemSchema.safeParse({
         ...base,
@@ -32,11 +32,37 @@ describe("workItemSchema", () => {
     ).toBe(false)
   })
 
-  it("rejects a non-empty links list", () => {
+  it("accepts a library source and links", () => {
+    const item = workItemSchema.parse({
+      ...base,
+      source: {
+        kind: "library",
+        connection: "rally-pay",
+        entityKind: "item",
+        entityId: "PAY-1",
+      },
+      links: [
+        {
+          connection: "rally-pay",
+          kind: "item",
+          entityId: "PAY-1",
+        },
+      ],
+    })
+    expect(item.source).toEqual({
+      kind: "library",
+      connection: "rally-pay",
+      entityKind: "item",
+      entityId: "PAY-1",
+    })
+    expect(item.links).toHaveLength(1)
+  })
+
+  it("rejects a link missing entityId", () => {
     expect(
       workItemSchema.safeParse({
         ...base,
-        links: [{ connection: "x" }],
+        links: [{ connection: "x", kind: "item" }],
       }).success
     ).toBe(false)
   })

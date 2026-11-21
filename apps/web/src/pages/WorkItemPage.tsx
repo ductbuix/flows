@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
-import { Link2 } from "lucide-react"
 import type { WorkItem, WorkItemAttachment } from "@workspace/shared"
 import {
   workItemAttachmentListSchema,
@@ -11,12 +10,10 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { Badge } from "@workspace/ui/components/badge"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
@@ -30,7 +27,9 @@ import { toast } from "sonner"
 import { PageHeader } from "@/components/PageHeader"
 import { PageTitle } from "@/components/PageTitle"
 import { Section } from "@/components/Section"
+import { WorkItemSourceBadge } from "@/components/WorkItemSourceBadge"
 import { api } from "@/lib/api"
+import { WorkItemContextSection } from "@/pages/WorkItemContextSection"
 import { WorkItemNotesSection } from "@/pages/WorkItemNotesSection"
 import { WorkItemRunsSection } from "@/pages/WorkItemRunsSection"
 import { WorkItemStartCard } from "@/pages/WorkItemStartCard"
@@ -38,6 +37,7 @@ import { WorkItemStartCard } from "@/pages/WorkItemStartCard"
 export function WorkItemPage() {
   const { workItemId } = useParams() as { workItemId: string }
   const [item, setItem] = useState<WorkItem | null>(null)
+  const [hash, setHash] = useState<string | null>(null)
   const [attachments, setAttachments] = useState<WorkItemAttachment[] | null>(
     null
   )
@@ -65,6 +65,7 @@ export function WorkItemPage() {
       }
       const detail = workItemDetailSchema.parse(await detailRes.json())
       setItem(detail.item)
+      setHash(detail.hash)
       if (filesRes.ok) {
         setAttachments(
           workItemAttachmentListSchema.parse(await filesRes.json()).files
@@ -97,7 +98,7 @@ export function WorkItemPage() {
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        ) : loading || !item ? (
+        ) : loading || !item || !hash ? (
           <div className="space-y-3" data-testid="work-item-loading">
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-40 w-full" />
@@ -107,27 +108,18 @@ export function WorkItemPage() {
             <PageTitle
               title={item.title}
               description="Context, runs, start a workflow and notes."
-              badge={
-                <Badge variant="secondary" data-testid="work-item-source">
-                  Ad hoc
-                </Badge>
-              }
+              badge={<WorkItemSourceBadge source={item.source} />}
             />
 
-            <Section title="Context">
-              <Empty data-testid="work-item-context-empty">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Link2 />
-                  </EmptyMedia>
-                  <EmptyTitle>No linked library data</EmptyTitle>
-                  <EmptyDescription>
-                    Library links will appear here once connections can attach
-                    them.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            </Section>
+            <WorkItemContextSection
+              workItemId={workItemId}
+              item={item}
+              hash={hash}
+              onUpdated={(next, nextHash) => {
+                setItem(next)
+                setHash(nextHash)
+              }}
+            />
 
             <WorkItemRunsSection workItemId={workItemId} />
 

@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { workflowIdSchema } from "./api-lifecycle.ts"
+import { connectionIdSchema } from "./connection.ts"
 
 /** Work item folder id: lowercase letters, digits and dashes (DES-026). */
 export const workItemIdSchema = z
@@ -7,16 +8,37 @@ export const workItemIdSchema = z
   .min(1)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase letters, digits and dashes")
 
-/** Ad hoc only until BL-046 adds source links. */
-export const workItemSourceSchema = z
+/** One library entity linked as work item context (DES-026 / BL-046). */
+export const workItemLinkSchema = z
   .object({
-    kind: z.literal("adhoc"),
+    connection: connectionIdSchema,
+    kind: z.string().min(1),
+    entityId: z.string().min(1),
   })
   .strict()
 
+export type WorkItemLink = z.infer<typeof workItemLinkSchema>
+
+/** Ad hoc or created from a library entity (DES-026 / BL-046). */
+export const workItemSourceSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("adhoc"),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("library"),
+      connection: connectionIdSchema,
+      entityKind: z.string().min(1),
+      entityId: z.string().min(1),
+    })
+    .strict(),
+])
+
 /**
- * Saved work item record (DES-026 / BL-038). Unknown keys are errors.
- * `links` stays empty until BL-046.
+ * Saved work item record (DES-026 / BL-038 / BL-046). Unknown keys are
+ * errors.
  */
 export const workItemSchema = z
   .object({
@@ -25,7 +47,7 @@ export const workItemSchema = z
     source: workItemSourceSchema,
     workflowId: workflowIdSchema.optional(),
     inputs: z.record(z.string(), z.string()).default({}),
-    links: z.array(z.never()).default([]),
+    links: z.array(workItemLinkSchema).default([]),
     createdAt: z.string().min(1),
     updatedAt: z.string().min(1),
   })
@@ -56,6 +78,8 @@ export const createWorkItemBodySchema = z.object({
   workflowId: workflowIdSchema.optional(),
   inputs: z.record(z.string(), z.string()).optional(),
   notes: z.string().optional(),
+  source: workItemSourceSchema.optional(),
+  links: z.array(workItemLinkSchema).optional(),
 })
 
 export type CreateWorkItemBody = z.infer<typeof createWorkItemBodySchema>
@@ -64,6 +88,7 @@ export const putWorkItemBodySchema = z.object({
   title: z.string().min(1),
   workflowId: workflowIdSchema.optional(),
   inputs: z.record(z.string(), z.string()).default({}),
+  links: z.array(workItemLinkSchema).default([]),
   baseHash: z.string().min(1),
 })
 

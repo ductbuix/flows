@@ -1,6 +1,5 @@
 import { Link } from "react-router"
 import type { RunSummary, WorkItemSummary } from "@workspace/shared"
-import { Badge } from "@workspace/ui/components/badge"
 import {
   Table,
   TableBody,
@@ -10,6 +9,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { WorkItemSourceBadge } from "@/components/WorkItemSourceBadge"
 import { workItemPath } from "@/lib/paths"
 
 type Props = {
@@ -49,7 +49,10 @@ export function WorkItemsTable({ items, lastRuns, onOpen }: Props) {
                 </Link>
               </TableCell>
               <TableCell>
-                <Badge variant="secondary">Ad hoc</Badge>
+                <WorkItemSourceBadge
+                  source={item.source}
+                  data-testid={`work-items-source-${item.id}`}
+                />
               </TableCell>
               <TableCell className="font-mono text-sm">
                 {item.workflowId ?? "—"}

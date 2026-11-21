@@ -130,6 +130,7 @@ export function toRunDetail(
     tasks: toTaskViews(state),
     taskCounts: taskCounts(state),
     inputFiles: state.inputFiles ?? [],
+    pins: [],
   }
 }
 
