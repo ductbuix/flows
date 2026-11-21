@@ -5,7 +5,7 @@ type: design
 status: draft
 summary: Work items as the user's unit of work, one central library of pulled data, and connections with gated publish. Model and folders only.
 tags: [design, connections, library, work-items, safety, sandbox]
-related: [DES-002, DES-006, DES-007, DES-019, DES-021, DES-025]
+related: [DES-002, DES-004, DES-006, DES-007, DES-019, DES-021, DES-023, DES-025]
 updated: 2026-11-22
 ---
 
@@ -14,7 +14,7 @@ updated: 2026-11-22
 A workflow may use many outside systems (GitHub, Confluence, Rally,
 Jenkins, OpenSearch), and one workflow is applied to many pieces of work.
 This doc defines the model and the folders. Nothing here is built; the
-work is BL-038 to BL-055 and the UI is in
+work is BL-038 to BL-056 and the UI is in
 [DES-025](des-025-journey-led-redesign.md).
 
 ## Concepts
@@ -62,6 +62,7 @@ flowchart LR
     <entityKind>/<entityId>/
       <revision>/...                      # immutable snapshot
       current -> <revision>               # latest pull
+  secrets/<connectionId>/                 # cookies.json, profile/; 0700, unreadable by tasks
   workitems/<workItemId>/
     workitem.yaml                         # title, source link, workflow, inputs, library links
     notes.md  attachments/
@@ -70,11 +71,11 @@ flowchart LR
     runs/<runId>/
       input/ inputs.json                  # adds workItemId
       resources.json                      # pins: connection, entity, revision
-      work/<connectionId>/                # copy-on-write overlay, only for `propose`
+      work/<connectionId>/                # work copy, only for `propose`
       changes/<connectionId>/             # changeset.json, preview.md
 ```
 
-Secrets are not in this tree; see Secrets below.
+Only `secrets/` holds sign-in data; see Secrets below.
 
 ```yaml
 # workflow.yaml, per task
@@ -104,15 +105,17 @@ At task start Flows sets `RESOURCE_<ID>` to the pinned revision, or to
 - **Sandbox.** The library is outside the workflow folder, so the
   existing rule (writes only inside the workflow dir, DES-006) already
   makes it read-only to tasks. Only Flows writes it, when pulling.
-- **Credentials.** Held by Flows, used only when pulling and publishing.
-  A task process gets local paths, never credentials. Command tasks still
-  run as the user, so Flows warns about ambient logins (a `gh` session)
-  instead of claiming to block them. Access is declared and warned, not
-  enforced at the network.
-- **Sign-in methods** are per connection and per connector: delegated
-  login (the GitHub CLI owns it), an MCP server, stored session cookies,
-  or an API token. An expired sign-in stops pull and publish; tasks keep
-  working on pulled data.
+- **Credentials.** Used only when pulling and publishing. A task process
+  gets local paths, never credentials, and the sandbox denies it reads
+  of `secrets/`. Command tasks still run as the user, so Flows warns
+  about ambient logins (a `gh` session) instead of claiming to block
+  them. Access is declared and warned, not enforced at the network.
+- **Sign-in methods** are three, per connection and per connector: a
+  CLI that owns its login (`cli`, the GitHub CLI), a local MCP server
+  the user allowed (`mcp`, it owns its login), or session cookies from
+  a browser sign-in (`cookies`). No API tokens and no Keychain. An
+  expired sign-in stops pull and publish; tasks keep working on pulled
+  data.
 - **Impact.** Every effect is Read, Local or Cloud. Read and Local are
   redone by clearing and pulling again. Only a Cloud publish affects
   others.
@@ -128,16 +131,19 @@ result, undo note). It is derived from events, so it survives restarts.
 
 ## Extending
 
-A connector is a small adapter, the same strategy pattern as the CLI
-adapters (DES-019) and source adapters (DES-021):
+A connector is a small in-repo TypeScript adapter, the same strategy
+pattern as the CLI adapters (DES-019) and source adapters (DES-021).
+There is no plugin loading: a new source (J12) is a folder under
+`packages/engine/src/connectors/` plus one registry line, added by a
+pull request. The interface:
 
 - `describe`: entity kinds, scope fields, supported sign-in methods
 - `check`: is the sign-in valid
 - `pull(entity)`: write one entity revision into the library
 - `diff` and `publish(changeSet)`: build and apply a change set
 
-MCP, an API or cookies are internal to the adapter. A new source adds one
-adapter and reuses every page and rule above.
+The CLI, MCP or cookies are internal to the adapter. A new source adds
+one adapter and reuses every page and rule above.
 
 ## Code layout (later)
 
@@ -151,16 +157,44 @@ apps/server/src/routes/{connections,workitems,library}.ts
 
 ## Secrets
 
-- Tokens and session cookies live in the macOS Keychain, one item per
-  connection under the service name `flowapp.<connectionId>`. No secret is
-  written to `FLOWAPP_HOME`, `workflow.yaml`, logs or the library.
-- Delegated sign-in (the GitHub CLI) stores nothing in Flows; the
-  connector calls the CLI. An MCP server's command or URL is plain
-  config in `connection.yaml`; any secret it needs is a Keychain item.
+- No Keychain. Any process running as the user can read a Keychain item
+  through `/usr/bin/security`, and agent CLIs read their own logins that
+  way, so the sandbox could not hide it from tasks.
+- `cli` and `mcp` store nothing in Flows: the CLI or the MCP server owns
+  the login. An MCP server's command or URL is plain config in
+  `connection.yaml`, and it runs only after the user allows it, the
+  same trust flow as agent CLIs (DES-019).
+- `cookies`: "Sign in with browser" opens the installed Chrome
+  (`playwright-core`, channel `chrome`) with a dedicated profile under
+  `secrets/<connectionId>/profile/`. When the window closes, Flows saves
+  the domain's cookies to `secrets/<connectionId>/cookies.json` (file
+  0600, folder 0700). The user's own Chrome profile is never read.
+- The task sandbox denies `file-read*` under `secrets/`. An unsandboxed
+  run warns that this protection is off. No secret is written to
+  `workflow.yaml`, logs or the library.
 - Revoke is one action on the connection page ("Remove sign-in"). It
-  deletes the Keychain items, marks the connection signed out, and leaves
-  the library data in place.
+  deletes `secrets/<connectionId>/`, marks the connection signed out,
+  and leaves the library data in place.
 - Cookies expire; a connector's `check` detects it and the UI says so.
+
+## Work copies
+
+- A `propose` task writes to `runs/<runId>/work/<connectionId>/`, inside
+  the workflow dir, so the sandbox needs no change.
+- A repo is `git clone --shared` from the library clone, checked out at
+  the pinned commit. It reads objects from the library and writes new
+  ones locally. No git worktree: its metadata lives in the library
+  clone, outside the write root, so `git commit` would fail.
+- The library clone keeps `gc.auto=0` and is pruned only when no live
+  run has a work copy of it. Other sources use an APFS clone
+  (`cp -cR`), with a plain copy as fallback.
+- Copies never share files, but servers and tests can share ports. Each
+  attempt gets a leased port block in env (`PORT`, `FLOWS_PORT_BASE`,
+  `FLOWS_PORT_COUNT`). A repo with fixed ports sets `serial: true` on
+  its connection, so its `propose` tasks run one at a time.
+- Package caches (`npm_config_cache`, `PNPM_STORE_DIR`, `XDG_CACHE_HOME`
+  and similar) point to `<workflow>/.cache/`, so installs work in the
+  sandbox without writing to shared caches.
 
 ## Change sets and conflicts
 
@@ -200,5 +234,5 @@ item.
 
 GitHub comes first: its sign-in is delegated (no secrets for Flows), a
 repo is one shared clone, and its change set is a branch and a draft
-pull request, which is easy to undo. Rally and Confluence follow, and
-they prove the cookie and MCP sign-in paths.
+pull request, which is easy to undo. Confluence (MCP) and Rally
+(cookies) follow, and they prove the other two sign-in paths.

@@ -21,7 +21,8 @@ parse.
 
 - [ ] Under `read-only` no change set is published and the run says
       so. Under `approve-each-publish` a change set becomes a pending
-      publish and the run waits, shown like an approval.
+      publish and the run waits, shown like an approval: the summary
+      gets a `{ kind: publish, connectionId }` entry in `needsYou`.
 - [ ] `POST /runs/:runId/publishes/:connectionId/approve` and
       `/discard`. Ops flagged `destructive` always need this approval
       whatever the policy.

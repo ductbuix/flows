@@ -18,7 +18,8 @@ Design: [DES-026](../designs/des-026-work-items-library-connections.md) (First s
 ## Done when
 
 - [ ] `describe` lists entity kinds `story` and `defect` with scope
-      workspace and project; sign-in method `cookies`.
+      workspace and project; sign-in method `cookies`, signed in
+      through the browser flow of BL-053.
 - [ ] `check` detects expired cookies; the UI shows an expired sign-in
       and pulls stop while tasks keep working on pulled data.
 - [ ] `pull` writes the item as JSON plus Markdown; `diff` and

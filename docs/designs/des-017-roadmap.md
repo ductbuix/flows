@@ -34,8 +34,8 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 14    | Journey shell on today's data | BL-031 kit, BL-032 routes, BL-033 runs API, BL-034 pages, BL-035 Home, BL-036 run view, BL-037 workflow tabs | Home, Workflows, Runs and flat URLs; no Advanced switch |
 | 15    | Work items                   | BL-038 store, BL-039 run link, BL-040 pages, BL-041 Start card | pick a work item, run a workflow on it, see its runs   |
 | 16    | Connections and library (read) | BL-042 model, BL-043 library, BL-044 GitHub read, BL-045 pages, BL-046 editor and pins, BL-047 retention | tasks read pinned GitHub data; freshness and pins visible |
-| 17    | Gated publish                | BL-048 change sets, BL-049 policy gate, BL-050 GitHub publish, BL-051 publish UI, BL-052 agent review | a draft PR is published only after approval, with a ledger |
-| 18    | More sources                 | BL-053 Keychain, BL-054 Confluence, BL-055 Rally        | cookie and MCP sign-ins work with no secret on disk   |
+| 17    | Gated publish                | BL-048 change sets, BL-049 policy gate, BL-050 GitHub publish, BL-051 publish UI, BL-052 agent review, BL-056 ports and caches | a draft PR is published only after approval, with a ledger |
+| 18    | More sources                 | BL-053 cookie store, BL-054 Confluence, BL-055 Rally    | MCP and cookie sign-ins work; tasks cannot read cookies |
 
 ## Why this order
 
@@ -84,7 +84,9 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   leaves the machine, so it is safe before any publish exists.
 - Phase 17 adds the only Cloud impact (DES-026), behind a policy
   gate; GitHub first because a draft pull request is easy to undo.
-- Phase 18 needs the Keychain, which GitHub does not.
+- BL-056 has no dependency and helps any command task; it must land
+  before `propose` tasks run installs or tests in repo copies.
+- Phase 18 needs the cookie store and MCP trust, which GitHub does not.
 
 ## Not on the roadmap
 

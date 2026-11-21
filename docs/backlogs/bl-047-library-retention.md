@@ -22,6 +22,9 @@ Design: [DES-026](../designs/des-026-work-items-library-connections.md) (Retenti
 - [ ] `config.yaml` `library.maxBytes` (default 5 GB). At 80 percent
       the Library tab shows a warning Alert; at the cap a pull fails
       with a clear message and nothing pinned is deleted.
+- [ ] A repo's shared clone keeps `gc.auto=0`; the sweep runs
+      `git gc --prune` on it only when no live run has a work copy of
+      that repo.
 - [ ] Deleting a run releases its pins. `POST /library/clear` removes
       an entity's unpinned revisions and never touches a work item.
 - [ ] Tests cover pinned kept, current kept, age sweep, cap reached
