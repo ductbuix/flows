@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router"
-import { Home, Layers, Play } from "lucide-react"
+import { Cable, Home, Layers, Play } from "lucide-react"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -25,6 +25,13 @@ const ITEMS = [
     icon: Play,
     match: "runs",
   },
+  {
+    to: "/connections",
+    label: "Connections",
+    testId: "sidebar-platform-connections",
+    icon: Cable,
+    match: "connections",
+  },
 ] as const
 
 function isActive(pathname: string, match: (typeof ITEMS)[number]["match"]) {
@@ -32,10 +39,13 @@ function isActive(pathname: string, match: (typeof ITEMS)[number]["match"]) {
   if (match === "workflows") {
     return pathname === "/workflows" || pathname.startsWith("/workflows/")
   }
-  return pathname === "/runs" || pathname.startsWith("/runs/")
+  if (match === "runs") {
+    return pathname === "/runs" || pathname.startsWith("/runs/")
+  }
+  return pathname === "/connections" || pathname.startsWith("/connections/")
 }
 
-/** Platform group: Home, Workflows, Runs (DES-025). */
+/** Platform group: Home, Workflows, Runs, Connections (DES-025). */
 export function PlatformNav() {
   const { pathname } = useLocation()
 

@@ -14,4 +14,5 @@ In-repo adapters for outside systems (DES-026). There is no loading from
    in unit tests.
 
 The `fake` connector is for tests only. Register it in the test, not at
-app startup.
+app startup. E2e sets `FLOWAPP_FAKE_CONNECTOR=1` so the server registers
+it for journey coverage (BL-045).

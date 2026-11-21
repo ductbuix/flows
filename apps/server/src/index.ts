@@ -1,7 +1,16 @@
 import { serve } from "@hono/node-server"
-import { createEngine } from "@workspace/engine"
+import {
+  createEngine,
+  fakeConnector,
+  registerConnector,
+} from "@workspace/engine"
 import { WebSocketServer } from "ws"
 import { createApp } from "./app.ts"
+
+// E2e and local demos only; not registered in normal app startup (BL-045).
+if (process.env.FLOWAPP_FAKE_CONNECTOR === "1") {
+  registerConnector(fakeConnector)
+}
 
 const engine = createEngine()
 engine.resumeAll()

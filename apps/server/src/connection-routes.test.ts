@@ -9,6 +9,7 @@ import {
 } from "@workspace/engine"
 import {
   connectionCheckResultSchema,
+  connectionDetailSchema,
   connectionSchema,
   connectionsListSchema,
   connectorsListSchema,
@@ -72,6 +73,10 @@ describe("connection routes", () => {
 
     const getRes = await app.request("/api/connections/github-acme")
     expect(getRes.status).toBe(200)
+    const detail = connectionDetailSchema.parse(await getRes.json())
+    expect(detail.id).toBe("github-acme")
+    expect(detail.usedByWorkflows).toEqual([])
+    expect(detail.usedByRuns).toEqual([])
 
     const putRes = await app.request("/api/connections/github-acme", {
       method: "PUT",

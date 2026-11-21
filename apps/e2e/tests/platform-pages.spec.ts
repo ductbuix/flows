@@ -28,6 +28,7 @@ test.describe("platform Workflows and Runs pages (BL-034)", () => {
     await expect(page.getByTestId("sidebar-home")).toBeVisible()
     await expect(page.getByTestId("sidebar-platform-workflows")).toBeVisible()
     await expect(page.getByTestId("sidebar-platform-runs")).toBeVisible()
+    await expect(page.getByTestId("sidebar-platform-connections")).toBeVisible()
     await expect(page.getByTestId("sidebar-settings")).toBeVisible()
 
     await page.getByTestId("sidebar-platform-workflows").click()

@@ -21,12 +21,16 @@ export {
 export {
   connectorDescribeSchema,
   connectorsListSchema,
+  connectionListItemSchema,
   connectionsListSchema,
+  connectionDetailSchema,
   connectionParamSchema,
   connectionCheckResultSchema,
   type ConnectorDescribe,
   type ConnectorsList,
+  type ConnectionListItem,
   type ConnectionsList,
+  type ConnectionDetail,
   type ConnectionCheckResult,
 } from "./api-connections.ts"
 export {

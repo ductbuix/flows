@@ -5,6 +5,8 @@ import { AppSidebar } from "@/components/AppSidebar"
 import { WorkflowsProvider } from "@/lib/workflows-context"
 import { DevKitPage } from "@/pages/DevKitPage"
 import { HomePage } from "@/pages/HomePage"
+import { ConnectionPage } from "@/pages/connections/ConnectionPage"
+import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
 import { RunsPage } from "@/pages/RunsPage"
 import { SettingsPage } from "@/pages/SettingsPage"
 import {
@@ -50,6 +52,8 @@ export function App() {
         />
         <Route path="runs" element={<RunsPage />} />
         <Route path="runs/:runId" element={<RunViewPage />} />
+        <Route path="connections" element={<ConnectionsPage />} />
+        <Route path="connections/:connectionId" element={<ConnectionPage />} />
       </Route>
     </Routes>
   )
