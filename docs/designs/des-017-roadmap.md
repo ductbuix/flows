@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022, DES-023]
+related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022, DES-023, DES-024]
 updated: 2026-11-21
 ---
 
@@ -30,6 +30,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 10    | Reuse a workflow with inputs | BL-021 run input engine, BL-022 start form              | start a run with declared inputs; extras queue; the run view shows the files |
 | 11    | Remove a task in the editor  | BL-023 trash on save, BL-024 editor delete              | delete one task, undo before save, folder moves to tasks/.trash              |
 | 12    | Pick model and effort        | BL-025 adapters and records, BL-026 editor selects      | each agent task and judge can set model and effort, or use the CLI default   |
+| 13    | UI on the shadcn baseline    | BL-027 shell and alignment, BL-028 run view, BL-029 editor, BL-030 polish | one shadcn look everywhere; sidebar, Settings, Advanced and AI Elements |
 
 ## Why this order
 
@@ -64,6 +65,10 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   use a chosen model and effort, not only the user's global
   settings. BL-025 comes first so the selects in BL-026 have a
   schema, a catalog API, and attempt records.
+- Phase 13 is a look and experience pass, not an engine
+  capability. BL-027 comes first so later screens share the
+  shell and the lint guard. BL-028 and BL-029 can go in either
+  order. BL-030 is the final sweep.
 
 ## Not on the roadmap
 

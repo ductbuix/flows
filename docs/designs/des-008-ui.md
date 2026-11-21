@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence.
 tags: [ui, web, shadcn, ai-elements, testing]
-related: [DES-001, DES-009, DES-010]
+related: [DES-001, DES-009, DES-010, DES-024]
 updated: 2026-11-21
 ---
 
@@ -24,6 +24,10 @@ updated: 2026-11-21
 - `ThemeProvider` in `apps/web/src/components/theme-provider.tsx` handles
   light, dark and system; pressing `d` toggles the theme.
 - Merge classes with `cn()` from `@workspace/ui/lib/utils`.
+- shadcn defaults are the only style source: no arbitrary `-[...]`
+  values or palette colors in `apps/web`, no hand edits to generated
+  components, and no class that restates a `variant` or `size`
+  ([DES-024](des-024-ui-shadcn-baseline.md)).
 
 ## Component sourcing
 
