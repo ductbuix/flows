@@ -81,3 +81,18 @@ export const trustRequiredErrorSchema = z.object({
 })
 
 export type TrustRequiredError = z.infer<typeof trustRequiredErrorSchema>
+
+/** Read-only agent CLI probe for Settings (DES-024). */
+export const cliInfoSchema = z.object({
+  id: z.enum(["claude", "cursor"]),
+  installed: z.boolean(),
+  version: z.string().nullable(),
+})
+
+export type CliInfo = z.infer<typeof cliInfoSchema>
+
+export const cliStatusSchema = z.object({
+  clis: z.array(cliInfoSchema),
+})
+
+export type CliStatus = z.infer<typeof cliStatusSchema>

@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router"
-import { runSummarySchema } from "@workspace/shared"
+import { Link, useParams } from "react-router"
 import { Button } from "@workspace/ui/components/button"
 import {
   ResizableHandle,
@@ -13,10 +11,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { api } from "@/lib/api"
-import { DeleteWorkflowDialog } from "@/pages/DeleteWorkflowDialog"
-import { RenameWorkflowDialog } from "@/pages/RenameWorkflowDialog"
-import { WorkflowActions } from "@/pages/WorkflowActions"
+import { PageHeader } from "@/components/PageHeader"
 import { ConflictDialog } from "./ConflictDialog"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { EditorGraph } from "./EditorGraph"
@@ -28,29 +23,38 @@ import { useWorkflowEditor } from "./useWorkflowEditor"
 
 export function WorkflowEditorPage() {
   const { workflowId } = useParams() as { workflowId: string }
-  const navigate = useNavigate()
   const editor = useWorkflowEditor(workflowId)
   const { state } = editor
-  const [renameOpen, setRenameOpen] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [runCount, setRunCount] = useState(0)
   const { pendingDelete, requestDelete, clearPendingDelete } =
     usePendingTaskDelete(workflowId, state.workflow)
 
-  useEffect(() => {
-    let alive = true
-    void (async () => {
-      const res = await api.workflows[":workflowId"].runs.$get({
-        param: { workflowId },
-      })
-      if (!res.ok || !alive) return
-      const runs = runSummarySchema.array().parse(await res.json())
-      if (alive) setRunCount(runs.length)
-    })()
-    return () => {
-      alive = false
-    }
-  }, [workflowId])
+  const crumbs = [
+    { label: "Workflows", to: "/" },
+    { label: workflowId },
+  ] as const
+
+  const headerActions = (
+    <>
+      <Button size="sm" variant="outline" onClick={editor.addCommandTask}>
+        Add task
+      </Button>
+      <Button
+        size="sm"
+        data-testid="save-button"
+        disabled={!state.dirty || state.errors.length > 0}
+        onClick={() => void editor.save()}
+      >
+        Save
+      </Button>
+      <Button
+        variant="link"
+        size="sm"
+        render={<Link to={`/workflows/${workflowId}/runs`} />}
+      >
+        Runs
+      </Button>
+    </>
+  )
 
   useEditorHotkeys({
     undo: editor.undo,
@@ -62,51 +66,35 @@ export function WorkflowEditorPage() {
 
   if (state.loading) {
     return (
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-[480px] w-full" />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
+        <div className="space-y-2 p-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-120 w-full" />
+        </div>
       </div>
     )
   }
 
   if (!state.workflow && state.errors.length === 0 && !state.yaml) {
     return (
-      <Alert variant="destructive">
-        <AlertTitle>Not found</AlertTitle>
-        <AlertDescription>
-          Workflow {workflowId} was not found.
-        </AlertDescription>
-      </Alert>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
+        <div className="p-4">
+          <Alert variant="destructive">
+            <AlertTitle>Not found</AlertTitle>
+            <AlertDescription>
+              Workflow {workflowId} was not found.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="-m-6 flex h-[calc(100svh)] flex-col">
-      <div className="flex items-center gap-2 border-b px-4 py-2">
-        <h1 className="font-mono text-sm font-medium">{workflowId}</h1>
-        <Button size="sm" variant="outline" onClick={editor.addCommandTask}>
-          Add task
-        </Button>
-        <Button
-          size="sm"
-          data-testid="save-button"
-          disabled={!state.dirty || state.errors.length > 0}
-          onClick={() => void editor.save()}
-        >
-          Save
-        </Button>
-        <WorkflowActions
-          workflowId={workflowId}
-          onRename={() => setRenameOpen(true)}
-          onDelete={() => setDeleteOpen(true)}
-        />
-        <Link
-          className="ml-auto text-xs text-muted-foreground underline-offset-4 hover:underline"
-          to={`/workflows/${workflowId}/runs`}
-        >
-          Runs
-        </Link>
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <PageHeader crumbs={[...crumbs]} actions={headerActions} />
 
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         <ResizablePanel defaultSize="58%" minSize="30%">
@@ -128,7 +116,7 @@ export function WorkflowEditorPage() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize="35%" minSize="15%">
-              <div className="h-full p-2">
+              <div className="h-full p-4">
                 <YamlPane
                   value={state.yaml}
                   errors={state.errors}
@@ -153,7 +141,7 @@ export function WorkflowEditorPage() {
               onDeleteTask={requestDelete}
             />
           ) : (
-            <p className="p-3 text-sm text-muted-foreground">
+            <p className="p-4 text-sm text-muted-foreground">
               Inspector unavailable while YAML is invalid.
             </p>
           )}
@@ -182,19 +170,6 @@ export function WorkflowEditorPage() {
         onReload={editor.reloadConflict}
         onKeep={editor.keepConflict}
         onShowDiff={() => editor.setShowDiff(!state.showDiff)}
-      />
-      <RenameWorkflowDialog
-        open={renameOpen}
-        workflowId={workflowId}
-        onOpenChange={setRenameOpen}
-        onRenamed={(newId) => navigate(`/workflows/${newId}`)}
-      />
-      <DeleteWorkflowDialog
-        open={deleteOpen}
-        workflowId={workflowId}
-        runCount={runCount}
-        onOpenChange={setDeleteOpen}
-        onDeleted={() => navigate("/")}
       />
     </div>
   )

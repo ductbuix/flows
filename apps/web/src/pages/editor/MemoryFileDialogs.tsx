@@ -66,7 +66,7 @@ export function MemoryFileDialogs({
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => !open && onClearDelete()}
       >
-        <AlertDialogContent className="sm:max-w-md" size="default">
+        <AlertDialogContent size="default">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {pendingDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -94,7 +94,7 @@ export function MemoryFileDialogs({
           if (!open) onClearRename()
         }}
       >
-        <AlertDialogContent className="sm:max-w-md" size="default">
+        <AlertDialogContent size="default">
           <AlertDialogHeader>
             <AlertDialogTitle>Rename {pendingRename?.name}</AlertDialogTitle>
             <AlertDialogDescription>

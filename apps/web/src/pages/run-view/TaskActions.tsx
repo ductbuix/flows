@@ -50,7 +50,7 @@ export function TaskActions({ run, task }: Props) {
 
   return (
     <>
-      <ButtonGroup className="mb-2">
+      <ButtonGroup>
         <ActionButton
           size="sm"
           data-testid="task-retry"

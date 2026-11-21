@@ -118,7 +118,7 @@ export function MemoryEditorDialog({
         onRemove={() => setConfirmRemove(true)}
       />
       <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
-        <AlertDialogContent className="sm:max-w-md" size="default">
+        <AlertDialogContent size="default">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {fileName}?</AlertDialogTitle>
             <AlertDialogDescription>

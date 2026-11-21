@@ -1,11 +1,18 @@
 import { zValidator } from "@hono/zod-validator"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/engine"
 import {
+  getCliAdapter,
+  workflowDir,
+  type Engine,
+  type CliKind,
+} from "@workspace/engine"
+import {
+  cliStatusSchema,
   preflightResponseSchema,
   putTrustBodySchema,
   trustStatusSchema,
+  type CliStatus,
   type PreflightResponse,
   type TrustStatus,
 } from "@workspace/shared"
@@ -14,8 +21,9 @@ import { z } from "zod"
 import { errorJson } from "./control-helpers.ts"
 
 const workflowParam = z.object({ workflowId: z.string().min(1) })
+const CLI_KINDS: CliKind[] = ["claude", "cursor"]
 
-/** GET/PUT /trust and POST .../runs/preflight (DES-019). */
+/** GET/PUT /trust, GET /cli-status, POST .../runs/preflight (DES-019, 024). */
 export function trustRoutes(engine: Engine) {
   return new Hono()
     .get("/trust", (c) => {
@@ -39,6 +47,16 @@ export function trustRoutes(engine: Engine) {
         alwaysTrusted: trust === "always",
       }
       return c.json(trustStatusSchema.parse(body), 200)
+    })
+    .get("/cli-status", async (c) => {
+      const clis = await Promise.all(
+        CLI_KINDS.map(async (id) => {
+          const version = await getCliAdapter(id).probeVersion()
+          return { id, installed: Boolean(version), version }
+        })
+      )
+      const body: CliStatus = { clis }
+      return c.json(cliStatusSchema.parse(body), 200)
     })
     .post(
       "/workflows/:workflowId/runs/preflight",

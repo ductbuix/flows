@@ -29,7 +29,7 @@ export function ConflictDialog({
 }: Props) {
   return (
     <Dialog open={open}>
-      <DialogContent data-testid="conflict-dialog" className="max-w-2xl">
+      <DialogContent data-testid="conflict-dialog" className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>workflow.yaml changed on disk</DialogTitle>
           <DialogDescription>
@@ -39,10 +39,10 @@ export function ConflictDialog({
         </DialogHeader>
         {showingDiff && (
           <div className="grid max-h-64 grid-cols-2 gap-2 overflow-auto text-xs">
-            <pre className="rounded border p-2 whitespace-pre-wrap">
+            <pre className="rounded-lg border p-2 whitespace-pre-wrap">
               {diskYaml}
             </pre>
-            <pre className="rounded border p-2 whitespace-pre-wrap">
+            <pre className="rounded-lg border p-2 whitespace-pre-wrap">
               {mineYaml}
             </pre>
           </div>

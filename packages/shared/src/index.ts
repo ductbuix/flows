@@ -159,6 +159,8 @@ export {
   putTrustBodySchema,
   preflightResponseSchema,
   trustRequiredErrorSchema,
+  cliInfoSchema,
+  cliStatusSchema,
   type TrustGrant,
   type CliTrustValue,
   type TrustDecision,
@@ -171,6 +173,8 @@ export {
   type PutTrustBody,
   type PreflightResponse,
   type TrustRequiredError,
+  type CliInfo,
+  type CliStatus,
 } from "./api-trust.ts"
 export {
   workflowIdSchema,

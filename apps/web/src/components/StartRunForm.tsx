@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import type { WorkflowInputDecl } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import {
   Dialog,
   DialogContent,
@@ -99,7 +100,7 @@ export function StartRunForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg" data-testid="start-run-form">
+      <DialogContent className="sm:max-w-lg" data-testid="start-run-form">
         <DialogHeader>
           <DialogTitle>
             {target.mode === "rerun"
@@ -116,7 +117,11 @@ export function StartRunForm({
         {loading && (
           <p className="text-sm text-muted-foreground">Loading workflow…</p>
         )}
-        {loadError && <p className="text-sm text-destructive">{loadError}</p>}
+        {loadError && (
+          <Alert variant="destructive">
+            <AlertDescription>{loadError}</AlertDescription>
+          </Alert>
+        )}
 
         {!loading && !loadError && (
           <StartRunFormFields

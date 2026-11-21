@@ -13,7 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
-import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@workspace/ui/components/field"
 import { PromptEditorDialog } from "./PromptEditorDialog"
 import { taskFieldErrors } from "./field-errors"
 import { api } from "@/lib/api"
@@ -92,14 +97,11 @@ export function AgentTaskFields({
         >
           Edit prompt
         </Button>
-        <p
-          className="text-xs text-muted-foreground"
-          data-testid="field-prompt-path"
-        >
+        <FieldDescription data-testid="field-prompt-path">
           Stored at <span className="font-mono">{promptPath}</span> in this
           workflow.
           {promptExists === false ? " Not created yet." : null}
-        </p>
+        </FieldDescription>
       </Field>
       <Field className="flex items-center justify-between gap-2">
         <FieldLabel htmlFor="field-spawn">Spawn</FieldLabel>

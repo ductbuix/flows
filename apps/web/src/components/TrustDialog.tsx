@@ -1,4 +1,5 @@
 import type { TrustCheck, TrustDecision } from "@workspace/shared"
+import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
   Dialog,
@@ -8,6 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { Item, ItemContent, ItemGroup } from "@workspace/ui/components/item"
+import { ScrollArea } from "@workspace/ui/components/scroll-area"
+import { TriangleAlert } from "lucide-react"
 
 type Props = {
   open: boolean
@@ -34,7 +38,7 @@ export function TrustDialog({
   const needsGrant = trust === "none"
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="trust-dialog" className="max-w-lg">
+      <DialogContent data-testid="trust-dialog" className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {needsGrant ? "Trust agent CLIs?" : "Pre-run check"}
@@ -46,26 +50,29 @@ export function TrustDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ul className="max-h-60 space-y-2 overflow-y-auto text-sm">
-          {checks.map((check) => (
-            <li
-              key={check.id}
-              data-testid={`trust-check-${check.id}`}
-              className="flex gap-2"
-            >
-              <span
-                className={
-                  check.status === "pass"
-                    ? "text-muted-foreground"
-                    : "font-medium text-amber-700 dark:text-amber-400"
-                }
+        <ScrollArea className="max-h-60">
+          <ItemGroup>
+            {checks.map((check) => (
+              <Item
+                key={check.id}
+                size="sm"
+                data-testid={`trust-check-${check.id}`}
               >
-                {check.status === "pass" ? "pass" : "warn"}
-              </span>
-              <span>{check.message}</span>
-            </li>
-          ))}
-        </ul>
+                <ItemContent className="flex-row flex-wrap items-center gap-2">
+                  {check.status === "pass" ? (
+                    <span className="shrink-0 text-muted-foreground">pass</span>
+                  ) : (
+                    <Badge variant="outline" className="shrink-0 gap-1">
+                      <TriangleAlert />
+                      warn
+                    </Badge>
+                  )}
+                  <span>{check.message}</span>
+                </ItemContent>
+              </Item>
+            ))}
+          </ItemGroup>
+        </ScrollArea>
 
         <DialogFooter className="flex-wrap gap-2 sm:justify-end">
           <Button

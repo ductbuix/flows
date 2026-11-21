@@ -1,7 +1,14 @@
 import type { WorkflowInputDecl, WorkflowLimits } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { Field, FieldLabel } from "@workspace/ui/components/field"
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@workspace/ui/components/field"
+import { Separator } from "@workspace/ui/components/separator"
 import { InputDeclRow } from "./InputDeclRow"
 
 type Props = {
@@ -52,67 +59,70 @@ export function InputsPanel({
   const maxRuns = limits?.maxConcurrentRuns
 
   return (
-    <div className="space-y-3 border-t pt-3" data-testid="inputs-panel">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium">Inputs</h3>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          data-testid="input-add"
-          onClick={addInput}
-        >
-          Add input
-        </Button>
-      </div>
+    <>
+      <Separator />
+      <FieldSet data-testid="inputs-panel">
+        <div className="flex items-center justify-between gap-2">
+          <FieldLegend variant="label">Inputs</FieldLegend>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            data-testid="input-add"
+            onClick={addInput}
+          >
+            Add input
+          </Button>
+        </div>
 
-      {list.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          No declared inputs. The start form uses defaults only.
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {list.map((row, index) => (
-            <InputDeclRow
-              key={`${index}-${row.name}`}
-              index={index}
-              row={row}
-              onPatch={(patch) => patchInput(index, patch)}
-              onRemove={() => removeInput(index)}
-            />
-          ))}
-        </ul>
-      )}
+        {list.length === 0 ? (
+          <FieldDescription>
+            No declared inputs. The start form uses defaults only.
+          </FieldDescription>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {list.map((row, index) => (
+              <InputDeclRow
+                key={`${index}-${row.name}`}
+                index={index}
+                row={row}
+                onPatch={(patch) => patchInput(index, patch)}
+                onRemove={() => removeInput(index)}
+              />
+            ))}
+          </div>
+        )}
 
-      <Field>
-        <FieldLabel htmlFor="field-max-concurrent-runs">
-          Max concurrent runs
-        </FieldLabel>
-        <Input
-          id="field-max-concurrent-runs"
-          data-testid="field-max-concurrent-runs"
-          type="number"
-          min={1}
-          step={1}
-          placeholder="1 (default)"
-          value={maxRuns ?? ""}
-          onChange={(e) => {
-            const raw = e.target.value.trim()
-            const base = { ...limits }
-            if (raw === "") {
-              delete base.maxConcurrentRuns
-              onChangeLimits(Object.keys(base).length ? base : undefined)
-              return
-            }
-            const n = Number(raw)
-            if (!Number.isInteger(n) || n < 1) return
-            onChangeLimits({ ...base, maxConcurrentRuns: n })
-          }}
-        />
-        <p className="text-xs text-muted-foreground">
-          Extra starts queue when at the limit. Leave empty for 1.
-        </p>
-      </Field>
-    </div>
+        <Field>
+          <FieldLabel htmlFor="field-max-concurrent-runs">
+            Max concurrent runs
+          </FieldLabel>
+          <Input
+            id="field-max-concurrent-runs"
+            data-testid="field-max-concurrent-runs"
+            type="number"
+            min={1}
+            step={1}
+            placeholder="1 (default)"
+            value={maxRuns ?? ""}
+            onChange={(e) => {
+              const raw = e.target.value.trim()
+              const base = { ...limits }
+              if (raw === "") {
+                delete base.maxConcurrentRuns
+                onChangeLimits(Object.keys(base).length ? base : undefined)
+                return
+              }
+              const n = Number(raw)
+              if (!Number.isInteger(n) || n < 1) return
+              onChangeLimits({ ...base, maxConcurrentRuns: n })
+            }}
+          />
+          <FieldDescription>
+            Extra starts queue when at the limit. Leave empty for 1.
+          </FieldDescription>
+        </Field>
+      </FieldSet>
+    </>
   )
 }

@@ -18,20 +18,18 @@ type Props = {
 export function YamlPane({ value, errors, onChange }: Props) {
   const extensions = useMemo(() => {
     const diagLinter = linter(() =>
-      errors.map(
-        (e): Diagnostic => ({
-          from: e.from,
-          to: Math.max(e.to, e.from + 1),
-          severity: "error",
-          message: e.message,
-        })
-      )
+      errors.map((e): Diagnostic => ({
+        from: e.from,
+        to: Math.max(e.to, e.from + 1),
+        severity: "error",
+        message: e.message,
+      }))
     )
     return [yaml(), diagLinter]
   }, [errors])
 
   return (
-    <div className="flex h-full min-h-[160px] flex-col" data-testid="yaml-pane">
+    <div className="flex h-full min-h-40 flex-col" data-testid="yaml-pane">
       {errors.length > 0 && (
         <Alert variant="destructive" className="mb-2" data-testid="yaml-errors">
           <AlertTitle>YAML errors</AlertTitle>
@@ -50,7 +48,7 @@ export function YamlPane({ value, errors, onChange }: Props) {
         extensions={extensions}
         onChange={onChange}
         basicSetup={{ lineNumbers: true }}
-        className="min-h-0 flex-1 overflow-hidden rounded-md border text-xs"
+        className="min-h-0 flex-1 overflow-hidden rounded-lg border border-input text-xs"
       />
     </div>
   )

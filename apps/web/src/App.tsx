@@ -1,33 +1,25 @@
-import { Link, Outlet, Route, Routes } from "react-router"
+import { Outlet, Route, Routes } from "react-router"
 import { Toaster } from "@workspace/ui/components/sonner"
+import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+import { AppSidebar } from "@/components/AppSidebar"
+import { WorkflowsProvider } from "@/lib/workflows-context"
 import { HomePage } from "@/pages/HomePage"
+import { SettingsPage } from "@/pages/SettingsPage"
 import { WorkflowRunsPage } from "@/pages/WorkflowRunsPage"
 import { RunViewPage } from "@/pages/run-view/RunViewPage"
 import { WorkflowEditorPage } from "@/pages/editor/WorkflowEditorPage"
 
 function AppShell() {
   return (
-    <div className="flex min-h-svh">
-      <nav className="w-44 shrink-0 border-r p-4 text-sm">
-        <p className="mb-2 text-xs font-medium text-muted-foreground uppercase">
-          Flows
-        </p>
-        <ul className="space-y-1">
-          <li>
-            <Link
-              to="/"
-              className="text-foreground underline-offset-4 hover:underline"
-            >
-              Workflows
-            </Link>
-          </li>
-        </ul>
-      </nav>
-      <main className="min-w-0 flex-1 p-6">
-        <Outlet />
-      </main>
-      <Toaster />
-    </div>
+    <WorkflowsProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="flex h-svh flex-col overflow-hidden">
+          <Outlet />
+        </SidebarInset>
+        <Toaster />
+      </SidebarProvider>
+    </WorkflowsProvider>
   )
 }
 
@@ -36,6 +28,7 @@ export function App() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="workflows/:workflowId" element={<WorkflowEditorPage />} />
         <Route
           path="workflows/:workflowId/runs"

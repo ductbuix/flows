@@ -198,11 +198,14 @@ export async function revokeTrust(): Promise<ActionResult> {
 }
 
 export async function fetchTrustStatus(): Promise<
-  ActionResult<{ alwaysTrusted: boolean }>
+  ActionResult<{ alwaysTrusted: boolean; homeRealpath: string }>
 > {
   const res = await api.trust.$get()
   if (!res.ok) return { ok: false, error: await readError(res) }
-  const data = (await res.json()) as { alwaysTrusted: boolean }
+  const data = (await res.json()) as {
+    alwaysTrusted: boolean
+    homeRealpath: string
+  }
   return { ok: true, data }
 }
 

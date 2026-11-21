@@ -11,6 +11,8 @@ import {
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { Badge } from "@workspace/ui/components/badge"
+import { Card, CardContent } from "@workspace/ui/components/card"
+import { cn } from "@workspace/ui/lib/utils"
 import { buildTaskGraph } from "./task-graph-layout"
 
 type TaskNodeData = {
@@ -22,21 +24,22 @@ type TaskNodeData = {
 
 function TaskNode({ id, data, selected }: NodeProps<Node<TaskNodeData>>) {
   return (
-    <div
+    <Card
+      size="sm"
       data-testid={`task-node-${id}`}
-      className={`min-w-[160px] rounded-md border bg-card px-2 py-1.5 text-xs shadow-sm ${
-        selected ? "ring-2 ring-ring" : ""
-      }`}
+      className={cn("min-w-40 shadow-sm", selected && "ring-2 ring-ring")}
     >
       <Handle type="target" position={Position.Left} className="opacity-0" />
-      <div className="font-mono font-medium">{data.label}</div>
-      <div className="mt-1 flex flex-wrap gap-1">
-        <Badge variant="outline">{data.status}</Badge>
-        <span className="text-muted-foreground">{data.attempts} att.</span>
-        {data.spawned && <Badge variant="outline">spawned</Badge>}
-      </div>
+      <CardContent className="text-xs">
+        <div className="font-mono font-medium">{data.label}</div>
+        <div className="mt-1 flex flex-wrap gap-1">
+          <Badge variant="outline">{data.status}</Badge>
+          <span className="text-muted-foreground">{data.attempts} att.</span>
+          {data.spawned && <Badge variant="outline">spawned</Badge>}
+        </div>
+      </CardContent>
       <Handle type="source" position={Position.Right} className="opacity-0" />
-    </div>
+    </Card>
   )
 }
 
@@ -61,7 +64,7 @@ export function TaskGraph({ run, selectedTaskId, onSelectTask }: Props) {
   )
 
   return (
-    <div className="h-full min-h-[320px] w-full" data-testid="run-graph">
+    <div className="h-full min-h-80 w-full" data-testid="run-graph">
       <ReactFlow
         nodes={flowNodes}
         edges={edges}

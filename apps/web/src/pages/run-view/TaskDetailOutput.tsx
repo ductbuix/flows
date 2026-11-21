@@ -6,6 +6,12 @@ import {
   EmptyDescription,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
+import {
+  Item,
+  ItemContent,
+  ItemGroup,
+  ItemTitle,
+} from "@workspace/ui/components/item"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -53,10 +59,14 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
   }
 
   return (
-    <ul className="font-mono text-sm">
+    <ItemGroup>
       {state!.files.map((path) => (
-        <li key={path}>{path}</li>
+        <Item key={path} size="sm" variant="outline">
+          <ItemContent>
+            <ItemTitle className="font-mono">{path}</ItemTitle>
+          </ItemContent>
+        </Item>
       ))}
-    </ul>
+    </ItemGroup>
   )
 }
