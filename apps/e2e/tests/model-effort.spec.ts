@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { disableAdvanced, enableAdvanced, e2eHome } from "./helpers"
+import { e2eHome, openEditor, openYamlTab } from "./helpers"
 
 const API = process.env.PW_API_BASE ?? "http://127.0.0.1:8787"
 
@@ -9,11 +9,7 @@ test.describe("model and effort UI (BL-026)", () => {
   test("workflow defaults, custom id, and lone when judge", async ({
     page,
   }) => {
-    await page.goto("/workflows/judge-model")
-    await expect(page.getByTestId("graph-canvas")).toBeVisible({
-      timeout: 15_000,
-    })
-    await disableAdvanced(page)
+    await openEditor(page, "judge-model")
 
     await expect(page.getByTestId("agent-defaults")).toBeVisible()
     await expect(
@@ -43,7 +39,7 @@ test.describe("model and effort UI (BL-026)", () => {
     await expect(page.getByRole("menu")).toHaveCount(0)
     await expect(page.getByTestId("when-field-effort")).toContainText("High")
 
-    await enableAdvanced(page)
+    await openYamlTab(page)
     await expect(page.getByTestId("yaml-pane")).toContainText("model: sonnet")
     await expect(page.getByTestId("yaml-pane")).toContainText("effort: high")
     await expect(page.getByTestId("yaml-pane")).toContainText("my-custom-model")

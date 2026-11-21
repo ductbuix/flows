@@ -18,7 +18,7 @@ test.describe("workflow lifecycle", () => {
     await page.getByTestId("create-submit").click()
 
     await expect(page).toHaveURL(new RegExp(`/workflows/${id}$`))
-    await expect(page.getByTestId("graph-canvas")).toBeVisible({
+    await expect(page.getByTestId("workflow-overview")).toBeVisible({
       timeout: 15_000,
     })
     expect(existsSync(join(HOME, "workflows", id, "workflow.yaml"))).toBe(true)
@@ -42,7 +42,7 @@ test.describe("workflow lifecycle", () => {
 
     // Reload so action buttons re-check live status.
     await page.goto(`/workflows/${id}`)
-    await expect(page.getByTestId("graph-canvas")).toBeVisible({
+    await expect(page.getByTestId("workflow-overview")).toBeVisible({
       timeout: 15_000,
     })
 
@@ -82,7 +82,7 @@ test.describe("workflow lifecycle", () => {
     mkdirSync(join(wf, "memory"), { recursive: true })
     writeFileSync(join(wf, "memory", "style.md"), "# before\n")
 
-    await page.goto("/workflows/diamond")
+    await page.goto("/workflows/diamond?tab=editor")
     await expect(page.getByTestId("memory-list")).toBeVisible({
       timeout: 15_000,
     })
@@ -115,7 +115,7 @@ test.describe("workflow lifecycle", () => {
     writeFileSync(join(wf, "memory", "keep.md"), "# keep\n")
     writeFileSync(join(wf, "memory", "gone.md"), "# gone\n")
 
-    await page.goto("/workflows/diamond")
+    await page.goto("/workflows/diamond?tab=editor")
     await expect(page.getByTestId("memory-row-gone.md")).toBeVisible({
       timeout: 15_000,
     })
