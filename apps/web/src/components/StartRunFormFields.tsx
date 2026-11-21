@@ -66,7 +66,7 @@ export function StartRunFormFields({
                 id={`start-run-field-${decl.name}`}
                 data-testid={`start-run-field-${decl.name}`}
                 rows={6}
-                className="font-mono text-xs"
+                className="font-mono"
                 value={values[decl.name] ?? ""}
                 onChange={(e) => onChangeValue(decl.name, e.target.value)}
               />

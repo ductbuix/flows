@@ -125,7 +125,6 @@ export function MemoryPanel({ workflowId }: Props) {
                 <Button
                   type="button"
                   variant="link"
-                  size="sm"
                   className="h-auto p-0 font-mono"
                   onClick={() => setEditing(f.name)}
                 >

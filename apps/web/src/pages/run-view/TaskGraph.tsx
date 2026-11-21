@@ -30,7 +30,7 @@ function TaskNode({ id, data, selected }: NodeProps<Node<TaskNodeData>>) {
       className={cn("min-w-40 shadow-sm", selected && "ring-2 ring-ring")}
     >
       <Handle type="target" position={Position.Left} className="opacity-0" />
-      <CardContent className="text-xs">
+      <CardContent>
         <div className="font-mono font-medium">{data.label}</div>
         <div className="mt-1 flex flex-wrap gap-1">
           <Badge variant="outline">{data.status}</Badge>

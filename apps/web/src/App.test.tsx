@@ -85,4 +85,37 @@ describe("App", () => {
     expect(await screen.findByTestId("home-empty")).toBeTruthy()
     expect(screen.getByText(/Select a workflow or create one/i)).toBeTruthy()
   })
+
+  it("shows sidebar empty when there are no workflows", async () => {
+    mockFetch({ workflows: [] })
+    renderApp("/")
+    expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
+    expect(screen.getByTestId("sidebar-settings")).toBeTruthy()
+  })
+
+  it("shows sidebar skeletons while workflows load", async () => {
+    let resolveWorkflows!: (value: Response) => void
+    const workflowsPromise = new Promise<Response>((resolve) => {
+      resolveWorkflows = resolve
+    })
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url
+        if (url.includes("/api/workflows") && !url.includes("/runs")) {
+          return workflowsPromise
+        }
+        throw new Error(`unexpected fetch: ${url}`)
+      })
+    )
+    renderApp("/")
+    expect(await screen.findByTestId("sidebar-workflow-loading")).toBeTruthy()
+    resolveWorkflows(Response.json([]))
+    expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
+  })
 })

@@ -2,7 +2,7 @@
 id: BL-030
 title: UI polish on the shadcn baseline
 type: backlog
-status: todo
+status: done
 summary: Sidebar list states, long lists, and a final divergence sweep against shadcn defaults after the run view and editor phases.
 tags: [ui, web, shadcn]
 related: [DES-024, DES-013]
@@ -20,15 +20,15 @@ this backlog.
 
 ## Done when
 
-- [ ] The sidebar has a `SidebarMenuSkeleton` while loading and
+- [x] The sidebar has a `SidebarMenuSkeleton` while loading and
       an `Empty` when there are no workflows. Long lists scroll
       inside `SidebarContent` and Settings stays visible.
-- [ ] Settings shows the `d` theme shortcut with `Kbd`.
-- [ ] A sweep of `apps/web` finds no class that restates or
+- [x] Settings shows the `d` theme shortcut with `Kbd`.
+- [x] A sweep of `apps/web` finds no class that restates or
       overrides a shadcn prop (size, variant, width) and no
       hand-rolled copy of an installed component. Findings are
       fixed or listed in DES-024.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test` and
       `pnpm test:e2e` pass.
-- [ ] Playwright covers loading, empty and long sidebar lists,
+- [x] Playwright covers loading, empty and long sidebar lists,
       with video and screenshots in light and dark.

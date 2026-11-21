@@ -20,7 +20,7 @@ export function YamlErrorAlert({ errors, onOpenAdvanced }: Props) {
       <Alert variant="destructive" data-testid="yaml-errors">
         <AlertTitle>YAML errors</AlertTitle>
         <AlertDescription>
-          <ul className="mb-2 list-inside list-disc text-xs">
+          <ul className="mb-2 list-inside list-disc text-sm">
             {errors.slice(0, 5).map((e, i) => (
               <li key={`${e.from}-${i}`}>{e.message}</li>
             ))}
