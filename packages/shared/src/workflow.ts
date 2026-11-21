@@ -109,12 +109,63 @@ export const workflowLimitsSchema = z.object({
   agents: z.number().int().positive().optional(),
   maxTasks: z.number().int().positive().optional(),
   maxSpawnDepth: z.number().int().nonnegative().optional(),
+  /** Caps running runs per workflow; omitted means 1 (DES-021). */
+  maxConcurrentRuns: z.number().int().positive().optional(),
 })
+
+const INPUT_NAME_RE = /^[A-Za-z][A-Za-z0-9_-]*$/
+const RESERVED_INPUT_NAMES = new Set(["inputs", "attach"])
+
+/** Declared workflow input field (DES-021). */
+export const workflowInputDeclSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1)
+      .refine(
+        (n) => INPUT_NAME_RE.test(n) && !RESERVED_INPUT_NAMES.has(n),
+        "input name must match ^[A-Za-z][A-Za-z0-9_-]*$ and not be reserved"
+      ),
+    type: z.enum(["text", "markdown", "file"]),
+    required: z.boolean(),
+    description: z.string().optional(),
+    default: z.string().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.default !== undefined && val.type === "file") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "default is only allowed on text and markdown inputs",
+        path: ["default"],
+      })
+    }
+  })
+
+export type WorkflowInputDecl = z.infer<typeof workflowInputDeclSchema>
+
+const workflowInputsSchema = z
+  .array(workflowInputDeclSchema)
+  .superRefine((list, ctx) => {
+    const seen = new Set<string>()
+    for (let i = 0; i < list.length; i++) {
+      const name = list[i]!.name
+      if (seen.has(name)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `duplicate input name ${name}`,
+          path: [i, "name"],
+        })
+      }
+      seen.add(name)
+    }
+  })
 
 export const workflowSchema = z.object({
   id: z.string().min(1),
   goal: z.string().optional(),
   limits: workflowLimitsSchema.optional(),
+  /** Declared start-run form fields (DES-021). */
+  inputs: workflowInputsSchema.optional(),
   /** Default per-attempt timeout in seconds (DES-019). */
   timeout: timeoutSecondsSchema.optional(),
   tasks: z.array(taskSchema).min(1),
@@ -136,6 +187,7 @@ export type Task = z.infer<typeof taskSchema>
 export type Workflow = z.infer<typeof workflowSchema>
 export type WorkflowLimits = z.infer<typeof workflowLimitsSchema>
 export type AppConfig = z.infer<typeof appConfigSchema>
+export type WorkflowInputType = WorkflowInputDecl["type"]
 
 export function needTaskId(need: Need): string {
   return typeof need === "string" ? need : need.task

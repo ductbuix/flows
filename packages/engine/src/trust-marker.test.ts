@@ -41,6 +41,8 @@ function writeAgentWorkflow(home: string, id: string): string {
     join(wf, "workflow.yaml"),
     `
 id: ${id}
+limits:
+  maxConcurrentRuns: 2
 tasks:
   - id: a
     kind: agent
@@ -133,7 +135,12 @@ describe("trust marker keep and remove", () => {
       runId: "a",
       trustGrant: "once",
     })
-    writeFileSync(sleepBin, "#!/bin/sh\nsleep 1.2\nexit 0\n", { mode: 0o755 })
+    const started = Date.now()
+    while (!engine.fold("a")?.tasks.a?.attempts[0]?.pid) {
+      if (Date.now() - started > 5000) throw new Error("a never launched")
+      await new Promise((r) => setTimeout(r, 20))
+    }
+    writeFileSync(sleepBin, "#!/bin/sh\nsleep 2\nexit 0\n", { mode: 0o755 })
     const b = engine.startRun({
       workflowDir: wf,
       runId: "b",
@@ -144,11 +151,12 @@ describe("trust marker keep and remove", () => {
       process.env.FLOWAPP_CURSOR_PROJECTS
     )
     expect(existsSync(marker)).toBe(true)
+    expect(b.status).toBe("running")
     await a.wait()
     expect(engine.fold("b")?.status).toBe("running")
     expect(existsSync(marker)).toBe(true)
     await b.wait()
     expect(existsSync(marker)).toBe(false)
     engine.close()
-  })
+  }, 20_000)
 })

@@ -62,6 +62,7 @@ export function buildTaskEnv(
     WF_DIR: workflowRoot,
     WF_INPUT: join(workflowRoot, "input"),
     WF_OUTPUT: join(workflowRoot, "output"),
+    RUN_INPUT: join(runRoot, "input"),
     TASK_IN: join(taskDir(runRoot, task.id), "input"),
     TASK_OUT: join(attemptRoot, "out"),
     PREV_ATTEMPT: attempt > 1 ? attemptDir(runRoot, task.id, attempt - 1) : "",

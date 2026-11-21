@@ -17,9 +17,28 @@ export type TrustDecision = z.infer<typeof trustDecisionSchema>
 export const startRunBodySchema = z.object({
   requestId: z.string().min(1),
   trustGrant: trustGrantSchema.optional(),
+  /** Declared input field values (DES-021). */
+  values: z.record(z.string(), z.string()).optional(),
+  /** Start anyway when an item key already exists (DES-021). */
+  confirmDuplicate: z.boolean().optional(),
 })
 
 export type StartRunBody = z.infer<typeof startRunBodySchema>
+
+export const invalidInputErrorSchema = z.object({
+  error: z.literal("invalid_input"),
+  fields: z.record(z.string(), z.string()),
+})
+
+export type InvalidInputError = z.infer<typeof invalidInputErrorSchema>
+
+export const duplicateInputErrorSchema = z.object({
+  error: z.literal("duplicate_input"),
+  itemKey: z.string().min(1),
+  existingRunIds: z.array(z.string().min(1)).min(1),
+})
+
+export type DuplicateInputError = z.infer<typeof duplicateInputErrorSchema>
 
 export const trustCheckStatusSchema = z.enum(["pass", "warn"])
 export type TrustCheckStatus = z.infer<typeof trustCheckStatusSchema>

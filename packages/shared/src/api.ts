@@ -102,6 +102,8 @@ export type OutList = z.infer<typeof outListSchema>
 
 export const startRunResponseSchema = z.object({
   runId: z.string().min(1),
+  /** queued when over maxConcurrentRuns (DES-021). */
+  status: z.enum(["queued", "running"]),
 })
 
 export type StartRunResponse = z.infer<typeof startRunResponseSchema>

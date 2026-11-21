@@ -61,7 +61,10 @@ export function WorkflowActions({ workflowId, onRename, onDelete }: Props) {
       })
       if (!res.ok || !alive) return
       const runs = runSummarySchema.array().parse(await res.json())
-      if (alive) setLive(runs.some((r) => r.status === "running"))
+      if (alive)
+        setLive(
+          runs.some((r) => r.status === "running" || r.status === "queued")
+        )
     })()
     return () => {
       alive = false

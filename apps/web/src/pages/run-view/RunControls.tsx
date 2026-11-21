@@ -31,7 +31,7 @@ type Props = {
 
 export function RunControls({ run, workflowId }: Props) {
   const navigate = useNavigate()
-  const live = run.status === "running"
+  const live = run.status === "running" || run.status === "queued"
   const waiting = run.tasks.filter((t) => t.status === "awaiting_approval")
   const [cancelOpen, setCancelOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)

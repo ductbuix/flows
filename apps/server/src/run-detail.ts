@@ -13,7 +13,10 @@ export function buildRunDetail(
   const lastSeq = stored.length > 0 ? stored[stored.length - 1]!.seq : 0
   return toRunDetail(state, {
     startedAt: ts.startedAt,
-    finishedAt: state.status === "running" ? undefined : ts.finishedAt,
+    finishedAt:
+      state.status === "running" || state.status === "queued"
+        ? undefined
+        : ts.finishedAt,
     lastSeq,
   })
 }
@@ -26,7 +29,10 @@ export function buildRunSummaries(
     const ts = runTimestamps(engine.events(state.runId))
     return toRunSummary(state, {
       startedAt: ts.startedAt,
-      finishedAt: state.status === "running" ? undefined : ts.finishedAt,
+      finishedAt:
+        state.status === "running" || state.status === "queued"
+          ? undefined
+          : ts.finishedAt,
     })
   })
 }

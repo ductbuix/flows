@@ -31,6 +31,27 @@ describe("foldEvents", () => {
     expect(state?.sandboxed).toBe(true)
   })
 
+  it("starts queued then activates to running", () => {
+    const state = foldEvents([
+      {
+        type: "run_started",
+        runId: "r1",
+        workflowId: "diamond",
+        graph,
+        at: "t0",
+        queued: true,
+        source: "manual",
+        itemKey: "abc",
+        inputHash: "def",
+        files: ["inputs.json"],
+      },
+      { type: "run_activated", runId: "r1", at: "t1" },
+    ])
+    expect(state?.status).toBe("running")
+    expect(state?.itemKey).toBe("abc")
+    expect(state?.startedAt).toBe("t0")
+  })
+
   it("clears sandboxed when an unrestricted attempt launches", () => {
     const state = foldEvents([
       started(),

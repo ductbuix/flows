@@ -47,8 +47,20 @@ export type RunState = {
   sandboxed: boolean
   /** Trust-once grant from run_started (DES-019). */
   trustGrant?: "once"
+  /** ISO time from run_started (DES-021 FIFO queue). */
+  startedAt?: string
+  /** Manual item key from run_started (DES-021). */
+  itemKey?: string
+  source?: "manual"
+  inputHash?: string
+  inputFiles?: string[]
   cancelRequested?: boolean
   deleted?: boolean
+}
+
+/** Live for rename/delete blocking: queued or running (DES-021). */
+export function isLiveRunStatus(status: RunStatus): boolean {
+  return status === "queued" || status === "running"
 }
 
 /** Fold engine events into run state. Pure; no I/O. */
