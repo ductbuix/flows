@@ -7,7 +7,7 @@ summary: Workflow list and React Flow graph editor synced with workflow.yaml (Co
 tags: [ui, web, editor, yaml]
 related:
   [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013,
-   DES-020, DES-021, DES-022]
+   DES-020, DES-021, DES-022, DES-023]
 updated: 2026-11-21
 ---
 
@@ -29,7 +29,9 @@ preservation are in [DES-013](des-013-workflow-editing.md).
   (`command` or `agent`), and markers for `spawn`, `retry`,
   `repeat` and `when` ([DES-004](des-004-conditions-loops.md)).
 - Edges that carry a condition (branch edges, `when`) are labeled.
-- Edit a task: `name`, kind, `run` or `cli`, the fixed prompt file
+- Edit a task: `name`, kind, `run` or `cli`, optional `model` and
+  `effort` for agent tasks and lone agent judges
+  ([DES-023](des-023-model-effort.md)), the fixed prompt file
   ([DES-020](des-020-fixed-prompt-files.md)), `memory` files, `needs`,
   `when`, `retry`, `repeat`, `spawn`, `continueOnError`, limits. The
   id is generated and is not editable in the drawer. A danger-style
@@ -38,8 +40,9 @@ preservation are in [DES-013](des-013-workflow-editing.md).
   until Save. Cmd/Ctrl+Z undoes graph and inspector edits before
   save, including delete. The last task cannot be removed.
 - Edit workflow fields: `goal`, `inputs` (name, type, required,
-  description, default), and `limits` (`concurrency`, `agents`,
-  `maxTasks`, `maxSpawnDepth`, `maxConcurrentRuns`) (DES-021).
+  description, default), `limits` (`concurrency`, `agents`,
+  `maxTasks`, `maxSpawnDepth`, `maxConcurrentRuns`) (DES-021), and
+  per-CLI agent defaults for `model` and `effort` (DES-023).
 - The YAML text next to the graph in a CodeMirror 6 editor with YAML
   highlighting and inline diagnostics. Editing either side updates the
   other.

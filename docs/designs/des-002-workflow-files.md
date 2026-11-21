@@ -5,7 +5,7 @@ type: design
 status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
-related: [DES-001, DES-004, DES-005, DES-020, DES-021, DES-022]
+related: [DES-001, DES-004, DES-005, DES-020, DES-021, DES-022, DES-023]
 updated: 2026-11-21
 ---
 
@@ -43,11 +43,15 @@ id: research-report
 goal: Produce a sourced report on input/topic.md
 limits: { concurrency: 3, agents: 2, maxTasks: 50, maxSpawnDepth: 2, maxConcurrentRuns: 1 }
 timeout: 900 # default per-attempt seconds; task timeout wins (DES-019)
+agent: # optional per-CLI model and effort defaults (DES-023)
+  claude: { model: sonnet, effort: high }
 tasks:
   - id: task-a1b2c3d4
     name: Plan
     kind: agent
     cli: claude # or cursor
+    model: opus # optional; then workflow, then the CLI's settings
+    effort: xhigh
     # prompt is tasks/task-a1b2c3d4/prompt.md (DES-020)
     # optional workflow inputs: and RUN_INPUT are in DES-021
     memory: [memory/style.md]

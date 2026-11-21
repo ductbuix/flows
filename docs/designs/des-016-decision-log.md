@@ -20,6 +20,7 @@ related:
     DES-020,
     DES-021,
     DES-022,
+    DES-023,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -85,6 +86,11 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Save moves a removed task folder to `tasks/.trash/` | keep the files; do not leave orphans in `tasks/`             | DES-022, 002 |
 | 2026-11-21 | PUT diffs task ids; no client-sent remove list    | raw YAML edits follow the same path                            | DES-022, 013 |
 | 2026-11-21 | Block Save-remove while a live or queued run needs the task | authored prompts are read from the workflow folder at launch | DES-022, 007 |
+| 2026-11-21 | Optional `model` and `effort`; omit flags for CLI defaults | use each CLI's own settings when the yaml is silent          | DES-023, 005 |
+| 2026-11-21 | Workflow agent defaults are per CLI                     | a Claude default must not leak onto a Cursor task            | DES-023      |
+| 2026-11-21 | Cursor Effort select is mapped onto the model id        | Cursor ids embed effort; Claude uses a separate `--effort`   | DES-023      |
+| 2026-11-21 | Judges get model and effort; inherit same-cli parent    | a judge can share the task's model or override it            | DES-023, 020 |
+| 2026-11-21 | Unknown model is a pre-run warning, never a block       | the user can still run after a double check                  | DES-023, 019 |
 
 ## UI
 
@@ -109,6 +115,8 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Inspector edits `inputs:` and `maxConcurrentRuns` | the yaml stays the source of truth                      | DES-021, 010 |
 | 2026-11-21 | Delete one task from the drawer or canvas, with confirm | pending edit until Save; dependents lose the link     | DES-022, 010 |
 | 2026-11-21 | Snapshot undo for graph and inspector edits       | no undo existed; YAML pane keeps CodeMirror history     | DES-022, 010 |
+| 2026-11-21 | Drawer Model and Effort selects, Default first    | the first option shows the CLI's current setting        | DES-023, 010 |
+| 2026-11-21 | Run view shows model and effort on the attempt    | record what was actually resolved                       | DES-023, 009 |
 
 ## Docs and tooling
 

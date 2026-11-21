@@ -5,7 +5,7 @@ type: design
 status: active
 summary: How agent CLI tasks run stateless with memories, and how they grow a run's graph, including fan-out.
 tags: [agents, spawn, memory, cli, fan-out, dynamic]
-related: [DES-002, DES-003, DES-006, DES-019, DES-020]
+related: [DES-002, DES-003, DES-006, DES-019, DES-020, DES-023]
 updated: 2026-11-21
 ---
 
@@ -19,7 +19,10 @@ updated: 2026-11-21
   (DES-003).
 - Adapters: `claude --print --permission-mode dontAsk --add-dir <workflow>`
   and `agent -p --force --trust --workspace <attempt> --add-dir <workflow>`
-  (DES-006). `TASK_INSTRUCTIONS` is the absolute path of the derived
+  (DES-006). Optional `model` and `effort` are resolved (task, then
+  same-cli parent, then `workflow.agent.<cli>`, then omit the flags)
+  and added by the CLI adapter ([DES-023](des-023-model-effort.md)).
+  `TASK_INSTRUCTIONS` is the absolute path of the derived
   prompt (`tasks/<taskId>/prompt.md`, or a spawned task's stamped
   `promptDir`); the CLI prompt tells the agent to follow it.
 - `memory/*.md` listed on the task are copied into the task's
