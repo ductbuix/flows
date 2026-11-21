@@ -75,7 +75,8 @@ describe("agent tasks and spawn", () => {
     mkdirSync(join(wf, "memory"), { recursive: true })
     mkdirSync(join(wf, "tasks"), { recursive: true })
     writeFileSync(join(wf, "memory", "style.md"), "# terse\n")
-    writeFileSync(join(wf, "tasks", "plan.md"), "Plan the work.\n")
+    mkdirSync(join(wf, "tasks", "plan"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "plan", "prompt.md"), "Plan the work.\n")
     writeFileSync(
       join(wf, "workflow.yaml"),
       `
@@ -85,7 +86,6 @@ tasks:
   - id: plan
     kind: agent
     cli: claude
-    instructions: tasks/plan.md
     memory: [memory/style.md]
     spawn: true
 `
@@ -93,19 +93,23 @@ tasks:
     installStubBin(home, {
       name: "claude",
       spawnYaml:
-        'id: fetch\nkind: command\nrun: "printf ok > \\"$TASK_OUT/done.txt\\""\nneeds: [plan]\n',
+        'kind: command\nrun: "printf ok > \\"$TASK_OUT/done.txt\\""\nneeds: [plan]\n',
     })
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
+    const handle = engine.startRun({
+      workflowDir: wf,
+      runId: "r1",
+      trustGrant: "once",
+    })
     const state = await handle.wait()
 
     expect(state.status).toBe("succeeded")
     expect(state.tasks.plan?.status).toBe("succeeded")
-    expect(state.tasks.fetch?.status).toBe("succeeded")
-    expect(state.graph.tasks.find((t) => t.id === "fetch")?.spawnedBy).toBe(
-      "plan"
-    )
+    const child = state.graph.tasks.find((t) => t.spawnedBy === "plan")
+    expect(child).toBeDefined()
+    expect(state.tasks[child!.id]?.status).toBe("succeeded")
+    expect(child?.promptDir).toContain("out/spawn/child")
 
     const memory = readFileSync(
       join(wf, "runs", "r1", "tasks", "plan", "input", "memory", "style.md"),
@@ -113,13 +117,8 @@ tasks:
     )
     expect(memory).toBe("# terse\n")
 
-    const graph = JSON.parse(
-      readFileSync(join(wf, "runs", "r1", "graph.json"), "utf8")
-    ) as { tasks: Array<{ id: string }> }
-    expect(graph.tasks.map((t) => t.id)).toContain("fetch")
-
     const out = readFileSync(
-      join(wf, "runs", "r1", "tasks", "fetch", "latest", "out", "done.txt"),
+      join(wf, "runs", "r1", "tasks", child!.id, "latest", "out", "done.txt"),
       "utf8"
     )
     expect(out).toBe("ok")
@@ -134,7 +133,8 @@ tasks:
     process.env.FLOWAPP_RETRY_BACKOFF_MS = "10"
     const wf = join(home, "workflows", "bad-spawn")
     mkdirSync(join(wf, "tasks"), { recursive: true })
-    writeFileSync(join(wf, "tasks", "plan.md"), "Spawn a bad id.\n")
+    mkdirSync(join(wf, "tasks", "plan"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "plan", "prompt.md"), "Spawn a bad id.\n")
     writeFileSync(
       join(wf, "workflow.yaml"),
       `
@@ -143,7 +143,6 @@ tasks:
   - id: plan
     kind: agent
     cli: claude
-    instructions: tasks/plan.md
     spawn: true
     retry: { max: 2 }
 `
@@ -169,7 +168,11 @@ exit 0
     process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r2", trustGrant: "once" })
+    const handle = engine.startRun({
+      workflowDir: wf,
+      runId: "r2",
+      trustGrant: "once",
+    })
     const state = await handle.wait()
 
     expect(state.status).toBe("succeeded")
@@ -188,8 +191,10 @@ exit 0
     writeFileSync(join(home, "config.yaml"), "limits:\n  agents: 1\n")
     const wf = join(home, "workflows", "parallel-agents")
     mkdirSync(join(wf, "tasks"), { recursive: true })
-    writeFileSync(join(wf, "tasks", "a.md"), "A\n")
-    writeFileSync(join(wf, "tasks", "b.md"), "B\n")
+    mkdirSync(join(wf, "tasks", "a"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "a", "prompt.md"), "A\n")
+    mkdirSync(join(wf, "tasks", "b"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "b", "prompt.md"), "B\n")
     writeFileSync(
       join(wf, "workflow.yaml"),
       `
@@ -199,17 +204,19 @@ tasks:
   - id: a
     kind: agent
     cli: claude
-    instructions: tasks/a.md
   - id: b
     kind: agent
     cli: claude
-    instructions: tasks/b.md
 `
     )
     installStubBin(home, { name: "claude", sleepMs: 200 })
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r3", trustGrant: "once" })
+    const handle = engine.startRun({
+      workflowDir: wf,
+      runId: "r3",
+      trustGrant: "once",
+    })
     const state = await handle.wait()
     expect(state.status).toBe("succeeded")
 
@@ -237,7 +244,8 @@ tasks:
     const home = tempHome()
     const wf = join(home, "workflows", "env-check")
     mkdirSync(join(wf, "tasks"), { recursive: true })
-    writeFileSync(join(wf, "tasks", "plan.md"), "Check env.\n")
+    mkdirSync(join(wf, "tasks", "plan"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "plan", "prompt.md"), "Check env.\n")
     writeFileSync(
       join(wf, "workflow.yaml"),
       `
@@ -246,7 +254,6 @@ tasks:
   - id: plan
     kind: agent
     cli: cursor
-    instructions: tasks/plan.md
 `
     )
     const bin = join(home, "bin")
@@ -262,7 +269,11 @@ exit 0
     process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir: wf, runId: "r4", trustGrant: "once" })
+    const handle = engine.startRun({
+      workflowDir: wf,
+      runId: "r4",
+      trustGrant: "once",
+    })
     const state = await handle.wait()
     expect(state.status).toBe("succeeded")
     const path = readFileSync(
@@ -278,7 +289,37 @@ exit 0
       ),
       "utf8"
     )
-    expect(path).toBe(join(wf, "tasks", "plan.md"))
+    expect(path).toBe(join(wf, "tasks", "plan", "prompt.md"))
+    engine.close()
+  }, 20_000)
+
+  it("fails an authored agent with missing_prompt when prompt.md is absent", async () => {
+    const home = tempHome()
+    const wf = join(home, "workflows", "no-prompt")
+    mkdirSync(join(wf, "tasks"), { recursive: true })
+    writeFileSync(
+      join(wf, "workflow.yaml"),
+      `
+id: no-prompt
+tasks:
+  - id: plan
+    kind: agent
+    cli: claude
+`
+    )
+    installStubBin(home, { name: "claude" })
+    const engine = createEngine({ home })
+    const state = await engine
+      .startRun({ workflowDir: wf, runId: "r5", trustGrant: "once" })
+      .wait()
+    expect(state.status).toBe("failed")
+    expect(state.tasks.plan?.status).toBe("failed")
+    const finished = engine
+      .events("r5")
+      .find((e) => e.type === "attempt_finished" && e.taskId === "plan")
+    expect(finished && "reason" in finished ? finished.reason : undefined).toBe(
+      "missing_prompt"
+    )
     engine.close()
   }, 20_000)
 })

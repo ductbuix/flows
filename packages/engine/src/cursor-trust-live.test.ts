@@ -44,9 +44,9 @@ describe.skipIf(!live)("live Cursor trust marker under sandbox", () => {
     delete process.env.FLOWAPP_SANDBOX
 
     const wf = join(home, "workflows", "live-trust")
-    mkdirSync(join(wf, "tasks"), { recursive: true })
+    mkdirSync(join(wf, "tasks", "hello"), { recursive: true })
     writeFileSync(
-      join(wf, "tasks", "hello.md"),
+      join(wf, "tasks", "hello", "prompt.md"),
       "Write the text ok into out/done.txt and stop. Do not ask questions.\n"
     )
     writeFileSync(
@@ -58,7 +58,6 @@ tasks:
   - id: hello
     kind: agent
     cli: cursor
-    instructions: tasks/hello.md
     timeout: 120
 `
     )

@@ -36,7 +36,7 @@ describe("agent adapters", () => {
         id: "plan",
         kind: "agent",
         cli: "claude",
-        instructions: "tasks/plan.md",
+
         needs: [],
         spawn: true,
       },
@@ -57,7 +57,7 @@ describe("agent adapters", () => {
         id: "plan",
         kind: "agent",
         cli: "cursor",
-        instructions: "tasks/plan.md",
+
         needs: [],
       },
       "/wf/tasks/plan.md",
@@ -82,7 +82,7 @@ describe("agent adapters", () => {
         id: "plan",
         kind: "agent",
         cli: "claude",
-        instructions: "tasks/plan.md",
+
         needs: [],
         memory: ["memory/style.md"],
       },

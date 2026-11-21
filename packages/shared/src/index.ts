@@ -32,6 +32,22 @@ export {
   type AppConfig,
 } from "./workflow.ts"
 export {
+  GENERATED_TASK_ID_RE,
+  isSafeTaskId,
+  newTaskId,
+  taskPromptPath,
+  judgePromptPath,
+  upstreamEnvName,
+  type JudgeSlot,
+} from "./task-ids.ts"
+export {
+  countAgentJudges,
+  collectRawWorkflowIssues,
+  collectWorkflowIssues,
+  spawnIdRejectedMessage,
+  spawnInstructionsRejectedMessage,
+} from "./workflow-validate.ts"
+export {
   taskStatusSchema,
   runStatusSchema,
   engineEventSchema,

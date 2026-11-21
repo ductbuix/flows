@@ -7,6 +7,10 @@ import {
   type YAMLSeq,
 } from "yaml"
 import { workflowSchema, type Task, type Workflow } from "./workflow.ts"
+import {
+  collectRawWorkflowIssues,
+  collectWorkflowIssues,
+} from "./workflow-validate.ts"
 
 export type YamlDiagnostic = {
   message: string
@@ -44,6 +48,10 @@ export function parseWorkflowYaml(text: string): ParsedWorkflowYaml {
   }
 
   const raw = doc.toJS({ maxAliasCount: 1000 })
+  for (const issue of collectRawWorkflowIssues(raw)) {
+    pushIssue(errors, doc, text.length, issue.message, issue.path)
+  }
+
   const parsed = workflowSchema.safeParse(raw)
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
@@ -51,15 +59,16 @@ export function parseWorkflowYaml(text: string): ParsedWorkflowYaml {
         (p): p is string | number =>
           typeof p === "string" || typeof p === "number"
       )
-      const range = rangeForPath(doc, path, text.length)
-      errors.push({
-        message: issue.message,
-        path,
-        from: range[0],
-        to: range[1],
-        severity: "error",
-      })
+      pushIssue(errors, doc, text.length, issue.message, path)
     }
+    return { doc, text, workflow: null, errors }
+  }
+
+  for (const issue of collectWorkflowIssues(parsed.data)) {
+    pushIssue(errors, doc, text.length, issue.message, issue.path)
+  }
+
+  if (errors.length > 0) {
     return { doc, text, workflow: null, errors }
   }
 
@@ -69,6 +78,23 @@ export function parseWorkflowYaml(text: string): ParsedWorkflowYaml {
     workflow: parsed.data,
     errors,
   }
+}
+
+function pushIssue(
+  errors: YamlDiagnostic[],
+  doc: Document.Parsed,
+  textLen: number,
+  message: string,
+  path: (string | number)[]
+): void {
+  const range = rangeForPath(doc, path, textLen)
+  errors.push({
+    message,
+    path,
+    from: range[0],
+    to: range[1],
+    severity: "error",
+  })
 }
 
 function rangeForPath(
@@ -88,7 +114,12 @@ function rangeForPath(
   // Walk parents for a usable range.
   for (let i = path.length - 1; i >= 0; i--) {
     const parent = doc.getIn(path.slice(0, i), true)
-    if (parent && typeof parent === "object" && "range" in parent && parent.range) {
+    if (
+      parent &&
+      typeof parent === "object" &&
+      "range" in parent &&
+      parent.range
+    ) {
       const r = parent.range as [number, number, number]
       return [r[0], r[1]]
     }
@@ -122,5 +153,6 @@ export function stripSpawnMeta(task: Task): Task {
   const rest = { ...task }
   delete rest.spawnDepth
   delete rest.spawnedBy
+  delete rest.promptDir
   return rest
 }

@@ -9,10 +9,7 @@ import {
 import { isOpenAttempt, type RunState } from "./fold.ts"
 import { retryBackoffMs } from "./loops.ts"
 import { attemptDir, taskDir } from "./paths.ts"
-import {
-  processSpawnDir,
-  type SpawnRejection,
-} from "./spawn-validate.ts"
+import { processSpawnDir, type SpawnRejection } from "./spawn-validate.ts"
 
 export { processSpawnDir, type SpawnRejection } from "./spawn-validate.ts"
 
@@ -83,6 +80,7 @@ function settleSpawnAgent(
   const { accepted, rejections } = processSpawnDir(
     task,
     attemptRoot,
+    host.runRoot,
     host.state().graph,
     host.globalLimits
   )

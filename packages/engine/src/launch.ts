@@ -1,13 +1,16 @@
+import { existsSync } from "node:fs"
 import type {
   EngineEvent,
   TaskStatus,
   Workflow,
   WorkflowLimits,
 } from "@workspace/shared"
+import { isAgentTask } from "@workspace/shared"
 import { watchChild, type AttemptWatchHost } from "./attempt-watch.ts"
 import { prepareAttemptDirs } from "./dirs.ts"
 import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
 import { fitsLimits, limitCaps } from "./limits.ts"
+import { taskPromptAbs } from "./prompt-paths.ts"
 import { launchTask } from "./runner.ts"
 import { resolveAttemptTimeout } from "./timeout.ts"
 
@@ -83,6 +86,22 @@ export function launchTaskAttempt(
     at: startedAt,
   })
   prepareAttemptDirs(host.runRoot, taskId, attempt)
+
+  if (isAgentTask(task)) {
+    const prompt = taskPromptAbs(task, host.workflowRoot, host.runRoot)
+    if (!existsSync(prompt)) {
+      host.append({
+        type: "attempt_finished",
+        runId: host.runId,
+        taskId,
+        attempt,
+        exitCode: 1,
+        reason: "missing_prompt",
+        at: now(),
+      })
+      return
+    }
+  }
 
   const { child, pid, sandboxed } = launchTask(
     task,

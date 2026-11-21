@@ -14,7 +14,7 @@ export function agentPrompt(
   canSpawn: boolean
 ): string {
   const spawn = canSpawn
-    ? " To spawn tasks, write one YAML task spec per file under out/spawn/."
+    ? " To spawn tasks, write one YAML task spec per file under out/spawn/<stem>.yaml; for agent tasks put prompt.md (and judge files) under out/spawn/<stem>/."
     : ""
   return (
     `Read the file at ${instructionsAbsPath} and follow those instructions. ` +

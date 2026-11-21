@@ -87,7 +87,6 @@ tasks:
   - id: hello
     kind: agent
     cli: cursor
-    instructions: tasks/hello.md
     timeout: 5
 `
 
@@ -108,10 +107,10 @@ export function createE2eHome(): string {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), yaml)
   }
-  const agentTasks = join(home, "workflows", "agent-trust", "tasks")
+  const agentTasks = join(home, "workflows", "agent-trust", "tasks", "hello")
   mkdirSync(agentTasks, { recursive: true })
   writeFileSync(
-    join(agentTasks, "hello.md"),
+    join(agentTasks, "prompt.md"),
     "Write ok to out/done.txt and exit.\n"
   )
   return home

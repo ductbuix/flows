@@ -19,8 +19,8 @@ describe("preflight checks", () => {
     const home = mkdtempSync(join(tmpdir(), "flowapp-pf-"))
     dirs.push(home)
     const wf = join(home, "workflows", "agent-hi")
-    mkdirSync(join(wf, "tasks"), { recursive: true })
-    writeFileSync(join(wf, "tasks", "a.md"), "hi\n")
+    mkdirSync(join(wf, "tasks", "a"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "a", "prompt.md"), "hi\n")
     writeFileSync(
       join(wf, "workflow.yaml"),
       `
@@ -29,7 +29,6 @@ tasks:
   - id: a
     kind: agent
     cli: cursor
-    instructions: tasks/a.md
 `
     )
     const workflow = loadWorkflowFile(wf)
@@ -46,6 +45,33 @@ tasks:
     expect(checks.find((c) => c.id === "flags_cursor")?.message).toMatch(
       /--force/
     )
+    expect(checks.find((c) => c.id === "prompts")?.status).toBe("pass")
     void hasWarning(checks)
+  })
+
+  it("warns when an authored agent prompt is missing", async () => {
+    const home = mkdtempSync(join(tmpdir(), "flowapp-pf-miss-"))
+    dirs.push(home)
+    const wf = join(home, "workflows", "agent-miss")
+    mkdirSync(wf, { recursive: true })
+    writeFileSync(
+      join(wf, "workflow.yaml"),
+      `
+id: agent-miss
+tasks:
+  - id: a
+    kind: agent
+    cli: claude
+`
+    )
+    const workflow = loadWorkflowFile(wf)
+    const checks = await runPreflightChecks({
+      homeRealpath: resolveAppHomeRealpath(home),
+      workflowDir: wf,
+      workflow,
+    })
+    const prompts = checks.find((c) => c.id === "prompts")
+    expect(prompts?.status).toBe("warn")
+    expect(prompts?.message).toContain("tasks/a/prompt.md")
   })
 })

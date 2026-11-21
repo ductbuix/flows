@@ -77,13 +77,10 @@ test.describe("graph editor", () => {
     await page.getByTestId("field-kind").click()
     await page.getByRole("option", { name: "agent" }).click()
     await expect(page.getByTestId("field-cli")).toBeVisible()
-    await expect(page.getByTestId("field-instructions")).toHaveValue(
-      "tasks/flaky.md"
-    )
     await expect(page.getByTestId("yaml-pane")).toContainText("kind: agent")
     await expect(page.getByTestId("yaml-pane")).toContainText("cli: claude")
-    await expect(page.getByTestId("yaml-pane")).toContainText(
-      "instructions: tasks/flaky.md"
+    await expect(page.getByTestId("yaml-pane")).not.toContainText(
+      "instructions:"
     )
     await expect(page.getByTestId("yaml-pane")).not.toContainText("run:")
 
@@ -104,7 +101,7 @@ test.describe("graph editor", () => {
     )
     expect(onDisk).toContain("kind: agent")
     expect(onDisk).toContain("cli: claude")
-    expect(onDisk).toContain("instructions: tasks/flaky.md")
+    expect(onDisk).not.toContain("instructions:")
     expect(onDisk).not.toMatch(/\brun:/)
     expect(onDisk).toContain("retry:")
 
@@ -143,8 +140,9 @@ test.describe("graph editor", () => {
 
     await page.getByTestId("field-kind").click()
     await page.getByRole("option", { name: "agent" }).click()
-    await expect(page.getByTestId("field-instructions")).toHaveValue(
-      "tasks/a.md"
+    await expect(page.getByTestId("field-cli")).toBeVisible()
+    await expect(page.getByTestId("yaml-pane")).not.toContainText(
+      "instructions:"
     )
 
     const yaml = await page.getByTestId("yaml-pane").innerText()
@@ -152,37 +150,6 @@ test.describe("graph editor", () => {
     expect(yaml).toContain("id: c")
     expect(yaml).toContain("id: d")
     expect(yaml).toMatch(/id: b[\s\S]*?run:/)
-  })
-
-  test("edit instructions creates the file on disk", async ({ page }) => {
-    await page.goto("/workflows/fail-retry")
-    await expect(page.getByTestId("node-flaky")).toBeVisible({
-      timeout: 15_000,
-    })
-    await page.getByTestId("node-flaky").click()
-    await page.getByTestId("field-kind").click()
-    await page.getByRole("option", { name: "agent" }).click()
-    await expect(page.getByTestId("edit-instructions")).toBeEnabled()
-
-    await page.getByTestId("edit-instructions").click()
-    await expect(page.getByTestId("instructions-editor")).toBeVisible()
-    await page
-      .getByTestId("instructions-editor")
-      .locator("textarea")
-      .fill("# flaky instructions\n")
-    await page.getByTestId("instructions-save").click()
-    await expect(page.getByTestId("instructions-editor")).toBeHidden()
-
-    await page.reload()
-    await expect(page.getByTestId("node-flaky")).toBeVisible({
-      timeout: 15_000,
-    })
-    expect(
-      readFileSync(
-        join(HOME, "workflows", "fail-retry", "tasks", "flaky.md"),
-        "utf8"
-      )
-    ).toBe("# flaky instructions\n")
   })
 
   test("disk change with dirty editor opens conflict dialog", async ({

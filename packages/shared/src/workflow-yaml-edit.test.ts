@@ -23,7 +23,6 @@ tasks:
   - id: plan
     kind: agent
     cli: claude
-    instructions: tasks/plan.md
     spawn: true
     retry: { max: 2 }
   - id: fetch
@@ -75,8 +74,8 @@ describe("workflow yaml Document edits (DES-013)", () => {
     expect(text).toMatch(/retry:\s*\{\s*max:\s*3\s*\}/)
     expect(text).toMatch(/when:\s*\{\s*exit:\s*0\s*\}/)
     // Untouched agent keys keep order and values.
-    expect(text).toContain("instructions: tasks/plan.md")
     expect(text).toContain("cli: claude")
+    expect(text).not.toContain("instructions:")
     expect(text).toContain("continueOnError: false")
 
     const parsed = workflowSchema.parse(parseYaml(text))
@@ -102,7 +101,6 @@ tasks:
   - id: plan
     kind: agent
     cli: claude
-    instructions: tasks/plan.md
     memory: [memory/style.md]
 `
     const next = replaceMemoryRef(text, "memory/style.md", "memory/voice.md")
@@ -117,7 +115,7 @@ tasks:
     expect(text).toContain("# header: research workflow")
     expect(text).toContain("# inline on goal")
     expect(text).toContain("# first task is the planner")
-    expect(text).toMatch(/instructions:\s*tasks\/plan\.md/)
+    expect(text).not.toContain("instructions:")
     expect(text).toMatch(/when:\s*\{\s*exit:\s*0\s*\}/)
 
     const toAgent = workflowSchema.parse(parseYaml(text))
@@ -125,11 +123,11 @@ tasks:
     expect(fetch).toMatchObject({
       kind: "agent",
       cli: "claude",
-      instructions: "tasks/fetch.md",
       needs: ["plan"],
       continueOnError: false,
     })
     expect(fetch && "run" in fetch).toBe(false)
+    expect(fetch && "instructions" in fetch).toBe(false)
     expect(toAgent.tasks.map((t) => t.id)).toEqual(["plan", "fetch", "publish"])
 
     text = switchTaskKind(text, "fetch", "command")
