@@ -32,12 +32,29 @@ export {
   attemptDir,
   connectionsDir,
   connectionDir,
+  secretsRoot,
   secretsDir,
   libraryDir,
   libraryEntityDir,
   encodeEntityId,
   decodeEntityId,
 } from "./paths.ts"
+export {
+  cookiesPath,
+  profileDir,
+  ensureSecretsDir,
+  readCookies,
+  writeCookies,
+  isSignedIn,
+  removeSignIn,
+  type StoredCookie,
+} from "./secrets.ts"
+export {
+  BrowserSignInError,
+  connectionSignInHost,
+  signInWithBrowser,
+  type BrowserSignInResult,
+} from "./browser-sign-in.ts"
 export {
   LIBRARY_EVENT_RUN_ID,
   resolveScopeEntity,
@@ -165,6 +182,18 @@ export {
   portLeases,
   type PortBlock,
 } from "./port-lease.ts"
+export { serialLocks, type SerialHolder } from "./serial-lock.ts"
+export {
+  ensureWorkCopies,
+  copyPinnedEntity,
+  workConnectionDir,
+  workEntityDir,
+  diffWorkCopy,
+  recordUnpublishedLocalEffects,
+  listWorkConnections,
+  removeWorkCopies,
+  ensureLibraryGcAutoOff,
+} from "./work-copy.ts"
 export {
   workflowCacheEnv,
   WORKFLOW_CACHE_ENV_TEMPLATES,

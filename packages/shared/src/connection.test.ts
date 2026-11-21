@@ -18,7 +18,13 @@ describe("connectionSchema", () => {
   it("parses a connection.yaml and defaults policy to read-only", () => {
     const conn = connectionSchema.parse(valid)
     expect(conn.policy).toBe("read-only")
+    expect(conn.serial).toBe(false)
     expect(conn.scope).toEqual({ owner: "acme", repo: "api" })
+  })
+
+  it("accepts serial: true", () => {
+    const conn = connectionSchema.parse({ ...valid, serial: true })
+    expect(conn.serial).toBe(true)
   })
 
   it("rejects secret keys token, password and cookie", () => {

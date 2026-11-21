@@ -235,5 +235,8 @@ export function applyEvent(
     case "library_pulled":
       // Read effect; does not change run fold state (DES-026 / BL-043).
       return state
+    case "work_copy_changed":
+      // Local effect; does not change run fold state (DES-026 / BL-048).
+      return state
   }
 }

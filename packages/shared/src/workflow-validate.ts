@@ -22,7 +22,7 @@ export function countAgentJudges(condition: Condition): number {
   return 0
 }
 
-/** Schema-level checks that need the parsed workflow (DES-020). */
+/** Schema-level checks that need the parsed workflow (DES-020, DES-026). */
 export function collectWorkflowIssues(workflow: Workflow): WorkflowIssue[] {
   const issues: WorkflowIssue[] = []
   const envNames = new Map<string, string>()
@@ -42,7 +42,71 @@ export function collectWorkflowIssues(workflow: Workflow): WorkflowIssue[] {
 
     pushJudgeSlotIssues(task, i, issues)
   }
+  pushProposeOrderIssues(workflow, issues)
   return issues
+}
+
+/**
+ * Two propose tasks on one connection must be ordered by `needs`
+ * (DES-026 / BL-048).
+ */
+function pushProposeOrderIssues(
+  workflow: Workflow,
+  issues: WorkflowIssue[]
+): void {
+  const byId = new Map(workflow.tasks.map((t) => [t.id, t]))
+  const indexById = new Map(workflow.tasks.map((t, i) => [t.id, i]))
+  const byConnection = new Map<string, string[]>()
+
+  for (const task of workflow.tasks) {
+    for (const use of task.uses ?? []) {
+      if (use.access !== "propose") continue
+      const list = byConnection.get(use.connection) ?? []
+      if (!list.includes(task.id)) list.push(task.id)
+      byConnection.set(use.connection, list)
+    }
+  }
+
+  for (const [connection, taskIds] of byConnection) {
+    if (taskIds.length < 2) continue
+    for (let i = 0; i < taskIds.length; i++) {
+      for (let j = i + 1; j < taskIds.length; j++) {
+        const a = taskIds[i]!
+        const b = taskIds[j]!
+        if (reachesViaNeeds(a, b, byId) || reachesViaNeeds(b, a, byId)) {
+          continue
+        }
+        const pathTask = indexById.get(b) ?? 0
+        const useIndex = (byId.get(b)?.uses ?? []).findIndex(
+          (u) => u.connection === connection && u.access === "propose"
+        )
+        issues.push({
+          message: `propose tasks ${a} and ${b} on ${connection} must be ordered by needs`,
+          path: ["tasks", pathTask, "uses", Math.max(useIndex, 0)],
+        })
+      }
+    }
+  }
+}
+
+/** True when `to` is reachable by walking `needs` from `from`. */
+function reachesViaNeeds(
+  from: string,
+  to: string,
+  byId: Map<string, Task>
+): boolean {
+  const visiting = new Set<string>()
+  function walk(id: string): boolean {
+    if (id === to) return true
+    if (visiting.has(id)) return false
+    visiting.add(id)
+    for (const need of byId.get(id)?.needs ?? []) {
+      if (walk(needTaskId(need))) return true
+    }
+    visiting.delete(id)
+    return false
+  }
+  return walk(from)
 }
 
 function pushJudgeSlotIssues(

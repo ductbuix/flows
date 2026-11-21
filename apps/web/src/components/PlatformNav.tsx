@@ -49,10 +49,10 @@ function isActive(pathname: string, match: (typeof ITEMS)[number]["match"]) {
   if (match === "workflows") {
     return pathname === "/workflows" || pathname.startsWith("/workflows/")
   }
-  if (match === "connections") {
-    return pathname === "/connections" || pathname.startsWith("/connections/")
+  if (match === "runs") {
+    return pathname === "/runs" || pathname.startsWith("/runs/")
   }
-  return pathname === "/runs" || pathname.startsWith("/runs/")
+  return pathname === "/connections" || pathname.startsWith("/connections/")
 }
 
 /** Platform group: Home, Work items, Workflows, Runs, Connections (DES-025). */

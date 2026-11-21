@@ -7,6 +7,7 @@ import {
 import { openAttempts, type RunState } from "./fold.ts"
 import { killProcessGroup, readExitCode } from "./pid.ts"
 import { portLeaseKey, portLeases } from "./port-lease.ts"
+import { serialLocks } from "./serial-lock.ts"
 import { remainingTimeoutMs } from "./timeout.ts"
 
 export type TimeoutWatchHost = {
@@ -48,6 +49,7 @@ export function appendFinished(
     at: now(),
   })
   portLeases.release(portLeaseKey(host.runId, taskId, attempt))
+  serialLocks.release(host.runId, taskId, attempt)
   host.requestTick()
 }
 

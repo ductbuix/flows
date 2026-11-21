@@ -203,6 +203,19 @@ export const libraryPulledEventSchema = z.object({
   impact: z.literal("read"),
 })
 
+/**
+ * Unpublished work copy changes at run end as a Local effect
+ * (DES-026 / BL-048).
+ */
+export const workCopyChangedEventSchema = z.object({
+  type: z.literal("work_copy_changed"),
+  ...eventBase,
+  connection: connectionIdSchema,
+  impact: z.literal("local"),
+  opCount: z.number().int().nonnegative(),
+  destructive: z.boolean(),
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   runActivatedEventSchema,
@@ -225,6 +238,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   runDeletedEventSchema,
   taskRetryRequestedEventSchema,
   libraryPulledEventSchema,
+  workCopyChangedEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>

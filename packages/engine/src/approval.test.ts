@@ -133,8 +133,10 @@ tasks:
     await waitFor(
       () => handle.state().tasks.gated?.status === "awaiting_approval"
     )
-    await waitFor(() => existsSync(marker))
-    expect(handle.state().tasks.free?.status).toBe("succeeded")
+    await waitFor(
+      () =>
+        existsSync(marker) && handle.state().tasks.free?.status === "succeeded"
+    )
     expect(handle.state().tasks.gated?.status).toBe("awaiting_approval")
 
     engine.close()

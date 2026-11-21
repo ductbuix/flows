@@ -30,12 +30,15 @@ import {
 import { NeedsYouSection } from "@/pages/home/NeedsYouSection"
 import { RecentRunsSection } from "@/pages/home/RecentRunsSection"
 import { RunningSection } from "@/pages/home/RunningSection"
+import { useExpiredSignIns } from "@/pages/home/use-expired-sign-ins"
 
 export function HomePage() {
   const navigate = useNavigate()
   const { workflows, error: workflowsError, reload } = useWorkflows()
   const { runs, error: runsError } = useRunSummaries()
   const [createOpen, setCreateOpen] = useState(false)
+  const showDashboard = Boolean(workflows && workflows.length > 0)
+  const expiredSignIns = useExpiredSignIns(showDashboard)
 
   const error = workflowsError ?? runsError
   const loading = !workflows || (workflows.length > 0 && !runs && !runsError)
@@ -83,9 +86,12 @@ export function HomePage() {
           <>
             <PageTitle
               title="Home"
-              description="Approvals waiting on you, live runs and recent finished runs."
+              description="Approvals waiting on you, expired sign-ins, live runs and recent finished runs."
             />
-            <NeedsYouSection items={collectNeedsYou(runs ?? [])} />
+            <NeedsYouSection
+              items={collectNeedsYou(runs ?? [])}
+              expiredSignIns={expiredSignIns}
+            />
             <RunningSection runs={collectRunning(runs ?? [])} />
             <RecentRunsSection runs={collectRecent(runs ?? [])} />
           </>

@@ -109,6 +109,7 @@ describe("github connector", () => {
           signIn: "cli",
           refresh: "1h",
           policy: "read-only",
+          serial: false,
         },
         "/tmp"
       )
@@ -136,6 +137,7 @@ describe("github connector", () => {
           signIn: "cli",
           refresh: "1h",
           policy: "read-only",
+          serial: false,
         },
         "/tmp"
       )
@@ -159,6 +161,7 @@ describe("github connector", () => {
           signIn: "cli",
           refresh: "1h",
           policy: "read-only",
+          serial: false,
         },
         "/tmp"
       )
@@ -236,6 +239,7 @@ describe.skipIf(!live)("live github (FLOWAPP_LIVE_GH=1)", () => {
         signIn: "cli",
         refresh: "1h",
         policy: "read-only",
+        serial: false,
       },
       "/tmp"
     )

@@ -15,4 +15,6 @@ In-repo adapters for outside systems (DES-026). There is no loading from
 
 The `fake` connector is for tests only. Register it in the test, not at
 app startup. Builtin connectors (today: `github`) are registered via
-`registerBuiltinConnectors()` from the server entrypoint.
+`registerBuiltinConnectors()` from the server entrypoint. E2e sets
+`FLOWAPP_FAKE_CONNECTOR=1` so the server also registers `fake` for
+journey coverage (BL-045).

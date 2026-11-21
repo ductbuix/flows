@@ -20,11 +20,26 @@ export const connectorsListSchema = z.object({
 
 export type ConnectorsList = z.infer<typeof connectorsListSchema>
 
+/** List row: connection plus workflow ids that `uses` it (BL-045). */
+export const connectionListItemSchema = connectionSchema.extend({
+  usedBy: z.array(z.string().min(1)),
+})
+
+export type ConnectionListItem = z.infer<typeof connectionListItemSchema>
+
 export const connectionsListSchema = z.object({
-  connections: z.array(connectionSchema),
+  connections: z.array(connectionListItemSchema),
 })
 
 export type ConnectionsList = z.infer<typeof connectionsListSchema>
+
+/** Detail: connection plus workflows and runs that pin or use it (BL-045). */
+export const connectionDetailSchema = connectionSchema.extend({
+  usedByWorkflows: z.array(z.string().min(1)),
+  usedByRuns: z.array(z.string().min(1)),
+})
+
+export type ConnectionDetail = z.infer<typeof connectionDetailSchema>
 
 export const connectionParamSchema = z.object({
   id: connectionIdSchema,
@@ -37,3 +52,22 @@ export const connectionCheckResultSchema = z.object({
 })
 
 export type ConnectionCheckResult = z.infer<typeof connectionCheckResultSchema>
+
+/** Sign-in status for a connection (cookies under secrets/; DES-026). */
+export const connectionSignInStatusSchema = z.object({
+  signedIn: z.boolean(),
+})
+
+export type ConnectionSignInStatus = z.infer<
+  typeof connectionSignInStatusSchema
+>
+
+/** Response after browser sign-in completes and check runs. */
+export const connectionBrowserSignInResultSchema = z.object({
+  signedIn: z.boolean(),
+  check: connectionCheckResultSchema,
+})
+
+export type ConnectionBrowserSignInResult = z.infer<
+  typeof connectionBrowserSignInResultSchema
+>
