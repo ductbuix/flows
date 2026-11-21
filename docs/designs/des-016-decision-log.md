@@ -69,6 +69,12 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Fixed prompt paths; no `instructions` key         | yaml and the prompt file cannot drift                          | DES-020      |
 | 2026-11-21 | At most one agent judge per slot                  | one slot, one file; revisit if a workflow needs two            | DES-020, 007 |
 | 2026-11-21 | Leftover `instructions` keys are a parse error    | no auto-migration; the error names the target path             | DES-020      |
+| 2026-11-21 | Engine generates task ids (`task-` plus 8 hex)    | ids also name folders; users should not edit them              | DES-020      |
+| 2026-11-21 | Optional `name` is the display label              | the id is no longer readable on its own                        | DES-020      |
+| 2026-11-21 | Task ids are immutable; rename-and-move is dropped | subtract the folder-move design now that ids do not change     | DES-020      |
+| 2026-11-21 | Legacy ids still parse; only new ids use the pattern | existing workflows must not break on load                    | DES-020, 007 |
+| 2026-11-21 | Spawn specs are identified by file stem, not `id` | the engine assigns the id and rewrites sibling `needs`         | DES-020, 005 |
+| 2026-11-21 | `UPSTREAM_*` maps `-` in the id to `_`            | a hyphen is not valid in a shell variable name                 | DES-020, 002 |
 
 ## UI
 
@@ -86,6 +92,8 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Add memory .md files with a native file picker    | on a name collision, ask to overwrite or rename         | DES-018      |
 | 2026-11-21 | Inspector shows a fixed prompt path and Edit prompt | the user no longer edits the path                       | DES-020      |
 | 2026-11-21 | Task rename moves the prompt folder in the same PUT | yaml and files stay in sync                             | DES-020, 013 |
+| 2026-11-21 | No task-id rename in the app; earlier move plan dropped | ids are immutable, so folder moves are not needed      | DES-020      |
+| 2026-11-21 | Inspector shows a read-only id and an editable name | the id is generated; name is what the user sees         | DES-020      |
 
 ## Docs and tooling
 

@@ -83,16 +83,16 @@ at launch ([DES-005](des-005-agents-spawn.md)).
 
 Graph and form edits never rebuild the file. The web (or server) keeps a
 `yaml` `Document` from `parseDocument(text)`, applies each change with
-`setIn`, `addIn` or `deleteIn`, and writes `doc.toString()`. Renaming a
-task also updates every `needs` entry that names it.
+`setIn`, `addIn` or `deleteIn`, and writes `doc.toString()`. Task ids
+are not renamed in the editor (DES-020).
 
 Test plan (unit tests on the module that applies edits):
 
 - Fixture with a header comment, inline comments, a comment between
   tasks, keys in a non-default order, and both flow (`{ max: 2 }`) and
   block maps.
-- Apply: add a task, remove a task, rename a task, change `needs`, change
-  `retry.max`, add `approval: true`.
+- Apply: add a task, remove a task, change `name`, change `needs`,
+  change `retry.max`, add `approval: true`.
 - Assert every comment is still present, lines of untouched tasks are
   byte-identical, key order of untouched maps is unchanged, and the
   result parses to the expected object.
@@ -117,10 +117,8 @@ Zod schemas in `packages/shared` (`api-lifecycle.ts`).
 - `POST /api/workflows/:workflowId/rename` with `{ newId }`; `409` while
   live or if the new id exists
 - `DELETE /api/workflows/:workflowId`; `409` while live
-- `PUT /api/workflows/:workflowId` with
-  `{ yaml, baseHash, renames?: [{ from, to }] }`; `409` on a changed
-  disk file. `renames` moves `tasks/<from>/` in the same request
-  ([DES-020](des-020-fixed-prompt-files.md))
+- `PUT /api/workflows/:workflowId` with `{ yaml, baseHash }`; `409`
+  on a changed disk file
 - `GET /api/workflows/:workflowId/memory`, `GET`/`PUT`/`DELETE`
   `.../memory/:file`, and `POST .../memory/:file/rename` with
   `{ newName, updateReferences? }`

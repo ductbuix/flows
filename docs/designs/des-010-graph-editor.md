@@ -25,13 +25,14 @@ preservation are in [DES-013](des-013-workflow-editing.md).
 - The user's workflows (a user has many), with id and goal, and create,
   rename and delete actions (DES-013).
 - For one workflow, a graph: tasks are nodes, `needs` are edges.
-- Per node: `id`, `kind` (`command` or `agent`), and markers for
-  `spawn`, `retry`, `repeat` and `when`
-  ([DES-004](des-004-conditions-loops.md)).
+- Per node: display `name` (falling back to `id`), `kind`
+  (`command` or `agent`), and markers for `spawn`, `retry`,
+  `repeat` and `when` ([DES-004](des-004-conditions-loops.md)).
 - Edges that carry a condition (branch edges, `when`) are labeled.
-- Edit a task: kind, `run` or `cli`, the fixed prompt file
+- Edit a task: `name`, kind, `run` or `cli`, the fixed prompt file
   ([DES-020](des-020-fixed-prompt-files.md)), `memory` files, `needs`,
-  `when`, `retry`, `repeat`, `spawn`, `continueOnError`, limits.
+  `when`, `retry`, `repeat`, `spawn`, `continueOnError`, limits. The
+  id is generated and is not editable in the drawer.
 - Edit workflow fields: `goal` and `limits` (`concurrency`, `agents`,
   `maxTasks`, `maxSpawnDepth`).
 - The YAML text next to the graph in a CodeMirror 6 editor with YAML
@@ -129,7 +130,8 @@ Workflow and memory actions add their own ids in DES-013.
 
 - Add a task in the graph, connect it, save, and assert the YAML pane and
   the file on disk contain it.
-- Edit YAML to rename a task and assert the node label changes.
+- Edit a task's `name` (or the YAML `name`) and assert the node
+  label changes.
 - Break the YAML and assert `yaml-errors` shows and the graph is kept.
 - Video and screenshots go in the PR.
 

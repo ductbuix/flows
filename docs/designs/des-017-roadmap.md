@@ -26,7 +26,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 6     | Hardening                    | BL-011 agent judge, BL-010 sandboxing                   | judge conditions; writes held to the workflow dir |
 | 7     | Use the editor               | BL-015 agent kind, BL-016 file editing                  | switch a task to agent; edit memory and instructions  |
 | 8     | Safe agent runs              | BL-017 timeouts, BL-018 app trust                       | hung agents end; trust and pre-run check before CLIs  |
-| 9     | Fixed prompt files           | BL-019 paths, BL-020 prompt editor                      | prompts live at tasks/<id>/prompt.md; the drawer edits them |
+| 9     | Fixed prompts and task ids   | BL-019 paths and ids, BL-020 prompt editor              | generated ids; prompts at tasks/<id>/prompt.md; drawer edits name and prompt |
 
 ## Why this order
 
@@ -46,8 +46,9 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   app. BL-017 comes first so a hung prompt, or the live Cursor
   check in BL-018, cannot sit in `running`.
 - Phase 9 follows once the editor is in use: a free `instructions`
-  path was too easy to get wrong. BL-019 comes first so the
-  Inspector can drop the path field.
+  path, and a free-text task id, were too easy to get wrong.
+  BL-019 comes first so the Inspector can drop the path and id
+  fields.
 
 ## Not on the roadmap
 
