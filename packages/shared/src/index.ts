@@ -1,3 +1,34 @@
+export {
+  connectionIdSchema,
+  signInMethodSchema,
+  refreshRuleSchema,
+  publishPolicySchema,
+  connectionAccessSchema,
+  taskUsesEntrySchema,
+  taskUsesSchema,
+  connectionEnvName,
+  connectionSchema,
+  connectionWriteSchema,
+  type SignInMethod,
+  type RefreshRule,
+  type PublishPolicy,
+  type ConnectionAccess,
+  type TaskUsesEntry,
+  type Connection,
+  type ConnectionInput,
+  type ConnectionWrite,
+} from "./connection.ts"
+export {
+  connectorDescribeSchema,
+  connectorsListSchema,
+  connectionsListSchema,
+  connectionParamSchema,
+  connectionCheckResultSchema,
+  type ConnectorDescribe,
+  type ConnectorsList,
+  type ConnectionsList,
+  type ConnectionCheckResult,
+} from "./api-connections.ts"
 export { healthSchema, type Health } from "./health.ts"
 export {
   commandTaskSchema,

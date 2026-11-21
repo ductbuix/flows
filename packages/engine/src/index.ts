@@ -28,7 +28,32 @@ export {
   runDir,
   taskDir,
   attemptDir,
+  connectionsDir,
+  connectionDir,
+  secretsDir,
 } from "./paths.ts"
+export {
+  listConnections,
+  readConnection,
+  createConnection,
+  updateConnection,
+  deleteConnection,
+  workflowsUsingConnection,
+  collectWorkflowUses,
+  type ConnectionStoreError,
+  type ConnectionStoreResult,
+} from "./connections.ts"
+export {
+  registerConnector,
+  unregisterConnector,
+  getConnector,
+  listConnectors,
+  clearConnectors,
+  fakeConnector,
+  type Connector,
+  type ConnectorChangeSet,
+  type ConnectorPublishResult,
+} from "./connectors/index.ts"
 export { runInputDir } from "./run-input.ts"
 export { loadWorkflowFile, assertValidGraph } from "./workflow.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"

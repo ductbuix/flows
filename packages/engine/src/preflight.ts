@@ -11,12 +11,15 @@ import {
 } from "@workspace/shared"
 import { getCliAdapter, type CliKind } from "./cli-adapters.ts"
 import { checkPathInsideHome } from "./path-checks.ts"
+import { checkConnectionUses } from "./preflight-connections.ts"
 import { checkModelEffort } from "./preflight-models.ts"
 import { canApplySandbox, sandboxWriteRoot } from "./sandbox.ts"
 import { workflowAgentClis } from "./workflow-agents.ts"
 
 export type PreflightInput = {
   homeRealpath: string
+  /** App home path for connection lookups (DES-026). */
+  home: string
   workflowDir: string
   workflow: Workflow
   /** Known attempt dir when checking an existing run; optional. */
@@ -125,6 +128,12 @@ export async function runPreflightChecks(
     checks.push(checkCliFlags(cli))
   }
   checks.push(...(await checkModelEffort(input.workflow)))
+  checks.push(
+    ...(await checkConnectionUses({
+      home: input.home,
+      workflow: input.workflow,
+    }))
+  )
   return checks
 }
 
