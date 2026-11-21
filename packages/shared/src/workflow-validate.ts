@@ -111,6 +111,26 @@ function reachesViaNeeds(
 }
 
 /**
+ * Connections that already have a `propose` ancestor of `taskId` via
+ * needs (DES-026 / BL-051). Used by the editor publish Select.
+ */
+export function proposeConnectionsForPublish(
+  workflow: Workflow,
+  taskId: string
+): string[] {
+  const byId = new Map(workflow.tasks.map((t) => [t.id, t]))
+  const found = new Set<string>()
+  for (const other of workflow.tasks) {
+    if (other.id === taskId) continue
+    if (!reachesViaNeeds(taskId, other.id, byId)) continue
+    for (const use of other.uses ?? []) {
+      if (use.access === "propose") found.add(use.connection)
+    }
+  }
+  return [...found].sort()
+}
+
+/**
  * A publish task needs an earlier propose task on the same connection
  * (DES-026 / BL-049). Read-only policy is checked with the connection
  * store in the engine.
@@ -119,21 +139,15 @@ function pushPublishProposeIssues(
   workflow: Workflow,
   issues: WorkflowIssue[]
 ): void {
-  const byId = new Map(workflow.tasks.map((t) => [t.id, t]))
   const indexById = new Map(workflow.tasks.map((t, i) => [t.id, i]))
 
   for (const task of workflow.tasks) {
     if (!isPublishTask(task)) continue
     const connection = task.connection
-    const hasEarlierPropose = workflow.tasks.some((other) => {
-      if (other.id === task.id) return false
-      const proposes = (other.uses ?? []).some(
-        (u) => u.connection === connection && u.access === "propose"
-      )
-      if (!proposes) return false
-      // Walk publish → needs → … → propose (propose is an ancestor).
-      return reachesViaNeeds(task.id, other.id, byId)
-    })
+    const hasEarlierPropose = proposeConnectionsForPublish(
+      workflow,
+      task.id
+    ).includes(connection)
     if (hasEarlierPropose) continue
     const pathTask = indexById.get(task.id) ?? 0
     issues.push({

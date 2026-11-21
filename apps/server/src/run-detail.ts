@@ -1,5 +1,6 @@
 import type { Engine } from "@workspace/engine"
 import type { RunDetail, RunSummary } from "@workspace/shared"
+import { effectsFromEvents } from "./run-effects.ts"
 import { runTimestamps, toRunDetail } from "./run-mapper.ts"
 import { buildRunPins } from "./run-pins.ts"
 
@@ -10,7 +11,8 @@ export function buildRunDetail(
   const state = engine.fold(runId)
   if (!state || state.deleted) return null
   const stored = engine.eventsWithSeq(runId)
-  const ts = runTimestamps(stored.map((s) => s.event))
+  const events = stored.map((s) => s.event)
+  const ts = runTimestamps(events)
   const lastSeq = stored.length > 0 ? stored[stored.length - 1]!.seq : 0
   const detail = toRunDetail(state, {
     startedAt: ts.startedAt,
@@ -23,6 +25,7 @@ export function buildRunDetail(
   return {
     ...detail,
     pins: buildRunPins(engine, state.workflowId, runId, state.graph),
+    effects: effectsFromEvents(events),
   }
 }
 

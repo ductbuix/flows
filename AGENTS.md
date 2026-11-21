@@ -27,10 +27,12 @@ Schema and writing rules: `docs/README.md`.
   `/connections/:id` (sign-in, MCP allow, local data, used by, refresh,
   policy); Settings lists allowed MCP servers for revoke;
   `/workflows` and `/runs` (grouped by work item); Start picks work item
-  or None; Home Needs you, expired sign-ins, Work items; Impact/
-  Freshness/Policy on `/dev/kit`; Overview (Connections + impact)/
-  Editor (Connections FieldSet, node badges)/Runs; run view Library
-  pins; Settings.
+  or None; Home Needs you (incl. publish + connection), expired
+  sign-ins, Work items; Impact/Freshness/Policy on `/dev/kit`;
+  Overview (Connections + impact)/Editor (Connections FieldSet with
+  Propose, publish node + Cloud badge)/Runs; run view Changes to
+  publish, Effects, unpublished diffs, Library pins; connection
+  policy Select; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET

@@ -90,7 +90,7 @@ tasks:
     await page.getByTestId(`connection-access-${rallyId}`).click()
     const propose = page.getByRole("option", { name: /Propose changes/i })
     await expect(propose).toBeVisible()
-    await expect(propose).toBeDisabled()
+    await expect(propose).toBeEnabled()
     await page.keyboard.press("Escape")
 
     await page.getByTestId("node-two").click()

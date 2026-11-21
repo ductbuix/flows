@@ -33,6 +33,33 @@ export function yamlAfterAddTask(
   return { yaml: addTask(yaml, task), taskId: task.id }
 }
 
+/** First connection with propose access anywhere in the workflow. */
+export function firstProposeConnection(workflow: Workflow): string | undefined {
+  for (const task of workflow.tasks) {
+    for (const use of task.uses ?? []) {
+      if (use.access === "propose") return use.connection
+    }
+  }
+  return undefined
+}
+
+export function yamlAfterAddPublishTask(
+  yaml: string,
+  workflow: Workflow,
+  connection: string
+): {
+  yaml: string
+  taskId: string
+} {
+  const task: Task = {
+    id: newTaskId(workflow.tasks.map((t) => t.id)),
+    kind: "publish",
+    connection,
+    needs: [],
+  }
+  return { yaml: addTask(yaml, task), taskId: task.id }
+}
+
 export function yamlAfterConnect(
   yaml: string,
   workflow: Workflow,
@@ -104,11 +131,19 @@ export function yamlAfterTaskPatch(
 
   if (
     patch.kind !== undefined &&
-    (patch.kind === "command" || patch.kind === "agent") &&
+    (patch.kind === "command" ||
+      patch.kind === "agent" ||
+      patch.kind === "publish") &&
     patch.kind !== current.kind
   ) {
-    const next = taskWithKind(current, patch.kind)
-    const nextYaml = switchTaskKind(yaml, taskId, patch.kind)
+    const connection =
+      patch.kind === "publish"
+        ? "connection" in patch && typeof patch.connection === "string"
+          ? patch.connection
+          : (firstProposeConnection(workflow) ?? "connection")
+        : undefined
+    const next = taskWithKind({ ...current, connection }, patch.kind)
+    const nextYaml = switchTaskKind(yaml, taskId, patch.kind, connection)
     const parsed = parseWorkflowYaml(nextYaml)
     return {
       yaml: nextYaml,

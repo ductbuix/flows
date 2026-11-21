@@ -18,21 +18,17 @@ import {
 } from "@workspace/ui/components/select"
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
 } from "@workspace/ui/components/field"
 import { Separator } from "@workspace/ui/components/separator"
 import { ActionButton } from "@/components/ActionButton"
-import { AgentDefaultsFields } from "./AgentDefaultsFields"
 import { AgentTaskFields } from "./AgentTaskFields"
 import { ConnectionsFieldSet } from "./ConnectionsFieldSet"
-import { InputsPanel } from "./InputsPanel"
+import { InspectorWorkflowPanel } from "./InspectorWorkflowPanel"
 import { LoneAgentJudges } from "./LoneAgentJudges"
-import { MemoryPanel } from "./MemoryPanel"
+import { PublishTaskFields } from "./PublishTaskFields"
 import { taskFieldErrors } from "./field-errors"
 
 type Props = {
@@ -65,39 +61,19 @@ export function Inspector({
 
   if (!task) {
     return (
-      <div className="overflow-auto p-4" data-testid="inspector">
-        <FieldGroup>
-          <FieldSet>
-            <FieldLegend variant="label">Workflow</FieldLegend>
-            <Field>
-              <FieldLabel htmlFor="field-goal">Goal</FieldLabel>
-              <Textarea
-                id="field-goal"
-                data-testid="field-goal"
-                value={workflow.goal ?? ""}
-                onChange={(e) => onChangeGoal(e.target.value)}
-                rows={3}
-              />
-            </Field>
-          </FieldSet>
-          <InputsPanel
-            inputs={workflow.inputs}
-            limits={workflow.limits}
-            onChangeInputs={onChangeInputs}
-            onChangeLimits={onChangeLimits}
-          />
-          <AgentDefaultsFields
-            agent={workflow.agent}
-            onChange={onChangeAgent}
-          />
-          <FieldDescription>Select a task to edit its fields.</FieldDescription>
-          <MemoryPanel workflowId={workflowId} />
-        </FieldGroup>
-      </div>
+      <InspectorWorkflowPanel
+        workflowId={workflowId}
+        workflow={workflow}
+        onChangeGoal={onChangeGoal}
+        onChangeInputs={onChangeInputs}
+        onChangeLimits={onChangeLimits}
+        onChangeAgent={onChangeAgent}
+      />
     )
   }
 
   const runErrors = taskFieldErrors(errors, taskIndex, "run")
+  const isPublish = task.kind === "publish"
 
   return (
     <div className="overflow-auto p-4" data-testid="inspector">
@@ -130,7 +106,11 @@ export function Inspector({
           <Select
             value={task.kind}
             onValueChange={(kind) => {
-              if (kind === "command" || kind === "agent") {
+              if (
+                kind === "command" ||
+                kind === "agent" ||
+                kind === "publish"
+              ) {
                 onChangeTask(task.id, { kind } as Partial<Task>)
               }
             }}
@@ -141,6 +121,7 @@ export function Inspector({
             <SelectContent>
               <SelectItem value="command">command</SelectItem>
               <SelectItem value="agent">agent</SelectItem>
+              <SelectItem value="publish">publish</SelectItem>
             </SelectContent>
           </Select>
         </Field>
@@ -157,7 +138,8 @@ export function Inspector({
             />
             <FieldError data-testid="field-error-run" errors={runErrors} />
           </Field>
-        ) : (
+        ) : null}
+        {task.kind === "agent" ? (
           <AgentTaskFields
             workflowId={workflowId}
             task={task}
@@ -165,18 +147,33 @@ export function Inspector({
             errors={errors}
             onChangeTask={onChangeTask}
           />
-        )}
-        <Field className="flex items-center justify-between gap-2">
-          <FieldLabel htmlFor="field-approval">Approval</FieldLabel>
-          <Switch
-            id="field-approval"
-            data-testid="field-approval"
-            checked={Boolean(task.approval)}
-            onCheckedChange={(approval) => onChangeTask(task.id, { approval })}
+        ) : null}
+        {isPublish ? (
+          <PublishTaskFields
+            task={task}
+            workflow={workflow}
+            onChangeTask={onChangeTask}
           />
-        </Field>
-        <LoneAgentJudges task={task} onChangeTask={onChangeTask} />
-        <ConnectionsFieldSet task={task} onChangeTask={onChangeTask} />
+        ) : null}
+        {!isPublish ? (
+          <Field className="flex items-center justify-between gap-2">
+            <FieldLabel htmlFor="field-approval">Approval</FieldLabel>
+            <Switch
+              id="field-approval"
+              data-testid="field-approval"
+              checked={Boolean(task.approval)}
+              onCheckedChange={(approval) =>
+                onChangeTask(task.id, { approval })
+              }
+            />
+          </Field>
+        ) : null}
+        {!isPublish ? (
+          <LoneAgentJudges task={task} onChangeTask={onChangeTask} />
+        ) : null}
+        {!isPublish ? (
+          <ConnectionsFieldSet task={task} onChangeTask={onChangeTask} />
+        ) : null}
         <Separator />
         <ActionButton
           type="button"

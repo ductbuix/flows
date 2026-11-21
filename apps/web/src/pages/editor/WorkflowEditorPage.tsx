@@ -43,6 +43,14 @@ export function WorkflowEditorPage() {
       </Button>
       <Button
         size="sm"
+        variant="outline"
+        data-testid="add-publish-task"
+        onClick={editor.addPublishTask}
+      >
+        Add publish
+      </Button>
+      <Button
+        size="sm"
         data-testid="save-button"
         disabled={!state.dirty || state.errors.length > 0}
         onClick={() => void editor.save()}
@@ -91,10 +99,7 @@ export function WorkflowEditorPage() {
   }
 
   return (
-    <div
-      className="flex min-h-0 flex-1 flex-col"
-      data-testid="workflow-editor"
-    >
+    <div className="flex min-h-0 flex-1 flex-col" data-testid="workflow-editor">
       <PageHeader crumbs={[...crumbs]} actions={headerActions} />
       <div className="shrink-0 px-4 pt-4">
         <WorkflowDetailTabs workflowId={workflowId} tab="editor" />

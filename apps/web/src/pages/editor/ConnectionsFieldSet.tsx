@@ -61,6 +61,12 @@ export function ConnectionsFieldSet({ task, onChangeTask }: Props) {
     setUses(uses.filter((u) => u.connection !== connection))
   }
 
+  function setAccess(connection: string, access: TaskUsesEntry["access"]) {
+    setUses(
+      uses.map((u) => (u.connection === connection ? { ...u, access } : u))
+    )
+  }
+
   return (
     <FieldSet data-testid="connections-fieldset">
       <FieldLegend variant="label">Connections</FieldLegend>
@@ -91,14 +97,9 @@ export function ConnectionsFieldSet({ task, onChangeTask }: Props) {
                 <Select
                   value={entry.access}
                   onValueChange={(access) => {
-                    if (access !== "read") return
-                    setUses(
-                      uses.map((u) =>
-                        u.connection === entry.connection
-                          ? { ...u, access: "read" }
-                          : u
-                      )
-                    )
+                    if (access === "read" || access === "propose") {
+                      setAccess(entry.connection, access)
+                    }
                   }}
                 >
                   <SelectTrigger
@@ -110,19 +111,18 @@ export function ConnectionsFieldSet({ task, onChangeTask }: Props) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="read">Read</SelectItem>
-                    <SelectItem value="propose" disabled>
-                      Propose changes
-                    </SelectItem>
+                    <SelectItem value="propose">Propose changes</SelectItem>
                   </SelectContent>
                 </Select>
+                <FieldDescription>
+                  Propose changes writes a local work copy for a later publish
+                  task.
+                </FieldDescription>
               </Field>
             </li>
           ))}
         </ul>
       )}
-      <FieldDescription>
-        Propose changes stays off until publish tasks land.
-      </FieldDescription>
       <Field>
         <FieldLabel>Add connection</FieldLabel>
         <div className="flex gap-2">

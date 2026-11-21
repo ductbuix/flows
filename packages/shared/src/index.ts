@@ -159,6 +159,7 @@ export {
   countAgentJudges,
   collectRawWorkflowIssues,
   collectWorkflowIssues,
+  proposeConnectionsForPublish,
   spawnIdRejectedMessage,
   spawnInstructionsRejectedMessage,
 } from "./workflow-validate.ts"
@@ -211,6 +212,7 @@ export {
   attemptViewSchema,
   taskViewSchema,
   runLibraryPinSchema,
+  runEffectSchema,
   runDetailSchema,
   logChunkSchema,
   summaryResponseSchema,
@@ -232,6 +234,7 @@ export {
   type AttemptView,
   type TaskView,
   type RunLibraryPin,
+  type RunEffect,
   type RunDetail,
   type LogChunk,
   type SummaryResponse,

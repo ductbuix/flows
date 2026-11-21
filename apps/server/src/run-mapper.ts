@@ -131,6 +131,7 @@ export function toRunDetail(
     taskCounts: taskCounts(state),
     inputFiles: state.inputFiles ?? [],
     pins: [],
+    effects: [],
   }
 }
 
