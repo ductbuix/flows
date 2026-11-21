@@ -95,6 +95,7 @@ export function applyEvent(
       if (manualRetry) delete task.manualRetryPending
       task.attempts.push({
         attempt: event.attempt,
+        startedAt: event.at,
         ...(manualRetry ? { manualRetry: true } : {}),
       })
       return state
@@ -103,7 +104,10 @@ export function applyEvent(
       if (!state) return state
       const task = state.tasks[event.taskId]
       const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
-      if (attempt) attempt.pid = event.pid
+      if (attempt) {
+        attempt.pid = event.pid
+        if (event.timeout !== undefined) attempt.timeout = event.timeout
+      }
       // Missing sandboxed (older events) counts as unrestricted.
       if (event.sandboxed !== true) state.sandboxed = false
       return state
@@ -112,7 +116,10 @@ export function applyEvent(
       if (!state) return state
       const task = state.tasks[event.taskId]
       const attempt = task?.attempts.find((a) => a.attempt === event.attempt)
-      if (attempt) attempt.exitCode = event.exitCode
+      if (attempt) {
+        attempt.exitCode = event.exitCode
+        if (event.reason !== undefined) attempt.reason = event.reason
+      }
       if (!task || TERMINAL_TASK.has(task.status)) return state
       if (
         delaysTerminalOnFinish(taskSpec(state, event.taskId), event.exitCode)

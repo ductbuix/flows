@@ -15,6 +15,7 @@ import {
   shouldPropagateSkip,
 } from "./needs.ts"
 import { attemptDir } from "./paths.ts"
+import { resolveAttemptTimeout } from "./timeout.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -85,12 +86,16 @@ async function branchWhenFails(
     const attemptRoot = last
       ? attemptDir(host.runRoot, need.task, last.attempt)
       : undefined
+    const upSpec = state.graph.tasks.find((t) => t.id === need.task)
     if (
       !(await evaluateCondition(need.when, {
         exitCode: latestExitCode(up),
         attemptRoot,
         workflowRoot: host.workflowRoot,
         judgeCache: host.judgeCache,
+        timeoutSeconds: upSpec
+          ? resolveAttemptTimeout(upSpec, state.graph)
+          : undefined,
       }))
     ) {
       return true
@@ -123,6 +128,7 @@ async function evalWhen(
     attemptRoot,
     workflowRoot: host.workflowRoot,
     judgeCache: host.judgeCache,
+    timeoutSeconds: resolveAttemptTimeout(task, state.graph),
   }
   return evaluateCondition(when, ctx)
 }
@@ -169,6 +175,7 @@ export async function resolveLoops(host: ResolveHost): Promise<void> {
         ? await evalUntil(task, attemptRoot, last.exitCode, {
             workflowRoot: host.workflowRoot,
             judgeCache: host.judgeCache,
+            timeoutSeconds: resolveAttemptTimeout(task, state.graph),
           })
         : undefined
     const decision = decideLoop(task, live, untilPassed)

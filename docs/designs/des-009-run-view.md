@@ -167,7 +167,7 @@ Zod schemas live in `packages/shared` (`api.ts`, `attempt-kind.ts`).
 `ws-status`, `task-row-<taskId>`, `task-node-<taskId>`,
 `task-state-<taskId>`, `task-spawned-<taskId>`,
 `task-tab-<logs|attempts|summary|output|spawn>`, `attempt-row-<n>`,
-`attempt-kind-<n>`, `log-output`, `summary-markdown`.
+`attempt-kind-<n>`, `attempt-reason-<n>`, `log-output`, `summary-markdown`.
 
 ## Playwright evidence
 

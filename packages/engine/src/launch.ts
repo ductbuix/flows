@@ -9,6 +9,7 @@ import { prepareAttemptDirs } from "./dirs.ts"
 import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
 import { fitsLimits, limitCaps } from "./limits.ts"
 import { launchTask } from "./runner.ts"
+import { resolveAttemptTimeout } from "./timeout.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -72,12 +73,14 @@ export function launchTaskAttempt(
   if (!live || !allowed.includes(live.status)) return
 
   const attempt = live.attempts.length + 1
+  const startedAt = now()
+  const timeout = resolveAttemptTimeout(task, graph)
   host.append({
     type: "attempt_started",
     runId: host.runId,
     taskId,
     attempt,
-    at: now(),
+    at: startedAt,
   })
   prepareAttemptDirs(host.runRoot, taskId, attempt)
 
@@ -99,7 +102,11 @@ export function launchTaskAttempt(
     attempt,
     pid,
     sandboxed,
+    timeout,
     at: now(),
   })
-  watchChild(host.watchHost(), taskId, attempt, child)
+  watchChild(host.watchHost(), taskId, attempt, child, {
+    timeoutSeconds: timeout,
+    startedAt,
+  })
 }

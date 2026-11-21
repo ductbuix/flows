@@ -48,6 +48,9 @@ export const repeatSchema = z.object({
   until: conditionSchema,
 })
 
+/** Positive seconds; task → workflow → 900 (DES-004 / DES-019). */
+export const timeoutSecondsSchema = z.number().int().positive()
+
 const taskBaseFields = {
   id: z.string().min(1),
   needs: z.array(needSchema).default([]),
@@ -57,6 +60,8 @@ const taskBaseFields = {
   retry: retrySchema.optional(),
   repeat: repeatSchema.optional(),
   continueOnError: z.boolean().optional(),
+  /** Per-attempt timeout in seconds (DES-019). */
+  timeout: timeoutSecondsSchema.optional(),
   /**
    * Engine-stamped for spawned tasks (DES-005). Authored tasks are depth 0.
    */
@@ -103,6 +108,8 @@ export const workflowSchema = z.object({
   id: z.string().min(1),
   goal: z.string().optional(),
   limits: workflowLimitsSchema.optional(),
+  /** Default per-attempt timeout in seconds (DES-019). */
+  timeout: timeoutSecondsSchema.optional(),
   tasks: z.array(taskSchema).min(1),
 })
 

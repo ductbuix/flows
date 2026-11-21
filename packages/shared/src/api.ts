@@ -34,6 +34,8 @@ export const attemptViewSchema = z.object({
   pid: z.number().int().positive().optional(),
   exitCode: z.number().int().optional(),
   interrupted: z.boolean().optional(),
+  /** timeout or mapped CLI stderr (DES-019). */
+  reason: z.string().min(1).optional(),
   kind: attemptKindInfoSchema,
 })
 

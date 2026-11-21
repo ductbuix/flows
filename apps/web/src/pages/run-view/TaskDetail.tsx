@@ -130,6 +130,7 @@ export function TaskDetail({ run, task }: Props) {
                 <TableHead>#</TableHead>
                 <TableHead>Kind</TableHead>
                 <TableHead>Exit</TableHead>
+                <TableHead>Reason</TableHead>
                 <TableHead>PID</TableHead>
               </TableRow>
             </TableHeader>
@@ -145,6 +146,9 @@ export function TaskDetail({ run, task }: Props) {
                   </TableCell>
                   <TableCell>
                     {a.exitCode !== undefined ? a.exitCode : "—"}
+                  </TableCell>
+                  <TableCell data-testid={`attempt-reason-${a.attempt}`}>
+                    {a.reason ?? "—"}
                   </TableCell>
                   <TableCell>{a.pid ?? "—"}</TableCell>
                 </TableRow>

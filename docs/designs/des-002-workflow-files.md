@@ -38,6 +38,7 @@ A dir is the compacted context of its object. Each task writes its own
 id: research-report
 goal: Produce a sourced report on input/topic.md
 limits: { concurrency: 3, agents: 2, maxTasks: 50, maxSpawnDepth: 2 }
+timeout: 900 # default per-attempt seconds; task timeout wins (DES-019)
 tasks:
   - id: plan
     kind: agent
@@ -45,6 +46,7 @@ tasks:
     instructions: tasks/plan.md # user-written instructions for this task
     memory: [memory/style.md]
     spawn: true
+    timeout: 1800
     retry: { max: 2 }
   - id: fetch
     kind: command

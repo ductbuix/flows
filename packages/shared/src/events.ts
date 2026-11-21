@@ -48,6 +48,8 @@ export const attemptLaunchedEventSchema = z.object({
   pid: z.number().int().positive(),
   /** False when sandbox-exec was not applied (DES-006). */
   sandboxed: z.boolean().optional(),
+  /** Resolved timeout in seconds for this attempt (DES-019). */
+  timeout: z.number().int().positive().optional(),
 })
 
 export const attemptFinishedEventSchema = z.object({
@@ -56,6 +58,8 @@ export const attemptFinishedEventSchema = z.object({
   taskId: z.string().min(1),
   attempt: z.number().int().positive(),
   exitCode: z.number().int(),
+  /** timeout, mapped CLI stderr, or omitted (DES-019). */
+  reason: z.string().min(1).optional(),
 })
 
 /** Open attempt could not be re-attached after a restart (DES-003). */

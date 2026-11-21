@@ -1,8 +1,10 @@
-import { spawn } from "node:child_process"
+import { spawn, type ChildProcess } from "node:child_process"
 import { existsSync } from "node:fs"
 import { resolve } from "node:path"
 import type { AgentJudge } from "@workspace/shared"
 import { shellSingleQuote } from "./agents.ts"
+import { killProcessGroup } from "./pid.ts"
+import { DEFAULT_ATTEMPT_TIMEOUT_SECONDS } from "./timeout.ts"
 
 /** Prompt: inspect the attempt and exit 0/non-zero (DES-004). */
 export function judgePrompt(instructionsAbsPath: string): string {
@@ -30,14 +32,18 @@ export type RunJudgeOptions = {
   judge: AgentJudge
   workflowRoot: string
   attemptRoot: string
+  /** Seconds; defaults to 900 (DES-019). */
+  timeoutSeconds?: number
 }
 
 /**
  * Spawn the judge CLI with cwd at the attempt root. Exit 0 → pass.
- * Missing instructions or spawn failure → fail.
+ * Missing instructions, spawn failure, or timeout → fail.
  */
 export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
   const { judge, workflowRoot, attemptRoot } = options
+  const timeoutSeconds =
+    options.timeoutSeconds ?? DEFAULT_ATTEMPT_TIMEOUT_SECONDS
   const instructionsAbs = resolve(workflowRoot, judge.instructions)
   const root = resolve(workflowRoot)
   if (
@@ -50,13 +56,27 @@ export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
 
   const cmd = buildJudgeShellCommand(judge, instructionsAbs)
   return new Promise((resolvePromise) => {
-    const child = spawn("/bin/sh", ["-c", cmd], {
+    let settled = false
+    const finish = (ok: boolean) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      resolvePromise(ok)
+    }
+
+    const child: ChildProcess = spawn("/bin/sh", ["-c", cmd], {
       cwd: attemptRoot,
       env: process.env,
+      detached: true,
       stdio: "ignore",
     })
-    child.on("error", () => resolvePromise(false))
-    child.on("close", (code) => resolvePromise(code === 0))
+    const timer = setTimeout(() => {
+      if (child.pid !== undefined) killProcessGroup(child.pid)
+      finish(false)
+    }, timeoutSeconds * 1000)
+
+    child.on("error", () => finish(false))
+    child.on("close", (code) => finish(code === 0))
   })
 }
 
