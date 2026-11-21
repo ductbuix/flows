@@ -105,6 +105,8 @@ export {
   fakeConnector,
   githubConnector,
   createGithubConnector,
+  rallyConnector,
+  createRallyConnector,
   type Connector,
   type ConnectorChangeSet,
   type ConnectorPublishResult,
