@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: What Flows is and is for, goals, non-goals, success criteria and the principles that guide every design choice.
 tags: [direction, vision, goals, principles]
-related: [DES-001, DES-007, DES-015, DES-016, DES-017]
+related: [DES-001, DES-007, DES-015, DES-016, DES-017, DES-021]
 updated: 2026-11-21
 ---
 
@@ -30,7 +30,8 @@ accounts, no sharing, no server to host.
 ## Goals
 
 1. Describe a workflow once, as `workflow.yaml` or in the visual editor,
-   with both kept in sync (DES-002, DES-010).
+   with both kept in sync, and reuse it with different inputs across
+   runs (DES-002, DES-010, DES-021).
 2. Run it reliably: parallel tasks under limits, conditions, retry and
    repeat, and resume after a restart without rerunning finished work
    (DES-003, DES-004).
@@ -51,6 +52,7 @@ accounts, no sharing, no server to host.
 | A `matrix` key                   | fan-out is done by spawn; DES-005, DES-007 ledger |
 | Agent limits (turns, time, cost) | not defined yet; DES-002, DES-007 ledger          |
 | Saved node positions             | layout is automatic; DES-010, DES-007 ledger      |
+| Connectors as run sources        | later source adapter; DES-021, DES-007 ledger     |
 
 Each non-goal has a revisit trigger in [DES-007](des-007-tradeoffs.md).
 

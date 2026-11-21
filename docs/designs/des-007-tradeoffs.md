@@ -16,6 +16,7 @@ related:
     DES-012,
     DES-019,
     DES-020,
+    DES-021,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -44,6 +45,13 @@ the trigger fires and the choice changes.
 | No auto-migration of `instructions` | old yaml fails to parse            | clear error names the target path; one known workflow is fixed by hand         | many existing workflows still use the old key                                                   |
 | Legacy task ids stay valid          | old and new id shapes coexist      | new ids are generated; existing single-segment ids still parse (DES-020)       | legacy ids become confusing next to generated ones                                              |
 | Hand-editing a task id in YAML      | prompt folder and `needs` can drift | allowed; the app does not move files; the doc warns the user must do it        | a hand edit leaves a broken graph or a missing prompt                                           |
+| Input types are text, markdown, file | a later source may need a folder or JSON | add a type when a source needs it (DES-021)                                   | a Manual form or a later source needs another type                                              |
+| Omitted `maxConcurrentRuns` means 1 | two starts on one workflow queue   | set the limit in yaml; tests that start two runs must set it (DES-021)         | users often want many runs at once by default                                                   |
+| No global run cap in `config.yaml`  | one workflow can set a high cap    | per-workflow limit, default 1 (DES-021)                                        | a batch starts too many runs across workflows                                                   |
+| Source adapter has no `listItems` yet | a second source will have to add it | Manual only needs `materialize` (DES-021)                                    | a folder, list, or connector source is added                                                    |
+| Item key ignores copied `WF_INPUT` defaults | same form with new defaults looks like a repeat | defaults are shared; form values are the item (DES-021)               | users expect a defaults change to count as a new item                                           |
+| Run start copies workflow `input/`  | a large shared folder makes start heavy | first cut copies so the snapshot is complete (DES-021)                     | start becomes slow or the copy is large                                                         |
+| Connectors are not run sources yet  | ticket reuse still uses the Manual form | a later adapter can add a connector with no engine change (DES-021)        | a connector is needed as a source                                                               |
 | Cursor agents may write `~/.cursor` | CLI can write outside the workflow | pre-written trust markers; seatbelt still denies other paths (DES-006, 019)    | Cursor stops needing chats/projects writes, or a tighter path list is enough                    |
 | Agent judge conditions              | slow, not deterministic            | cheap kinds evaluate first; loop max counts (DES-004)                          | judges disagree on identical output                                                             |
 

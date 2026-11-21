@@ -6,7 +6,8 @@ status: active
 summary: Run view with list and graph views, live task states, attempts, logs, rendered SUMMARY.md, outputs and spawned tasks.
 tags: [ui, web, runs, logs]
 related:
-  [DES-002, DES-003, DES-004, DES-005, DES-006, DES-008, DES-011, DES-012]
+  [DES-002, DES-003, DES-004, DES-005, DES-006, DES-008, DES-011, DES-012,
+   DES-021]
 updated: 2026-11-21
 ---
 
@@ -42,6 +43,9 @@ Everything shown comes from the engine model in
   ([DES-006](des-006-sandboxing.md)).
 - A run waiting on an approval gate: the run header says so and links to
   the waiting tasks (actions in DES-011).
+- Run status includes `queued` (DES-021). The header lists this run's
+  frozen input files from `runs/<runId>/input/`. Text and markdown can
+  be read in place; other files can be downloaded.
 - Websocket connection state.
 
 ## Two views of a run
@@ -63,8 +67,9 @@ in the URL (`?view=graph`) so a reload or a shared link keeps it.
 ```
 +-----------+---------------------------------------------------+
 | Sidebar   | Breadcrumb: workflow / run / task                 |
-| workflows | Run header: status, progress, sandbox badge,      |
-|  > runs   |   List|Graph toggle, run actions (DES-011)        |
+| workflows | Run header: status (including queued), progress,  |
+|  > runs   |   sandbox badge, input files (DES-021),           |
+|           |   List|Graph toggle, run actions (DES-011)        |
 |           +----------------------+----------------------------+
 |           | Task list or graph   | Task detail (tabs)         |
 |           | (Resizable panel)    | Logs | Attempts | Summary  |

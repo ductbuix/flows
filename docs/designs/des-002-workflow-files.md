@@ -5,7 +5,7 @@ type: design
 status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
-related: [DES-001, DES-004, DES-005, DES-020]
+related: [DES-001, DES-004, DES-005, DES-020, DES-021]
 updated: 2026-11-21
 ---
 
@@ -25,6 +25,7 @@ updated: 2026-11-21
     input/  output/  SUMMARY.md
     runs/<runId>/
       graph.json              # starting graph plus tasks spawned in this run
+      input/                  # frozen run input, including inputs.json (DES-021)
       tasks/<taskId>/         # this run's attempts, not the prompt folder
         input/
         attempt-<n>/out/  attempt-<n>/SUMMARY.md  stdout.log  stderr.log
@@ -39,7 +40,7 @@ A dir is the compacted context of its object. Each task writes its own
 ```yaml
 id: research-report
 goal: Produce a sourced report on input/topic.md
-limits: { concurrency: 3, agents: 2, maxTasks: 50, maxSpawnDepth: 2 }
+limits: { concurrency: 3, agents: 2, maxTasks: 50, maxSpawnDepth: 2, maxConcurrentRuns: 1 }
 timeout: 900 # default per-attempt seconds; task timeout wins (DES-019)
 tasks:
   - id: task-a1b2c3d4
@@ -47,6 +48,7 @@ tasks:
     kind: agent
     cli: claude # or cursor
     # prompt is tasks/task-a1b2c3d4/prompt.md (DES-020)
+    # optional workflow inputs: and RUN_INPUT are in DES-021
     memory: [memory/style.md]
     spawn: true
     timeout: 1800
@@ -109,9 +111,11 @@ e2e runs use a temporary directory and never touch the user's data.
 
 Tasks read upstream outputs by path. Env: `UPSTREAM_*`, `TASK_IN`,
 `TASK_INSTRUCTIONS`, `TASK_OUT`, `PREV_ATTEMPT`, `WF_DIR`,
-`WF_INPUT`, `WF_OUTPUT`, `RUN_ID`. The `UPSTREAM_*` name is
-`UPSTREAM_` plus the task id with every `-` replaced by `_`, because
-a hyphen is not valid in a shell variable name (DES-020). For
+`WF_INPUT`, `WF_OUTPUT`, `RUN_ID`, `RUN_INPUT`. `RUN_INPUT` is
+this run's frozen `runs/<runId>/input/` folder (DES-021).
+`WF_INPUT` stays the workflow's shared `input/`. The `UPSTREAM_*`
+name is `UPSTREAM_` plus the task id with every `-` replaced by `_`,
+because a hyphen is not valid in a shell variable name (DES-020). For
 `task-c3d4e5f6` the name is `UPSTREAM_task_c3d4e5f6`.
 `TASK_INSTRUCTIONS` is set only for agent tasks, and is the absolute
 path of `tasks/<taskId>/prompt.md` (or the stamped spawn `promptDir`

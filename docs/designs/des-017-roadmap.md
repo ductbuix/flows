@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018, DES-019, DES-020]
+related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021]
 updated: 2026-11-21
 ---
 
@@ -27,6 +27,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 7     | Use the editor               | BL-015 agent kind, BL-016 file editing                  | switch a task to agent; edit memory and instructions  |
 | 8     | Safe agent runs              | BL-017 timeouts, BL-018 app trust                       | hung agents end; trust and pre-run check before CLIs  |
 | 9     | Fixed prompts and task ids   | BL-019 paths and ids, BL-020 prompt editor              | generated ids; prompts at tasks/<id>/prompt.md; drawer edits name and prompt |
+| 10    | Reuse a workflow with inputs | BL-021 run input engine, BL-022 start form              | start a run with declared inputs; extras queue; the run view shows the files |
 
 ## Why this order
 
@@ -49,6 +50,10 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   path, and a free-text task id, were too easy to get wrong.
   BL-019 comes first so the Inspector can drop the path and id
   fields.
+- Phase 10 follows once a workflow can be edited and run safely:
+  the same graph should accept different inputs without sharing
+  one `input/` folder. BL-021 comes first so the form in BL-022
+  has a schema, a start API, and a queued state.
 
 ## Not on the roadmap
 

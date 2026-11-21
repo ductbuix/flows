@@ -8,7 +8,7 @@ Holds direction docs, system designs and UI instructions. Back to [docs index](.
 | --- | --- | --- | --- | --- | --- |
 | DES-001 | design | active | [Overview and domain model](des-001-overview.md) | What Flows is, the stack, and the core entities (workflow, task, run, attempt, event). | overview, domain, stack |
 | DES-002 | design | active | [Folder layout and workflow file](des-002-workflow-files.md) | On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get. | storage, yaml, workflow, files |
-| DES-003 | design | active | [Task lifecycle, engine and concurrency](des-003-engine.md) | Task and run states (approval gates, cancelled), append-then-act event log, resume, run deletion and limits. | engine, lifecycle, events, resume, concurrency, approval |
+| DES-003 | design | active | [Task lifecycle, engine and concurrency](des-003-engine.md) | Task and run states (queued, approval gates, cancelled), append-then-act event log, resume, run deletion and limits. | engine, lifecycle, events, resume, concurrency, approval |
 | DES-004 | design | active | [Conditions and loops](des-004-conditions-loops.md) | Condition kinds (exit, expr, agent) shared by when, until and branches; retry and repeat policies. | engine, conditions, loops, retry |
 | DES-005 | design | active | [Agents and runtime spawn](des-005-agents-spawn.md) | How agent CLI tasks run stateless with memories, and how they grow a run's graph, including fan-out. | agents, spawn, memory, cli, fan-out, dynamic |
 | DES-006 | design | active | [Sandboxing](des-006-sandboxing.md) | macOS only on day one; baseline isolation, writes limited to the workflow dir via sandbox-exec, warned fallback. | sandbox, security, process |

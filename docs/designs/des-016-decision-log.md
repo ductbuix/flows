@@ -18,6 +18,7 @@ related:
     DES-018,
     DES-019,
     DES-020,
+    DES-021,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -75,6 +76,11 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Legacy ids still parse; only new ids use the pattern | existing workflows must not break on load                    | DES-020, 007 |
 | 2026-11-21 | Spawn specs are identified by file stem, not `id` | the engine assigns the id and rewrites sibling `needs`         | DES-020, 005 |
 | 2026-11-21 | `UPSTREAM_*` maps `-` in the id to `_`            | a hyphen is not valid in a shell variable name                 | DES-020, 002 |
+| 2026-11-21 | Per-run frozen `RUN_INPUT`; shared `WF_INPUT` stays | each ticket is its own run; defaults stay on the workflow    | DES-021, 002 |
+| 2026-11-21 | Optional `inputs:` of `text`, `markdown`, `file`  | Start run can show a form; the type set stays small            | DES-021, 007 |
+| 2026-11-21 | Manual is the only source; more adapters later    | connectors and folder lists stay out of this cut               | DES-021      |
+| 2026-11-21 | Same item key asks, never auto-skips              | the user decides whether to run again                          | DES-021      |
+| 2026-11-21 | `maxConcurrentRuns` default 1; extras are `queued` | one live run unless the workflow asks for more                | DES-021, 003 |
 
 ## UI
 
@@ -94,6 +100,9 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Task rename moves the prompt folder in the same PUT | yaml and files stay in sync                             | DES-020, 013 |
 | 2026-11-21 | No task-id rename in the app; earlier move plan dropped | ids are immutable, so folder moves are not needed      | DES-020      |
 | 2026-11-21 | Inspector shows a read-only id and an editable name | the id is generated; name is what the user sees         | DES-020      |
+| 2026-11-21 | Start run form, then trust, then a duplicate ask  | reuse TrustStartGate; never auto-skip                   | DES-021, 011 |
+| 2026-11-21 | Run view shows the run's frozen input files       | retry and resume must match what the user sees          | DES-021, 009 |
+| 2026-11-21 | Inspector edits `inputs:` and `maxConcurrentRuns` | the yaml stays the source of truth                      | DES-021, 010 |
 
 ## Docs and tooling
 

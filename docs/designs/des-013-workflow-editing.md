@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: Disk change detection and conflict dialog, workflow create, rename and delete, memory file editing, YAML-preserving writes.
 tags: [ui, web, editor, yaml, files]
-related: [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020]
+related: [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020, DES-021]
 updated: 2026-11-21
 ---
 
@@ -84,7 +84,9 @@ at launch ([DES-005](des-005-agents-spawn.md)).
 Graph and form edits never rebuild the file. The web (or server) keeps a
 `yaml` `Document` from `parseDocument(text)`, applies each change with
 `setIn`, `addIn` or `deleteIn`, and writes `doc.toString()`. Task ids
-are not renamed in the editor (DES-020).
+are not renamed in the editor (DES-020). The same Document writes add,
+edit, and remove `inputs:` entries and change
+`limits.maxConcurrentRuns` (DES-021).
 
 Test plan (unit tests on the module that applies edits):
 
@@ -92,7 +94,8 @@ Test plan (unit tests on the module that applies edits):
   tasks, keys in a non-default order, and both flow (`{ max: 2 }`) and
   block maps.
 - Apply: add a task, remove a task, change `name`, change `needs`,
-  change `retry.max`, add `approval: true`.
+  change `retry.max`, add `approval: true`, add an `inputs:` entry,
+  change `limits.maxConcurrentRuns`.
 - Assert every comment is still present, lines of untouched tasks are
   byte-identical, key order of untouched maps is unchanged, and the
   result parses to the expected object.

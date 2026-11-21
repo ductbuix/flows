@@ -7,7 +7,7 @@ summary: Workflow list and React Flow graph editor synced with workflow.yaml (Co
 tags: [ui, web, editor, yaml]
 related:
   [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013,
-   DES-020]
+   DES-020, DES-021]
 updated: 2026-11-21
 ---
 
@@ -33,8 +33,9 @@ preservation are in [DES-013](des-013-workflow-editing.md).
   ([DES-020](des-020-fixed-prompt-files.md)), `memory` files, `needs`,
   `when`, `retry`, `repeat`, `spawn`, `continueOnError`, limits. The
   id is generated and is not editable in the drawer.
-- Edit workflow fields: `goal` and `limits` (`concurrency`, `agents`,
-  `maxTasks`, `maxSpawnDepth`).
+- Edit workflow fields: `goal`, `inputs` (name, type, required,
+  description, default), and `limits` (`concurrency`, `agents`,
+  `maxTasks`, `maxSpawnDepth`, `maxConcurrentRuns`) (DES-021).
 - The YAML text next to the graph in a CodeMirror 6 editor with YAML
   highlighting and inline diagnostics. Editing either side updates the
   other.

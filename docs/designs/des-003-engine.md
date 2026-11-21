@@ -3,9 +3,9 @@ id: DES-003
 title: Task lifecycle, engine and concurrency
 type: design
 status: active
-summary: Task and run states (approval gates, cancelled), append-then-act event log, resume, run deletion and limits.
+summary: Task and run states (queued, approval gates, cancelled), append-then-act event log, resume, run deletion and limits.
 tags: [engine, lifecycle, events, resume, concurrency, approval]
-related: [DES-001, DES-004, DES-005, DES-019]
+related: [DES-001, DES-004, DES-005, DES-019, DES-021]
 updated: 2026-11-21
 ---
 
@@ -27,9 +27,12 @@ Cancelling a run moves every task that has not finished (`pending`,
 are stopped by ending their process group. `succeeded`, `failed`,
 `skipped` and `cancelled` are terminal.
 
-Run states: `running`, then `succeeded`, `failed` or `cancelled`. A run
-with a task in `awaiting_approval` stays `running`; the UI shows that it
-is waiting.
+Run states: `queued`, then `running`, then `succeeded`, `failed` or
+`cancelled`. A start that would exceed `limits.maxConcurrentRuns`
+(default 1) leaves the run `queued` until a slot frees; then
+`run_activated` moves it to `running` (DES-021). A run with a task
+in `awaiting_approval` stays `running`; the UI shows that it is
+waiting.
 
 ## Approval gates
 
@@ -57,19 +60,21 @@ is waiting.
 6. Deleting a run appends a run deleted marker event and only then
    removes `runs/<runId>/`. The log keeps the run's events; the fold
    hides deleted runs from every view. If the process dies between the
-   event and the removal, resume finishes the removal.
+   event and the removal, resume finishes the removal. `queued` and
+   `running` both count as live, so delete is blocked until the run
+   is cancelled or finished (DES-021).
 
 App preference that is not run state (always-trust in
 [DES-019](des-019-agent-trust-and-timeouts.md)) lives in a `settings`
 table in the same `app.db`, not in `events`.
 
-## Event kinds (BL-004, BL-005, BL-006, BL-007, BL-012, BL-014)
+## Event kinds (BL-004, BL-005, BL-006, BL-007, BL-012, BL-014, BL-021)
 
 Schemas live in `packages/shared`. The fold and the UI use the same set.
 
 | Type                   | Meaning                                                                                             |
 | ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `run_started`          | Run created; payload includes the frozen `graph`                                                    |
+| `run_started`          | Run created; payload includes the frozen `graph`. DES-021 adds input fields; the run may be `queued` |
 | `approval_requested`   | Gated task entered `awaiting_approval`                                                              |
 | `task_approved`        | Human approved; next tick may launch                                                                |
 | `task_rejected`        | Human rejected; task `failed` with reason `rejected`                                                |
@@ -86,6 +91,7 @@ Schemas live in `packages/shared`. The fold and the UI use the same set.
 | `run_cancelled`        | Run ended `cancelled`                                                                               |
 | `run_succeeded`        | Every task terminal and none hard-failed                                                            |
 | `run_failed`           | At least one hard failure (no ready work left)                                                      |
+| `run_activated`        | Queued run is now `running`; the scheduler attaches (DES-021)                                       |
 | `run_deleted`          | Marker before removing `runs/<runId>/`; fold hides the run                                          |
 | `task_retry_requested` | Manual retry (DES-011): reopen run, reset task + dependants                                         |
 
@@ -106,3 +112,6 @@ Nested limits: global, workflow, run, task group. A task starts only when
 it fits under every level. Agent tasks also count against an `agents`
 limit at each level. Global limits live in `~/.flowapp/config.yaml`,
 workflow limits in `workflow.yaml` ([DES-002](des-002-workflow-files.md)).
+`maxConcurrentRuns` caps how many runs of one workflow may be
+`running` at once, and is separate from task concurrency inside a
+run ([DES-021](des-021-run-inputs.md)).
