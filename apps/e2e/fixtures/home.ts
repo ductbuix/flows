@@ -90,6 +90,28 @@ tasks:
     timeout: 5
 `
 
+const judgeModelYaml = `id: judge-model
+goal: e2e lone agent judge model
+tasks:
+  - id: gated
+    kind: command
+    run: "printf ok > \\"$TASK_OUT/out.txt\\""
+    when:
+      agent:
+        cli: claude
+`
+
+const agentModelYaml = `id: agent-model
+goal: e2e attempt model row
+tasks:
+  - id: hello
+    kind: agent
+    cli: claude
+    model: haiku
+    effort: low
+    timeout: 3
+`
+
 const runInputsYaml = `id: run-inputs
 goal: e2e start form and inputs editor
 limits:
@@ -134,6 +156,8 @@ export function createE2eHome(): string {
     ["gate", gateYaml],
     ["gate-reject", gateRejectYaml],
     ["agent-trust", agentTrustYaml],
+    ["judge-model", judgeModelYaml],
+    ["agent-model", agentModelYaml],
     ["run-inputs", runInputsYaml],
     ["run-inputs-slow", runInputsSlowYaml],
   ] as const) {
@@ -145,6 +169,21 @@ export function createE2eHome(): string {
   mkdirSync(agentTasks, { recursive: true })
   writeFileSync(
     join(agentTasks, "prompt.md"),
+    "Write ok to out/done.txt and exit.\n"
+  )
+  const judgeWhen = join(home, "workflows", "judge-model", "tasks", "gated")
+  mkdirSync(judgeWhen, { recursive: true })
+  writeFileSync(join(judgeWhen, "when.md"), "Exit 0 if the output is ok.\n")
+  const agentModelTasks = join(
+    home,
+    "workflows",
+    "agent-model",
+    "tasks",
+    "hello"
+  )
+  mkdirSync(agentModelTasks, { recursive: true })
+  writeFileSync(
+    join(agentModelTasks, "prompt.md"),
     "Write ok to out/done.txt and exit.\n"
   )
   return home

@@ -2,7 +2,7 @@
 id: BL-026
 title: Model and effort selects in the editor
 type: backlog
-status: todo
+status: done
 summary: Drawer and workflow-default selects for model and effort, with CLI defaults as the first option, and attempts showing the resolved values.
 tags: [ui, web, editor, agents]
 related: [DES-023, DES-009, DES-010]
@@ -29,13 +29,11 @@ the catalog API, and the attempt fields.
 - [x] The workflow inspector (no node selected) has an Agent
       defaults section, grouped by Claude and Cursor, with the
       same selects. (BL-029)
-- [ ] When `when`, `repeat.until`, or a need's `when` is a lone
+- [x] When `when`, `repeat.until`, or a need's `when` is a lone
       agent leaf, the drawer shows Model and Effort on that
       leaf. Combined conditions stay yaml-only.
-- [ ] The run view shows the recorded model, effort, and source
+- [x] The run view shows the recorded model, effort, and source
       on each attempt.
-- [ ] Playwright covers the default option, picking a model and
+- [x] Playwright covers the default option, picking a model and
       effort, a custom id, workflow defaults, a lone judge leaf,
       and the attempt row, with video and screenshots.
-      (drawer/model/effort covered in BL-029; judge leaf and
-      attempt row still open)

@@ -95,6 +95,9 @@ export function toTaskViews(state: RunState): TaskView[] {
         })),
         index
       ),
+      ...(a.model !== undefined ? { model: a.model } : {}),
+      ...(a.effort !== undefined ? { effort: a.effort } : {}),
+      ...(a.modelSource !== undefined ? { modelSource: a.modelSource } : {}),
     }))
     return {
       id,

@@ -130,6 +130,22 @@ export function TaskDetailAttempts({ run, task }: Props) {
             {a.pid !== undefined ? (
               <span className="text-sm text-muted-foreground">pid {a.pid}</span>
             ) : null}
+            {a.model !== undefined ||
+            a.effort !== undefined ||
+            a.modelSource !== undefined ? (
+              <span
+                className="text-sm text-muted-foreground"
+                data-testid={`attempt-model-${a.attempt}`}
+              >
+                {[
+                  a.model,
+                  a.effort,
+                  a.modelSource ? `via ${a.modelSource}` : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            ) : null}
           </div>
         ))}
       </div>

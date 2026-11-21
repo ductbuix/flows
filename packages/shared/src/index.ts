@@ -9,6 +9,7 @@ export {
   needSchema,
   needObjectSchema,
   needTaskId,
+  loneAgentJudge,
   isAgentTask,
   isCommandTask,
   taskSpawnDepth,

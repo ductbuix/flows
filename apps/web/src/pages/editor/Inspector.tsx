@@ -30,6 +30,7 @@ import { ActionButton } from "@/components/ActionButton"
 import { AgentDefaultsFields } from "./AgentDefaultsFields"
 import { AgentTaskFields } from "./AgentTaskFields"
 import { InputsPanel } from "./InputsPanel"
+import { LoneAgentJudges } from "./LoneAgentJudges"
 import { MemoryPanel } from "./MemoryPanel"
 import { taskFieldErrors } from "./field-errors"
 
@@ -173,6 +174,7 @@ export function Inspector({
             onCheckedChange={(approval) => onChangeTask(task.id, { approval })}
           />
         </Field>
+        <LoneAgentJudges task={task} onChangeTask={onChangeTask} />
         <Separator />
         <ActionButton
           type="button"

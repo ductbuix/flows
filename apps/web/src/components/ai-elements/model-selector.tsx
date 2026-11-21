@@ -24,6 +24,8 @@ type Props = {
   onChangeModel: (model: string | undefined) => void
   onChangeEffort: (effort: Effort | undefined) => void
   disabled?: boolean
+  /** Prefix for data-testid (e.g. "when-" for judge leaves). */
+  idPrefix?: string
 }
 
 /** Model and Effort menus (AI Elements / DES-023). */
@@ -34,6 +36,7 @@ export function ModelSelector({
   onChangeModel,
   onChangeEffort,
   disabled,
+  idPrefix = "",
 }: Props) {
   const modelInCatalog = catalog?.models.some((m) => m.id === model) ?? false
   const isCustom = Boolean(model) && !modelInCatalog
@@ -53,7 +56,7 @@ export function ModelSelector({
   return (
     <div
       className="flex flex-wrap items-center gap-2"
-      data-testid="model-selector"
+      data-testid={`${idPrefix}model-selector`}
     >
       <DropdownMenu open={modelOpen} onOpenChange={setModelOpen}>
         <DropdownMenuTrigger
@@ -63,7 +66,7 @@ export function ModelSelector({
               size="sm"
               variant="outline"
               disabled={disabled || !catalog}
-              data-testid="field-model"
+              data-testid={`${idPrefix}field-model`}
             />
           }
         >
@@ -108,7 +111,7 @@ export function ModelSelector({
           {modelValue === CUSTOM || isCustom ? (
             <div className="p-2 pt-1">
               <Input
-                data-testid="field-model-custom"
+                data-testid={`${idPrefix}field-model-custom`}
                 value={customDraft}
                 placeholder="custom model id"
                 onChange={(e) => {
@@ -131,7 +134,7 @@ export function ModelSelector({
               size="sm"
               variant="outline"
               disabled={disabled || !catalog}
-              data-testid="field-effort"
+              data-testid={`${idPrefix}field-effort`}
             />
           }
         >
