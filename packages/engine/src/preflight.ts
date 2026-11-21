@@ -11,6 +11,7 @@ import {
 } from "@workspace/shared"
 import { getCliAdapter, type CliKind } from "./cli-adapters.ts"
 import { checkPathInsideHome } from "./path-checks.ts"
+import { checkModelEffort } from "./preflight-models.ts"
 import { canApplySandbox, sandboxWriteRoot } from "./sandbox.ts"
 import { workflowAgentClis } from "./workflow-agents.ts"
 
@@ -123,6 +124,7 @@ export async function runPreflightChecks(
     checks.push(await checkCliInstalled(cli))
     checks.push(checkCliFlags(cli))
   }
+  checks.push(...(await checkModelEffort(input.workflow)))
   return checks
 }
 

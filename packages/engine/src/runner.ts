@@ -172,10 +172,15 @@ export function launchTask(
       writeCursorTrustMarker(attemptRoot)
     }
     return spawnWrapped(
-      buildAgentShellCommand(task, instructions, {
-        workflowRoot: paths.workflowRoot,
-        attemptRoot,
-      }),
+      buildAgentShellCommand(
+        task,
+        instructions,
+        {
+          workflowRoot: paths.workflowRoot,
+          attemptRoot,
+        },
+        graph.agent
+      ),
       attemptRoot,
       env,
       attemptRoot,

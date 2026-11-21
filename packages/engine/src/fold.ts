@@ -1,5 +1,7 @@
 import type {
+  Effort,
   EngineEvent,
+  ModelSource,
   RunStatus,
   TaskStatus,
   Workflow,
@@ -20,6 +22,12 @@ export type AttemptState = {
   reason?: string
   /** Next attempt after task_retry_requested (DES-011). */
   manualRetry?: boolean
+  /** Resolved model from attempt_launched (DES-023). */
+  model?: string
+  /** Resolved effort from attempt_launched (DES-023). */
+  effort?: Effort
+  /** Where model/effort came from (DES-023). */
+  modelSource?: ModelSource
 }
 
 export type TaskState = {

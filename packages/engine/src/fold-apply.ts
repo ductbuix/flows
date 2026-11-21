@@ -118,6 +118,11 @@ export function applyEvent(
       if (attempt) {
         attempt.pid = event.pid
         if (event.timeout !== undefined) attempt.timeout = event.timeout
+        if (event.model !== undefined) attempt.model = event.model
+        if (event.effort !== undefined) attempt.effort = event.effort
+        if (event.modelSource !== undefined) {
+          attempt.modelSource = event.modelSource
+        }
       }
       // Missing sandboxed (older events) counts as unrestricted.
       if (event.sandboxed !== true) state.sandboxed = false

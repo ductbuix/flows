@@ -74,4 +74,39 @@ tasks:
     expect(prompts?.status).toBe("warn")
     expect(prompts?.message).toContain("tasks/a/prompt.md")
   })
+
+  it("lists resolved model/effort and warns on unknown model", async () => {
+    const home = mkdtempSync(join(tmpdir(), "flowapp-pf-model-"))
+    dirs.push(home)
+    const wf = join(home, "workflows", "agent-model")
+    mkdirSync(join(wf, "tasks", "a"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "a", "prompt.md"), "hi\n")
+    writeFileSync(
+      join(wf, "workflow.yaml"),
+      `
+id: agent-model
+tasks:
+  - id: a
+    kind: agent
+    cli: claude
+    model: not-a-real-model
+    effort: high
+`
+    )
+    const workflow = loadWorkflowFile(wf)
+    const checks = await runPreflightChecks({
+      homeRealpath: resolveAppHomeRealpath(home),
+      workflowDir: wf,
+      workflow,
+    })
+    const listed = checks.find((c) => c.id === "model_effort")
+    expect(listed?.status).toBe("pass")
+    expect(listed?.message).toContain("task a")
+    expect(listed?.message).toContain("not-a-real-model")
+    expect(listed?.message).toContain("high")
+    const warn = checks.find(
+      (c) => c.status === "warn" && c.id.startsWith("model_effort_")
+    )
+    expect(warn?.message).toMatch(/not-a-real-model/)
+  })
 })

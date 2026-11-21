@@ -1,6 +1,7 @@
 import {
   isAgentTask,
   needTaskId,
+  type AgentTask,
   type EngineEvent,
   type Task,
   type When,
@@ -103,6 +104,8 @@ async function branchWhenFails(
         timeoutSeconds: upSpec
           ? resolveAttemptTimeout(upSpec, state.graph)
           : undefined,
+        parentTask: agentParent(task),
+        workflowAgent: state.graph.agent,
       }))
     ) {
       return true
@@ -142,8 +145,14 @@ async function evalWhen(
     ),
     judgeCache: host.judgeCache,
     timeoutSeconds: resolveAttemptTimeout(task, state.graph),
+    parentTask: agentParent(task),
+    workflowAgent: state.graph.agent,
   }
   return evaluateCondition(when, ctx)
+}
+
+function agentParent(task: Task): AgentTask | undefined {
+  return isAgentTask(task) ? task : undefined
 }
 
 function appendSkip(
@@ -195,6 +204,8 @@ export async function resolveLoops(host: ResolveHost): Promise<void> {
             ),
             judgeCache: host.judgeCache,
             timeoutSeconds: resolveAttemptTimeout(task, state.graph),
+            parentTask: agentParent(task),
+            workflowAgent: state.graph.agent,
           })
         : undefined
     const decision = decideLoop(task, live, untilPassed)

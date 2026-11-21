@@ -1,12 +1,28 @@
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
-import type { AgentJudge, AgentTask } from "@workspace/shared"
+import type {
+  AgentJudge,
+  AgentTask,
+  CliModelCatalog,
+  ResolvedModelEffort,
+} from "@workspace/shared"
 import {
   agentPrompt,
   judgePrompt,
   shellSingleQuote,
   type AgentLaunchPaths,
 } from "./agent-prompt.ts"
+import {
+  composeClaudeFlags,
+  composeCursorFlags,
+  flagsToShell,
+  type ComposeFlagsInput,
+} from "./compose-flags.ts"
+import {
+  listCliModels,
+  readCliDefaults,
+  type CliDefaults,
+} from "./cli-models.ts"
 import {
   removeCursorTrustMarker,
   writeCursorTrustMarker,
@@ -21,29 +37,40 @@ export type CliAdapter = {
   buildAgentCommand: (
     task: AgentTask,
     instructionsAbsPath: string,
-    paths: AgentLaunchPaths
+    paths: AgentLaunchPaths,
+    resolved: ResolvedModelEffort
   ) => string
-  buildJudgeCommand: (judge: AgentJudge, instructionsAbsPath: string) => string
+  buildJudgeCommand: (
+    judge: AgentJudge,
+    instructionsAbsPath: string,
+    resolved: ResolvedModelEffort
+  ) => string
   prepareTrust: (homePath: string, workflowDir?: string) => void
   cleanupTrust: (homePath: string, workflowDir?: string) => void
   failurePatterns: readonly string[]
   probeVersion: () => Promise<string | null>
   /** Exact flags shown in the pre-run dialog (DES-019). */
   describeFlags: () => string
+  /** Read CLI settings; never write (DES-023). */
+  readDefaults: () => CliDefaults
+  listModels: () => Promise<CliModelCatalog>
+  composeFlags: (input: ComposeFlagsInput) => string[]
 }
 
 const claudeAdapter: CliAdapter = {
   id: "claude",
-  buildAgentCommand(task, instructionsAbsPath, paths) {
+  buildAgentCommand(task, instructionsAbsPath, paths, resolved) {
     const prompt = shellSingleQuote(
       agentPrompt(instructionsAbsPath, task.spawn === true)
     )
     const wf = shellSingleQuote(paths.workflowRoot)
-    return `claude --print --permission-mode dontAsk --add-dir ${wf} -- ${prompt}`
+    const flags = flagsToShell(this.composeFlags(resolved))
+    return `claude --print --permission-mode dontAsk${flags} --add-dir ${wf} -- ${prompt}`
   },
-  buildJudgeCommand(_judge, instructionsAbsPath) {
+  buildJudgeCommand(_judge, instructionsAbsPath, resolved) {
     const prompt = shellSingleQuote(judgePrompt(instructionsAbsPath))
-    return `claude --print --permission-mode dontAsk -- ${prompt}`
+    const flags = flagsToShell(this.composeFlags(resolved))
+    return `claude --print --permission-mode dontAsk${flags} -- ${prompt}`
   },
   prepareTrust() {},
   cleanupTrust() {},
@@ -54,21 +81,32 @@ const claudeAdapter: CliAdapter = {
   describeFlags() {
     return "claude --print --permission-mode dontAsk --add-dir <workflow>"
   },
+  readDefaults() {
+    return readCliDefaults("claude")
+  },
+  listModels() {
+    return listCliModels("claude")
+  },
+  composeFlags(input) {
+    return composeClaudeFlags(input)
+  },
 }
 
 const cursorAdapter: CliAdapter = {
   id: "cursor",
-  buildAgentCommand(task, instructionsAbsPath, paths) {
+  buildAgentCommand(task, instructionsAbsPath, paths, resolved) {
     const prompt = shellSingleQuote(
       agentPrompt(instructionsAbsPath, task.spawn === true)
     )
     const wf = shellSingleQuote(paths.workflowRoot)
     const attempt = shellSingleQuote(paths.attemptRoot)
-    return `agent -p --force --trust --workspace ${attempt} --add-dir ${wf} -- ${prompt}`
+    const flags = flagsToShell(this.composeFlags(resolved))
+    return `agent -p --force --trust${flags} --workspace ${attempt} --add-dir ${wf} -- ${prompt}`
   },
-  buildJudgeCommand(_judge, instructionsAbsPath) {
+  buildJudgeCommand(_judge, instructionsAbsPath, resolved) {
     const prompt = shellSingleQuote(judgePrompt(instructionsAbsPath))
-    return `agent -p --force --trust -- ${prompt}`
+    const flags = flagsToShell(this.composeFlags(resolved))
+    return `agent -p --force --trust${flags} -- ${prompt}`
   },
   prepareTrust(homePath, workflowDir) {
     // Home first; workflow-dir fallback after BL-018 live check showed
@@ -93,6 +131,19 @@ const cursorAdapter: CliAdapter = {
       "agent -p --force --trust --workspace <attempt> --add-dir <workflow> " +
       "(--force auto-approves tool actions)"
     )
+  },
+  readDefaults() {
+    return readCliDefaults("cursor")
+  },
+  listModels() {
+    return listCliModels("cursor")
+  },
+  composeFlags(input) {
+    let model = input.model
+    if (!model && input.effort) {
+      model = this.readDefaults().model
+    }
+    return composeCursorFlags({ model, effort: input.effort })
   },
 }
 

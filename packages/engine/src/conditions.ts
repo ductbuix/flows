@@ -1,6 +1,15 @@
-import type { AgentJudge, Condition } from "@workspace/shared"
+import type {
+  AgentJudge,
+  AgentTask,
+  Condition,
+  WorkflowAgent,
+} from "@workspace/shared"
 import { evaluateExpr } from "./conditions-expr.ts"
-import { judgeCacheKey, runAgentJudge } from "./judge.ts"
+import {
+  judgeCacheKey,
+  resolveJudgeModelEffort,
+  runAgentJudge,
+} from "./judge.ts"
 
 export type ConditionContext = {
   /** Latest exit code of the subject attempt/task, if any. */
@@ -20,6 +29,10 @@ export type ConditionContext = {
   judgeCache?: Map<string, Promise<boolean>>
   /** Judge process timeout in seconds (DES-019). */
   timeoutSeconds?: number
+  /** Parent task for same-cli model/effort inheritance (DES-023). */
+  parentTask?: AgentTask
+  /** Frozen workflow agent defaults (DES-023). */
+  workflowAgent?: WorkflowAgent
 }
 
 export { evaluateExpr } from "./conditions-expr.ts"
@@ -95,11 +108,16 @@ async function evaluateAgent(
   if (!ctx.attemptRoot || !ctx.workflowRoot || !ctx.judgeInstructionsAbs) {
     return false
   }
+  const resolved = resolveJudgeModelEffort(agent, {
+    parentTask: ctx.parentTask,
+    workflowAgent: ctx.workflowAgent,
+  })
   const key = judgeCacheKey(
     agent,
     ctx.judgeInstructionsAbs,
     ctx.workflowRoot,
-    ctx.attemptRoot
+    ctx.attemptRoot,
+    resolved
   )
   const cache = ctx.judgeCache
   if (cache?.has(key)) return cache.get(key)!
@@ -109,6 +127,8 @@ async function evaluateAgent(
     workflowRoot: ctx.workflowRoot,
     attemptRoot: ctx.attemptRoot,
     timeoutSeconds: ctx.timeoutSeconds,
+    parentTask: ctx.parentTask,
+    workflowAgent: ctx.workflowAgent,
   })
   cache?.set(key, pending)
   return pending

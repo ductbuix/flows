@@ -61,6 +61,7 @@ export {
   parseCursorListOutput,
   type CliDefaults,
 } from "./cli-models.ts"
+export { composeClaudeFlags, composeCursorFlags } from "./compose-flags.ts"
 export {
   parseCursorModelList,
   parseCursorModelId,
