@@ -6,7 +6,20 @@ status: draft
 summary: shadcn base-nova defaults are the only style source; align our components, add a Sidebar shell and Settings, then AI Elements.
 tags: [ui, web, shadcn, ai-elements, lint]
 related:
-  [DES-008, DES-009, DES-010, DES-012, DES-016, DES-017, DES-019, DES-023]
+  [
+    DES-008,
+    DES-009,
+    DES-010,
+    DES-012,
+    DES-016,
+    DES-017,
+    DES-019,
+    DES-023,
+    BL-027,
+    BL-028,
+    BL-029,
+    BL-030,
+  ]
 updated: 2026-11-21
 ---
 
