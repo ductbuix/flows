@@ -45,13 +45,9 @@ function mockFetch(handlers: Record<string, unknown>) {
             ? input.href
             : input.url
       if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
-        return Response.json(handlers.runs ?? [])
+        return Response.json(handlers.workflowRuns ?? handlers.runs ?? [])
       }
-      if (
-        url.includes("/api/runs") &&
-        !url.includes("/api/runs/") &&
-        !url.includes("/tasks/")
-      ) {
+      if (/\/api\/runs(\?|$)/.test(url) || url.endsWith("/api/runs")) {
         return Response.json(handlers.allRuns ?? handlers.runs ?? [])
       }
       if (url.includes("/api/cli-status")) {
@@ -81,6 +77,8 @@ function mockFetch(handlers: Record<string, unknown>) {
   )
 }
 
+const demoWorkflow = { id: "demo", goal: "test goal", taskCount: 1 }
+
 function renderApp(path = "/") {
   return render(
     <ThemeProvider defaultTheme="light">
@@ -94,7 +92,7 @@ function renderApp(path = "/") {
 describe("App", () => {
   it("lists workflows in the sidebar and shows home sections", async () => {
     mockFetch({
-      workflows: [{ id: "demo", goal: "test goal" }],
+      workflows: [demoWorkflow],
       allRuns: [],
     })
     renderApp("/")
@@ -103,6 +101,7 @@ describe("App", () => {
     expect(await screen.findByTestId("home-running")).toBeTruthy()
     expect(screen.getByTestId("home-recent")).toBeTruthy()
     expect(screen.queryByTestId("home-empty")).toBeNull()
+    expect(await screen.findByTestId("sidebar-platform")).toBeTruthy()
   })
 
   it("shows home empty create action when there are no workflows", async () => {
@@ -112,6 +111,7 @@ describe("App", () => {
     expect(await screen.findByTestId("home-empty")).toBeTruthy()
     expect(screen.getByTestId("home-create-workflow")).toBeTruthy()
     expect(screen.getByTestId("sidebar-settings")).toBeTruthy()
+    expect(screen.getByTestId("sidebar-home")).toBeTruthy()
   })
 
   it("shows sidebar skeletons while workflows load", async () => {
@@ -149,10 +149,25 @@ describe("App", () => {
 
   it("shows the runs list for ?tab=runs", async () => {
     mockFetch({
-      workflows: [{ id: "demo", goal: "test goal" }],
-      runs: [],
+      workflows: [demoWorkflow],
+      workflowRuns: [],
     })
     renderApp("/workflows/demo?tab=runs")
     expect(await screen.findByTestId("run-list")).toBeTruthy()
+  })
+
+  it("shows the workflows page table", async () => {
+    mockFetch({ workflows: [demoWorkflow], allRuns: [] })
+    renderApp("/workflows")
+    expect(await screen.findByTestId("workflows-page")).toBeTruthy()
+    expect(await screen.findByTestId("workflows-table")).toBeTruthy()
+    expect(screen.getByTestId("workflows-row-demo")).toBeTruthy()
+  })
+
+  it("shows the runs page empty state", async () => {
+    mockFetch({ workflows: [demoWorkflow], allRuns: [] })
+    renderApp("/runs")
+    expect(await screen.findByTestId("runs-page")).toBeTruthy()
+    expect(await screen.findByTestId("runs-empty")).toBeTruthy()
   })
 })

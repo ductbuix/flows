@@ -92,7 +92,9 @@ describe("run API", () => {
     const wfRes = await app.request("/api/workflows")
     expect(wfRes.status).toBe(200)
     const workflows = workflowSummarySchema.array().parse(await wfRes.json())
-    expect(workflows).toEqual([{ id: "api-diamond", goal: "api test fixture" }])
+    expect(workflows).toEqual([
+      { id: "api-diamond", goal: "api test fixture", taskCount: 4 },
+    ])
 
     const startRes = await app.request("/api/workflows/api-diamond/runs", {
       method: "POST",

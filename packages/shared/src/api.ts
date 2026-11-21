@@ -11,6 +11,8 @@ import { workflowSchema } from "./workflow.ts"
 export const workflowSummarySchema = z.object({
   id: z.string().min(1),
   goal: z.string().optional(),
+  /** Declared task count from workflow.yaml (DES-025 Workflows table). */
+  taskCount: z.number().int().nonnegative(),
 })
 
 export type WorkflowSummary = z.infer<typeof workflowSummarySchema>

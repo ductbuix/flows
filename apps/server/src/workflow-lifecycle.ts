@@ -15,7 +15,10 @@ import {
 } from "@workspace/shared"
 export type LifecycleResult =
   | { ok: true }
-  | { ok: false; kind: "not_found" | "conflict" | "exists" | "live" | "invalid" }
+  | {
+      ok: false
+      kind: "not_found" | "conflict" | "exists" | "live" | "invalid"
+    }
 
 function starterYaml(id: string, goal: string): string {
   return `id: ${id}
@@ -41,7 +44,7 @@ export function createWorkflow(
   mkdirSync(join(dir, "input"), { recursive: true })
   mkdirSync(join(dir, "output"), { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), starterYaml(id, goal), "utf8")
-  return { ok: true, summary: { id, goal } }
+  return { ok: true, summary: { id, goal, taskCount: 1 } }
 }
 
 export function renameWorkflow(

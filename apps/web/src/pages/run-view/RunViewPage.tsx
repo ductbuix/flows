@@ -34,12 +34,12 @@ export function RunViewPage() {
 
   const crumbs = workflowId
     ? ([
-        { label: "Workflows", to: "/" },
+        { label: "Workflows", to: "/workflows" },
         { label: workflowId, to: workflowPath(workflowId) },
         { label: "Runs", to: workflowPath(workflowId, "runs") },
         { label: runId },
       ] as const)
-    : ([{ label: "Workflows", to: "/" }, { label: runId }] as const)
+    : ([{ label: "Workflows", to: "/workflows" }, { label: runId }] as const)
 
   const onSnapshot = useCallback(
     (next: Parameters<typeof setRun>[0]) => {
