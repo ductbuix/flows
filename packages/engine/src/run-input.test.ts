@@ -54,7 +54,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r1",
       values: { ticket: " ABC-1 " },
@@ -87,8 +87,8 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const first = engine.startRun({ workflowDir: wf, runId: "a" })
-    const second = engine.startRun({ workflowDir: wf, runId: "b" })
+    const first = await engine.startRun({ workflowDir: wf, runId: "a" })
+    const second = await engine.startRun({ workflowDir: wf, runId: "b" })
     expect(first.status).toBe("running")
     expect(second.status).toBe("queued")
     expect(engine.fold("b")?.status).toBe("queued")
@@ -116,8 +116,8 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const live = engine.startRun({ workflowDir: wf, runId: "live" })
-    const queued = engine.startRun({ workflowDir: wf, runId: "wait" })
+    const live = await engine.startRun({ workflowDir: wf, runId: "live" })
+    const queued = await engine.startRun({ workflowDir: wf, runId: "wait" })
     expect(queued.status).toBe("queued")
     engine.cancelRun("wait")
     expect(engine.fold("wait")?.status).toBe("cancelled")
@@ -147,8 +147,8 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const a = engine.startRun({ workflowDir: wf, runId: "a" })
-    const b = engine.startRun({ workflowDir: wf, runId: "b" })
+    const a = await engine.startRun({ workflowDir: wf, runId: "a" })
+    const b = await engine.startRun({ workflowDir: wf, runId: "b" })
     expect(a.status).toBe("running")
     expect(b.status).toBe("running")
     await Promise.all([a.wait(), b.wait()])
@@ -169,8 +169,8 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    engine.startRun({ workflowDir: wf, runId: "live" })
-    expect(engine.startRun({ workflowDir: wf, runId: "wait" }).status).toBe(
+    await engine.startRun({ workflowDir: wf, runId: "live" })
+    expect((await engine.startRun({ workflowDir: wf, runId: "wait" })).status).toBe(
       "queued"
     )
     await new Promise((r) => setTimeout(r, 50))

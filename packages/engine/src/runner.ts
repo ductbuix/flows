@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from "node:child_process"
 import { closeSync, existsSync, mkdirSync, openSync } from "node:fs"
 import { join } from "node:path"
 import {
+  connectionEnvName,
   isAgentTask,
   upstreamEnvName,
   type Task,
@@ -63,6 +64,7 @@ export function buildTaskEnv(
     WF_INPUT: join(workflowRoot, "input"),
     WF_OUTPUT: join(workflowRoot, "output"),
     RUN_INPUT: join(runRoot, "input"),
+    RESOURCES_DIR: join(runRoot, "resources"),
     TASK_IN: join(taskDir(runRoot, task.id), "input"),
     TASK_OUT: join(attemptRoot, "out"),
     PREV_ATTEMPT: attempt > 1 ? attemptDir(runRoot, task.id, attempt - 1) : "",
@@ -74,6 +76,15 @@ export function buildTaskEnv(
       taskDir(runRoot, upstream.id),
       "latest",
       "out"
+    )
+  }
+
+  // RESOURCE_<ID> for each connection the task uses (DES-026 / BL-043).
+  for (const use of task.uses ?? []) {
+    env[connectionEnvName(use.connection)] = join(
+      runRoot,
+      "resources",
+      use.connection
     )
   }
 

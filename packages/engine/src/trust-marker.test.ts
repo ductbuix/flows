@@ -58,18 +58,18 @@ tasks:
 }
 
 describe("trust marker keep and remove", () => {
-  it("rejects agent start without a grant", () => {
+  it("rejects agent start without a grant", async () => {
     const home = tempHome()
     const wf = writeAgentWorkflow(home, "need-trust")
     const engine = createEngine({ home })
-    expect(() => engine.startRun({ workflowDir: wf })).toThrow("trust_required")
+    await expect(engine.startRun({ workflowDir: wf })).rejects.toThrow("trust_required")
   })
 
   it("keeps the marker for a live once-grant and removes after it ends", async () => {
     const home = tempHome()
     const wf = writeAgentWorkflow(home, "once-run")
     const engine = createEngine({ home })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r1",
       trustGrant: "once",
@@ -95,8 +95,8 @@ describe("trust marker keep and remove", () => {
       process.env.FLOWAPP_CURSOR_PROJECTS
     )
     expect(existsSync(marker)).toBe(true)
-    await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "always" })
+    await (await engine
+      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "always" }))
       .wait()
     expect(existsSync(marker)).toBe(true)
     engine.revokeAlwaysTrust()
@@ -141,12 +141,12 @@ exit 0
       { mode: 0o755 }
     )
     const engine = createEngine({ home })
-    const a = engine.startRun({
+    const a = await engine.startRun({
       workflowDir: wf,
       runId: "a",
       trustGrant: "once",
     })
-    const b = engine.startRun({
+    const b = await engine.startRun({
       workflowDir: wf,
       runId: "b",
       trustGrant: "once",

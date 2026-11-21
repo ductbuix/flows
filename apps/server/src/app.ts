@@ -39,6 +39,7 @@ import {
   writeWorkflowYaml,
 } from "./workflow-files.ts"
 import { connectionRoutes } from "./connection-routes.ts"
+import { libraryRoutes } from "./library-routes.ts"
 import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
 import { runInputRoutes } from "./run-input-routes.ts"
@@ -79,6 +80,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", runInputRoutes(engine))
     .route("/", trustRoutes(engine))
     .route("/", connectionRoutes(engine))
+    .route("/", libraryRoutes(engine))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
     )

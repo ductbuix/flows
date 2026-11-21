@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { connectionIdSchema } from "./connection.ts"
 import { effortSchema } from "./model-effort.ts"
 import { taskSchema, workflowSchema } from "./workflow.ts"
 
@@ -185,6 +186,17 @@ export const taskRetryRequestedEventSchema = z.object({
   taskId: z.string().min(1),
 })
 
+/** One library pull as a Read effect (DES-026 / BL-043). */
+export const libraryPulledEventSchema = z.object({
+  type: z.literal("library_pulled"),
+  ...eventBase,
+  connection: connectionIdSchema,
+  kind: z.string().min(1),
+  entityId: z.string().min(1),
+  revision: z.string().min(1),
+  impact: z.literal("read"),
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   runActivatedEventSchema,
@@ -206,6 +218,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   runFailedEventSchema,
   runDeletedEventSchema,
   taskRetryRequestedEventSchema,
+  libraryPulledEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>
