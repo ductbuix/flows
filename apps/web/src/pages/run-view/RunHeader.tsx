@@ -10,6 +10,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
+import { RunStatusBadge } from "@/components/RunStatusBadge"
 import type { RunBodyView } from "./useSearchView"
 import type { WsConnectionState } from "./useRunSocket"
 import { RunControls } from "./RunControls"
@@ -51,9 +52,7 @@ export function RunHeader({
       <RunInputFiles runId={run.id} files={run.inputFiles} />
 
       <div className="flex flex-wrap items-center gap-3">
-        <Badge data-testid="run-status" variant="secondary">
-          {run.status}
-        </Badge>
+        <RunStatusBadge status={run.status} />
         <div
           className="flex min-w-40 flex-1 items-center gap-2"
           data-testid="run-progress"
