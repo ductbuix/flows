@@ -129,6 +129,34 @@ describe("foldEvents", () => {
     })
   })
 
+  it("records portBase and portCount on attempt_launched", () => {
+    const state = foldEvents([
+      started(),
+      {
+        type: "attempt_started",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        at: "t1",
+      },
+      {
+        type: "attempt_launched",
+        runId: "r1",
+        taskId: "a",
+        attempt: 1,
+        pid: 7,
+        sandboxed: true,
+        portBase: 22000,
+        portCount: 10,
+        at: "t2",
+      },
+    ])
+    expect(state?.tasks.a?.attempts[0]).toMatchObject({
+      portBase: 22000,
+      portCount: 10,
+    })
+  })
+
   it("marks a task running then succeeded from attempt events", () => {
     const state = foldEvents([
       started(),

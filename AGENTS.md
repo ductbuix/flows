@@ -34,7 +34,8 @@ Schema and writing rules: `docs/README.md`.
   manual retry, conditions (exit / expr / agent judge), retry, repeat,
   `agents` limits, run deletion, workflow id rebind on rename, frozen
   `RUN_INPUT`, Manual source, queued runs under `maxConcurrentRuns`,
-  run summary cache (onEvent + rebuild after resume).
+  run summary cache (onEvent + rebuild after resume), per-attempt port
+  leases (`PORT` / `FLOWS_PORT_*`) and `<workflow>/.cache` package dirs.
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
   `needsYou`), websocket (`runs_changed`), workflow (`inputs`,
   `agent` defaults, model/effort), events (`queued`, `run_activated`,

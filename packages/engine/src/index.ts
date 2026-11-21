@@ -71,3 +71,18 @@ export type { CliTrustValue } from "@workspace/shared"
 
 export { manualItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"
+export {
+  DEFAULT_PORT_COUNT,
+  PORT_RANGE_START,
+  portLeaseKey,
+  portLeases,
+  type PortBlock,
+} from "./port-lease.ts"
+export {
+  workflowCacheEnv,
+  WORKFLOW_CACHE_ENV_TEMPLATES,
+} from "./task-cache-env.ts"
+export {
+  copyWorkflowExport,
+  isWorkflowExportOmitted,
+} from "./workflow-export.ts"

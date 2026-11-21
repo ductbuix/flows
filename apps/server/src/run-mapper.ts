@@ -97,6 +97,8 @@ export function toTaskViews(state: RunState): TaskView[] {
       ...(a.model !== undefined ? { model: a.model } : {}),
       ...(a.effort !== undefined ? { effort: a.effort } : {}),
       ...(a.modelSource !== undefined ? { modelSource: a.modelSource } : {}),
+      ...(a.portBase !== undefined ? { portBase: a.portBase } : {}),
+      ...(a.portCount !== undefined ? { portCount: a.portCount } : {}),
     }))
     return {
       id,
