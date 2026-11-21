@@ -46,6 +46,7 @@ export type StartRunOptions = {
   trustGrant?: TrustGrant
   values?: Record<string, string>
   files?: ManualFilePart[]
+  workItemId?: string
 }
 
 export type RunHandle = {
@@ -214,6 +215,7 @@ export class Engine {
         trustGrant: options.trustGrant,
         values: options.values,
         files: options.files,
+        workItemId: options.workItemId,
       },
       homeRealpath: this.homeRealpath(),
       settings: this.getCliTrust(),

@@ -65,6 +65,7 @@ const logQuery = z.object({
 const runsQuery = z.object({
   status: runStatusSchema.optional(),
   workflowId: z.string().min(1).optional(),
+  workItemId: z.string().min(1).optional(),
   limit: z.coerce.number().int().positive().optional(),
 })
 

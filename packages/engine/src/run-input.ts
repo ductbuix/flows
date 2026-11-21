@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join, relative } from "node:path"
-import { manualItemKey } from "./item-key.ts"
+import { manualItemKey, workItemItemKey } from "./item-key.ts"
 import {
   manualSource,
   type InputsJson,
@@ -21,15 +21,23 @@ export function runInputDir(runRoot: string): string {
   return join(runRoot, "input")
 }
 
+export type MaterializeRunInputResult = {
+  itemKey: string
+  inputHash: string
+  files: string[]
+  workItemId?: string
+}
+
 /**
  * Copy workflow input/, materialize Manual values, write inputs.json.
- * Returns itemKey, inputHash, and relative file list (DES-021).
+ * When workItemId is set, itemKey is derived from it (DES-026 / BL-039).
  */
 export function materializeRunInput(
   workflowRoot: string,
   runRoot: string,
-  item: ManualItem
-): { itemKey: string; inputHash: string; files: string[] } {
+  item: ManualItem,
+  workItemId?: string
+): MaterializeRunInputResult {
   const dest = runInputDir(runRoot)
   mkdirSync(dest, { recursive: true })
   const wfInput = join(workflowRoot, "input")
@@ -38,17 +46,26 @@ export function materializeRunInput(
   }
 
   const { fields, inputsJson } = manualSource.materialize(item, dest)
-  const itemKey = manualItemKey(fields)
+  const itemKey =
+    workItemId !== undefined
+      ? workItemItemKey(workItemId)
+      : manualItemKey(fields)
   const full: InputsJson = {
     ...inputsJson,
     itemKey,
     itemKeyVersion: 1,
+    ...(workItemId !== undefined ? { workItemId } : {}),
   }
   writeFileSync(join(dest, "inputs.json"), JSON.stringify(full, null, 2))
 
   const files = listRelativeFiles(dest)
   const inputHash = hashInputTree(dest, files)
-  return { itemKey, inputHash, files }
+  return {
+    itemKey,
+    inputHash,
+    files,
+    ...(workItemId !== undefined ? { workItemId } : {}),
+  }
 }
 
 function listRelativeFiles(root: string): string[] {

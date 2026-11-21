@@ -38,6 +38,8 @@ export const runSummarySchema = z.object({
   }),
   firstFailedTaskId: z.string().min(1).optional(),
   itemKey: z.string().min(1).optional(),
+  /** Work item this run belongs to (DES-026 / BL-039). */
+  workItemId: z.string().min(1).optional(),
   startedAt: z.string().min(1),
   finishedAt: z.string().optional(),
 })

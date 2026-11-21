@@ -68,6 +68,7 @@ export function applyEvent(
         startedAt: event.at,
         source: event.source,
         itemKey: event.itemKey,
+        workItemId: event.workItemId,
         inputHash: event.inputHash,
         inputFiles: event.files,
       }

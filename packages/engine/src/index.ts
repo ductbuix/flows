@@ -120,5 +120,5 @@ export {
 } from "./cursor-model-families.ts"
 export type { CliTrustValue } from "@workspace/shared"
 
-export { manualItemKey } from "./item-key.ts"
+export { manualItemKey, workItemItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"

@@ -25,9 +25,10 @@ Schema and writing rules: `docs/README.md`.
   preflight, GET `/cli/:cli/models`, connections CRUD/check and
   `GET /connectors`, work item CRUD (notes, attachments, trash on
   delete), run REST (GET `/runs` summaries with
-  status/workflowId/limit, start with trustGrant/values/files,
-  confirmDuplicate, cancel, rerun, retry, approve, reject, delete), run
-  input list/meta/files, log/summary/out, websocket run snapshots,
+  status/workflowId/workItemId/limit, start with
+  trustGrant/values/files/workItemId, confirmDuplicate, cancel, rerun
+  keeps workItemId, retry, approve, reject, delete), run input
+  list/meta/files, log/summary/out, websocket run snapshots,
   `runs_changed`, log chunks and workflow file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
   scheduler, command and agent tasks (CliAdapter: trust, catalog,
@@ -41,11 +42,11 @@ Schema and writing rules: `docs/README.md`.
   (onEvent + rebuild after resume), work item store under `workitems/`
   (atomic yaml/notes, attachments, `.trash`).
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`, `workItemSchema`), websocket (`runs_changed`), workflow (`inputs`,
-  `agent` defaults, model/effort, task `uses`), `connection.yaml`,
-  events (`queued`, `run_activated`, attempt `model`/`effort`/
-  `modelSource`) and YAML Document edits that keep comments and key
-  order.
+  `needsYou`/`workItemId`, `workItemSchema`), websocket (`runs_changed`),
+  workflow (`inputs`, `agent` defaults, model/effort, task `uses`),
+  `connection.yaml`, events (`queued`, `run_activated`, `workItemId` on
+  `run_started`, attempt `model`/`effort`/`modelSource`) and YAML
+  Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: Sidebar Platform (Home, Workflows, Runs) plus Workflows
   group and Settings; `/workflows` and `/runs` tables; graph editor

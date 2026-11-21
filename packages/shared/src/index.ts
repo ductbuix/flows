@@ -86,6 +86,7 @@ export {
 export {
   normalizeInputText,
   canonicalManualItemPayload,
+  canonicalWorkItemKeyPayload,
   buildManualValuesSchema,
   applyInputDefaults,
   inputsJsonSchema,
@@ -204,6 +205,7 @@ export {
   startRunBodySchema,
   invalidInputErrorSchema,
   duplicateInputErrorSchema,
+  unknownWorkItemErrorSchema,
   trustCheckStatusSchema,
   trustCheckSchema,
   trustStatusSchema,
@@ -218,6 +220,7 @@ export {
   type StartRunBody,
   type InvalidInputError,
   type DuplicateInputError,
+  type UnknownWorkItemError,
   type TrustCheckStatus,
   type TrustCheck,
   type TrustStatus,
