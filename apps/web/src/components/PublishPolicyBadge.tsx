@@ -15,7 +15,7 @@ const LOOK: Record<PublishPolicy, { label: string; icon: typeof Lock }> = {
   },
 }
 
-/** Publish policy Badge (DES-025). Editable Select lands in BL-051. */
+/** Publish policy Badge (DES-025). Editable Select is on the connection page. */
 export function PublishPolicyBadge({
   policy,
   "data-testid": testId = "policy-badge",

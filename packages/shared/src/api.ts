@@ -96,6 +96,17 @@ export const runLibraryPinSchema = z.object({
 
 export type RunLibraryPin = z.infer<typeof runLibraryPinSchema>
 
+/** One row in the run effects ledger (DES-026 / BL-051). */
+export const runEffectSchema = z.object({
+  what: z.string().min(1),
+  connection: connectionIdSchema,
+  impact: z.enum(["read", "local", "cloud"]),
+  result: z.string().min(1).optional(),
+  undoNote: z.string().min(1).optional(),
+})
+
+export type RunEffect = z.infer<typeof runEffectSchema>
+
 export const runDetailSchema = z.object({
   id: z.string().min(1),
   workflowId: z.string().min(1),
@@ -115,6 +126,8 @@ export const runDetailSchema = z.object({
   inputFiles: z.array(z.string()).default([]),
   /** Frozen library pins for this run (BL-046). */
   pins: z.array(runLibraryPinSchema).default([]),
+  /** Effects ledger derived from events (DES-026 / BL-051). */
+  effects: z.array(runEffectSchema).default([]),
 })
 
 export type RunDetail = z.infer<typeof runDetailSchema>

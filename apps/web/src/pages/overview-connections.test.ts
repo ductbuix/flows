@@ -52,10 +52,43 @@ describe("overview-connections", () => {
     expect(overviewImpacts(workflow)).toEqual(["read", "local"])
   })
 
+  it("adds Cloud impact for publish tasks", () => {
+    const withPublish: Workflow = {
+      ...workflow,
+      tasks: [
+        ...workflow.tasks,
+        {
+          id: "ship",
+          kind: "publish",
+          connection: "github-acme",
+          needs: ["two"],
+        },
+      ],
+    }
+    expect(overviewImpacts(withPublish)).toEqual(["read", "local", "cloud"])
+    expect(overviewConnections(withPublish)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          connection: "github-acme",
+          access: "publish",
+          taskIds: expect.arrayContaining(["two", "ship"]),
+        }),
+      ])
+    )
+  })
+
   it("lists connection ids on a task", () => {
     expect(taskConnectionIds(workflow.tasks[0]!)).toEqual([
       "rally-pay",
       "confluence",
     ])
+    expect(
+      taskConnectionIds({
+        id: "ship",
+        kind: "publish",
+        connection: "github-acme",
+        needs: [],
+      })
+    ).toEqual(["github-acme"])
   })
 })

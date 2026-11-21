@@ -71,7 +71,11 @@ export function OverviewConnectionsSection({ workflow }: Props) {
                   <TableCell className="font-mono">{row.connection}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {row.access === "read" ? "Read" : "Propose"}
+                      {row.access === "read"
+                        ? "Read"
+                        : row.access === "propose"
+                          ? "Propose"
+                          : "Publish"}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono text-muted-foreground">

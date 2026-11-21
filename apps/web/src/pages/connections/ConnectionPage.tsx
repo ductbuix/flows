@@ -6,6 +6,7 @@ import {
   libraryListSchema,
   type ConnectionDetail,
   type LibraryEntity,
+  type PublishPolicy,
   type RefreshRule,
 } from "@workspace/shared"
 import {
@@ -15,17 +16,10 @@ import {
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
-import { McpTrustDialog } from "@/components/McpTrustDialog"
 import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
-import { PublishPolicyBadge } from "@/components/PublishPolicyBadge"
-import { Section } from "@/components/Section"
 import { api } from "@/lib/api"
 import { connectionsPath } from "@/lib/paths"
-import { ConnectionLocalData } from "./ConnectionLocalData"
-import { ConnectionRefreshField } from "./ConnectionRefreshField"
-import { ConnectionSignInSection } from "./ConnectionSignInSection"
-import { ConnectionUsedBy } from "./ConnectionUsedBy"
+import { ConnectionPageBody } from "./ConnectionPageBody"
 import { useConnectionSignIn } from "./useConnectionSignIn"
 
 function mcpKey(scope: Record<string, string>): string | null {
@@ -85,24 +79,28 @@ export function ConnectionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
   }, [connectionId, loadDetail])
 
-  async function saveRefresh(refresh: RefreshRule) {
+  async function saveConnection(
+    patch: { refresh?: RefreshRule; policy?: PublishPolicy },
+    okMessage: string,
+    errMessage: string
+  ) {
     if (!detail) return
     setSaving(true)
     try {
       const { usedByWorkflows, usedByRuns, ...conn } = detail
-      const body = connectionSchema.parse({ ...conn, refresh })
+      const body = connectionSchema.parse({ ...conn, ...patch })
       const res = await api.connections[":id"].$put({
         param: { id: connectionId },
         json: body,
       })
       if (!res.ok) {
-        toast.error("Could not update refresh rule")
+        toast.error(errMessage)
         return
       }
-      setDetail({ ...detail, refresh, usedByWorkflows, usedByRuns })
-      toast.success("Refresh rule updated")
+      setDetail({ ...detail, ...patch, usedByWorkflows, usedByRuns })
+      toast.success(okMessage)
     } catch {
-      toast.error("Could not update refresh rule")
+      toast.error(errMessage)
     } finally {
       setSaving(false)
     }
@@ -131,68 +129,27 @@ export function ConnectionPage() {
             <Skeleton className="h-40 w-full" />
           </div>
         ) : (
-          <>
-            <PageTitle
-              title={detail.name}
-              description={`${detail.connector} · ${detail.id}`}
-              badge={
-                <PublishPolicyBadge
-                  policy={detail.policy}
-                  data-testid="connection-policy"
-                />
-              }
-            />
-            <ConnectionSignInSection
-              conn={detail}
-              signedIn={signIn.signedIn}
-              check={signIn.check}
-              busy={signIn.busy}
-              mcpAlwaysAllowed={signIn.mcpAlwaysAllowed}
-              onSignIn={() => void signIn.signInWithBrowser()}
-              onCheck={() => void signIn.checkAgain()}
-              onRemoveSignIn={() => void signIn.removeSignIn()}
-              onAllowMcp={() => signIn.setMcpDialogOpen(true)}
-              onRevokeMcp={() => {
-                const key = mcpKey(detail.scope)
-                if (key) void signIn.revokeMcp(key, detail.scope)
-              }}
-            />
-            {mcpKey(detail.scope) ? (
-              <McpTrustDialog
-                open={signIn.mcpDialogOpen}
-                onOpenChange={signIn.setMcpDialogOpen}
-                serverKey={mcpKey(detail.scope)!}
-                pending={signIn.busy === "mcp"}
-                onTrustOnce={() => {
-                  const key = mcpKey(detail.scope)
-                  if (key) void signIn.grantMcp(key, "once", detail.scope)
-                }}
-                onTrustAlways={() => {
-                  const key = mcpKey(detail.scope)
-                  if (key) void signIn.grantMcp(key, "always", detail.scope)
-                }}
-              />
-            ) : null}
-            <ConnectionLocalData entities={localData} />
-            <ConnectionUsedBy
-              workflows={detail.usedByWorkflows}
-              runs={detail.usedByRuns}
-            />
-            <ConnectionRefreshField
-              value={detail.refresh}
-              disabled={saving}
-              onChange={(refresh) => void saveRefresh(refresh)}
-            />
-            <Section title="Publish policy">
-              <PublishPolicyBadge
-                policy={detail.policy}
-                data-testid="connection-policy-section"
-              />
-              <p className="text-sm text-muted-foreground">
-                Policy is shown here; editing lands with publish UI.
-              </p>
-            </Section>
-          </>
+          <ConnectionPageBody
+            detail={detail}
+            localData={localData}
+            saving={saving}
+            signIn={signIn}
+            mcpKey={mcpKey(detail.scope)}
+            onSaveRefresh={(refresh) =>
+              void saveConnection(
+                { refresh },
+                "Refresh rule updated",
+                "Could not update refresh rule"
+              )
+            }
+            onSavePolicy={(policy) =>
+              void saveConnection(
+                { policy },
+                "Publish policy updated",
+                "Could not update publish policy"
+              )
+            }
+          />
         )}
       </div>
     </div>

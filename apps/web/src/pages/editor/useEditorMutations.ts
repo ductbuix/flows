@@ -15,6 +15,8 @@ import {
   type EditorSnapshot,
 } from "./editor-history"
 import {
+  firstProposeConnection,
+  yamlAfterAddPublishTask,
   yamlAfterAddTask,
   yamlAfterAgent,
   yamlAfterConnect,
@@ -85,6 +87,12 @@ export function useEditorMutations({
     addCommandTask: () => {
       if (!workflow) return
       const next = yamlAfterAddTask(yaml, workflow)
+      withYaml(next.yaml, { selectedTaskId: next.taskId })
+    },
+    addPublishTask: () => {
+      if (!workflow) return
+      const connection = firstProposeConnection(workflow) ?? "connection"
+      const next = yamlAfterAddPublishTask(yaml, workflow, connection)
       withYaml(next.yaml, { selectedTaskId: next.taskId })
     },
     connectTasks: (source: string, target: string) => {

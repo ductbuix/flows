@@ -21,6 +21,7 @@ import {
 } from "@workspace/ui/components/button-group"
 import { Card } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
+import { ImpactBadge } from "@/components/ImpactBadge"
 import { buildEditorGraph, type EditorNodeData } from "./editor-graph-layout"
 
 function EditorTaskNode({
@@ -41,6 +42,9 @@ function EditorTaskNode({
       <div className="font-mono font-medium">{data.label}</div>
       <div className="mt-1 flex flex-wrap gap-1">
         <Badge variant="outline">{data.kind}</Badge>
+        {data.impact === "cloud" ? (
+          <ImpactBadge impact="cloud" data-testid={`node-impact-${id}`} />
+        ) : null}
         {data.markers.map((m) => (
           <Badge key={m} variant="secondary">
             {m}

@@ -16,6 +16,8 @@ export type EditorNodeData = {
   kind: string
   markers: string[]
   connections: string[]
+  /** Cloud when kind is publish (DES-025 / BL-051). */
+  impact?: "cloud"
 }
 
 export function buildEditorGraph(workflow: Workflow): {
@@ -29,7 +31,10 @@ export function buildEditorGraph(workflow: Workflow): {
     if (task.repeat) markers.push("repeat")
     if (task.when !== undefined) markers.push("when")
     if (task.approval) markers.push("approval")
-    const connections = (task.uses ?? []).map((u) => u.connection)
+    const connections =
+      task.kind === "publish"
+        ? [task.connection]
+        : (task.uses ?? []).map((u) => u.connection)
     return {
       id: task.id,
       type: "editorTask",
@@ -39,6 +44,7 @@ export function buildEditorGraph(workflow: Workflow): {
         kind: task.kind,
         markers,
         connections,
+        ...(task.kind === "publish" ? { impact: "cloud" as const } : {}),
       },
       draggable: false,
       selectable: true,

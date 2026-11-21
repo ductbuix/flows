@@ -45,15 +45,24 @@ export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
           const key = `${item.run.id}:${item.taskId}`
           const pending =
             pendingKey === `${key}:approve` || pendingKey === `${key}:reject`
+          const publish = Boolean(item.connectionId)
           return (
             <Confirmation
               key={key}
               data-testid={`home-needs-you-${item.run.id}-${item.taskId}`}
               icon={<ShieldCheck />}
-              title={`${item.run.workflowName} · ${item.taskId}`}
-              description={`Run ${item.run.id}`}
-              approveLabel="Approve"
-              denyLabel="Reject"
+              title={
+                publish
+                  ? `${item.run.workflowName} · publish ${item.taskId}`
+                  : `${item.run.workflowName} · ${item.taskId}`
+              }
+              description={
+                publish
+                  ? `Connection ${item.connectionId} · Run ${item.run.id}`
+                  : `Run ${item.run.id}`
+              }
+              approveLabel={publish ? "Publish" : "Approve"}
+              denyLabel={publish ? "Discard" : "Reject"}
               approveTestId={`home-approve-${item.run.id}-${item.taskId}`}
               denyTestId={`home-reject-${item.run.id}-${item.taskId}`}
               pending={pending}

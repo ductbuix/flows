@@ -50,17 +50,40 @@ function sharedTaskFields(task: TaskSharedInput): SharedTaskFields {
   }
 }
 
+export type TaskKind = "command" | "agent" | "publish"
+
+type PublishKindInput = TaskSharedInput & { connection?: string }
+
 /** Build a valid task for `kind`, keeping shared fields (DES-018 / DES-020). */
-export function taskWithKind(
-  task: TaskSharedInput,
-  kind: "command" | "agent"
-): Task {
+export function taskWithKind(task: PublishKindInput, kind: TaskKind): Task {
   const shared = sharedTaskFields(task)
   if (kind === "agent") {
     return {
       ...shared,
       kind: "agent",
       cli: "claude",
+    }
+  }
+  if (kind === "publish") {
+    return {
+      id: shared.id,
+      needs: shared.needs,
+      ...(shared.name !== undefined ? { name: shared.name } : {}),
+      ...(shared.when !== undefined ? { when: shared.when } : {}),
+      ...(shared.continueOnError !== undefined
+        ? { continueOnError: shared.continueOnError }
+        : {}),
+      ...(shared.spawnDepth !== undefined
+        ? { spawnDepth: shared.spawnDepth }
+        : {}),
+      ...(shared.spawnedBy !== undefined
+        ? { spawnedBy: shared.spawnedBy }
+        : {}),
+      ...(shared.promptDir !== undefined
+        ? { promptDir: shared.promptDir }
+        : {}),
+      kind: "publish",
+      connection: task.connection ?? "connection",
     }
   }
   return {
@@ -77,7 +100,8 @@ export function taskWithKind(
 export function switchTaskKind(
   text: string,
   taskId: string,
-  kind: "command" | "agent"
+  kind: TaskKind,
+  connection?: string
 ): string {
   const doc = parseDocument(text, { keepSourceTokens: true })
   const idx = taskIndex(doc, taskId)
@@ -88,6 +112,9 @@ export function switchTaskKind(
   if (!current || typeof current !== "object") return text
   return upsertTask(
     text,
-    taskWithKind({ ...current, id: taskId } as TaskSharedInput, kind)
+    taskWithKind(
+      { ...current, id: taskId, connection } as PublishKindInput,
+      kind
+    )
   )
 }
