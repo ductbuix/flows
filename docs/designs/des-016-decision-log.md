@@ -21,6 +21,7 @@ related:
     DES-021,
     DES-022,
     DES-023,
+    DES-024,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -117,6 +118,11 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Snapshot undo for graph and inspector edits       | no undo existed; YAML pane keeps CodeMirror history     | DES-022, 010 |
 | 2026-11-21 | Drawer Model and Effort selects, Default first    | the first option shows the CLI's current setting        | DES-023, 010 |
 | 2026-11-21 | Run view shows model and effort on the attempt    | record what was actually resolved                       | DES-023, 009 |
+| 2026-11-21 | shadcn base-nova defaults are the only style source | no custom tokens or density; keep the kit stable      | DES-024, 008 |
+| 2026-11-21 | Lint bans arbitrary values and palette colors in apps/web | generated shadcn files keep theirs, never hand-edited | DES-024 |
+| 2026-11-21 | shadcn Sidebar shell with workflows and Settings  | replaces the hand-rolled nav; no icon-only mode         | DES-024, 019 |
+| 2026-11-21 | One UI; YAML, env and raw logs behind Advanced    | one product for POs and developers                      | DES-024      |
+| 2026-11-21 | Theme default light; dark and system stay         | the `d` shortcut still toggles                          | DES-024, 008 |
 
 ## Docs and tooling
 
