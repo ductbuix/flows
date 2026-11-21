@@ -39,7 +39,8 @@ Schema and writing rules: `docs/README.md`.
   `composeFlags`), connector registry (`connectors/`, github read,
   fake for tests), connections store, library revisions/pull/pins
   (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
-  under `workitems/`,
+  under `workitems/`, propose work copies (`work/`, serial lock,
+  change sets via `GET /runs/:id/changes/:connectionId`),
   model/effort resolve and preflight warns (including connection uses),
   app-owned trust markers, spawn into `graph.json`, resume, approval,
   cancel, manual retry, conditions, retry, repeat, `agents` limits, run

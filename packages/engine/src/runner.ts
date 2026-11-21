@@ -95,13 +95,13 @@ export function buildTaskEnv(
     )
   }
 
-  // RESOURCE_<ID> for each connection the task uses (DES-026 / BL-043).
+  // RESOURCE_<ID>: resources/ for read, work/ for propose (DES-026 / BL-048).
   for (const use of task.uses ?? []) {
-    env[connectionEnvName(use.connection)] = join(
-      runRoot,
-      "resources",
-      use.connection
-    )
+    const root =
+      use.access === "propose"
+        ? join(runRoot, "work", use.connection)
+        : join(runRoot, "resources", use.connection)
+    env[connectionEnvName(use.connection)] = root
   }
 
   return env

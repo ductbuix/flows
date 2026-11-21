@@ -17,7 +17,7 @@ For direction (vision, architecture, decisions, roadmap) read these first.
 | Section | Index | Size | Holds |
 | --- | --- | --- | --- |
 | Designs | [designs/INDEX.md](designs/INDEX.md) | 26 docs | direction docs, system designs and UI instructions |
-| Backlogs | [backlogs/INDEX.md](backlogs/INDEX.md) | 56 docs, 13 open | chunked work items, one per file |
+| Backlogs | [backlogs/INDEX.md](backlogs/INDEX.md) | 56 docs, 11 open | chunked work items, one per file |
 
 | ID | Guide | Summary |
 | --- | --- | --- |

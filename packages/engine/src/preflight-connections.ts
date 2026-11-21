@@ -3,8 +3,8 @@ import { collectWorkflowUses, readConnection } from "./connections.ts"
 import { getConnector } from "./connectors/registry.ts"
 
 /**
- * Warn-only connection checks (DES-026 / BL-042): unknown connection,
- * propose access (not built yet), and ambient login from the connector.
+ * Warn-only connection checks (DES-026 / BL-042): unknown connection
+ * and ambient login from the connector. Propose access is built (BL-048).
  */
 export async function checkConnectionUses(input: {
   home: string
@@ -15,7 +15,6 @@ export async function checkConnectionUses(input: {
 
   const checks: TrustCheck[] = []
   const seenUnknown = new Set<string>()
-  const seenPropose = new Set<string>()
   const seenAmbient = new Set<string>()
 
   for (const entry of uses) {
@@ -30,15 +29,6 @@ export async function checkConnectionUses(input: {
         })
       }
       continue
-    }
-
-    if (entry.access === "propose" && !seenPropose.has(entry.connection)) {
-      seenPropose.add(entry.connection)
-      checks.push({
-        id: `connection_propose_${entry.connection}`,
-        status: "warn",
-        message: `propose access on ${entry.connection} is not built yet`,
-      })
     }
 
     const connector = getConnector(conn.connector)

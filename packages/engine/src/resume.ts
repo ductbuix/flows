@@ -9,6 +9,7 @@ import { readAttemptStderr, resolveFinishReason } from "./failure-reason.ts"
 import { openAttempts } from "./fold.ts"
 import { isPidAlive, killProcessGroup, readExitCode } from "./pid.ts"
 import { DEFAULT_PORT_COUNT, portLeaseKey, portLeases } from "./port-lease.ts"
+import { serialLocks } from "./serial-lock.ts"
 import { remainingTimeoutMs } from "./timeout.ts"
 
 function now(): string {
@@ -64,8 +65,9 @@ export function resumeOpenAttempts(
       continue
     }
 
-    // Dead attempt: ports are free after resume (fresh process memory).
+    // Dead attempt: ports/serial locks are free after resume.
     portLeases.release(leaseKey)
+    serialLocks.release(host.runId, taskId, n)
 
     const code = readExitCode(host.runRoot, taskId, n)
     if (code !== null) {

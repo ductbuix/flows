@@ -9,6 +9,9 @@ export {
   connectionEnvName,
   connectionSchema,
   connectionWriteSchema,
+  changeSetOpSchema,
+  changeSetSchema,
+  runChangesResponseSchema,
   type SignInMethod,
   type RefreshRule,
   type PublishPolicy,
@@ -17,6 +20,9 @@ export {
   type Connection,
   type ConnectionInput,
   type ConnectionWrite,
+  type ChangeSetOp,
+  type ChangeSet,
+  type RunChangesResponse,
 } from "./connection.ts"
 export {
   connectorDescribeSchema,
@@ -162,6 +168,7 @@ export {
   runDeletedEventSchema,
   taskRetryRequestedEventSchema,
   libraryPulledEventSchema,
+  workCopyChangedEventSchema,
   type TaskStatus,
   type RunStatus,
   type EngineEvent,

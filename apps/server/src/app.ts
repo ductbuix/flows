@@ -42,6 +42,7 @@ import { connectionRoutes } from "./connection-routes.ts"
 import { libraryRoutes } from "./library-routes.ts"
 import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
+import { runChangesRoutes } from "./run-changes-routes.ts"
 import { runInputRoutes } from "./run-input-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
@@ -80,6 +81,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", lifecycleRoutes(engine, hub))
     .route("/", fileRoutes(engine))
     .route("/", runInputRoutes(engine))
+    .route("/", runChangesRoutes(engine))
     .route("/", trustRoutes(engine))
     .route("/", connectionRoutes(engine))
     .route("/", libraryRoutes(engine))
