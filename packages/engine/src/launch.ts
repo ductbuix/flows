@@ -84,6 +84,7 @@ export async function launchReadyTasks(host: LaunchHost): Promise<void> {
         {
           runId: host.runId,
           runRoot: host.runRoot,
+          workflowRoot: host.workflowRoot,
           home: host.home,
           state: host.state,
           append: host.append,

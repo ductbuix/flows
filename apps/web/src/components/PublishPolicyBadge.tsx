@@ -1,6 +1,6 @@
 import type { PublishPolicy } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
-import { Lock, ShieldCheck } from "lucide-react"
+import { Bot, Lock, ShieldCheck } from "lucide-react"
 
 type Props = {
   policy: PublishPolicy
@@ -12,6 +12,10 @@ const LOOK: Record<PublishPolicy, { label: string; icon: typeof Lock }> = {
   "approve-each-publish": {
     label: "Approve each publish",
     icon: ShieldCheck,
+  },
+  "trust-agent-review": {
+    label: "Trust agent review",
+    icon: Bot,
   },
 }
 

@@ -229,8 +229,9 @@ set and the goals of the `propose` tasks, plus an optional
 `connections/<id>/review.md` of the user's rules, and returns approve or
 escalate. Escalate, an error, a timeout or a destructive op all fall
 back to "Approve each publish": the task waits for a person. The
-verdict and its reason go in the effects ledger. The judge uses the CLI
-and model defaults of DES-023.
+verdict and its reason go in the effects ledger and on the task
+(`agent_review_finished`). The judge uses the Claude CLI with the model
+and effort defaults of DES-023.
 
 ## Secrets
 

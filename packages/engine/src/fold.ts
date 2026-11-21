@@ -41,6 +41,9 @@ export type TaskState = {
   approved?: boolean
   failReason?: "rejected" | "conflict"
   skipReason?: "when" | "upstream_skip" | "branch"
+  /** Agent review under trust-agent-review (DES-026 / BL-052). */
+  reviewVerdict?: "approve" | "escalate"
+  reviewReason?: string
   /** Next attempt_started is a manual retry (DES-011). */
   manualRetryPending?: boolean
   attempts: AttemptState[]

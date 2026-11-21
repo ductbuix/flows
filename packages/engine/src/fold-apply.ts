@@ -256,5 +256,14 @@ export function applyEvent(
       }
       return state
     }
+    case "agent_review_finished": {
+      if (!state) return state
+      const task = state.tasks[event.taskId]
+      if (task) {
+        task.reviewVerdict = event.verdict
+        task.reviewReason = event.reason
+      }
+      return state
+    }
   }
 }

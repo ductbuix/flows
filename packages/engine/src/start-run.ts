@@ -1,5 +1,5 @@
 import type { EngineEvent, TrustGrant, Workflow } from "@workspace/shared"
-import { workflowNeedsAgentCli } from "./workflow-agents.ts"
+import { runNeedsAgentCli } from "./workflow-agents.ts"
 import { prepareRunDirs } from "./dirs.ts"
 import { applyStartTrustGrant, prepareTrustMarker } from "./engine-trust.ts"
 import type { EventLog } from "./event-log.ts"
@@ -43,7 +43,7 @@ export async function appendRunStarted(options: {
   workflowRuns: RunState[]
 }): Promise<StartRunResult> {
   const { log, graph, params, homeRealpath, settings, setAlwaysTrust } = options
-  const needsCli = workflowNeedsAgentCli(graph)
+  const needsCli = runNeedsAgentCli(params.home, graph)
 
   if (needsCli) {
     applyStartTrustGrant(

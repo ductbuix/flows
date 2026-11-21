@@ -240,6 +240,19 @@ export const publishFinishedEventSchema = z.object({
   impact: z.literal("cloud").optional(),
 })
 
+/**
+ * Agent review at a publish task under trust-agent-review (DES-026 /
+ * BL-052). Escalate (incl. error, timeout, destructive) waits for a person.
+ */
+export const agentReviewFinishedEventSchema = z.object({
+  type: z.literal("agent_review_finished"),
+  ...eventBase,
+  taskId: z.string().min(1),
+  connection: connectionIdSchema,
+  verdict: z.enum(["approve", "escalate"]),
+  reason: z.string().min(1),
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   runActivatedEventSchema,
@@ -265,6 +278,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   workCopyChangedEventSchema,
   publishStartedEventSchema,
   publishFinishedEventSchema,
+  agentReviewFinishedEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>

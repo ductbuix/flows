@@ -191,6 +191,7 @@ export {
   workCopyChangedEventSchema,
   publishStartedEventSchema,
   publishFinishedEventSchema,
+  agentReviewFinishedEventSchema,
   type TaskStatus,
   type RunStatus,
   type EngineEvent,

@@ -40,7 +40,7 @@ import {
 } from "./library-retention.ts"
 import { decideTrust } from "./trust-policy.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
-import { workflowNeedsAgentCli } from "./workflow-agents.ts"
+import { runNeedsAgentCli } from "./workflow-agents.ts"
 
 export type CreateEngineOptions = {
   home?: string
@@ -139,7 +139,7 @@ export class Engine {
     return {
       trust: this.trustDecision(),
       checks: await runPreflightChecks(input),
-      needsAgentCli: workflowNeedsAgentCli(workflow),
+      needsAgentCli: runNeedsAgentCli(this.home, workflow),
     }
   }
 
@@ -291,7 +291,7 @@ export class Engine {
     this.schedulers.delete(runId)
     const workflowRoot = workflowDir(this.home, state.workflowId)
     const root = runDir(workflowRoot, runId)
-    if (workflowNeedsAgentCli(state.graph)) {
+    if (runNeedsAgentCli(this.home, state.graph)) {
       const decision = decideTrust({
         homeRealpath: this.homeRealpath(),
         settings: this.getCliTrust(),
@@ -404,7 +404,7 @@ export class Engine {
       runId: state.runId,
       at: new Date().toISOString(),
     })
-    if (workflowNeedsAgentCli(state.graph)) {
+    if (runNeedsAgentCli(this.home, state.graph)) {
       const decision = decideTrust({
         homeRealpath: this.homeRealpath(),
         settings: this.getCliTrust(),

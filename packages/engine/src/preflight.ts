@@ -123,7 +123,7 @@ export async function runPreflightChecks(
     checkSandbox(input),
     ...checkMissingPrompts(input),
   ]
-  const clis = workflowAgentClis(input.workflow)
+  const clis = workflowAgentClis(input.workflow, input.home)
   for (const cli of clis) {
     checks.push(await checkCliInstalled(cli))
     checks.push(checkCliFlags(cli))
