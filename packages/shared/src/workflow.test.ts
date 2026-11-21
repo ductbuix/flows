@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { parseWorkflowYaml } from "./workflow-yaml.ts"
-import { workflowSchema } from "./workflow.ts"
+import { loneAgentJudge, workflowSchema } from "./workflow.ts"
 
 describe("workflowSchema", () => {
   it("accepts a diamond of command tasks", () => {
@@ -130,6 +130,18 @@ describe("workflowSchema", () => {
     expect(workflow.tasks[0]?.when).toEqual({
       agent: { cli: "claude" },
     })
+  })
+
+  it("loneAgentJudge returns only a top-level agent leaf", () => {
+    expect(
+      loneAgentJudge({ agent: { cli: "claude", model: "haiku" } })
+    ).toEqual({ cli: "claude", model: "haiku" })
+    expect(loneAgentJudge({ exit: 0 })).toBeUndefined()
+    expect(
+      loneAgentJudge({ all: [{ agent: { cli: "claude" } }] })
+    ).toBeUndefined()
+    expect(loneAgentJudge(false)).toBeUndefined()
+    expect(loneAgentJudge(undefined)).toBeUndefined()
   })
 
   it("accepts inputs and maxConcurrentRuns", () => {

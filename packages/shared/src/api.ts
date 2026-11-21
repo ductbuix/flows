@@ -5,6 +5,7 @@ import {
   runStatusSchema,
   taskStatusSchema,
 } from "./events.ts"
+import { effortSchema } from "./model-effort.ts"
 import { workflowSchema } from "./workflow.ts"
 
 export const workflowSummarySchema = z.object({
@@ -37,6 +38,12 @@ export const attemptViewSchema = z.object({
   /** timeout or mapped CLI stderr (DES-019). */
   reason: z.string().min(1).optional(),
   kind: attemptKindInfoSchema,
+  /** Resolved model for agent attempts (DES-023). */
+  model: z.string().min(1).optional(),
+  /** Resolved effort for agent attempts (DES-023). */
+  effort: effortSchema.optional(),
+  /** Where model/effort came from (DES-023). */
+  modelSource: z.enum(["task", "workflow", "cli"]).optional(),
 })
 
 export type AttemptView = z.infer<typeof attemptViewSchema>

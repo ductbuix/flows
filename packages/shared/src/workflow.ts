@@ -204,6 +204,18 @@ export function needTaskId(need: Need): string {
   return typeof need === "string" ? need : need.task
 }
 
+/**
+ * Lone `{ agent: ... }` leaf only. Combined all/any stay yaml-only
+ * for model/effort in the drawer (DES-023).
+ */
+export function loneAgentJudge(
+  condition: Condition | boolean | undefined
+): AgentJudge | undefined {
+  if (!condition || typeof condition === "boolean") return undefined
+  if ("agent" in condition) return condition.agent
+  return undefined
+}
+
 export function isAgentTask(task: Task): task is AgentTask {
   return task.kind === "agent"
 }
