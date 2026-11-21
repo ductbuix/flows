@@ -4,33 +4,21 @@ import type { ConnectionCheckResult } from "@workspace/shared"
 import type {
   Connector,
   ConnectorChangeSet,
+  ConnectorPublishContext,
   ConnectorPublishResult,
   ConnectorPullResult,
 } from "../types.ts"
-import { runGh as defaultRunGh, runGit as defaultRunGit } from "./run.ts"
-import type { CommandResult } from "./run.ts"
+import { githubDiff } from "./diff.ts"
+import { githubPublish } from "./publish.ts"
+import { hostOf, remoteOf } from "./repo.ts"
+import {
+  runGh as defaultRunGh,
+  runGit as defaultRunGit,
+  type GithubRunner,
+} from "./run.ts"
 
 const SHARED_CLONE = ".clone"
 const AMBIENT_GH = "command tasks can use the ambient gh login on this machine"
-
-export type GithubRunner = {
-  runGh: (args: string[]) => Promise<CommandResult>
-  runGit: (args: string[]) => Promise<string>
-}
-
-function hostOf(connection: { scope: Record<string, string> }): string {
-  return connection.scope.host?.trim() || "github.com"
-}
-
-function remoteOf(
-  connection: { scope: Record<string, string> },
-  entityId: string
-): string {
-  const override = connection.scope.remote?.trim()
-  if (override) return override
-  const host = hostOf(connection)
-  return `https://${host}/${entityId}.git`
-}
 
 function parseAuthStatus(
   host: string,
@@ -126,18 +114,15 @@ export function createGithubConnector(
       return { revision: sha }
     },
     async diff(input): Promise<ConnectorChangeSet> {
-      return {
-        v: 1,
-        connection: input.connection.id,
-        base: "none",
-        ops: [],
-      }
+      return githubDiff(input, runner)
     },
-    async publish(): Promise<ConnectorPublishResult> {
-      return {
-        status: "rejected",
-        message: "github publish is not implemented yet (BL-050)",
-      }
+    async publish(
+      connection,
+      changeSet,
+      home,
+      context?: ConnectorPublishContext
+    ): Promise<ConnectorPublishResult> {
+      return githubPublish(connection, changeSet, home, runner, context)
     },
   }
 }
@@ -145,3 +130,4 @@ export function createGithubConnector(
 export const githubConnector = createGithubConnector()
 
 export { AMBIENT_GH, SHARED_CLONE }
+export type { GithubRunner } from "./run.ts"

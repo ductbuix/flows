@@ -4,6 +4,7 @@ export type {
   ConnectorDiffInput,
   ConnectorPullInput,
   ConnectorPullResult,
+  ConnectorPublishContext,
   ConnectorPublishResult,
 } from "./types.ts"
 export {
@@ -20,4 +21,5 @@ export {
   createConfluenceConnector,
   MCP_TRUST_REQUIRED,
 } from "./confluence/index.ts"
+export { rallyConnector, createRallyConnector } from "./rally/index.ts"
 export { registerBuiltinConnectors } from "./builtins.ts"

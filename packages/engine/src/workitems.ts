@@ -65,6 +65,7 @@ export type CreateWorkItemInput = {
   workflowId?: string
   inputs?: Record<string, string>
   notes?: string
+  source?: WorkItem["source"]
   now?: Date
 }
 
@@ -77,7 +78,7 @@ export function createWorkItem(
   const item = workItemSchema.parse({
     id,
     title: input.title,
-    source: { kind: "adhoc" },
+    source: input.source ?? { kind: "adhoc" },
     workflowId: input.workflowId,
     inputs: input.inputs ?? {},
     links: [],

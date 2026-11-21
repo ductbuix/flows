@@ -32,7 +32,9 @@ function statusLabel(
   check: ConnectionCheckResult | null
 ): string {
   if (conn.signIn === "cookies") {
-    return signedIn ? "Signed in" : "Signed out"
+    if (!signedIn) return "Signed out"
+    if (check && !check.ok) return check.message
+    return "Signed in"
   }
   if (!check) return "Checking…"
   if (!check.ok) return check.message
@@ -56,7 +58,9 @@ export function ConnectionSignInSection({
   const cookies = conn.signIn === "cookies"
   const mcp = conn.signIn === "mcp"
   const serverKey = mcp ? mcpServerKey(conn) : null
-  const ok = cookies ? signedIn : check?.ok === true || (!check && signedIn)
+  const ok = cookies
+    ? signedIn && (check ? check.ok : true)
+    : check?.ok === true || (!check && signedIn)
 
   return (
     <Section title="Sign-in">

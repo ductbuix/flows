@@ -9,7 +9,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs"
-import { dirname, join } from "node:path"
+import { basename, dirname, join } from "node:path"
 import type {
   ChangeSet,
   EngineEvent,
@@ -197,8 +197,10 @@ export async function diffWorkCopy(options: {
   connectionId: string
   /** When set, write changeset/preview under changes/<taskId>/ (BL-049). */
   publishTaskId?: string
+  runId?: string
 }): Promise<{ changeSet: ChangeSet; previewMd: string }> {
   const { home, runRoot, connectionId, publishTaskId } = options
+  const runId = options.runId ?? basename(runRoot)
   const conn = readConnection(home, connectionId)
   if (!conn) throw new Error(`unknown connection ${connectionId}`)
   const connector = getConnector(conn.connector)
@@ -220,6 +222,8 @@ export async function diffWorkCopy(options: {
     connection: conn,
     workCopyDir: workRoot,
     baseDir: baseRoot,
+    runId,
+    publishTaskId,
   })
   const changeSet = raw as ChangeSet
   const previewMd = previewFromChangeSet(changeSet)
@@ -256,7 +260,12 @@ export async function recordUnpublishedLocalEffects(options: {
   const { home, runRoot, runId, append } = options
   for (const connectionId of listWorkConnections(runRoot)) {
     try {
-      const { changeSet } = await diffWorkCopy({ home, runRoot, connectionId })
+      const { changeSet } = await diffWorkCopy({
+        home,
+        runRoot,
+        connectionId,
+        runId,
+      })
       if (changeSet.ops.length === 0) continue
       append({
         type: "work_copy_changed",

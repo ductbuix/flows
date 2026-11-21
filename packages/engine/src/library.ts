@@ -61,6 +61,7 @@ export function resolveScopeEntity(connection: Connection): ScopeEntity {
     "host",
     "command",
     "url",
+    "domain",
   ])
   const parts: string[] = []
   for (const field of desc.scopeFields) {

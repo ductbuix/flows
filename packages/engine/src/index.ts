@@ -108,6 +108,8 @@ export {
   confluenceConnector,
   createConfluenceConnector,
   MCP_TRUST_REQUIRED,
+  rallyConnector,
+  createRallyConnector,
   type Connector,
   type ConnectorChangeSet,
   type ConnectorPublishResult,

@@ -25,9 +25,9 @@ Schema and writing rules: `docs/README.md`.
   `/connections/:id` (sign-in, MCP allow, local data, used by, refresh,
   policy); Settings lists allowed MCP servers for revoke;
   `/workflows` and `/runs` (grouped by work item); Start picks work item
-  or None; Home Needs you, expired sign-ins, Work items; Impact/
-  Freshness/Policy on `/dev/kit`; Overview/Editor/Runs; graph editor,
-  run view; Settings.
+  or None; Home Needs you, expired sign-ins, Work items (Ad hoc or
+  Rally source Badge); Impact/Freshness/Policy on `/dev/kit`;
+  Overview/Editor/Runs; graph editor, run view; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
@@ -38,9 +38,9 @@ Schema and writing rules: `docs/README.md`.
   summary/out, websocket snapshots, `runs_changed`, log chunks and
   file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command/agent tasks (CliAdapter), connectors (github,
-  confluence via MCP, fake), MCP trust allowlist, connections, library
-  pull/pins/retention (`library.ts`, maxBytes, sweep, clear,
+  scheduler, command/agent tasks (CliAdapter), connectors (github draft
+  PR, confluence via MCP, rally, fake), MCP trust allowlist, connections,
+  library pull/pins/retention (`library.ts`, maxBytes, sweep, clear,
   `resources/` + `RESOURCE_*`), work items, cookie secrets under
   `secrets/` (Chrome sign-in, sandbox denies),
   propose work copies (`work/`, serial lock, change sets),
