@@ -44,6 +44,7 @@ import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
 import { runChangesRoutes } from "./run-changes-routes.ts"
 import { runInputRoutes } from "./run-input-routes.ts"
+import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
@@ -83,6 +84,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", runInputRoutes(engine))
     .route("/", runChangesRoutes(engine))
     .route("/", trustRoutes(engine))
+    .route("/", mcpTrustRoutes(engine))
     .route("/", connectionRoutes(engine))
     .route("/", libraryRoutes(engine))
     .route("/", workItemRoutes(engine))

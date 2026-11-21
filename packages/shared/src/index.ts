@@ -278,6 +278,16 @@ export {
   type CliStatus,
 } from "./api-trust.ts"
 export {
+  mcpTrustEntrySchema,
+  mcpTrustValueSchema,
+  mcpTrustStatusSchema,
+  putMcpTrustBodySchema,
+  type McpTrustEntry,
+  type McpTrustValue,
+  type McpTrustStatus,
+  type PutMcpTrustBody,
+} from "./api-mcp-trust.ts"
+export {
   workflowIdSchema,
   createWorkflowBodySchema,
   renameWorkflowBodySchema,

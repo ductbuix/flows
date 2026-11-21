@@ -136,6 +136,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Connection access declared and warned                     | no network blocking yet; credentials never reach tasks         | DES-025         |
 | 2026-11-22 | No Keychain; reverses the Keychain row above              | any user process reads it via `security`; tasks too            | DES-026         |
 | 2026-11-22 | Sign-in is CLI-owned, allowed local MCP, or cookies       | no API tokens; cookies from a Chrome sign-in by Flows          | DES-026         |
+| 2026-11-22 | MCP allowlist is `mcp-trust.json` (command or URL keys)   | same allow-before-run as CLI trust; file avoids app.db locks   | DES-026, BL-054 |
 | 2026-11-22 | Cookies in `secrets/`, 0700, sandbox denies reads         | enforced for sandboxed tasks, unlike the Keychain              | DES-026         |
 | 2026-11-22 | Connectors are in-repo adapters only                      | no plugin loading; J12 is a pull request                       | DES-026         |
 | 2026-11-22 | Repo work copy is `git clone --shared`, no worktree       | worktree metadata is outside the sandbox write root            | DES-026         |

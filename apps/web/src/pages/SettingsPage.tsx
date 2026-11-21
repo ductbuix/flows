@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import type { CliInfo } from "@workspace/shared"
-import { cliStatusSchema } from "@workspace/shared"
+import type { CliInfo, McpTrustEntry } from "@workspace/shared"
+import { cliStatusSchema, mcpTrustStatusSchema } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -34,27 +34,34 @@ import { Section } from "@/components/Section"
 import { useTheme } from "@/components/theme-provider"
 import { api } from "@/lib/api"
 import { fetchTrustStatus, revokeTrust } from "@/lib/run-actions"
+import { SettingsMcpSection } from "./SettingsMcpSection"
 
 export function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [clis, setClis] = useState<CliInfo[] | null>(null)
   const [alwaysTrusted, setAlwaysTrusted] = useState(false)
   const [homeRealpath, setHomeRealpath] = useState<string | null>(null)
+  const [mcpServers, setMcpServers] = useState<McpTrustEntry[] | null>(null)
   const [revoking, setRevoking] = useState(false)
+  const [revokingMcp, setRevokingMcp] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
     void (async () => {
       try {
-        const [cliRes, trust] = await Promise.all([
+        const [cliRes, trust, mcpRes] = await Promise.all([
           api["cli-status"].$get(),
           fetchTrustStatus(),
+          api["mcp-trust"].$get(),
         ])
         if (!cliRes.ok) throw new Error("cli status failed")
+        if (!mcpRes.ok) throw new Error("mcp trust failed")
         const status = cliStatusSchema.parse(await cliRes.json())
+        const mcp = mcpTrustStatusSchema.parse(await mcpRes.json())
         if (!alive) return
         setClis(status.clis)
+        setMcpServers(mcp.servers)
         if (trust.ok) {
           setAlwaysTrusted(trust.data.alwaysTrusted)
           setHomeRealpath(trust.data.homeRealpath)
@@ -80,6 +87,24 @@ export function SettingsPage() {
     toast.success("Always-trust revoked")
   }
 
+  async function onRevokeMcp(key: string) {
+    setRevokingMcp(key)
+    try {
+      const res = await api["mcp-trust"].$put({
+        json: { key, grant: "none" },
+      })
+      if (!res.ok) {
+        toast.error("Could not revoke MCP allow")
+        return
+      }
+      const body = mcpTrustStatusSchema.parse(await res.json())
+      setMcpServers(body.servers)
+      toast.success("MCP allow revoked")
+    } finally {
+      setRevokingMcp(null)
+    }
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <PageHeader crumbs={[{ label: "Settings" }]} />
@@ -89,7 +114,7 @@ export function SettingsPage() {
       >
         <PageTitle
           title="Settings"
-          description="Theme, agent CLIs and always-trust for this machine."
+          description="Theme, agent CLIs, always-trust and allowed MCP servers."
         />
         {error ? (
           <Alert variant="destructive">
@@ -186,6 +211,12 @@ export function SettingsPage() {
                 </ItemActions>
               </Item>
             </Section>
+
+            <SettingsMcpSection
+              servers={mcpServers}
+              revokingKey={revokingMcp}
+              onRevoke={(key) => void onRevokeMcp(key)}
+            />
           </FieldGroup>
         )}
       </div>

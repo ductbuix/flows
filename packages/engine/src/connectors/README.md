@@ -14,7 +14,13 @@ In-repo adapters for outside systems (DES-026). There is no loading from
    in unit tests.
 
 The `fake` connector is for tests only. Register it in the test, not at
-app startup. Builtin connectors (today: `github`) are registered via
-`registerBuiltinConnectors()` from the server entrypoint. E2e sets
+app startup. Builtin connectors (`github`, `confluence`) are registered
+via `registerBuiltinConnectors()` from the server entrypoint. E2e sets
 `FLOWAPP_FAKE_CONNECTOR=1` so the server also registers `fake` for
 journey coverage (BL-045).
+
+Confluence uses sign-in method `mcp`. Scope holds `space`, `page`, and
+either `command` (local stdio MCP) or `url`. The server runs only after
+the user allows it (`mcp-trust.json` under FLOWAPP_HOME; Settings lists
+and revokes). The adapter calls MCP tools `get_page` and `update_page`
+(line-delimited JSON-RPC).

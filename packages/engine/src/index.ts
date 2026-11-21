@@ -105,10 +105,31 @@ export {
   fakeConnector,
   githubConnector,
   createGithubConnector,
+  confluenceConnector,
+  createConfluenceConnector,
+  MCP_TRUST_REQUIRED,
   type Connector,
   type ConnectorChangeSet,
   type ConnectorPublishResult,
 } from "./connectors/index.ts"
+export {
+  connectMcp,
+  connectMcpStdio,
+  connectMcpUrl,
+  type McpClient,
+  type McpConnectInput,
+} from "./mcp/client.ts"
+export {
+  allowMcpServerAlways,
+  allowMcpServerOnce,
+  clearMcpOnceGrants,
+  isMcpServerAllowed,
+  listAllowedMcpServers,
+  mcpServerKeyFromScope,
+  normalizeMcpServerKey,
+  readMcpTrustValue,
+  revokeMcpServer,
+} from "./mcp/trust.ts"
 export {
   hashText,
   writeAtomic,

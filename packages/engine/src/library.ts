@@ -53,7 +53,15 @@ export function resolveScopeEntity(connection: Connection): ScopeEntity {
   if (!kind) {
     throw new Error(`connector ${connection.connector} has no entity kinds`)
   }
-  const skip = new Set(["ambient", "failPull", "signedOut", "remote", "host"])
+  const skip = new Set([
+    "ambient",
+    "failPull",
+    "signedOut",
+    "remote",
+    "host",
+    "command",
+    "url",
+  ])
   const parts: string[] = []
   for (const field of desc.scopeFields) {
     if (skip.has(field)) continue
