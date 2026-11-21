@@ -15,6 +15,21 @@ type Props = {
   onRemoveSignIn: () => void
 }
 
+function statusLabel(
+  conn: Connection,
+  signedIn: boolean,
+  check: ConnectionCheckResult | null
+): string {
+  if (conn.signIn === "cookies") {
+    return signedIn ? "Signed in" : "Signed out"
+  }
+  if (!check) return "Checking…"
+  if (!check.ok) return check.message
+  if (check.ambientLogin) return `Signed in as ${check.ambientLogin}`
+  return check.message
+}
+
+/** Sign-in status, check, browser sign-in and remove (BL-045 / BL-053). */
 export function ConnectionSignInSection({
   conn,
   signedIn,
@@ -24,18 +39,24 @@ export function ConnectionSignInSection({
   onCheck,
   onRemoveSignIn,
 }: Props) {
+  const cookies = conn.signIn === "cookies"
+  const ok = cookies ? signedIn : check?.ok === true || (!check && signedIn)
+
   return (
     <Section title="Sign-in">
-      <div className="flex max-w-xl flex-col gap-4">
+      <div
+        className="flex max-w-xl flex-col gap-4"
+        data-testid="connection-signin"
+      >
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             data-testid="connection-sign-in-status"
-            variant={signedIn ? "secondary" : "outline"}
+            variant={ok ? "secondary" : "outline"}
           >
-            {signedIn ? "Signed in" : "Signed out"}
+            {statusLabel(conn, signedIn, check)}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            Method: {conn.signIn}
+            Method: <span className="font-mono">{conn.signIn}</span>
           </span>
         </div>
         {check ? (
@@ -47,7 +68,7 @@ export function ConnectionSignInSection({
           </p>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          {conn.signIn === "cookies" ? (
+          {cookies ? (
             <Button
               data-testid="connection-sign-in-browser"
               disabled={busy !== null}
@@ -66,7 +87,7 @@ export function ConnectionSignInSection({
           >
             Check again
           </Button>
-          {conn.signIn === "cookies" ? (
+          {cookies ? (
             <Button
               data-testid="connection-remove-sign-in"
               variant="outline"
@@ -77,10 +98,12 @@ export function ConnectionSignInSection({
             </Button>
           ) : null}
         </div>
-        <p className="text-sm text-muted-foreground">
-          Browser sign-in opens Chrome with a Flows-owned profile. Cookies stay
-          under secrets/ and tasks cannot read them.
-        </p>
+        {cookies ? (
+          <p className="text-sm text-muted-foreground">
+            Browser sign-in opens Chrome with a Flows-owned profile. Cookies
+            stay under secrets/ and tasks cannot read them.
+          </p>
+        ) : null}
       </div>
     </Section>
   )

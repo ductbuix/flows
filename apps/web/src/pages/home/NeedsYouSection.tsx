@@ -6,16 +6,18 @@ import { Confirmation } from "@/components/ai-elements/confirmation"
 import { Section } from "@/components/Section"
 import { approveTask, rejectTask } from "@/lib/run-actions"
 import type { NeedsYouItem } from "./home-run-filters"
+import { ExpiredSignIns, type ExpiredSignIn } from "./ExpiredSignIns"
 
 type Props = {
   items: NeedsYouItem[]
+  expiredSignIns?: ExpiredSignIn[]
 }
 
-export function NeedsYouSection({ items }: Props) {
+export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
   const [rejectTarget, setRejectTarget] = useState<NeedsYouItem | null>(null)
   const [pendingKey, setPendingKey] = useState<string | null>(null)
 
-  if (items.length === 0) return null
+  if (items.length === 0 && expiredSignIns.length === 0) return null
 
   async function onApprove(item: NeedsYouItem) {
     const key = `${item.run.id}:${item.taskId}:approve`
@@ -38,6 +40,7 @@ export function NeedsYouSection({ items }: Props) {
   return (
     <Section title="Needs you">
       <div className="flex flex-col gap-3" data-testid="home-needs-you">
+        <ExpiredSignIns items={expiredSignIns} />
         {items.map((item) => {
           const key = `${item.run.id}:${item.taskId}`
           const pending =

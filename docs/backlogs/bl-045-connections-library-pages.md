@@ -2,7 +2,7 @@
 id: BL-045
 title: Connections, Library and connection pages
 type: backlog
-status: todo
+status: done
 summary: Connections page with explainer and Table, a Library tab with revisions and freshness, a connection page, and expired sign-ins in Needs you.
 tags: [ui, web, connections, library]
 related: [DES-025, DES-026]
@@ -19,21 +19,21 @@ editable.
 
 ## Done when
 
-- [ ] Sidebar Platform group gets "Connections". `/connections` has
+- [x] Sidebar Platform group gets "Connections". `/connections` has
       `Tabs variant="line"` (Connections, Library) driven by `tab`.
-- [ ] Connections tab: the three-step explainer (connect, pull,
+- [x] Connections tab: the three-step explainer (connect, pull,
       publish), a Table (name, connector, sign-in status, refresh
       rule, used by), and an Add connection Dialog built from `GET
-  /connectors`.
-- [ ] Library tab: entities with revisions, Freshness Badge (secondary
+/connectors`.
+- [x] Library tab: entities with revisions, Freshness Badge (secondary
       Fresh, outline Stale), pinned by runs, and Pull now.
-- [ ] `/connections/:id`: sign-in (status, Check again), local data,
+- [x] `/connections/:id`: sign-in (status, Check again), local data,
       used by (workflows, runs), refresh rule Select, policy shown as
       a Badge.
-- [ ] Impact Badge (secondary Read, outline Local, default Cloud) and
+- [x] Impact Badge (secondary Read, outline Local, default Cloud) and
       Freshness Badge join `/dev/kit`.
-- [ ] Home Needs you lists connections whose `check` fails. e2e covers
+- [x] Home Needs you lists connections whose `check` fails. e2e covers
       J7 up to sign-in with the fake connector. Screenshots in light
       and dark.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
       pass.

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest"
 import {
+  connectionPath,
+  connectionsPath,
+  parseConnectionsTab,
   parseRunTaskTab,
   parseWorkflowTab,
   runPath,
@@ -22,6 +25,9 @@ describe("paths", () => {
     )
     expect(workItemsPath()).toBe("/work-items")
     expect(workItemPath("story-one")).toBe("/work-items/story-one")
+    expect(connectionsPath()).toBe("/connections")
+    expect(connectionsPath("library")).toBe("/connections?tab=library")
+    expect(connectionPath("github-acme")).toBe("/connections/github-acme")
   })
 
   it("parses known tabs and rejects unknown", () => {
@@ -34,5 +40,9 @@ describe("paths", () => {
     expect(parseRunTaskTab("environment")).toBe("environment")
     expect(parseRunTaskTab(null)).toBeNull()
     expect(parseRunTaskTab("logs")).toBeNull()
+    expect(parseConnectionsTab("library")).toBe("library")
+    expect(parseConnectionsTab("connections")).toBe("connections")
+    expect(parseConnectionsTab(null)).toBeNull()
+    expect(parseConnectionsTab("nope")).toBeNull()
   })
 })

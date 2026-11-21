@@ -9,8 +9,11 @@ import {
 import { Confirmation } from "@/components/ai-elements/confirmation"
 import { Plan } from "@/components/ai-elements/plan"
 import { Task } from "@/components/ai-elements/task"
+import { FreshnessBadge } from "@/components/FreshnessBadge"
+import { ImpactBadge } from "@/components/ImpactBadge"
 import { PageHeader } from "@/components/PageHeader"
 import { PageTitle } from "@/components/PageTitle"
+import { PublishPolicyBadge } from "@/components/PublishPolicyBadge"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
 import { Section } from "@/components/Section"
 
@@ -50,6 +53,34 @@ export function DevKitPage() {
               status="running"
               needsYou
               data-testid="kit-status-awaiting"
+            />
+          </div>
+        </Section>
+
+        <Section title="Impact">
+          <div className="flex flex-wrap gap-2">
+            <ImpactBadge impact="read" data-testid="kit-impact-read" />
+            <ImpactBadge impact="local" data-testid="kit-impact-local" />
+            <ImpactBadge impact="cloud" data-testid="kit-impact-cloud" />
+          </div>
+        </Section>
+
+        <Section title="Freshness">
+          <div className="flex flex-wrap gap-2">
+            <FreshnessBadge fresh data-testid="kit-freshness-fresh" />
+            <FreshnessBadge fresh={false} data-testid="kit-freshness-stale" />
+          </div>
+        </Section>
+
+        <Section title="Publish policy">
+          <div className="flex flex-wrap gap-2">
+            <PublishPolicyBadge
+              policy="read-only"
+              data-testid="kit-policy-read-only"
+            />
+            <PublishPolicyBadge
+              policy="approve-each-publish"
+              data-testid="kit-policy-approve"
             />
           </div>
         </Section>

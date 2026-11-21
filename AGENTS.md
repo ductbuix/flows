@@ -19,10 +19,14 @@ Schema and writing rules: `docs/README.md`.
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
-  items, Workflows, Runs), Workflows group, Settings; `/work-items`
-  and `/work-items/:id`, `/connections` and `/connections/:id` (browser sign-in, remove) (Runs, Start with workItemId, Notes,
-  Attachments); `/workflows` and `/runs`; workflow Overview/Editor/Runs;
-  graph editor, start/rerun, run view with live websocket; Settings.
+  items, Workflows, Runs, Connections), Workflows group, Settings;
+  `/work-items` and `/work-items/:id` (Runs, Start with workItemId,
+  Notes, Attachments); `/connections` (Connections/Library tabs) and
+  `/connections/:id` (sign-in check, browser sign-in/remove, local
+  data, used by, refresh, policy); Impact/Freshness/Policy Badges on
+  `/dev/kit`; Home Needs you (approvals, expired sign-ins);
+  `/workflows` and `/runs`; workflow Overview/Editor/Runs; graph
+  editor, start/rerun, run view with live websocket; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
@@ -39,7 +43,8 @@ Schema and writing rules: `docs/README.md`.
   `composeFlags`), connector registry (`connectors/`, github read,
   fake for tests), connections store, library revisions/pull/pins
   (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
-  under `workitems/`, cookie secrets under `secrets/` (Chrome sign-in, sandbox denies reads), propose work copies (`work/`, serial lock,
+  under `workitems/`, cookie secrets under `secrets/` (Chrome sign-in,
+  sandbox denies reads), propose work copies (`work/`, serial lock,
   change sets via `GET /runs/:id/changes/:connectionId`),
   model/effort resolve and preflight warns (including connection uses),
   app-owned trust markers, spawn into `graph.json`, resume, approval,

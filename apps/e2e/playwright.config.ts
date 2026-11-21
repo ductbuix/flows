@@ -53,6 +53,7 @@ export default defineConfig({
         FLOWAPP_HOME,
         FLOWAPP_CURSOR_PROJECTS: process.env.FLOWAPP_CURSOR_PROJECTS!,
         FLOWAPP_RETRY_BACKOFF_MS: "50",
+        FLOWAPP_FAKE_CONNECTOR: "1",
         PORT: API_PORT,
       },
     },

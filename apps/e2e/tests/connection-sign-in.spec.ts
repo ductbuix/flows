@@ -25,6 +25,7 @@ test.describe("connection cookie sign-in", () => {
         "signIn: cookies",
         "refresh: never",
         "policy: read-only",
+        "serial: false",
         "",
       ].join("\n")
     )

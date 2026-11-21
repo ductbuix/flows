@@ -5,18 +5,23 @@ import {
   getConnector,
   listConnections,
   listConnectors,
+  listLibrary,
   readConnection,
   updateConnection,
+  workflowsUsingConnection,
   type Engine,
 } from "@workspace/engine"
 import {
   connectionCheckResultSchema,
+  connectionDetailSchema,
+  connectionListItemSchema,
   connectionParamSchema,
   connectionSchema,
   connectionsListSchema,
   connectorsListSchema,
   type Connection,
   type ConnectionCheckResult,
+  type ConnectionDetail,
   type ConnectionsList,
   type ConnectorsList,
 } from "@workspace/shared"
@@ -31,6 +36,17 @@ function storeErrorStatus(kind: string): 400 | 404 | 409 {
   return 400
 }
 
+function runsUsingConnection(home: string, connectionId: string): string[] {
+  const ids = new Set<string>()
+  for (const entity of listLibrary(home).entities) {
+    if (entity.connection !== connectionId) continue
+    for (const rev of entity.revisions) {
+      for (const runId of rev.pinningRunIds) ids.add(runId)
+    }
+  }
+  return [...ids].sort()
+}
+
 /** GET /connectors, connections CRUD and check (DES-026 / BL-042). */
 export function connectionRoutes(engine: Engine) {
   return new Hono()
@@ -43,7 +59,12 @@ export function connectionRoutes(engine: Engine) {
     })
     .get("/connections", (c) => {
       const body: ConnectionsList = {
-        connections: listConnections(engine.home),
+        connections: listConnections(engine.home).map((conn) =>
+          connectionListItemSchema.parse({
+            ...conn,
+            usedBy: workflowsUsingConnection(engine.home, conn.id),
+          })
+        ),
       }
       return c.json(connectionsListSchema.parse(body), 200)
     })
@@ -68,7 +89,12 @@ export function connectionRoutes(engine: Engine) {
         const { id } = c.req.valid("param")
         const conn = readConnection(engine.home, id)
         if (!conn) return c.json({ message: "not_found" }, 404)
-        return c.json(connectionSchema.parse(conn) satisfies Connection, 200)
+        const detail: ConnectionDetail = connectionDetailSchema.parse({
+          ...conn,
+          usedByWorkflows: workflowsUsingConnection(engine.home, id),
+          usedByRuns: runsUsingConnection(engine.home, id),
+        })
+        return c.json(detail, 200)
       }
     )
     .put(
