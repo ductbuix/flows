@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: Disk change detection and conflict dialog, workflow create, rename and delete, memory file editing, YAML-preserving writes.
 tags: [ui, web, editor, yaml, files]
-related: [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020, DES-021]
+related: [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020, DES-021, DES-022]
 updated: 2026-11-21
 ---
 
@@ -121,13 +121,17 @@ Zod schemas in `packages/shared` (`api-lifecycle.ts`).
   live or if the new id exists
 - `DELETE /api/workflows/:workflowId`; `409` while live
 - `PUT /api/workflows/:workflowId` with `{ yaml, baseHash }`; `409`
-  on a changed disk file
+  on a changed disk file, or `409` `task_in_live_run` when the yaml
+  removes a task that a live or queued run still needs. After a
+  successful write, removed `tasks/<id>/` folders move to
+  `tasks/.trash/` ([DES-022](des-022-remove-task.md))
 - `GET /api/workflows/:workflowId/memory`, `GET`/`PUT`/`DELETE`
   `.../memory/:file`, and `POST .../memory/:file/rename` with
   `{ newName, updateReferences? }`
 - `GET`/`PUT /api/workflows/:workflowId/files/*` for prompt files and
   other workflow-relative text files ([DES-018](des-018-agent-kind-and-file-editing.md),
-  [DES-020](des-020-fixed-prompt-files.md))
+  [DES-020](des-020-fixed-prompt-files.md)). Paths under
+  `tasks/.trash/` are rejected ([DES-022](des-022-remove-task.md))
 - Websocket: file changed `{ workflowId, path, hash, content }`
 
 ## Test ids

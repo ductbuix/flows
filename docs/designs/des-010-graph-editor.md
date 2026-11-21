@@ -7,7 +7,7 @@ summary: Workflow list and React Flow graph editor synced with workflow.yaml (Co
 tags: [ui, web, editor, yaml]
 related:
   [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013,
-   DES-020, DES-021]
+   DES-020, DES-021, DES-022]
 updated: 2026-11-21
 ---
 
@@ -32,7 +32,11 @@ preservation are in [DES-013](des-013-workflow-editing.md).
 - Edit a task: `name`, kind, `run` or `cli`, the fixed prompt file
   ([DES-020](des-020-fixed-prompt-files.md)), `memory` files, `needs`,
   `when`, `retry`, `repeat`, `spawn`, `continueOnError`, limits. The
-  id is generated and is not editable in the drawer.
+  id is generated and is not editable in the drawer. A danger-style
+  Delete task button, or Delete/Backspace on a selected canvas node,
+  removes one task after a confirm (DES-022). That is a pending edit
+  until Save. Cmd/Ctrl+Z undoes graph and inspector edits before
+  save, including delete. The last task cannot be removed.
 - Edit workflow fields: `goal`, `inputs` (name, type, required,
   description, default), and `limits` (`concurrency`, `agents`,
   `maxTasks`, `maxSpawnDepth`, `maxConcurrentRuns`) (DES-021).
@@ -106,6 +110,7 @@ Group, which is what this does.
 | Loading              | Skeleton canvas and inspector                                             |
 | YAML invalid         | Alert above the YAML pane, errors on fields; graph shows last valid state |
 | Unsaved changes      | Save enabled; leaving asks with Alert Dialog                              |
+| Delete a task        | Confirm lists dependents and mention warnings; applied on Save (DES-022)  |
 | Save failed          | Toast with the server error; edits kept                                   |
 | File changed on disk | ask the user, see DES-013                                                 |
 
@@ -145,5 +150,6 @@ Answered on 2026-11-21:
 3. Graph layout: automatic for now, no saved positions.
 4. Matrix: dropped; fan-out is done by spawn (DES-005).
 5. Workflow create, rename, delete and `memory/*.md` editing are in scope,
-   with warnings on consequences (DES-013).
+   with warnings on consequences (DES-013). Removing a task from the
+   graph is in [DES-022](des-022-remove-task.md).
 6. Graph writes keep YAML comments and key order (DES-013).

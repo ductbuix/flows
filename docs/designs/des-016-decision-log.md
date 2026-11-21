@@ -19,6 +19,7 @@ related:
     DES-019,
     DES-020,
     DES-021,
+    DES-022,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -81,6 +82,9 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Manual is the only source; more adapters later    | connectors and folder lists stay out of this cut               | DES-021      |
 | 2026-11-21 | Same item key asks, never auto-skips              | the user decides whether to run again                          | DES-021      |
 | 2026-11-21 | `maxConcurrentRuns` default 1; extras are `queued` | one live run unless the workflow asks for more                | DES-021, 003 |
+| 2026-11-21 | Save moves a removed task folder to `tasks/.trash/` | keep the files; do not leave orphans in `tasks/`             | DES-022, 002 |
+| 2026-11-21 | PUT diffs task ids; no client-sent remove list    | raw YAML edits follow the same path                            | DES-022, 013 |
+| 2026-11-21 | Block Save-remove while a live or queued run needs the task | authored prompts are read from the workflow folder at launch | DES-022, 007 |
 
 ## UI
 
@@ -103,6 +107,8 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Start run form, then trust, then a duplicate ask  | reuse TrustStartGate; never auto-skip                   | DES-021, 011 |
 | 2026-11-21 | Run view shows the run's frozen input files       | retry and resume must match what the user sees          | DES-021, 009 |
 | 2026-11-21 | Inspector edits `inputs:` and `maxConcurrentRuns` | the yaml stays the source of truth                      | DES-021, 010 |
+| 2026-11-21 | Delete one task from the drawer or canvas, with confirm | pending edit until Save; dependents lose the link     | DES-022, 010 |
+| 2026-11-21 | Snapshot undo for graph and inspector edits       | no undo existed; YAML pane keeps CodeMirror history     | DES-022, 010 |
 
 ## Docs and tooling
 

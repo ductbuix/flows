@@ -17,6 +17,7 @@ related:
     DES-019,
     DES-020,
     DES-021,
+    DES-022,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -41,7 +42,10 @@ the trigger fires and the choice changes.
 | No agent limits yet                 | a runaway or expensive agent run   | retry and repeat max, `maxTasks`, `maxSpawnDepth`, `agents`, cancel            | a runaway or expensive agent run                                                                |
 | Pre-run checks warn, never block    | a run proceeds despite a warning   | dialog lists the warning and asks the user to double check (DES-019)           | a path-outside-home warning is ignored and causes harm                                          |
 | At most one agent judge per slot    | a slot cannot hold two judges      | schema error with a clear message; one file per slot (DES-020)                 | a real workflow needs two agent judges in one `when`, `until`, or need                          |
-| Deleting a task leaves its folder   | orphan prompt files can pile up    | orphans are unused and harmless; user can delete the folder by hand            | orphan folders become confusing or large                                                        |
+| Deleting a task leaves its folder   | orphan prompt files can pile up    | reversed: Save now moves the folder to `tasks/.trash/` (DES-022)               | (superseded 2026-11-21)                                                                         |
+| No auto-purge of `tasks/.trash/`    | trash can grow on disk             | no restore UI; the user can delete folders by hand (DES-022)                   | trash becomes large or users want a restore action                                              |
+| No prompt snapshot at run start     | retry of a finished run can miss a trashed prompt | block Save while a live or queued run still needs the task (DES-022) | retry after delete is common, or prompts are copied into the run at start                    |
+| Editor undo stack ignores YAML pane keystrokes | mixed undo with CodeMirror history | YAML pane keeps CodeMirror undo; stack is for graph and inspector edits (DES-022) | users expect one undo stack across the yaml pane and the graph                               |
 | No auto-migration of `instructions` | old yaml fails to parse            | clear error names the target path; one known workflow is fixed by hand         | many existing workflows still use the old key                                                   |
 | Legacy task ids stay valid          | old and new id shapes coexist      | new ids are generated; existing single-segment ids still parse (DES-020)       | legacy ids become confusing next to generated ones                                              |
 | Hand-editing a task id in YAML      | prompt folder and `needs` can drift | allowed; the app does not move files; the doc warns the user must do it        | a hand edit leaves a broken graph or a missing prompt                                           |

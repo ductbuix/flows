@@ -16,6 +16,7 @@ related:
     DES-019,
     BL-019,
     BL-020,
+    DES-022,
   ]
 updated: 2026-11-21
 ---
@@ -146,10 +147,11 @@ Test ids: `field-task-id`, `field-task-name`, `field-prompt-path`,
 
 ## Delete
 
-Deleting a task does not delete its folder. Orphans are harmless.
 There is no task-id rename in the app, so the workflow PUT does not
-take a `renames` list and the server does not move `tasks/<id>/`
-or `need-*` files. Ledger: [DES-007](des-007-tradeoffs.md).
+take a `renames` list. Removing a task on Save moves `tasks/<id>/`
+to `tasks/.trash/` and collects leftover `need-<id>.md` files from
+dependents ([DES-022](des-022-remove-task.md)). The earlier choice
+to leave orphan folders in place is reversed.
 
 ## Judges
 
