@@ -13,6 +13,8 @@ related:
     DES-013,
     DES-020,
     DES-021,
+    BL-023,
+    BL-024,
   ]
 updated: 2026-11-21
 ---
