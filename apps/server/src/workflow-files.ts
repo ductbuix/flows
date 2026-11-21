@@ -17,6 +17,11 @@ import {
   type WorkflowDetail,
 } from "@workspace/shared"
 import { hashContent } from "./hash.ts"
+import {
+  findLiveTaskConflict,
+  moveRemovedTasksToTrash,
+  orphanTaskFolderIds,
+} from "./task-trash.ts"
 
 export function workflowYamlPath(engine: Engine, workflowId: string): string {
   return join(workflowDir(engine.home, workflowId), "workflow.yaml")
@@ -39,16 +44,25 @@ export function readWorkflowDetail(
   })
 }
 
+export type WriteWorkflowResult =
+  | { ok: true; detail: WorkflowDetail }
+  | { ok: false; kind: "not_found" }
+  | { ok: false; kind: "conflict"; diskYaml: string; diskHash: string }
+  | { ok: false; kind: "invalid"; detail: WorkflowDetail }
+  | {
+      ok: false
+      kind: "task_in_live_run"
+      taskIds: string[]
+      runIds: string[]
+    }
+  | { ok: false; kind: "trash_failed"; path: string; detail: WorkflowDetail }
+
 export function writeWorkflowYaml(
   engine: Engine,
   workflowId: string,
   yaml: string,
   baseHash: string
-):
-  | { ok: true; detail: WorkflowDetail }
-  | { ok: false; kind: "not_found" }
-  | { ok: false; kind: "conflict"; diskYaml: string; diskHash: string }
-  | { ok: false; kind: "invalid"; detail: WorkflowDetail } {
+): WriteWorkflowResult {
   const path = workflowYamlPath(engine, workflowId)
   if (!existsSync(path)) return { ok: false, kind: "not_found" }
 
@@ -70,8 +84,40 @@ export function writeWorkflowYaml(
     return { ok: false, kind: "invalid", detail }
   }
 
+  const diskParsed = parseWorkflowYaml(diskYaml)
+  const newIds = new Set(parsed.workflow.tasks.map((t) => t.id))
+  const removedIds = (diskParsed.workflow?.tasks ?? [])
+    .map((t) => t.id)
+    .filter((id) => !newIds.has(id))
+
+  const live = findLiveTaskConflict(engine, workflowId, removedIds)
+  if (live) {
+    return {
+      ok: false,
+      kind: "task_in_live_run",
+      taskIds: live.taskIds,
+      runIds: live.runIds,
+    }
+  }
+
   writeFileSync(path, yaml, "utf8")
   const written = readWorkflowDetail(engine, workflowId)!
+
+  const wfRoot = workflowDir(engine.home, workflowId)
+  const toTrash = new Set([
+    ...removedIds,
+    ...orphanTaskFolderIds(join(wfRoot, "tasks"), newIds),
+  ])
+  const trashFail = moveRemovedTasksToTrash(wfRoot, [...toTrash].sort())
+  if (trashFail) {
+    return {
+      ok: false,
+      kind: "trash_failed",
+      path: trashFail.path,
+      detail: written,
+    }
+  }
+
   return { ok: true, detail: written }
 }
 
@@ -110,8 +156,8 @@ export function promoteSpawnedTask(
   const yaml = readFileSync(path, "utf8")
   const cleaned = stripSpawnMeta(spec as Task)
   const next = upsertTask(yaml, cleaned)
-  const parsed = parseWorkflowYaml(next)
-  if (!parsed.workflow || parsed.errors.length > 0) {
+  const nextParsed = parseWorkflowYaml(next)
+  if (!nextParsed.workflow || nextParsed.errors.length > 0) {
     return { ok: false, kind: "invalid" }
   }
   writeFileSync(path, next, "utf8")

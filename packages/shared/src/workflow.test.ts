@@ -198,6 +198,18 @@ tasks:
     expect(
       parsed.errors.some((e) => e.message.includes("single path segment"))
     ).toBe(true)
+
+    const dotted = parseWorkflowYaml(`
+id: x
+tasks:
+  - id: .trash
+    kind: command
+    run: echo
+`)
+    expect(dotted.workflow).toBeNull()
+    expect(
+      dotted.errors.some((e) => e.message.includes("single path segment"))
+    ).toBe(true)
   })
 
   it("rejects colliding UPSTREAM env names", () => {

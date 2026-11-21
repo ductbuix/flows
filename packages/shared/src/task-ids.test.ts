@@ -17,12 +17,15 @@ describe("task id helpers (DES-020)", () => {
     expect(forced).not.toBe(id)
   })
 
-  it("accepts legacy and generated ids; rejects path segments", () => {
+  it("accepts legacy and generated ids; rejects path segments and leading dot", () => {
     expect(isSafeTaskId("start")).toBe(true)
     expect(isSafeTaskId("analyze-ticket")).toBe(true)
     expect(isSafeTaskId("task-3f9a1c2e")).toBe(true)
     expect(isSafeTaskId("a/b")).toBe(false)
     expect(isSafeTaskId("..")).toBe(false)
+    expect(isSafeTaskId(".")).toBe(false)
+    expect(isSafeTaskId(".trash")).toBe(false)
+    expect(isSafeTaskId(".hidden")).toBe(false)
     expect(isSafeTaskId("a\\b")).toBe(false)
   })
 

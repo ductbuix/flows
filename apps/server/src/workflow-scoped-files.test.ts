@@ -24,6 +24,9 @@ describe("resolveWorkflowFilePath", () => {
     expect(resolveWorkflowFilePath(engine, "wf", "a\\b.md")).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "workflow.yaml")).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "runs/a/b")).toBeNull()
+    expect(
+      resolveWorkflowFilePath(engine, "wf", "tasks/.trash/x/prompt.md")
+    ).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "tasks/plan.md")).toMatch(
       /tasks[/\\]plan\.md$/
     )
