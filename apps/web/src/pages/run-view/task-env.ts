@@ -6,7 +6,7 @@ function graphTask(run: RunDetail, taskId: string): WorkflowTask | undefined {
   return run.graph.tasks.find((t) => t.id === taskId)
 }
 
-/** Command line shown in Advanced (from the frozen graph). */
+/** Command line shown in Terminal / Environment (from the frozen graph). */
 export function taskCommandLine(
   run: RunDetail,
   taskId: string
