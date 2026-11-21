@@ -39,7 +39,11 @@ export {
   canonicalManualItemPayload,
   buildManualValuesSchema,
   applyInputDefaults,
+  inputsJsonSchema,
+  runInputFileDetailSchema,
   type ManualItemKeyField,
+  type InputsJson,
+  type RunInputFileDetail,
 } from "./run-inputs.ts"
 export {
   GENERATED_TASK_ID_RE,

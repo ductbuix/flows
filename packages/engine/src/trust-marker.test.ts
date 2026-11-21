@@ -128,19 +128,14 @@ describe("trust marker keep and remove", () => {
     const home = tempHome()
     const wf = writeAgentWorkflow(home, "concurrent")
     const sleepBin = join(home, "bin", "claude")
-    writeFileSync(sleepBin, "#!/bin/sh\nsleep 0.4\nexit 0\n", { mode: 0o755 })
+    // Both runs sleep so neither finishes before the marker check.
+    writeFileSync(sleepBin, "#!/bin/sh\nsleep 2\nexit 0\n", { mode: 0o755 })
     const engine = createEngine({ home })
     const a = engine.startRun({
       workflowDir: wf,
       runId: "a",
       trustGrant: "once",
     })
-    const started = Date.now()
-    while (!engine.fold("a")?.tasks.a?.attempts[0]?.pid) {
-      if (Date.now() - started > 5000) throw new Error("a never launched")
-      await new Promise((r) => setTimeout(r, 20))
-    }
-    writeFileSync(sleepBin, "#!/bin/sh\nsleep 2\nexit 0\n", { mode: 0o755 })
     const b = engine.startRun({
       workflowDir: wf,
       runId: "b",
@@ -150,13 +145,22 @@ describe("trust marker keep and remove", () => {
       engine.homeRealpath(),
       process.env.FLOWAPP_CURSOR_PROJECTS
     )
+    const launched = Date.now()
+    while (
+      !engine.fold("a")?.tasks.a?.attempts[0]?.pid ||
+      !engine.fold("b")?.tasks.a?.attempts[0]?.pid
+    ) {
+      if (Date.now() - launched > 8000) throw new Error("runs never launched")
+      await new Promise((r) => setTimeout(r, 20))
+    }
     expect(existsSync(marker)).toBe(true)
-    expect(b.status).toBe("running")
+    expect(engine.fold("a")?.status).toBe("running")
+    expect(engine.fold("b")?.status).toBe("running")
     await a.wait()
     expect(engine.fold("b")?.status).toBe("running")
     expect(existsSync(marker)).toBe(true)
     await b.wait()
     expect(existsSync(marker)).toBe(false)
     engine.close()
-  }, 20_000)
+  }, 30_000)
 })

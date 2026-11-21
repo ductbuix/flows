@@ -148,7 +148,7 @@ export function setTaskField(
 
 export function setWorkflowField(
   text: string,
-  field: "goal" | "limits" | "id",
+  field: "goal" | "limits" | "id" | "inputs",
   value: unknown
 ): string {
   const doc = parse(text)

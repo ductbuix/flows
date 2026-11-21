@@ -123,6 +123,7 @@ export function toRunDetail(
     graph: state.graph,
     tasks: toTaskViews(state),
     taskCounts: taskCounts(state),
+    inputFiles: state.inputFiles ?? [],
   }
 }
 

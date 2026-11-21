@@ -5,6 +5,29 @@ export type ManualItemKeyField =
   | { name: string; type: "text" | "markdown"; text: string }
   | { name: string; type: "file"; sha256: string }
 
+const inputsJsonFieldSchema = z.union([
+  z.object({ type: z.enum(["text", "markdown"]), value: z.string() }),
+  z.object({ type: z.literal("file"), path: z.string().min(1) }),
+])
+
+/** Frozen run input metadata written at start (DES-021). */
+export const inputsJsonSchema = z.object({
+  source: z.literal("manual"),
+  itemKey: z.string().min(1),
+  itemKeyVersion: z.literal(1),
+  fields: z.record(z.string(), inputsJsonFieldSchema),
+})
+
+export type InputsJson = z.infer<typeof inputsJsonSchema>
+
+/** Text content of one file under runs/<id>/input/ (DES-021). */
+export const runInputFileDetailSchema = z.object({
+  path: z.string().min(1),
+  content: z.string(),
+})
+
+export type RunInputFileDetail = z.infer<typeof runInputFileDetailSchema>
+
 /** Normalize a text/markdown value for the item key (DES-021). */
 export function normalizeInputText(
   type: "text" | "markdown",

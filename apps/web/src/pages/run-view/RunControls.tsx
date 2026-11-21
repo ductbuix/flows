@@ -151,10 +151,20 @@ export function RunControls({ run, workflowId }: Props) {
           <ConfirmDialog
             open={cancelOpen}
             onOpenChange={setCancelOpen}
-            title="Cancel this run?"
-            description="Running tasks are stopped. Finished task outputs are kept."
+            title={
+              run.status === "queued"
+                ? "Cancel this queued run?"
+                : "Cancel this run?"
+            }
+            description={
+              run.status === "queued"
+                ? "It will not start."
+                : "Running tasks are stopped. Finished task outputs are kept."
+            }
             confirmLabel="Cancel run"
-            cancelLabel="Keep running"
+            cancelLabel={
+              run.status === "queued" ? "Keep queued" : "Keep running"
+            }
             pending={pending === "cancel"}
             onConfirm={() => void onCancel()}
           />

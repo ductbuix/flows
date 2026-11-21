@@ -38,6 +38,7 @@ import {
 } from "./workflow-files.ts"
 import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
+import { runInputRoutes } from "./run-input-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { WsHub } from "./ws-hub.ts"
@@ -67,6 +68,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .basePath("/api")
     .route("/", lifecycleRoutes(engine, hub))
     .route("/", fileRoutes(engine))
+    .route("/", runInputRoutes(engine))
     .route("/", trustRoutes(engine))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)

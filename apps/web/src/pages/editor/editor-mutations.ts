@@ -11,6 +11,8 @@ import {
   type Need,
   type Task,
   type Workflow,
+  type WorkflowInputDecl,
+  type WorkflowLimits,
 } from "@workspace/shared"
 
 export function yamlAfterAddTask(
@@ -47,6 +49,35 @@ export function yamlAfterConnect(
 
 export function yamlAfterGoal(yaml: string, goal: string): string {
   return setWorkflowField(yaml, "goal", goal)
+}
+
+export function yamlAfterInputs(
+  yaml: string,
+  inputs: WorkflowInputDecl[] | undefined
+): string {
+  return setWorkflowField(yaml, "inputs", inputs?.length ? inputs : undefined)
+}
+
+function limitsEmpty(limits: WorkflowLimits | undefined): boolean {
+  if (!limits) return true
+  return (
+    limits.concurrency === undefined &&
+    limits.agents === undefined &&
+    limits.maxTasks === undefined &&
+    limits.maxSpawnDepth === undefined &&
+    limits.maxConcurrentRuns === undefined
+  )
+}
+
+export function yamlAfterLimits(
+  yaml: string,
+  limits: WorkflowLimits | undefined
+): string {
+  return setWorkflowField(
+    yaml,
+    "limits",
+    limitsEmpty(limits) ? undefined : limits
+  )
 }
 
 export function yamlAfterTaskPatch(

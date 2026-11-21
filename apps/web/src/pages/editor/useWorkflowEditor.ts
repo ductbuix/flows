@@ -6,6 +6,8 @@ import {
   type Task,
   type Workflow,
   type WorkflowDetail,
+  type WorkflowInputDecl,
+  type WorkflowLimits,
 } from "@workspace/shared"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
@@ -13,6 +15,8 @@ import {
   yamlAfterAddTask,
   yamlAfterConnect,
   yamlAfterGoal,
+  yamlAfterInputs,
+  yamlAfterLimits,
   yamlAfterTaskPatch,
 } from "./editor-mutations"
 import {
@@ -165,6 +169,10 @@ export function useWorkflowEditor(workflowId: string) {
       if (next) withYaml(next)
     },
     changeGoal: (goal: string) => withYaml(yamlAfterGoal(yaml, goal)),
+    changeInputs: (inputs: WorkflowInputDecl[] | undefined) =>
+      withYaml(yamlAfterInputs(yaml, inputs)),
+    changeLimits: (limits: WorkflowLimits | undefined) =>
+      withYaml(yamlAfterLimits(yaml, limits)),
     changeTask: (taskId: string, patch: Partial<Task>) => {
       if (!workflow) return
       const next = yamlAfterTaskPatch(yaml, workflow, taskId, patch)

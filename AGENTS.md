@@ -24,8 +24,8 @@ Schema and writing rules: `docs/README.md`.
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
   preflight, run REST (start with trustGrant/values/files,
   confirmDuplicate, cancel, rerun, retry, approve, reject, delete),
-  log/summary/out, websocket run snapshots, log chunks and workflow
-  file watches.
+  run input list/meta/files, log/summary/out, websocket run
+  snapshots, log chunks and workflow file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
   scheduler, command and agent tasks (CliAdapter for Claude / Cursor),
   app-owned trust markers, preflight checks, spawn into `graph.json`,
@@ -38,8 +38,9 @@ Schema and writing rules: `docs/README.md`.
   Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: workflow list (create/rename/delete), graph editor (React
-  Flow + CodeMirror YAML), memory/*.md editor, run list, run view
-  (list/graph, attempts, logs, SUMMARY.md, promote) with live websocket
+  Flow + CodeMirror YAML, inputs list, maxConcurrentRuns), memory/*.md
+  editor, run list, start/rerun input form, run view (list/graph,
+  attempts, logs, SUMMARY.md, run inputs, promote) with live websocket
   updates and run controls.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.

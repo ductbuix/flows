@@ -1,4 +1,10 @@
-import type { Task, Workflow, YamlDiagnosticDto } from "@workspace/shared"
+import type {
+  Task,
+  Workflow,
+  WorkflowInputDecl,
+  WorkflowLimits,
+  YamlDiagnosticDto,
+} from "@workspace/shared"
 import { Input } from "@workspace/ui/components/input"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { Switch } from "@workspace/ui/components/switch"
@@ -11,6 +17,7 @@ import {
 } from "@workspace/ui/components/select"
 import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
 import { AgentTaskFields } from "./AgentTaskFields"
+import { InputsPanel } from "./InputsPanel"
 import { MemoryPanel } from "./MemoryPanel"
 import { taskFieldErrors } from "./field-errors"
 
@@ -21,6 +28,8 @@ type Props = {
   errors: YamlDiagnosticDto[]
   onChangeGoal: (goal: string) => void
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
+  onChangeInputs: (inputs: WorkflowInputDecl[] | undefined) => void
+  onChangeLimits: (limits: WorkflowLimits | undefined) => void
 }
 
 export function Inspector({
@@ -30,6 +39,8 @@ export function Inspector({
   errors,
   onChangeGoal,
   onChangeTask,
+  onChangeInputs,
+  onChangeLimits,
 }: Props) {
   const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
   const task = taskIndex >= 0 ? workflow.tasks[taskIndex] : undefined
@@ -48,6 +59,12 @@ export function Inspector({
             rows={3}
           />
         </Field>
+        <InputsPanel
+          inputs={workflow.inputs}
+          limits={workflow.limits}
+          onChangeInputs={onChangeInputs}
+          onChangeLimits={onChangeLimits}
+        />
         <p className="text-xs text-muted-foreground">
           Select a task to edit its fields.
         </p>
