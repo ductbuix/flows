@@ -123,6 +123,17 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | shadcn Sidebar shell with workflows and Settings  | replaces the hand-rolled nav; no icon-only mode         | DES-024, 019 |
 | 2026-11-21 | One UI; YAML, env and raw logs behind Advanced    | one product for POs and developers                      | DES-024      |
 | 2026-11-21 | Theme default light; dark and system stay         | the `d` shortcut still toggles                          | DES-024, 008 |
+| 2026-11-21 | No Simple/Pro mode; detail lives in Tabs (draft)  | one UI for all; replaces the Advanced switch            | DES-025      |
+| 2026-11-22 | Tasks use a local copy of outside systems (draft) | pull, work locally, publish: only publish affects others | DES-025      |
+| 2026-11-22 | Work item is a saved record; many per workflow    | the user's unit of work is not a workflow or task node   | DES-026      |
+| 2026-11-22 | One central library, pulled by entity on demand   | reuse across work items; runs pin revisions; read-only   | DES-026      |
+| 2026-11-22 | Secrets in macOS Keychain, one item per connection | never in files or logs; one action revokes (draft)       | DES-026      |
+| 2026-11-22 | Trust never publishes on doubt or destructive ops | agent escalate, error or delete falls back to approval   | DES-026      |
+| 2026-11-22 | Change set envelope per source; conflicts not merged | one UI for all connectors; pull again or discard      | DES-026      |
+| 2026-11-22 | Library retention: pinned kept, 7 days, 5 GB cap  | reproducible runs without unbounded disk use             | DES-026      |
+| 2026-11-22 | GitHub is the first connector                     | delegated sign-in, shared clone, draft PR is undoable    | DES-026      |
+| 2026-11-22 | Publish policy per connection (draft)             | read only, approve each publish, or trust agent review   | DES-025      |
+| 2026-11-22 | Connection access declared and warned (draft)     | no network blocking yet; credentials never reach tasks   | DES-025      |
 
 ## Docs and tooling
 
