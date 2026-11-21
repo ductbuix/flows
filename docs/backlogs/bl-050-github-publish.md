@@ -2,7 +2,7 @@
 id: BL-050
 title: GitHub publish as a branch and draft pull request
 type: backlog
-status: todo
+status: done
 summary: The GitHub connector turns a repo work copy into a pushed branch and a draft pull request, with conflict meaning a clashing branch.
 tags: [engine, connections, github]
 related: [DES-026]
@@ -17,15 +17,15 @@ Design: [DES-026](../designs/des-026-work-items-library-connections.md) (First s
 
 ## Done when
 
-- [ ] `diff` commits any uncommitted work and builds one op: push branch
+- [x] `diff` commits any uncommitted work and builds one op: push branch
       `flows/<runId>/<publishTaskId>` and open a draft pull request,
       with the unified diff as payload.
-- [ ] `publish` pushes with `gh` and opens the draft pull request;
+- [x] `publish` pushes with `gh` and opens the draft pull request;
       `result.json` holds the branch and URL, and the undo note says
       how to close it and delete the branch.
-- [ ] A remote branch of that name with other commits is `conflict`.
+- [x] A remote branch of that name with other commits is `conflict`.
       A moved default branch is not. Force push is flagged
       `destructive`.
-- [ ] Tests against a local bare repo with `gh` stubbed; a live test is
+- [x] Tests against a local bare repo with `gh` stubbed; a live test is
       skipped unless `FLOWAPP_LIVE_GH=1`.
-- [ ] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.
+- [x] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.

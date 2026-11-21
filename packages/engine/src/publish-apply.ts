@@ -36,7 +36,9 @@ export async function callPublish(
   if (!conn) throw new Error(`unknown connection ${task.connection}`)
   const connector = getConnector(conn.connector)
   if (!connector) throw new Error(`unknown connector ${conn.connector}`)
-  return connector.publish(conn, changeSet, host.home)
+  return connector.publish(conn, changeSet, host.home, {
+    runRoot: host.runRoot,
+  })
 }
 
 export function appendPublishFinished(
