@@ -17,8 +17,12 @@ Schema and writing rules: `docs/README.md`.
 
 ## Layout
 
-- `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`).
-  Dev on `127.0.0.1:5173`, proxies `/api` to the server.
+- `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
+  on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
+  items, Workflows, Runs), Workflows group, Settings; `/work-items`
+  and `/work-items/:id` (Runs, Start with workItemId, Notes,
+  Attachments); `/workflows` and `/runs`; workflow Overview/Editor/Runs;
+  graph editor, start/rerun, run view with live websocket; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
@@ -48,16 +52,6 @@ Schema and writing rules: `docs/README.md`.
   `workItemId` on `run_started`, attempt `model`/`effort`/`modelSource`)
   and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/web`: Sidebar Platform (Home, Workflows, Runs) plus Workflows
-  group and Settings; `/workflows` and `/runs` tables; workflow detail
-  tabs (Overview with tasks/inputs/Start card, Editor Graph/YAML tabs,
-  Runs); graph editor (React Flow Card nodes, Prompt Input, Model
-  Selector, inputs, maxConcurrentRuns, PageTitle, Section,
-  RunStatusBadge, `/dev/kit`), memory/*.md editor, start/rerun form,
-  run view (Confirmation or failure Alert first, Plan beside Table,
-  task Card Tabs Output/Terminal/Attempts/Environment, SUMMARY.md,
-  promote) with live websocket updates; Settings for theme, CLI info
-  and always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.
