@@ -13,6 +13,7 @@ import {
   startRunWithGrant,
   type StartRunOptions,
 } from "@/lib/trust-start"
+import { useOverviewWorkItem } from "@/pages/useOverviewWorkItem"
 
 /** Load form state and run preflight / trust / start for the Overview card. */
 export function useOverviewStart(
@@ -20,7 +21,7 @@ export function useOverviewStart(
   onStarted: (runId: string) => void
 ) {
   const [decls, setDecls] = useState<WorkflowInputDecl[]>([])
-  const [values, setValues] = useState<Record<string, string>>({})
+  const [baseValues, setBaseValues] = useState<Record<string, string>>({})
   const [files, setFiles] = useState<{ field: string; file: File }[]>([])
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -30,6 +31,7 @@ export function useOverviewStart(
   const [trust, setTrust] = useState<PreflightResponse | null>(null)
   const [duplicateIds, setDuplicateIds] = useState<string[] | null>(null)
   const [lastGrant, setLastGrant] = useState<TrustGrant | undefined>()
+  const workItem = useOverviewWorkItem(decls, baseValues)
 
   useEffect(() => {
     let alive = true
@@ -43,7 +45,7 @@ export function useOverviewStart(
         return
       }
       setDecls(result.decls)
-      setValues(result.values)
+      setBaseValues(result.values)
       setFiles(result.files)
     })
     return () => {
@@ -57,6 +59,7 @@ export function useOverviewStart(
     confirmDuplicate?: boolean
   ): StartRunOptions {
     return {
+      ...(workItem.workItemId !== null && { workItemId: workItem.workItemId }),
       ...(grant !== undefined && { trustGrant: grant }),
       ...(Object.keys(body.values).length > 0 && { values: body.values }),
       ...(body.files.length > 0 && { files: body.files }),
@@ -115,17 +118,17 @@ export function useOverviewStart(
   }
 
   function submit() {
-    const v = clientValidateInputs(decls, values, files)
+    const v = clientValidateInputs(decls, workItem.values, files)
     if (v) {
       setLocalErrors(v)
       return
     }
-    void afterSubmit({ values, files })
+    void afterSubmit({ values: workItem.values, files })
   }
 
   return {
     decls,
-    values,
+    values: workItem.values,
     files,
     errors: localErrors,
     loadError,
@@ -135,7 +138,10 @@ export function useOverviewStart(
     trust,
     duplicateIds,
     lastGrant,
-    setValues,
+    workItems: workItem.workItems,
+    workItemId: workItem.workItemId,
+    setWorkItemId: workItem.setWorkItemId,
+    setValues: workItem.setValues,
     setFiles,
     setTrust,
     setDuplicateIds,

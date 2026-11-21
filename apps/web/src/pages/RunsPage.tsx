@@ -1,5 +1,4 @@
-import { Fragment, useMemo, useState } from "react"
-import { Link, useNavigate } from "react-router"
+import { useMemo, useState } from "react"
 import { Play } from "lucide-react"
 import type { RunStatus } from "@workspace/shared"
 import { runStatusSchema } from "@workspace/shared"
@@ -23,31 +22,23 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/PageHeader"
 import { PageTitle } from "@/components/PageTitle"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
 import { useRunsList } from "@/hooks/use-runs-list"
+import { useWorkItemTitles } from "@/hooks/use-work-item-titles"
 import { groupRunsByItem } from "@/lib/group-runs-by-item"
-import { runPath } from "@/lib/paths"
 import { useWorkflows } from "@/lib/workflows-context"
+import { RunsGroupedTable } from "@/pages/RunsGroupedTable"
 
 const STATUS_ALL = "all"
 const WORKFLOW_ALL = "all"
 const STATUSES = runStatusSchema.options
 
 export function RunsPage() {
-  const navigate = useNavigate()
   const { workflows } = useWorkflows()
   const [status, setStatus] = useState<string>(STATUS_ALL)
   const [workflowId, setWorkflowId] = useState<string>(WORKFLOW_ALL)
+  const titles = useWorkItemTitles()
 
   const filters = useMemo(
     () => ({
@@ -61,7 +52,10 @@ export function RunsPage() {
   )
 
   const { runs, error } = useRunsList(filters)
-  const groups = useMemo(() => (runs ? groupRunsByItem(runs) : null), [runs])
+  const groups = useMemo(
+    () => (runs ? groupRunsByItem(runs, titles) : null),
+    [runs, titles]
+  )
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -72,7 +66,7 @@ export function RunsPage() {
       >
         <PageTitle
           title="Runs"
-          description="All runs across workflows, grouped by item key."
+          description="All runs across workflows, grouped by work item."
         />
         {error ? (
           <Alert variant="destructive">
@@ -136,65 +130,7 @@ export function RunsPage() {
                 </EmptyHeader>
               </Empty>
             ) : (
-              <Table data-testid="runs-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Run</TableHead>
-                    <TableHead>Workflow</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Started</TableHead>
-                    <TableHead>Progress</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {groups!.map((group) => (
-                    <Fragment key={group.key}>
-                      <TableRow data-testid={`runs-group-${group.key}`}>
-                        <TableCell
-                          colSpan={5}
-                          className="bg-muted/40 font-medium"
-                        >
-                          {group.key}
-                        </TableCell>
-                      </TableRow>
-                      {group.runs.map((run) => (
-                        <TableRow
-                          key={run.id}
-                          className="cursor-pointer"
-                          data-testid={`runs-row-${run.id}`}
-                          onClick={() => void navigate(runPath(run.id))}
-                        >
-                          <TableCell>
-                            <Link
-                              to={runPath(run.id)}
-                              className="font-mono text-sm hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {run.id}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="font-mono text-sm">
-                            {run.workflowName}
-                          </TableCell>
-                          <TableCell>
-                            <RunStatusBadge
-                              status={run.status}
-                              needsYou={run.needsYou.length > 0}
-                              data-testid={`runs-status-${run.id}`}
-                            />
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {run.startedAt}
-                          </TableCell>
-                          <TableCell>
-                            {run.taskCounts.done}/{run.taskCounts.total}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </Fragment>
-                  ))}
-                </TableBody>
-              </Table>
+              <RunsGroupedTable groups={groups!} />
             )}
           </>
         )}
