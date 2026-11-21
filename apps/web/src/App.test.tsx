@@ -18,6 +18,15 @@ beforeEach(() => {
       dispatchEvent: vi.fn(),
     })),
   })
+  vi.stubGlobal(
+    "WebSocket",
+    class {
+      addEventListener = vi.fn()
+      close = vi.fn()
+      send = vi.fn()
+      readyState = 1
+    }
+  )
 })
 
 afterEach(() => {
@@ -37,6 +46,13 @@ function mockFetch(handlers: Record<string, unknown>) {
             : input.url
       if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
         return Response.json(handlers.runs ?? [])
+      }
+      if (
+        url.includes("/api/runs") &&
+        !url.includes("/api/runs/") &&
+        !url.includes("/tasks/")
+      ) {
+        return Response.json(handlers.allRuns ?? handlers.runs ?? [])
       }
       if (url.includes("/api/cli-status")) {
         return Response.json(
@@ -76,20 +92,25 @@ function renderApp(path = "/") {
 }
 
 describe("App", () => {
-  it("lists workflows in the sidebar and shows home empty state", async () => {
+  it("lists workflows in the sidebar and shows home sections", async () => {
     mockFetch({
       workflows: [{ id: "demo", goal: "test goal" }],
+      allRuns: [],
     })
     renderApp("/")
     expect(await screen.findByTestId("sidebar-workflow-demo")).toBeTruthy()
-    expect(await screen.findByTestId("home-empty")).toBeTruthy()
-    expect(screen.getByText(/Select a workflow or create one/i)).toBeTruthy()
+    expect(await screen.findByTestId("home-page")).toBeTruthy()
+    expect(await screen.findByTestId("home-running")).toBeTruthy()
+    expect(screen.getByTestId("home-recent")).toBeTruthy()
+    expect(screen.queryByTestId("home-empty")).toBeNull()
   })
 
-  it("shows sidebar empty when there are no workflows", async () => {
+  it("shows home empty create action when there are no workflows", async () => {
     mockFetch({ workflows: [] })
     renderApp("/")
     expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
+    expect(await screen.findByTestId("home-empty")).toBeTruthy()
+    expect(screen.getByTestId("home-create-workflow")).toBeTruthy()
     expect(screen.getByTestId("sidebar-settings")).toBeTruthy()
   })
 
@@ -109,6 +130,13 @@ describe("App", () => {
               : input.url
         if (url.includes("/api/workflows") && !url.includes("/runs")) {
           return workflowsPromise
+        }
+        if (
+          url.includes("/api/runs") &&
+          !url.includes("/api/runs/") &&
+          !url.includes("/tasks/")
+        ) {
+          return Response.json([])
         }
         throw new Error(`unexpected fetch: ${url}`)
       })
