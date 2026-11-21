@@ -5,13 +5,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { Item, ItemContent, ItemGroup } from "@workspace/ui/components/item"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
-import { TriangleAlert } from "lucide-react"
+import { ShieldCheck, TriangleAlert } from "lucide-react"
+import { Confirmation } from "@/components/ai-elements/confirmation"
 
 type Props = {
   open: boolean
@@ -74,39 +74,44 @@ export function TrustDialog({
           </ItemGroup>
         </ScrollArea>
 
-        <DialogFooter className="flex-wrap gap-2 sm:justify-end">
-          <Button
-            variant="outline"
-            data-testid="trust-cancel"
-            disabled={pending}
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          {needsGrant ? (
-            <>
-              <Button
-                variant="secondary"
-                data-testid="trust-once"
-                disabled={pending}
-                onClick={onTrustOnce}
-              >
-                Trust once
-              </Button>
-              <Button
-                data-testid="trust-always"
-                disabled={pending}
-                onClick={onTrustAlways}
-              >
-                Always trust
-              </Button>
-            </>
-          ) : (
-            <Button data-testid="trust-run" disabled={pending} onClick={onRun}>
-              Run
+        {needsGrant ? (
+          <div className="flex flex-col gap-2">
+            <Confirmation
+              data-testid="trust-confirmation"
+              icon={<ShieldCheck />}
+              title="Trust agent CLIs for this run?"
+              description="Deny cancels. Approve trusts once for this start."
+              approveLabel="Trust once"
+              denyLabel="Cancel"
+              approveTestId="trust-once"
+              denyTestId="trust-cancel"
+              pending={pending}
+              onApprove={onTrustOnce}
+              onDeny={() => onOpenChange(false)}
+            />
+            <Button
+              data-testid="trust-always"
+              disabled={pending}
+              onClick={onTrustAlways}
+            >
+              Always trust
             </Button>
-          )}
-        </DialogFooter>
+          </div>
+        ) : (
+          <Confirmation
+            data-testid="trust-confirmation"
+            icon={<ShieldCheck />}
+            title="Start this run?"
+            description="Warnings above are informational."
+            approveLabel="Run"
+            denyLabel="Cancel"
+            approveTestId="trust-run"
+            denyTestId="trust-cancel"
+            pending={pending}
+            onApprove={onRun}
+            onDeny={() => onOpenChange(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   )

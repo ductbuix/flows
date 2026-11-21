@@ -6,8 +6,19 @@ status: active
 summary: Run view with list and graph views, live task states, attempts, logs, rendered SUMMARY.md, outputs and spawned tasks.
 tags: [ui, web, runs, logs]
 related:
-  [DES-002, DES-003, DES-004, DES-005, DES-006, DES-008, DES-011, DES-012,
-   DES-021, DES-023]
+  [
+    DES-002,
+    DES-003,
+    DES-004,
+    DES-005,
+    DES-006,
+    DES-008,
+    DES-011,
+    DES-012,
+    DES-021,
+    DES-023,
+    DES-024,
+  ]
 updated: 2026-11-21
 ---
 
@@ -101,33 +112,39 @@ example "Retry 2 of 3 after exit code 1".
 
 shadcn components (add with `pnpm dlx shadcn@latest add <name> -c apps/web`):
 
-| Need                                      | Component                |
-| ----------------------------------------- | ------------------------ |
-| App shell and workflow and run navigation | Sidebar, Breadcrumb      |
-| Runs list and task list                   | Table, Badge             |
-| List and Graph switch                     | Toggle Group             |
-| Task list and detail split                | Resizable, Scroll Area   |
-| Run progress                              | Progress                 |
-| Task detail sections                      | Tabs                     |
-| stdout or stderr switch                   | Toggle Group             |
-| Exit codes, skip and fail reasons         | Alert, Tooltip           |
-| Sandbox warning                           | Badge, Tooltip           |
-| Empty, loading                            | Empty, Skeleton, Spinner |
-| Websocket lost, request failed            | Alert                    |
-| Attempt metadata rows                     | Item                     |
-| Fenced code in `SUMMARY.md`               | Code Block               |
+| Need                                      | Component                 |
+| ----------------------------------------- | ------------------------- |
+| App shell and workflow and run navigation | Sidebar, Breadcrumb       |
+| Runs list and task list                   | Table, Badge              |
+| List and Graph switch                     | Toggle Group              |
+| Task list and detail split                | Resizable, Scroll Area    |
+| Run progress                              | Progress                  |
+| Task detail sections                      | Tabs                      |
+| Advanced disclosure                       | Switch (`flows-advanced`) |
+| Exit codes, skip and fail reasons         | Alert, Tooltip            |
+| Sandbox warning                           | Badge, Tooltip            |
+| Empty, loading                            | Empty, Skeleton, Spinner  |
+| Websocket lost, request failed            | Alert                     |
+| Attempt metadata rows                     | Item                      |
+| Fenced code in `SUMMARY.md`               | Code Block                |
 
-AI Elements patterns (copy from
-`https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`; keep the
-presentational parts and drop the chat and AI SDK wiring, since data
-comes from our server):
+AI Elements patterns live in `apps/web/src/components/ai-elements/`
+(copy from `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`;
+drop chat and AI SDK wiring). Base: `shadcn add trace code-block`.
 
-| Need                                   | Pattern   | Builds on                |
-| -------------------------------------- | --------- | ------------------------ |
-| Attempt log output as it streams       | Terminal  | Trace, Code Block        |
-| Attempts of a task as steps            | Task      | Trace                    |
-| Files in `out/`                        | File Tree | per its page             |
-| Agent tasks and the tasks they spawned | Subagent  | Trace, Code Block, Badge |
+| Need                                        | Pattern                         | Builds on         |
+| ------------------------------------------- | ------------------------------- | ----------------- |
+| Default attempt log                         | Terminal                        | Trace, Code Block |
+| Attempts as steps                           | Task                            | Trace             |
+| Retry plan progress                         | Plan                            | Trace             |
+| Failed attempt                              | Stack Trace                     | Trace             |
+| Files in `out/`                             | File Tree                       | Collapsible       |
+| Trust and approve or reject                 | Confirmation                    | Item, Button      |
+| Advanced: env, command, pid, raw stdout/err | Item, Badge, Switch, Code Block | —                 |
+
+Advanced off by default. Env uses Flows-owned path templates from the
+frozen graph (not a live process dump). Tool, Reasoning and Subagent
+wait for a structured CLI event log (DES-024).
 
 Other libraries: React Flow and dagre for the graph view, react-markdown
 with remark-gfm for `SUMMARY.md` (DES-012).
@@ -174,7 +191,11 @@ Zod schemas live in `packages/shared` (`api.ts`, `attempt-kind.ts`).
 `ws-status`, `task-row-<taskId>`, `task-node-<taskId>`,
 `task-state-<taskId>`, `task-spawned-<taskId>`,
 `task-tab-<logs|attempts|summary|output|spawn>`, `attempt-row-<n>`,
-`attempt-kind-<n>`, `attempt-reason-<n>`, `log-output`, `summary-markdown`.
+`attempt-kind-<n>`, `attempt-reason-<n>`, `log-output`, `task-terminal`,
+`advanced-switch`, `advanced-logs`, `advanced-env`, `advanced-command`,
+`advanced-raw-log`, `attempts-task`, `attempts-plan`,
+`attempt-stack-<n>`, `out-file-tree`, `task-confirmation`,
+`summary-markdown`.
 
 ## Playwright evidence
 

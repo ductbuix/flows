@@ -1,12 +1,10 @@
 import { useState } from "react"
 import type { RunDetail, TaskView } from "@workspace/shared"
-import {
-  ButtonGroup,
-  ButtonGroupSeparator,
-} from "@workspace/ui/components/button-group"
+import { ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { ActionButton } from "@/components/ActionButton"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
+import { Confirmation } from "@/components/ai-elements/confirmation"
 import { approveTask, rejectTask, retryTask } from "@/lib/run-actions"
 
 type Props = {
@@ -50,7 +48,21 @@ export function TaskActions({ run, task }: Props) {
 
   return (
     <>
-      <ButtonGroup>
+      {awaiting ? (
+        <Confirmation
+          data-testid="task-confirmation"
+          icon={<ShieldCheck />}
+          title={`Approve ${task.id}?`}
+          description="The task runs after approval. Deny ends it as failed."
+          approveLabel="Approve"
+          denyLabel="Reject"
+          approveTestId="task-approve"
+          denyTestId="task-reject"
+          pending={pending === "approve" || pending === "reject"}
+          onApprove={() => void onApprove()}
+          onDeny={() => setRejectOpen(true)}
+        />
+      ) : (
         <ActionButton
           size="sm"
           data-testid="task-retry"
@@ -61,30 +73,7 @@ export function TaskActions({ run, task }: Props) {
         >
           Retry
         </ActionButton>
-        <ButtonGroupSeparator />
-        <ActionButton
-          size="sm"
-          data-testid="task-approve"
-          pending={pending === "approve"}
-          disabled={!awaiting}
-          disabledReason="Task is not awaiting approval"
-          onClick={() => void onApprove()}
-        >
-          Approve
-        </ActionButton>
-        <ButtonGroupSeparator />
-        <ActionButton
-          size="sm"
-          variant="destructive"
-          data-testid="task-reject"
-          pending={pending === "reject"}
-          disabled={!awaiting}
-          disabledReason="Task is not awaiting approval"
-          onClick={() => setRejectOpen(true)}
-        >
-          Reject
-        </ActionButton>
-      </ButtonGroup>
+      )}
 
       <ConfirmDialog
         open={rejectOpen}

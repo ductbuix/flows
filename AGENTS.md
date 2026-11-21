@@ -40,8 +40,10 @@ Schema and writing rules: `docs/README.md`.
 - `apps/web`: Sidebar shell (workflows, Settings), graph editor (React
   Flow + CodeMirror YAML, inputs list, maxConcurrentRuns), memory/*.md
   editor, run list, start/rerun input form, run view (list/graph,
-  attempts, logs, SUMMARY.md, run inputs, promote) with live websocket
-  updates and run controls; Settings for theme, CLI info and always-trust.
+  Terminal/Task/Plan/Stack Trace/File Tree/Confirmation AI Elements,
+  Advanced env/raw logs, SUMMARY.md, run inputs, promote) with live
+  websocket updates and run controls; Settings for theme, CLI info and
+  always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.

@@ -1,4 +1,3 @@
-import { useState } from "react"
 import type { RunDetail, TaskView } from "@workspace/shared"
 import {
   Tabs,
@@ -6,19 +5,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import { PromoteButton } from "./PromoteButton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@workspace/ui/components/toggle-group"
 import {
   Alert,
   AlertDescription,
@@ -30,19 +16,19 @@ import {
   EmptyDescription,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { ScrollArea } from "@workspace/ui/components/scroll-area"
+import { Badge } from "@workspace/ui/components/badge"
 import {
   Item,
   ItemContent,
   ItemGroup,
   ItemTitle,
 } from "@workspace/ui/components/item"
-import { Badge } from "@workspace/ui/components/badge"
-import { AttemptKindBadge } from "./AttemptKindBadge"
+import { PromoteButton } from "./PromoteButton"
 import { TaskActions } from "./TaskActions"
-import { TaskDetailSummary } from "./TaskDetailSummary"
+import { TaskDetailAttempts } from "./TaskDetailAttempts"
+import { TaskDetailLogs } from "./TaskDetailLogs"
 import { TaskDetailOutput } from "./TaskDetailOutput"
-import { useTaskLog, type LogStream } from "./useTaskLog"
+import { TaskDetailSummary } from "./TaskDetailSummary"
 
 type Props = {
   run: RunDetail
@@ -56,14 +42,7 @@ function latestAttempt(task: TaskView): number {
 
 export function TaskDetail({ run, task }: Props) {
   const attemptN = latestAttempt(task)
-  const [logStream, setLogStream] = useState<LogStream>("stdout")
-  const { text: logText, loading: logLoading } = useTaskLog(
-    run.id,
-    task.id,
-    attemptN,
-    logStream
-  )
-
+  const attempt = task.attempts.at(-1)
   const spawnedChildren = run.tasks.filter((t) => t.spawnedBy === task.id)
 
   return (
@@ -88,80 +67,16 @@ export function TaskDetail({ run, task }: Props) {
       </TabsList>
 
       <TabsContent value="logs" className="flex min-h-0 flex-1 flex-col gap-2">
-        <ToggleGroup
-          value={[logStream]}
-          onValueChange={(v) => {
-            const s = v[0]
-            if (s === "stdout" || s === "stderr") setLogStream(s)
-          }}
-          variant="outline"
-          size="sm"
-        >
-          <ToggleGroupItem value="stdout">stdout</ToggleGroupItem>
-          <ToggleGroupItem value="stderr">stderr</ToggleGroupItem>
-        </ToggleGroup>
-        {logLoading && !logText ? (
-          <p className="text-sm text-muted-foreground">Loading log…</p>
-        ) : logText ? (
-          <ScrollArea className="min-h-0 flex-1 rounded-lg border p-2">
-            <pre
-              data-testid="log-output"
-              className="font-mono text-xs whitespace-pre-wrap"
-            >
-              {logText}
-            </pre>
-          </ScrollArea>
-        ) : (
-          <Empty>
-            <EmptyTitle>No log output</EmptyTitle>
-            <EmptyDescription>
-              Nothing written to this stream yet.
-            </EmptyDescription>
-            <EmptyContent />
-          </Empty>
-        )}
+        <TaskDetailLogs
+          run={run}
+          task={task}
+          attempt={attempt}
+          attemptN={attemptN}
+        />
       </TabsContent>
 
       <TabsContent value="attempts">
-        {task.attempts.length === 0 ? (
-          <Empty>
-            <EmptyTitle>Not started</EmptyTitle>
-            <EmptyDescription>This task has no attempts yet.</EmptyDescription>
-            <EmptyContent />
-          </Empty>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>#</TableHead>
-                <TableHead>Kind</TableHead>
-                <TableHead>Exit</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>PID</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {task.attempts.map((a) => (
-                <TableRow
-                  key={a.attempt}
-                  data-testid={`attempt-row-${a.attempt}`}
-                >
-                  <TableCell>{a.attempt}</TableCell>
-                  <TableCell>
-                    <AttemptKindBadge kind={a.kind} attempt={a.attempt} />
-                  </TableCell>
-                  <TableCell>
-                    {a.exitCode !== undefined ? a.exitCode : "—"}
-                  </TableCell>
-                  <TableCell data-testid={`attempt-reason-${a.attempt}`}>
-                    {a.reason ?? "—"}
-                  </TableCell>
-                  <TableCell>{a.pid ?? "—"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <TaskDetailAttempts run={run} task={task} />
       </TabsContent>
 
       <TabsContent value="summary">

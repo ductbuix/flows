@@ -6,12 +6,7 @@ import {
   EmptyDescription,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import {
-  Item,
-  ItemContent,
-  ItemGroup,
-  ItemTitle,
-} from "@workspace/ui/components/item"
+import { FileTree, pathsToFileTree } from "@/components/ai-elements/file-tree"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -25,6 +20,7 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
   const [state, setState] = useState<{ slot: string; files: string[] } | null>(
     null
   )
+  const [selected, setSelected] = useState<string | undefined>()
   const loading = state === null || state.slot !== slot
 
   useEffect(() => {
@@ -37,7 +33,10 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
       })
       if (!res.ok || !alive) return
       const out = outListSchema.parse(await res.json())
-      setState({ slot, files: out.files.map((f) => f.path) })
+      setState({
+        slot,
+        files: out.files.filter((f) => f.type === "file").map((f) => f.path),
+      })
     })()
     return () => {
       alive = false
@@ -59,14 +58,11 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
   }
 
   return (
-    <ItemGroup>
-      {state!.files.map((path) => (
-        <Item key={path} size="sm" variant="outline">
-          <ItemContent>
-            <ItemTitle className="font-mono">{path}</ItemTitle>
-          </ItemContent>
-        </Item>
-      ))}
-    </ItemGroup>
+    <FileTree
+      roots={pathsToFileTree(state!.files)}
+      selected={selected}
+      onSelect={setSelected}
+      data-testid="out-file-tree"
+    />
   )
 }

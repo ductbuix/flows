@@ -12,6 +12,7 @@ import {
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Spinner } from "@workspace/ui/components/spinner"
+import { AdvancedSwitch } from "@/components/AdvancedSwitch"
 import { PageHeader } from "@/components/PageHeader"
 import { RunHeader } from "./RunHeader"
 import { TaskList } from "./TaskList"
@@ -51,10 +52,12 @@ export function RunViewPage() {
   const selectedTask =
     run && taskId ? run.tasks.find((t) => t.id === taskId) : undefined
 
+  const headerActions = <AdvancedSwitch />
+
   if (loading && !run) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} />
+        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
         <div className="flex flex-col gap-4 p-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-100 w-full" />
@@ -66,7 +69,7 @@ export function RunViewPage() {
   if (error || !run) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} />
+        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
         <div className="p-4">
           <Alert variant="destructive">
             <AlertTitle>Could not load run</AlertTitle>
@@ -79,7 +82,7 @@ export function RunViewPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[...crumbs]} />
+      <PageHeader crumbs={[...crumbs]} actions={headerActions} />
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
         <RunHeader
           run={run}

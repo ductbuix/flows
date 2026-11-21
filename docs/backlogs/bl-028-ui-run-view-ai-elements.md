@@ -2,7 +2,7 @@
 id: BL-028
 title: Run view on AI Elements with Advanced logs
 type: backlog
-status: todo
+status: done
 summary: Terminal, Task, Plan, Stack Trace, File Tree and Confirmation in the run view; env and raw logs behind Advanced.
 tags: [ui, web, runs, ai-elements]
 related: [DES-024, DES-009, DES-011, DES-019]
@@ -20,22 +20,22 @@ branch `docs/des-024-ui-foundation`.
 
 ## Done when
 
-- [ ] `trace` and `code-block` are added with `shadcn add`,
+- [x] `trace` and `code-block` are added with `shadcn add`,
       unedited. Patterns are copied into
       `apps/web/src/components/ai-elements/` with their classes
       as shipped.
-- [ ] The default log is Terminal. Attempts use Task and Plan. A
+- [x] The default log is Terminal. Attempts use Task and Plan. A
       failed attempt uses Stack Trace. `out/` uses File Tree.
       Trust and approve or reject use Confirmation.
       `SUMMARY.md` stays react-markdown; code fences may use
       Code Block.
-- [ ] An Advanced `Switch` in the page header (`flows-advanced`
+- [x] An Advanced `Switch` in the page header (`flows-advanced`
       in `localStorage`) shows env as `Item`, `Badge` and
       `Switch`, plus command line, pid, and raw stdout and
       stderr. Off by default.
-- [ ] Tool, Reasoning and Subagent are not added.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and
+- [x] Tool, Reasoning and Subagent are not added.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test` and
       `pnpm test:e2e` pass.
-- [ ] Playwright covers default and Advanced logs, a failed
+- [x] Playwright covers default and Advanced logs, a failed
       attempt, the output tree, and a confirmation, with video
       and screenshots in light and dark.
