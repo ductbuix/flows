@@ -5,7 +5,7 @@ type: design
 status: active
 summary: How agent CLI tasks run stateless with memories, and how they grow a run's graph, including fan-out.
 tags: [agents, spawn, memory, cli, fan-out, dynamic]
-related: [DES-002, DES-003, DES-006, DES-019]
+related: [DES-002, DES-003, DES-006, DES-019, DES-020]
 updated: 2026-11-21
 ---
 
@@ -13,24 +13,29 @@ updated: 2026-11-21
 
 
 - Headless agent CLI (Claude Code or Cursor CLI), cwd in its attempt dir,
-  stateless: knows only its instructions file (DES-002), input dir,
+  stateless: knows only its prompt file (DES-002, DES-020), input dir,
   memories and upstream paths. Turn/token/cost agent limits are not
   defined yet (DES-007); the `agents` concurrency cap still applies
   (DES-003).
 - Adapters: `claude --print --permission-mode dontAsk --add-dir <workflow>`
   and `agent -p --force --trust --workspace <attempt> --add-dir <workflow>`
-  (DES-006). `TASK_INSTRUCTIONS` is the absolute path to the instructions
-  file; the CLI prompt tells the agent to follow it.
+  (DES-006). `TASK_INSTRUCTIONS` is the absolute path of the derived
+  prompt (`tasks/<taskId>/prompt.md`, or a spawned task's stamped
+  `promptDir`); the CLI prompt tells the agent to follow it.
 - `memory/*.md` listed on the task are copied into the task's
   `input/memory/` before launch.
-- Spawn: agent writes specs to `out/spawn/*.yaml`. Engine validates
-  schema, unique id, existing needs, no cycles, `maxTasks`,
-  `maxSpawnDepth`. Accepted specs emit `tasks_spawned` and update
-  `graph.json`. Rejections are written to `input/spawn-rejections.md` for
-  the next attempt (retry when `retry` is set).
-- Spawned tasks are stamped with `spawnDepth` and `spawnedBy`. They live
-  only in the run's `graph.json`; a UI action can promote them into
-  `workflow.yaml`.
+- Spawn: agent writes specs to `out/spawn/<id>.yaml`, and for an agent
+  (or a task with an agent judge) the prompt and judge files under
+  `out/spawn/<id>/` (DES-020). Engine validates schema, unique id,
+  existing needs, no cycles, `maxTasks`, `maxSpawnDepth`, and that
+  required prompt and judge files exist. Accepted specs emit
+  `tasks_spawned` and update `graph.json`. Rejections are written to
+  `input/spawn-rejections.md` for the next attempt (retry when `retry`
+  is set).
+- Spawned tasks are stamped with `spawnDepth`, `spawnedBy`, and
+  `promptDir` (run-root relative). They live only in the run's
+  `graph.json`; a UI action can promote them into `workflow.yaml`,
+  which copies the prompt folder into `tasks/<id>/`.
 
 ## Fan-out through spawn
 

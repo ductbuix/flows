@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: "Fix switching a task to kind agent, and edit memory and instructions in a plain textarea, with a .md file picker."
 tags: [ui, web, editor, agent, memory, files]
-related: [DES-002, DES-005, DES-012, DES-013, BL-015, BL-016]
+related: [DES-002, DES-005, DES-012, DES-013, DES-020, BL-015, BL-016]
 updated: 2026-11-21
 ---
 
@@ -13,7 +13,12 @@ updated: 2026-11-21
 
 Follow-up to the editor in [DES-013](des-013-workflow-editing.md). Two
 changes: switching a task to `kind: agent` must produce a valid task, and
-memory and instructions files are edited in a plain textarea.
+memory and prompt files are edited in a plain textarea.
+
+The free `instructions` path in this doc is superseded by
+[DES-020](des-020-fixed-prompt-files.md). The kind-switch rule (a valid
+shape and field errors) still holds, except the agent default no
+longer sets `instructions`.
 
 ## Agent kind: root cause
 
@@ -52,8 +57,8 @@ Keep shared fields: `id`, `needs`, `approval`, `when`, `retry`,
 Defaults when switching to `agent`:
 
 - `cli: claude`
-- `instructions: tasks/<task-id>.md` (same layout as
-  [DES-002](des-002-workflow-files.md); the path can still be edited)
+- no `instructions` key; the prompt lives at `tasks/<id>/prompt.md`
+  ([DES-020](des-020-fixed-prompt-files.md))
 - drop `run`
 
 Defaults when switching to `command`:
@@ -61,21 +66,20 @@ Defaults when switching to `command`:
 - `run: echo ok` (same as a newly added command task).
   `commandTaskSchema` requires `run` to be a non-empty string, so
   `run: ""` would still be invalid.
-- drop `cli`, `instructions`, `memory` and `spawn`
+- drop `cli`, `memory` and `spawn`
 
-The instructions file is not created by the kind switch. The path is
-set; the file is created when the user opens **Edit instructions**
-(below). Saving `workflow.yaml` is allowed before that file exists, as
-it is today: the schema only checks that the path is non-empty. A run
-fails later if the file is still missing.
+The prompt file is not created by the kind switch. **Edit prompt**
+creates it on first save (DES-020). Saving `workflow.yaml` is allowed
+before that file exists. A run fails later with `missing_prompt` if
+it is still missing.
 
 After the switch, parse must succeed so the Inspector shows the new
 kind and its fields. Apply the change with the Document API (replace
 the task map in place, or a dedicated helper) so comments and key
 order of other tasks stay as in DES-013.
 
-Validation errors that remain (empty `run`, cleared `instructions`,
-and so on) show next to the Inspector field they belong to, mapped
+Validation errors that remain (empty `run`, and so on) show next to
+the Inspector field they belong to, mapped
 from the parse diagnostic `path`. The YAML pane can still list them.
 Save must not fail silently: keep the disabled state while errors
 exist, and if the server returns `400`, show the field errors and the
@@ -119,21 +123,13 @@ already exists in `memory/`, open a short dialog:
 Do not invent a unique name automatically. Collision is handled in
 the UI before the PUT; the memory endpoint does not change.
 
-### Agent instructions
+### Agent prompt
 
-In the Inspector, next to the instructions path, an **Edit
-instructions** button opens the same plain textarea dialog. If the
-file is missing, the dialog opens empty and the first **Save**
-creates it (and any missing parent dir). The path in
-`workflow.yaml` does not change unless the user edits that field.
-
-This needs a server endpoint for files inside the workflow dir, not
-only under `memory/`. See below. Saving an instructions file does not
-by itself save `workflow.yaml`.
-
-Command tasks may also have optional `instructions`. The same button
-can appear when that field is set. Out of scope for the first cut:
-adding an instructions path to a command task from the Inspector.
+The Inspector no longer has a path field. **Edit prompt** opens the
+same textarea dialog and creates `tasks/<id>/prompt.md` on first
+save. See [DES-020](des-020-fixed-prompt-files.md). Saving a prompt
+file does not by itself save `workflow.yaml`. The files API below
+is unchanged.
 
 ### YAML pane
 
@@ -169,8 +165,7 @@ Path rules:
   workflow dir.
 - Reject `workflow.yaml` (it has its own endpoint) and any path under
   `runs/`.
-- `DES-002` allows any file name for `instructions:`. The UI default
-  is still a `.md` file under `tasks/`.
+- Prompt files use the fixed paths in DES-020, under `tasks/<id>/`.
 
 No new delete route for these files. Memory delete stays on
 `DELETE /api/workflows/:workflowId/memory/:file`.
@@ -205,14 +200,14 @@ Zod schemas in `packages/shared`, next to `api-lifecycle.ts`.
 ## Playwright evidence
 
 - Switch a command task to agent, save, reload: YAML has `cli` and
-  `instructions`, and no `run`. Switch back: `run` is present,
-  `cli`, `instructions`, `memory` and `spawn` are gone. Other tasks
+  no `run` or `instructions`. Switch back: `run` is present,
+  `cli`, `memory` and `spawn` are gone. Other tasks
   in the file are unchanged.
 - Clear a required field and check the error on that Inspector field.
 - Edit and save a memory file in the textarea; check the future-
   launches sentence. Remove a file from the dialog after confirm.
 - Add a `.md` file with the picker; when the name exists, overwrite
   once and rename once.
-- From an agent task, open **Edit instructions**, save a new file,
-  reload, and check the file on disk.
+- From an agent task, open **Edit prompt**, save a new file, reload,
+  and check `tasks/<id>/prompt.md` on disk (DES-020).
 - Video and screenshots with the UI work.

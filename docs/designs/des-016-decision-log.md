@@ -17,6 +17,7 @@ related:
     DES-014,
     DES-018,
     DES-019,
+    DES-020,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -65,6 +66,9 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Always-trust is a settings row, bound to realpath | not run state; the events table requires `run_id`              | DES-003, 019 |
 | 2026-11-21 | Pre-run checks warn only, including paths outside | the user can still run after a double check                    | DES-019, 007 |
 | 2026-11-21 | CLI adapter, check list, and `decideTrust`        | add a CLI or check without new layers; no plugin loader        | DES-019      |
+| 2026-11-21 | Fixed prompt paths; no `instructions` key         | yaml and the prompt file cannot drift                          | DES-020      |
+| 2026-11-21 | At most one agent judge per slot                  | one slot, one file; revisit if a workflow needs two            | DES-020, 007 |
+| 2026-11-21 | Leftover `instructions` keys are a parse error    | no auto-migration; the error names the target path             | DES-020      |
 
 ## UI
 
@@ -80,6 +84,8 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Kind switch writes a valid shape for the new kind | Inspector only patched kind, so agent tasks failed save | DES-018      |
 | 2026-11-21 | Plain textarea for memory and instructions files  | quicker edit in the UI; YAML pane keeps CodeMirror      | DES-018      |
 | 2026-11-21 | Add memory .md files with a native file picker    | on a name collision, ask to overwrite or rename         | DES-018      |
+| 2026-11-21 | Inspector shows a fixed prompt path and Edit prompt | the user no longer edits the path                       | DES-020      |
+| 2026-11-21 | Task rename moves the prompt folder in the same PUT | yaml and files stay in sync                             | DES-020, 013 |
 
 ## Docs and tooling
 

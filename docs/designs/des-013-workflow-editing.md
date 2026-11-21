@@ -5,7 +5,7 @@ type: ui
 status: active
 summary: Disk change detection and conflict dialog, workflow create, rename and delete, memory file editing, YAML-preserving writes.
 tags: [ui, web, editor, yaml, files]
-related: [DES-002, DES-005, DES-010, DES-012, DES-018]
+related: [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020]
 updated: 2026-11-21
 ---
 
@@ -117,13 +117,16 @@ Zod schemas in `packages/shared` (`api-lifecycle.ts`).
 - `POST /api/workflows/:workflowId/rename` with `{ newId }`; `409` while
   live or if the new id exists
 - `DELETE /api/workflows/:workflowId`; `409` while live
-- `PUT /api/workflows/:workflowId` with `{ yaml, baseHash }`; `409` on a
-  changed disk file
+- `PUT /api/workflows/:workflowId` with
+  `{ yaml, baseHash, renames?: [{ from, to }] }`; `409` on a changed
+  disk file. `renames` moves `tasks/<from>/` in the same request
+  ([DES-020](des-020-fixed-prompt-files.md))
 - `GET /api/workflows/:workflowId/memory`, `GET`/`PUT`/`DELETE`
   `.../memory/:file`, and `POST .../memory/:file/rename` with
   `{ newName, updateReferences? }`
-- `GET`/`PUT /api/workflows/:workflowId/files/*` for instructions and
-  other workflow-relative text files ([DES-018](des-018-agent-kind-and-file-editing.md))
+- `GET`/`PUT /api/workflows/:workflowId/files/*` for prompt files and
+  other workflow-relative text files ([DES-018](des-018-agent-kind-and-file-editing.md),
+  [DES-020](des-020-fixed-prompt-files.md))
 - Websocket: file changed `{ workflowId, path, hash, content }`
 
 ## Test ids

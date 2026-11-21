@@ -5,7 +5,7 @@ type: backlog
 status: done
 summary: Edit memory and instructions in a plain textarea, and add a .md memory file with a file picker.
 tags: [ui, web, editor, memory, files]
-related: [DES-018, DES-013]
+related: [DES-018, DES-013, DES-020]
 updated: 2026-11-21
 priority: P1
 depends: [BL-015]
@@ -17,6 +17,11 @@ Design: [DES-018](../designs/des-018-agent-kind-and-file-editing.md).
 Depends on [BL-015](bl-015-agent-kind.md) because **Edit instructions**
 lives on the Inspector fields that only stay usable after a kind switch
 produces a valid agent task.
+
+The **Edit instructions** path field is superseded by **Edit prompt**
+and the fixed path in [DES-020](../designs/des-020-fixed-prompt-files.md)
+and [BL-020](bl-020-prompt-editor.md). The textarea dialog and files
+API stay.
 
 ## Done when
 

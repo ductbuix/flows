@@ -5,7 +5,7 @@ type: design
 status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
-related: [DES-001, DES-004, DES-005]
+related: [DES-001, DES-004, DES-005, DES-020]
 updated: 2026-11-21
 ---
 
@@ -19,11 +19,13 @@ updated: 2026-11-21
   config.yaml                 # global limits
   workflows/<workflowId>/
     workflow.yaml             # source of truth; editor reads and writes it
+    tasks/<taskId>/           # authored prompts and judge files (DES-020)
+      prompt.md  when.md  until.md  need-<id>.md
     memory/*.md               # initial memories for agent tasks
     input/  output/  SUMMARY.md
     runs/<runId>/
       graph.json              # starting graph plus tasks spawned in this run
-      tasks/<taskId>/
+      tasks/<taskId>/         # this run's attempts, not the prompt folder
         input/
         attempt-<n>/out/  attempt-<n>/SUMMARY.md  stdout.log  stderr.log
         latest -> attempt-<n>
@@ -43,7 +45,7 @@ tasks:
   - id: plan
     kind: agent
     cli: claude # or cursor
-    instructions: tasks/plan.md # user-written instructions for this task
+    # prompt is tasks/plan/prompt.md (DES-020)
     memory: [memory/style.md]
     spawn: true
     timeout: 1800
@@ -61,7 +63,7 @@ tasks:
       until:
         any:
           - expr: "json('out/score.json').score >= 0.8"
-          - agent: { cli: claude, instructions: tasks/judge-score.md }
+          - agent: { cli: claude } # reads tasks/check/until.md (DES-020)
   - id: publish
     kind: command
     run: cp -r $UPSTREAM_check/out/* $WF_OUTPUT/
@@ -80,14 +82,15 @@ The visual editor and `workflow.yaml` stay in sync; the file is the source
 of truth. Conditions, `when`, `retry`, `repeat` and branch edges:
 [DES-004](des-004-conditions-loops.md).
 
-## Task instructions
+## Task prompts
 
-Each task can have its own instructions file, written by the user, set
-with `instructions:` as a path relative to the workflow dir (any name or
-folder). For an agent task it is the agent's prompt; a command task can
-read it from `TASK_INSTRUCTIONS`. No agent limits (turns, time, tokens,
-cost) are defined yet, in the file or in `workflow.yaml`; ledger entry in
-[DES-007](des-007-tradeoffs.md).
+An agent task's prompt is always `tasks/<taskId>/prompt.md` in the
+workflow folder. Agent judges use fixed files in the same folder,
+named by slot (`when.md`, `until.md`, `need-<id>.md`). There is no
+`instructions` key; the engine derives the path
+([DES-020](des-020-fixed-prompt-files.md)). Command tasks have no
+prompt file. No agent limits (turns, time, tokens, cost) are defined
+yet; ledger entry in [DES-007](des-007-tradeoffs.md).
 
 ## App home
 
@@ -96,5 +99,8 @@ e2e runs use a temporary directory and never touch the user's data.
 
 ## Task environment
 
-Tasks read upstream outputs by path. Env: `UPSTREAM_<taskId>`, `TASK_IN`, `TASK_INSTRUCTIONS`,
-`TASK_OUT`, `PREV_ATTEMPT`, `WF_DIR`, `WF_INPUT`, `WF_OUTPUT`, `RUN_ID`.
+Tasks read upstream outputs by path. Env: `UPSTREAM_<taskId>`,
+`TASK_IN`, `TASK_INSTRUCTIONS`, `TASK_OUT`, `PREV_ATTEMPT`, `WF_DIR`,
+`WF_INPUT`, `WF_OUTPUT`, `RUN_ID`. `TASK_INSTRUCTIONS` is set only
+for agent tasks, and is the absolute path of `tasks/<taskId>/prompt.md`
+(or the stamped spawn `promptDir` for a spawned task).

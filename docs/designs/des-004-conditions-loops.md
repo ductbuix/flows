@@ -5,7 +5,7 @@ type: design
 status: active
 summary: Condition kinds (exit, expr, agent) shared by when, until and branches; retry and repeat policies.
 tags: [engine, conditions, loops, retry]
-related: [DES-002, DES-003, DES-019]
+related: [DES-002, DES-003, DES-019, DES-020]
 updated: 2026-11-21
 ---
 
@@ -27,7 +27,7 @@ when: false # always skip
 when: { exit: 0 } # every need's latest exit matches
 when: { exit: [0, 1] }
 when: { expr: "json('out/score.json').score >= 0.8" }
-when: { agent: { cli: claude, instructions: tasks/judge.md } }
+when: { agent: { cli: claude } } # reads tasks/<taskId>/when.md
 when: { all: [{ exit: 0 }, { expr: "text('out/ok.txt') == 'yes'" }] }
 when: { any: [{ exit: 0 }, { exit: 2 }] }
 ```
@@ -39,13 +39,17 @@ parentheses. No function calls beyond `json` / `text`.
 ### Agent judge
 
 `agent` runs a headless Claude Code or Cursor CLI (same adapters as
-DES-005) with cwd at the subject attempt root. The CLI reads
-`instructions` (workflow-relative) and must exit `0` for pass or
-non-zero for fail. Judges are not graph tasks and do not take an
-`agents` slot. Results are cached per (cli, instructions, attempt root)
-for the run so ticks do not re-spawn. In `all` / `any`, `exit` and
-`expr` (and nested groups that contain only those) run before any
-`agent` leaf.
+DES-005) with cwd at the subject attempt root. The judge object is
+`{ cli }` only. The prompt file is derived from the owning task and
+the slot ([DES-020](des-020-fixed-prompt-files.md)): `when.md`,
+`until.md`, or `need-<upstreamId>.md`. The CLI must exit `0` for
+pass or non-zero for fail. A missing file makes the condition fail
+(false). At most one agent judge is allowed per slot, including
+inside `all` / `any`. Judges are not graph tasks and do not take an
+`agents` slot. Results are cached per (cli, derived path, attempt
+root) for the run so ticks do not re-spawn. In `all` / `any`, `exit`
+and `expr` (and nested groups that contain only those) run before
+any `agent` leaf.
 
 ## Where conditions run
 

@@ -6,7 +6,8 @@ status: active
 summary: Workflow list and React Flow graph editor synced with workflow.yaml (CodeMirror pane), auto layout, spawn marker.
 tags: [ui, web, editor, yaml]
 related:
-  [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013]
+  [DES-001, DES-002, DES-004, DES-005, DES-008, DES-009, DES-012, DES-013,
+   DES-020]
 updated: 2026-11-21
 ---
 
@@ -28,9 +29,9 @@ preservation are in [DES-013](des-013-workflow-editing.md).
   `spawn`, `retry`, `repeat` and `when`
   ([DES-004](des-004-conditions-loops.md)).
 - Edges that carry a condition (branch edges, `when`) are labeled.
-- Edit a task: kind, `run` or `cli`, `instructions` file, `memory` files,
-  `needs`, `when`, `retry`, `repeat`, `spawn`,
-  `continueOnError`, limits.
+- Edit a task: kind, `run` or `cli`, the fixed prompt file
+  ([DES-020](des-020-fixed-prompt-files.md)), `memory` files, `needs`,
+  `when`, `retry`, `repeat`, `spawn`, `continueOnError`, limits.
 - Edit workflow fields: `goal` and `limits` (`concurrency`, `agents`,
   `maxTasks`, `maxSpawnDepth`).
 - The YAML text next to the graph in a CodeMirror 6 editor with YAML

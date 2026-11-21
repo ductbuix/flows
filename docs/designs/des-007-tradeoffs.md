@@ -15,6 +15,7 @@ related:
     DES-011,
     DES-012,
     DES-019,
+    DES-020,
     DOC-001,
   ]
 updated: 2026-11-21
@@ -38,6 +39,9 @@ the trigger fires and the choice changes.
 | No `matrix`; fan-out by spawn       | a fixed list costs an agent run    | write copies by hand, or spawn within `maxTasks` and `maxSpawnDepth` (DES-005) | users keep hand-writing identical tasks, or spawn fan-out is too slow or costly for fixed lists |
 | No agent limits yet                 | a runaway or expensive agent run   | retry and repeat max, `maxTasks`, `maxSpawnDepth`, `agents`, cancel            | a runaway or expensive agent run                                                                |
 | Pre-run checks warn, never block    | a run proceeds despite a warning   | dialog lists the warning and asks the user to double check (DES-019)           | a path-outside-home warning is ignored and causes harm                                          |
+| At most one agent judge per slot    | a slot cannot hold two judges      | schema error with a clear message; one file per slot (DES-020)                 | a real workflow needs two agent judges in one `when`, `until`, or need                          |
+| Deleting a task leaves its folder   | orphan prompt files can pile up    | orphans are unused and harmless; user can delete the folder by hand            | orphan folders become confusing or large                                                        |
+| No auto-migration of `instructions` | old yaml fails to parse            | clear error names the target path; one known workflow is fixed by hand         | many existing workflows still use the old key                                                   |
 | Cursor agents may write `~/.cursor` | CLI can write outside the workflow | pre-written trust markers; seatbelt still denies other paths (DES-006, 019)    | Cursor stops needing chats/projects writes, or a tighter path list is enough                    |
 | Agent judge conditions              | slow, not deterministic            | cheap kinds evaluate first; loop max counts (DES-004)                          | judges disagree on identical output                                                             |
 
@@ -122,7 +126,7 @@ Settled on 2026-11-21: approval gates (yes), macOS only on day one,
 `cancelled` state for tasks and runs, and deleted runs kept in the log
 with a marker event. See DES-003 and DES-006. Also settled: no `matrix`
 key; workflows are dynamic and fan-out is done by spawn (DES-001,
-DES-005). And: each task has a user-written instructions file, with no
-agent limits yet (DES-002).
+DES-005). And: each agent task has a fixed prompt file (DES-020),
+with no agent limits yet (DES-002).
 
 The UI design docs have no open questions as of 2026-11-21.
