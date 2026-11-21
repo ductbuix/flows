@@ -201,6 +201,74 @@ describe("workflowSchema", () => {
       { connection: "github-acme", access: "propose" },
     ])
   })
+
+  it("accepts kind publish with connection, needs, when and name", () => {
+    const workflow = workflowSchema.parse({
+      id: "with-publish",
+      tasks: [
+        {
+          id: "edit",
+          kind: "command",
+          run: "true",
+          uses: [{ connection: "github-acme", access: "propose" }],
+        },
+        {
+          id: "open-pr",
+          kind: "publish",
+          connection: "github-acme",
+          name: "Open PR",
+          needs: ["edit"],
+          when: true,
+        },
+      ],
+    })
+    const pub = workflow.tasks[1]
+    expect(pub).toMatchObject({
+      kind: "publish",
+      connection: "github-acme",
+      name: "Open PR",
+      when: true,
+    })
+  })
+})
+
+describe("parseWorkflowYaml publish checks", () => {
+  it("rejects publish without an earlier propose on the connection", () => {
+    const parsed = parseWorkflowYaml(`
+id: bad-publish
+tasks:
+  - id: open-pr
+    kind: publish
+    connection: github-acme
+`)
+    expect(parsed.workflow).toBeNull()
+    expect(
+      parsed.errors.some((e) =>
+        e.message.includes("earlier propose task on github-acme")
+      )
+    ).toBe(true)
+  })
+
+  it("accepts publish after a propose ordered by needs", () => {
+    const parsed = parseWorkflowYaml(`
+id: ok-publish
+tasks:
+  - id: edit
+    kind: command
+    run: "true"
+    uses:
+      - { connection: github-acme, access: propose }
+  - id: open-pr
+    kind: publish
+    connection: github-acme
+    needs: [edit]
+`)
+    expect(parsed.errors).toEqual([])
+    expect(parsed.workflow?.tasks[1]).toMatchObject({
+      kind: "publish",
+      connection: "github-acme",
+    })
+  })
 })
 
 describe("parseWorkflowYaml DES-020 checks", () => {

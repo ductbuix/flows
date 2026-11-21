@@ -6,7 +6,7 @@ import type {
   Workflow,
   WorkflowLimits,
 } from "@workspace/shared"
-import { isAgentTask } from "@workspace/shared"
+import { isAgentTask, isPublishTask } from "@workspace/shared"
 import { resolveAttemptModelFields } from "./attempt-model.ts"
 import { watchChild, type AttemptWatchHost } from "./attempt-watch.ts"
 import { readConnection } from "./connections.ts"
@@ -15,6 +15,7 @@ import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
 import { fitsLimits, limitCaps } from "./limits.ts"
 import { portLeaseKey, portLeases, type PortBlock } from "./port-lease.ts"
 import { taskPromptAbs } from "./prompt-paths.ts"
+import { runPublishTask } from "./publish.ts"
 import { launchTask } from "./runner.ts"
 import { serialLocks } from "./serial-lock.ts"
 import { resolveAttemptTimeout } from "./timeout.ts"
@@ -58,6 +59,8 @@ export async function launchReadyTasks(host: LaunchHost): Promise<void> {
     ...readyTaskIds(state).filter((id) => {
       const spec = byId.get(id)
       const task = state.tasks[id]
+      // Publish tasks gate themselves after building the change set.
+      if (spec && isPublishTask(spec)) return true
       if (!spec?.approval || task?.approved) return true
       host.append({
         type: "approval_requested",
@@ -76,6 +79,20 @@ export async function launchReadyTasks(host: LaunchHost): Promise<void> {
     // Re-fold after each launch so slots stay accurate.
     const live = host.state()
     if (!fitsLimits(spec, live, live.graph, caps)) continue
+    if (isPublishTask(spec)) {
+      await runPublishTask(
+        {
+          runId: host.runId,
+          runRoot: host.runRoot,
+          home: host.home,
+          state: host.state,
+          append: host.append,
+          requestTick: host.requestTick,
+        },
+        spec
+      )
+      continue
+    }
     await launchTaskAttempt(host, taskId, ["pending", "awaiting_approval"])
   }
 }

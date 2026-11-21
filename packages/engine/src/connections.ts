@@ -198,14 +198,21 @@ export function workflowUsesConnection(
   workflow: Workflow,
   connectionId: string
 ): boolean {
-  return collectWorkflowUses(workflow).some(
-    (u) => u.connection === connectionId
+  if (
+    collectWorkflowUses(workflow).some((u) => u.connection === connectionId)
+  ) {
+    return true
+  }
+  return workflow.tasks.some(
+    (t) => t.kind === "publish" && t.connection === connectionId
   )
 }
 
 export function collectWorkflowUses(workflow: Workflow): TaskUsesEntry[] {
   const out: TaskUsesEntry[] = []
   for (const task of workflow.tasks) {
+    // Publish names its connection separately; uses on it are ignored.
+    if (task.kind === "publish") continue
     if (!task.uses) continue
     out.push(...task.uses)
   }

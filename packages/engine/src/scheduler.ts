@@ -24,6 +24,7 @@ import {
   watchHost,
   type SchedulerCore,
 } from "./scheduler-hosts.ts"
+import { resumeInFlightPublishes, type PublishHost } from "./publish.ts"
 import { serialLocks } from "./serial-lock.ts"
 import { resolveSpawn } from "./spawn.ts"
 import { recordUnpublishedLocalEffects } from "./work-copy.ts"
@@ -101,6 +102,18 @@ export class Scheduler {
 
   resumeOpenAttempts(): void {
     resumeOpenAttempts(watchHost(this.core()), (event) => this.append(event))
+    const publishHost: PublishHost = {
+      runId: this.runId,
+      runRoot: this.runRoot,
+      home: this.home,
+      state: () => this.state(),
+      append: (event) => this.append(event),
+      requestTick: () => this.requestTick(),
+    }
+    void resumeInFlightPublishes(
+      publishHost,
+      this.log.listByRun(this.runId).map((e) => e.event)
+    ).then(() => this.requestTick())
   }
 
   resumeCancelIfNeeded(): void {

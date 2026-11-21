@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import {
   existsSync,
   mkdirSync,
@@ -8,12 +9,32 @@ import {
 } from "node:fs"
 import { join, relative } from "node:path"
 import type { ConnectionCheckResult } from "@workspace/shared"
+import { connectionDir } from "../paths.ts"
 import { isSignedIn, readCookies } from "../secrets.ts"
 import type {
   Connector,
   ConnectorChangeSet,
   ConnectorPublishResult,
 } from "./types.ts"
+
+function changeSetFingerprint(changeSet: ConnectorChangeSet): string {
+  return createHash("sha256")
+    .update(JSON.stringify(changeSet))
+    .digest("hex")
+    .slice(0, 16)
+}
+
+function receiptPath(
+  home: string,
+  connectionId: string,
+  fingerprint: string
+): string {
+  return join(
+    connectionDir(home, connectionId),
+    ".publish-receipts",
+    `${fingerprint}.json`
+  )
+}
 
 function listFiles(root: string): string[] {
   if (!existsSync(root)) return []
@@ -157,13 +178,44 @@ export const fakeConnector: Connector = {
       ops,
     }
   },
-  async publish(connection, _changeSet, home): Promise<ConnectorPublishResult> {
+  async publish(connection, changeSet, home): Promise<ConnectorPublishResult> {
     if (connection.signIn === "cookies") {
       const cookies = readCookies(home, connection.id)
       if (!cookies || cookies.length === 0) {
         return { status: "rejected", message: "not signed in" }
       }
     }
-    return { status: "rejected", message: "fake publish is not implemented" }
+
+    const fingerprint = changeSetFingerprint(changeSet)
+    const receipt = receiptPath(home, connection.id, fingerprint)
+    if (existsSync(receipt)) {
+      return JSON.parse(readFileSync(receipt, "utf8")) as ConnectorPublishResult
+    }
+
+    const mode = connection.scope.publishResult
+    let outcome: ConnectorPublishResult
+    if (mode === "conflict") {
+      outcome = { status: "conflict", message: "fake conflict" }
+    } else if (mode === "rejected") {
+      outcome = {
+        status: "rejected",
+        message: connection.scope.publishMessage ?? "fake rejected",
+      }
+    } else {
+      outcome = {
+        status: "applied",
+        result: {
+          url: `https://example.test/${connection.id}/pr/${fingerprint}`,
+          fingerprint,
+        },
+        undoNote: `Close the fake PR for ${connection.id} (${fingerprint})`,
+      }
+    }
+
+    mkdirSync(join(connectionDir(home, connection.id), ".publish-receipts"), {
+      recursive: true,
+    })
+    writeFileSync(receipt, JSON.stringify(outcome), "utf8")
+    return outcome
   },
 }

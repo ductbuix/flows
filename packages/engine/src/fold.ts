@@ -39,7 +39,7 @@ export type TaskState = {
   status: TaskStatus
   /** Set after task_approved; gate only asks once (DES-003). */
   approved?: boolean
-  failReason?: "rejected"
+  failReason?: "rejected" | "conflict"
   skipReason?: "when" | "upstream_skip" | "branch"
   /** Next attempt_started is a manual retry (DES-011). */
   manualRetryPending?: boolean

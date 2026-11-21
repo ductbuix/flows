@@ -238,5 +238,23 @@ export function applyEvent(
     case "work_copy_changed":
       // Local effect; does not change run fold state (DES-026 / BL-048).
       return state
+    case "publish_started": {
+      if (!state) return state
+      const task = state.tasks[event.taskId]
+      if (task) setTaskStatus(task, "running")
+      return state
+    }
+    case "publish_finished": {
+      if (!state) return state
+      const task = state.tasks[event.taskId]
+      if (!task || TERMINAL_TASK.has(task.status)) return state
+      if (event.status === "applied") {
+        setTaskStatus(task, "succeeded")
+      } else {
+        task.status = "failed"
+        task.failReason = event.status
+      }
+      return state
+    }
   }
 }

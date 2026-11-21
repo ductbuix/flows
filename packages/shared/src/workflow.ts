@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { taskUsesSchema } from "./connection.ts"
+import { connectionIdSchema, taskUsesSchema } from "./connection.ts"
 import { isSafeTaskId } from "./task-ids.ts"
 import {
   effortSchema,
@@ -111,9 +111,21 @@ export const agentTaskSchema = z.object({
   spawn: z.boolean().optional(),
 })
 
+/**
+ * Publish task: builds a change set and sends it under the connection
+ * policy (DES-026 / BL-049). Runs no process. Shares base fields with
+ * other kinds so the Task union stays easy to use.
+ */
+export const publishTaskSchema = z.object({
+  ...taskBaseFields,
+  kind: z.literal("publish"),
+  connection: connectionIdSchema,
+})
+
 export const taskSchema = z.discriminatedUnion("kind", [
   commandTaskSchema,
   agentTaskSchema,
+  publishTaskSchema,
 ])
 
 export const workflowLimitsSchema = z.object({
@@ -197,6 +209,7 @@ export type RetryPolicy = z.infer<typeof retrySchema>
 export type RepeatPolicy = z.infer<typeof repeatSchema>
 export type CommandTask = z.infer<typeof commandTaskSchema>
 export type AgentTask = z.infer<typeof agentTaskSchema>
+export type PublishTask = z.infer<typeof publishTaskSchema>
 export type Task = z.infer<typeof taskSchema>
 export type Workflow = z.infer<typeof workflowSchema>
 export type WorkflowLimits = z.infer<typeof workflowLimitsSchema>
@@ -225,6 +238,10 @@ export function isAgentTask(task: Task): task is AgentTask {
 
 export function isCommandTask(task: Task): task is CommandTask {
   return task.kind === "command"
+}
+
+export function isPublishTask(task: Task): task is PublishTask {
+  return task.kind === "publish"
 }
 
 export function taskSpawnDepth(task: Task): number {

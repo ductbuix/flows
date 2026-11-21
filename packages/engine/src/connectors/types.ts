@@ -40,7 +40,12 @@ export type ConnectorChangeSet = {
 }
 
 export type ConnectorPublishResult =
-  | { status: "applied"; result: Record<string, unknown> }
+  | {
+      status: "applied"
+      result: Record<string, unknown>
+      /** How to undo this Cloud effect (DES-026 / BL-049). */
+      undoNote: string
+    }
   | { status: "conflict"; message: string }
   | { status: "rejected"; message: string }
 

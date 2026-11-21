@@ -41,16 +41,18 @@ Schema and writing rules: `docs/README.md`.
   (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
   under `workitems/`, cookie secrets under `secrets/` (Chrome sign-in, sandbox denies reads), propose work copies (`work/`, serial lock,
   change sets via `GET /runs/:id/changes/:connectionId`),
+  `kind: publish` tasks (policy gate, `publish_started`/`finished`,
+  Cloud effects, work-copy base advance),
   model/effort resolve and preflight warns (including connection uses),
   app-owned trust markers, spawn into `graph.json`, resume, approval,
   cancel, manual retry, conditions, retry, repeat, `agents` limits, run
   deletion, workflow id rebind, frozen `RUN_INPUT`, Manual source,
   queued runs, run summary cache, port leases and `<workflow>/.cache`.
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`/`workItemId`, `workItemSchema`), websocket, workflow,
-  `connection.yaml`, library list/pull and `resources.json`, events
-  (`queued`, `run_activated`, `library_pulled`, `workItemId`) and YAML
-  Document edits.
+  `needsYou`/`workItemId`, `workItemSchema`), websocket, workflow
+  (including `kind: publish`), `connection.yaml`, library list/pull and
+  `resources.json`, events (`queued`, `run_activated`, `library_pulled`,
+  `publish_started`/`finished`, `workItemId`) and YAML Document edits.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
