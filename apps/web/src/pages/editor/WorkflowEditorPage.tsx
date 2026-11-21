@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
+import { runSummarySchema } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import {
   ResizableHandle,
@@ -12,14 +13,16 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { runSummarySchema } from "@workspace/shared"
 import { api } from "@/lib/api"
 import { DeleteWorkflowDialog } from "@/pages/DeleteWorkflowDialog"
 import { RenameWorkflowDialog } from "@/pages/RenameWorkflowDialog"
 import { WorkflowActions } from "@/pages/WorkflowActions"
 import { ConflictDialog } from "./ConflictDialog"
+import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { EditorGraph } from "./EditorGraph"
 import { Inspector } from "./Inspector"
+import { useEditorHotkeys } from "./useEditorHotkeys"
+import { usePendingTaskDelete } from "./usePendingTaskDelete"
 import { YamlPane } from "./YamlPane"
 import { useWorkflowEditor } from "./useWorkflowEditor"
 
@@ -31,6 +34,8 @@ export function WorkflowEditorPage() {
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [runCount, setRunCount] = useState(0)
+  const { pendingDelete, requestDelete, clearPendingDelete } =
+    usePendingTaskDelete(workflowId, state.workflow)
 
   useEffect(() => {
     let alive = true
@@ -46,6 +51,14 @@ export function WorkflowEditorPage() {
       alive = false
     }
   }, [workflowId])
+
+  useEditorHotkeys({
+    undo: editor.undo,
+    redo: editor.redo,
+    requestDelete,
+    selectedTaskId: state.selectedTaskId,
+    taskCount: state.workflow?.tasks.length ?? 0,
+  })
 
   if (state.loading) {
     return (
@@ -137,6 +150,7 @@ export function WorkflowEditorPage() {
               onChangeTask={editor.changeTask}
               onChangeInputs={editor.changeInputs}
               onChangeLimits={editor.changeLimits}
+              onDeleteTask={requestDelete}
             />
           ) : (
             <p className="p-3 text-sm text-muted-foreground">
@@ -146,6 +160,20 @@ export function WorkflowEditorPage() {
         </ResizablePanel>
       </ResizablePanelGroup>
 
+      <DeleteTaskDialog
+        open={Boolean(pendingDelete)}
+        taskLabel={pendingDelete?.label ?? ""}
+        dependents={pendingDelete?.dependents ?? []}
+        mentions={pendingDelete?.mentions ?? []}
+        onOpenChange={(open) => {
+          if (!open) clearPendingDelete()
+        }}
+        onConfirm={() => {
+          if (!pendingDelete) return
+          editor.removeTaskPending(pendingDelete.taskId)
+          clearPendingDelete()
+        }}
+      />
       <ConflictDialog
         open={Boolean(state.conflict)}
         diskYaml={state.conflict?.diskYaml ?? ""}

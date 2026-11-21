@@ -3,6 +3,7 @@ import {
   applyWorkflowDiff,
   newTaskId,
   parseWorkflowYaml,
+  removeTask,
   setTaskField,
   setTaskNeeds,
   setWorkflowField,
@@ -45,6 +46,10 @@ export function yamlAfterConnect(
   }
   needs.push(source)
   return setTaskNeeds(yaml, target, needs)
+}
+
+export function yamlAfterRemoveTask(yaml: string, taskId: string): string {
+  return removeTask(yaml, taskId)
 }
 
 export function yamlAfterGoal(yaml: string, goal: string): string {

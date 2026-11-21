@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { GENERATED_TASK_ID_RE, parseWorkflowYaml } from "@workspace/shared"
-import { yamlAfterAddTask, yamlAfterTaskPatch } from "./editor-mutations"
+import {
+  yamlAfterAddTask,
+  yamlAfterRemoveTask,
+  yamlAfterTaskPatch,
+} from "./editor-mutations"
 
 const yaml = `id: demo
 # keep me
@@ -57,5 +61,15 @@ describe("yamlAfterTaskPatch kind switch", () => {
     const beta = next.workflow.tasks.find((t) => t.id === "beta")
     expect(beta).toMatchObject({ kind: "command", run: "" })
     expect(parseWorkflowYaml(next.yaml).workflow).toBeNull()
+  })
+})
+
+describe("yamlAfterRemoveTask", () => {
+  it("drops the task and cleans needs", () => {
+    const next = yamlAfterRemoveTask(yaml, "alpha")
+    expect(next).not.toContain("id: alpha")
+    expect(next).toContain("id: beta")
+    expect(next).not.toContain("needs: [alpha]")
+    expect(next).toContain("# keep me")
   })
 })

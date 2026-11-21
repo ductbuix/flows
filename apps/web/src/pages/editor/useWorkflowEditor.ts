@@ -1,35 +1,22 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-  parseWorkflowYaml,
-  workflowConflictSchema,
-  workflowDetailSchema,
-  type Task,
-  type Workflow,
-  type WorkflowDetail,
-  type WorkflowInputDecl,
-  type WorkflowLimits,
-} from "@workspace/shared"
+import { parseWorkflowYaml, workflowDetailSchema } from "@workspace/shared"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
-import {
-  yamlAfterAddTask,
-  yamlAfterConnect,
-  yamlAfterGoal,
-  yamlAfterInputs,
-  yamlAfterLimits,
-  yamlAfterTaskPatch,
-} from "./editor-mutations"
+import { emptyEditorHistory, type EditorHistory } from "./editor-history"
+import { saveWorkflowEditor } from "./editor-save"
 import {
   activeEditorView,
   emptyEditorState,
   type EditorState,
 } from "./editor-state"
+import { useEditorMutations } from "./useEditorMutations"
 import { useWorkflowSocket } from "./useWorkflowSocket"
 
 export type { EditorState } from "./editor-state"
 
 export function useWorkflowEditor(workflowId: string) {
   const [state, setState] = useState<EditorState>(emptyEditorState)
+  const [history, setHistory] = useState<EditorHistory>(emptyEditorHistory)
 
   useEffect(() => {
     let alive = true
@@ -45,6 +32,7 @@ export function useWorkflowEditor(workflowId: string) {
       }
       const detail = workflowDetailSchema.parse(await res.json())
       if (!alive) return
+      setHistory(emptyEditorHistory)
       setState({
         workflowId,
         loading: false,
@@ -69,6 +57,7 @@ export function useWorkflowEditor(workflowId: string) {
         if (s.workflowId !== workflowId || p.hash === s.hash) return s
         if (!s.dirty) {
           const parsed = parseWorkflowYaml(p.content)
+          queueMicrotask(() => setHistory(emptyEditorHistory))
           toast.message("Reloaded from disk")
           return {
             ...s,
@@ -94,62 +83,51 @@ export function useWorkflowEditor(workflowId: string) {
     workflowId
   )
 
-  const withYaml = (
-    nextYaml: string,
-    extra?: Partial<EditorState> & { fallbackWorkflow?: Workflow }
-  ) => {
-    const parsed = parseWorkflowYaml(nextYaml)
-    const { fallbackWorkflow, ...rest } = extra ?? {}
-    setState((s) => ({
-      ...s,
-      yaml: nextYaml,
-      dirty: true,
-      errors: parsed.errors,
-      workflow: parsed.workflow ?? fallbackWorkflow ?? s.workflow,
-      ...rest,
-    }))
-  }
+  const mutations = useEditorMutations({
+    yaml: state.yaml,
+    workflow,
+    selectedTaskId: state.selectedTaskId,
+    setState,
+    history,
+    setHistory,
+  })
 
   const save = async () => {
-    const res = await api.workflows[":workflowId"].$put({
-      param: { workflowId },
-      json: { yaml, baseHash: hash },
+    const result = await saveWorkflowEditor({
+      workflowId,
+      yaml,
+      hash,
+      beforeWorkflow: workflow,
     })
-    if (res.status === 409) {
-      const body = workflowConflictSchema.parse(await res.json())
+    if (result.ok) {
+      setHistory(emptyEditorHistory)
       setState((s) => ({
         ...s,
-        conflict: { diskYaml: body.diskYaml, diskHash: body.diskHash },
+        yaml: result.detail.yaml,
+        hash: result.detail.hash,
+        workflow: result.detail.workflow,
+        errors: result.detail.errors,
+        dirty: false,
+        conflict: null,
+        showDiff: false,
+        loading: false,
       }))
       return
     }
-    if (res.status === 400) {
-      const detail = workflowDetailSchema.parse(await res.json())
+    if (result.kind === "conflict") {
       setState((s) => ({
         ...s,
-        errors: detail.errors,
-        workflow: detail.workflow ?? s.workflow,
+        conflict: { diskYaml: result.diskYaml, diskHash: result.diskHash },
       }))
-      toast.error("Save failed: invalid YAML")
       return
     }
-    if (!res.ok) {
-      toast.error("Save failed")
-      return
+    if (result.kind === "validation" && result.detail) {
+      setState((s) => ({
+        ...s,
+        errors: result.detail!.errors,
+        workflow: result.detail!.workflow ?? s.workflow,
+      }))
     }
-    const detail: WorkflowDetail = workflowDetailSchema.parse(await res.json())
-    setState((s) => ({
-      ...s,
-      yaml: detail.yaml,
-      hash: detail.hash,
-      workflow: detail.workflow,
-      errors: detail.errors,
-      dirty: false,
-      conflict: null,
-      showDiff: false,
-      loading: false,
-    }))
-    toast.success("Saved")
   }
 
   return {
@@ -157,31 +135,14 @@ export function useWorkflowEditor(workflowId: string) {
     setSelectedTaskId: (id?: string) =>
       setState((s) => ({ ...s, selectedTaskId: id })),
     setShowDiff: (show: boolean) => setState((s) => ({ ...s, showDiff: show })),
-    setYaml: (next: string) => withYaml(next),
-    addCommandTask: () => {
-      if (!workflow) return
-      const next = yamlAfterAddTask(yaml, workflow)
-      withYaml(next.yaml, { selectedTaskId: next.taskId })
-    },
-    connectTasks: (source: string, target: string) => {
-      if (!workflow) return
-      const next = yamlAfterConnect(yaml, workflow, source, target)
-      if (next) withYaml(next)
-    },
-    changeGoal: (goal: string) => withYaml(yamlAfterGoal(yaml, goal)),
-    changeInputs: (inputs: WorkflowInputDecl[] | undefined) =>
-      withYaml(yamlAfterInputs(yaml, inputs)),
-    changeLimits: (limits: WorkflowLimits | undefined) =>
-      withYaml(yamlAfterLimits(yaml, limits)),
-    changeTask: (taskId: string, patch: Partial<Task>) => {
-      if (!workflow) return
-      const next = yamlAfterTaskPatch(yaml, workflow, taskId, patch)
-      withYaml(next.yaml, { fallbackWorkflow: next.workflow })
-    },
+    ...mutations,
+    canUndo: history.past.length > 0,
+    canRedo: history.future.length > 0,
     save,
     reloadConflict: () => {
       if (!conflict) return
       const parsed = parseWorkflowYaml(conflict.diskYaml)
+      setHistory(emptyEditorHistory)
       setState((s) => ({
         ...s,
         yaml: conflict.diskYaml,
