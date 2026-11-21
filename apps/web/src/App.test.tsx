@@ -118,4 +118,13 @@ describe("App", () => {
     resolveWorkflows(Response.json([]))
     expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
   })
+
+  it("shows the runs list for ?tab=runs", async () => {
+    mockFetch({
+      workflows: [{ id: "demo", goal: "test goal" }],
+      runs: [],
+    })
+    renderApp("/workflows/demo?tab=runs")
+    expect(await screen.findByTestId("run-list")).toBeTruthy()
+  })
 })

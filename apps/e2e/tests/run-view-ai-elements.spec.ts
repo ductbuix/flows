@@ -7,7 +7,7 @@ test.describe("run view AI Elements", () => {
     request,
   }) => {
     const runId = await startRun(request, "diamond")
-    await page.goto(`/workflows/diamond/runs/${runId}?task=a`)
+    await page.goto(`/runs/${runId}?task=a`)
 
     for (const id of ["a", "b", "c", "d"]) {
       await expect(page.getByTestId(`task-state-${id}`)).toHaveText(
@@ -48,7 +48,7 @@ test.describe("run view AI Elements", () => {
     await page.goto("/settings")
     await page.getByTestId("theme-toggle").getByText("Dark").click()
     await expect(page.locator("html")).toHaveClass(/dark/)
-    await page.goto(`/workflows/diamond/runs/${runId}?task=a`)
+    await page.goto(`/runs/${runId}?task=a`)
     await page.getByTestId("task-tab-logs").click()
     await expect(page.getByTestId("task-terminal")).toBeVisible()
     await page.screenshot({
@@ -67,7 +67,7 @@ test.describe("run view AI Elements", () => {
     request,
   }) => {
     const runId = await startRun(request, "fail-retry")
-    await page.goto(`/workflows/fail-retry/runs/${runId}?task=flaky`)
+    await page.goto(`/runs/${runId}?task=flaky`)
     await expect(page.getByTestId("task-state-flaky")).toHaveText("failed", {
       timeout: 30_000,
     })
@@ -85,7 +85,7 @@ test.describe("run view AI Elements", () => {
 
   test("approval uses Confirmation", async ({ page, request }) => {
     const runId = await startRun(request, "gate")
-    await page.goto(`/workflows/gate/runs/${runId}?task=hold`)
+    await page.goto(`/runs/${runId}?task=hold`)
     await expect(page.getByTestId("task-state-hold")).toHaveText(
       "awaiting_approval",
       { timeout: 15_000 }

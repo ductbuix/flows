@@ -3,7 +3,7 @@ import { enableAdvanced } from "./helpers"
 
 test.describe("run inputs UI (BL-022)", () => {
   test("start form requires ticket and shows field error", async ({ page }) => {
-    await page.goto("/workflows/run-inputs/runs")
+    await page.goto("/workflows/run-inputs?tab=runs")
     await page.getByTestId("run-start").first().click()
     const form = page.getByTestId("start-run-form")
     await expect(form).toBeVisible()
@@ -20,7 +20,7 @@ test.describe("run inputs UI (BL-022)", () => {
   test("start with values, show run inputs, duplicate ask", async ({
     page,
   }) => {
-    await page.goto("/workflows/run-inputs/runs")
+    await page.goto("/workflows/run-inputs?tab=runs")
     await page.getByTestId("run-start").first().click()
     const ticket = page.getByTestId("start-run-field-ticket")
     await expect(ticket).toBeVisible()
@@ -28,7 +28,7 @@ test.describe("run inputs UI (BL-022)", () => {
     await expect(ticket).toHaveValue("T-100")
     await page.getByTestId("start-run-field-brief").fill("# Brief\n\nHello")
     await page.getByTestId("start-run-submit").click()
-    await expect(page).toHaveURL(/\/workflows\/run-inputs\/runs\/[^/]+$/)
+    await expect(page).toHaveURL(/\/runs\/[^/]+$/)
     await expect(page.getByTestId("run-status")).toHaveText(/running|succeeded/)
     await expect(page.getByTestId("run-inputs")).toBeVisible()
     await page.getByTestId("run-input-file-ticket-txt").click()
@@ -38,7 +38,7 @@ test.describe("run inputs UI (BL-022)", () => {
       fullPage: true,
     })
 
-    await page.goto("/workflows/run-inputs/runs")
+    await page.goto("/workflows/run-inputs?tab=runs")
     await page.getByTestId("run-start").first().click()
     const ticket2 = page.getByTestId("start-run-field-ticket")
     await expect(ticket2).toBeVisible()
@@ -54,17 +54,17 @@ test.describe("run inputs UI (BL-022)", () => {
       fullPage: true,
     })
     await page.getByTestId("confirm-ok").click()
-    await expect(page).toHaveURL(/\/workflows\/run-inputs\/runs\/[^/]+$/)
+    await expect(page).toHaveURL(/\/runs\/[^/]+$/)
   })
 
   test("queued run shows status and cancel copy", async ({ page }) => {
-    await page.goto("/workflows/run-inputs-slow/runs")
+    await page.goto("/workflows/run-inputs-slow?tab=runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-field-ticket").fill("Q-1")
     await page.getByTestId("start-run-submit").click()
-    await expect(page).toHaveURL(/\/workflows\/run-inputs-slow\/runs\/[^/]+$/)
+    await expect(page).toHaveURL(/\/runs\/[^/]+$/)
 
-    await page.goto("/workflows/run-inputs-slow/runs")
+    await page.goto("/workflows/run-inputs-slow?tab=runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-field-ticket").fill("Q-2")
     await page.getByTestId("start-run-submit").click()

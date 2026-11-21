@@ -5,9 +5,12 @@ import { AppSidebar } from "@/components/AppSidebar"
 import { WorkflowsProvider } from "@/lib/workflows-context"
 import { HomePage } from "@/pages/HomePage"
 import { SettingsPage } from "@/pages/SettingsPage"
-import { WorkflowRunsPage } from "@/pages/WorkflowRunsPage"
+import {
+  LegacyRunRedirect,
+  LegacyWorkflowRunsRedirect,
+} from "@/pages/LegacyRedirects"
 import { RunViewPage } from "@/pages/run-view/RunViewPage"
-import { WorkflowEditorPage } from "@/pages/editor/WorkflowEditorPage"
+import { WorkflowPage } from "@/pages/WorkflowPage"
 
 function AppShell() {
   return (
@@ -29,15 +32,16 @@ export function App() {
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="workflows/:workflowId" element={<WorkflowEditorPage />} />
-        <Route
-          path="workflows/:workflowId/runs"
-          element={<WorkflowRunsPage />}
-        />
+        <Route path="workflows/:workflowId" element={<WorkflowPage />} />
         <Route
           path="workflows/:workflowId/runs/:runId"
-          element={<RunViewPage />}
+          element={<LegacyRunRedirect />}
         />
+        <Route
+          path="workflows/:workflowId/runs"
+          element={<LegacyWorkflowRunsRedirect />}
+        />
+        <Route path="runs/:runId" element={<RunViewPage />} />
       </Route>
     </Routes>
   )

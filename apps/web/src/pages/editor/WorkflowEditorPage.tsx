@@ -14,6 +14,7 @@ import {
 import { AdvancedSwitch } from "@/components/AdvancedSwitch"
 import { PageHeader } from "@/components/PageHeader"
 import { useAdvanced } from "@/hooks/use-advanced"
+import { workflowPath } from "@/lib/paths"
 import { ConflictDialog } from "./ConflictDialog"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { EditorGraphPane } from "./EditorGraphPane"
@@ -54,7 +55,7 @@ export function WorkflowEditorPage() {
       <Button
         variant="link"
         size="sm"
-        render={<Link to={`/workflows/${workflowId}/runs`} />}
+        render={<Link to={workflowPath(workflowId, "runs")} />}
       >
         Runs
       </Button>

@@ -14,7 +14,7 @@ test.describe("agent CLI trust dialog", () => {
   })
 
   test("trust once starts a run", async ({ page }) => {
-    await page.goto("/workflows/agent-trust/runs")
+    await page.goto("/workflows/agent-trust?tab=runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-submit").click()
     const dialog = page.getByTestId("trust-dialog")
@@ -25,29 +25,29 @@ test.describe("agent CLI trust dialog", () => {
     })
     await page.getByTestId("trust-once").click()
     await expect(dialog).toBeHidden()
-    await expect(page).toHaveURL(/\/workflows\/agent-trust\/runs\/[^/]+$/)
+    await expect(page).toHaveURL(/\/runs\/[^/]+$/)
   })
 
   test("cancel leaves the run list unchanged", async ({ page }) => {
-    await page.goto("/workflows/agent-trust/runs")
+    await page.goto("/workflows/agent-trust?tab=runs")
     const before = await page.getByTestId("run-list").textContent()
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-submit").click()
     await expect(page.getByTestId("trust-dialog")).toBeVisible()
     await page.getByTestId("trust-cancel").click()
     await expect(page.getByTestId("trust-dialog")).toBeHidden()
-    await expect(page).toHaveURL(/\/workflows\/agent-trust\/runs$/)
+    await expect(page).toHaveURL(/\/workflows\/agent-trust\?tab=runs$/)
     const after = await page.getByTestId("run-list").textContent()
     expect(after).toBe(before)
   })
 
   test("always trust then revoke from settings", async ({ page }) => {
-    await page.goto("/workflows/agent-trust/runs")
+    await page.goto("/workflows/agent-trust?tab=runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-submit").click()
     await expect(page.getByTestId("trust-dialog")).toBeVisible()
     await page.getByTestId("trust-always").click()
-    await expect(page).toHaveURL(/\/workflows\/agent-trust\/runs\/[^/]+$/)
+    await expect(page).toHaveURL(/\/runs\/[^/]+$/)
 
     await page.goto("/settings")
     await expect(page.getByTestId("trust-settings")).toBeVisible()
@@ -59,7 +59,7 @@ test.describe("agent CLI trust dialog", () => {
     await page.getByTestId("trust-revoke").click()
     await expect(page.getByTestId("trust-revoke")).toHaveCount(0)
 
-    await page.goto("/workflows/agent-trust/runs")
+    await page.goto("/workflows/agent-trust?tab=runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-submit").click()
     await expect(page.getByTestId("trust-dialog")).toBeVisible()
@@ -75,7 +75,7 @@ test.describe("agent CLI trust dialog", () => {
     })
     expect(put.ok()).toBeTruthy()
 
-    await page.goto("/workflows/agent-trust/runs")
+    await page.goto("/workflows/agent-trust?tab=runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-submit").click()
     const dialog = page.getByTestId("trust-dialog")
@@ -94,6 +94,6 @@ test.describe("agent CLI trust dialog", () => {
       })
       await page.getByTestId("trust-run").click()
     }
-    await expect(page).toHaveURL(/\/workflows\/agent-trust\/runs\/[^/]+$/)
+    await expect(page).toHaveURL(/\/runs\/[^/]+$/)
   })
 })

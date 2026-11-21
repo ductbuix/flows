@@ -17,21 +17,13 @@ import { RunInputFiles } from "./RunInputFiles"
 
 type Props = {
   run: RunDetail
-  workflowId: string
   view: RunBodyView
   onViewChange: (view: RunBodyView) => void
   wsState: WsConnectionState
   stale: boolean
 }
 
-export function RunHeader({
-  run,
-  workflowId,
-  view,
-  onViewChange,
-  wsState,
-  stale,
-}: Props) {
+export function RunHeader({ run, view, onViewChange, wsState, stale }: Props) {
   const { total, finished } = run.taskCounts
   const pct = total > 0 ? Math.round((finished / total) * 100) : 0
 
@@ -46,7 +38,7 @@ export function RunHeader({
         </Alert>
       )}
 
-      <RunControls run={run} workflowId={workflowId} />
+      <RunControls run={run} />
 
       <RunInputFiles runId={run.id} files={run.inputFiles} />
 

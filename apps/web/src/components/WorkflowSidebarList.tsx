@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
+import { workflowPath } from "@/lib/paths"
 
 type Props = {
   workflows: WorkflowSummary[] | null
@@ -60,12 +61,12 @@ export function WorkflowSidebarList({ workflows, onRename, onDelete }: Props) {
   return (
     <SidebarMenu data-testid="sidebar-workflow-list">
       {workflows.map((wf) => {
-        const active = location.pathname.startsWith(`/workflows/${wf.id}`)
+        const active = location.pathname.startsWith(workflowPath(wf.id))
         return (
           <SidebarMenuItem key={wf.id}>
             <SidebarMenuButton
               isActive={active}
-              render={<Link to={`/workflows/${wf.id}`} />}
+              render={<Link to={workflowPath(wf.id)} />}
               data-testid={`sidebar-workflow-${wf.id}`}
             >
               <span className="font-mono">{wf.id}</span>
