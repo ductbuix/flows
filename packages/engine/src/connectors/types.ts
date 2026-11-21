@@ -24,6 +24,15 @@ export type ConnectorDiffInput = {
   connection: Connection
   workCopyDir: string
   baseDir: string
+  /** Run id for branch names like `flows/<runId>/<publishTaskId>` (BL-050). */
+  runId?: string
+  publishTaskId?: string
+}
+
+/** Optional paths so publish can push from the run's work copy (BL-050). */
+export type ConnectorPublishContext = {
+  runRoot?: string
+  workCopyDir?: string
 }
 
 export type ConnectorChangeSet = {
@@ -65,6 +74,7 @@ export type Connector = {
   publish: (
     connection: Connection,
     changeSet: ConnectorChangeSet,
-    home: string
+    home: string,
+    context?: ConnectorPublishContext
   ) => Promise<ConnectorPublishResult>
 }

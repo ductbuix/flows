@@ -91,6 +91,7 @@ export async function runPublishTask(
     runRoot: host.runRoot,
     connectionId: task.connection,
     publishTaskId: task.id,
+    runId: host.runId,
   })
 
   if (changeSet.ops.length === 0) {

@@ -9,6 +9,11 @@ export type CommandResult = {
   code: number
 }
 
+export type GithubRunner = {
+  runGh: (args: string[]) => Promise<CommandResult>
+  runGit: (args: string[]) => Promise<string>
+}
+
 /** Run `gh` and capture stdout/stderr even on non-zero exit. */
 export async function runGh(args: string[]): Promise<CommandResult> {
   try {

@@ -4,6 +4,7 @@ export type {
   ConnectorDiffInput,
   ConnectorPullInput,
   ConnectorPullResult,
+  ConnectorPublishContext,
   ConnectorPublishResult,
 } from "./types.ts"
 export {

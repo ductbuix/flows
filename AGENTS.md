@@ -36,8 +36,9 @@ Schema and writing rules: `docs/README.md`.
   delete, changes), run input/files, log/summary/out, websocket
   snapshots, `runs_changed`, log chunks and file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command/agent tasks (CliAdapter), connectors (github,
-  fake), connections, library pull/pins/retention (`library.ts`,
+  scheduler, command/agent tasks (CliAdapter), connectors (github
+  draft PR publish, fake), connections, library pull/pins/retention
+  (`library.ts`,
   maxBytes, sweep, clear, `resources/` + `RESOURCE_*`), work items,
   cookie secrets under `secrets/` (Chrome sign-in, sandbox denies),
   propose work copies (`work/`, serial lock, change sets),

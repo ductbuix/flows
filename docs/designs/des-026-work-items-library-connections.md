@@ -215,12 +215,11 @@ engine and UI read only the envelope and `preview.md`.
 - `publish(changeSet)` returns `applied`, `conflict` or `rejected`.
 - A conflict means the remote target changed since `base`, as the
   connector defines it: a page or story edited since its pinned version;
-  for GitHub, a branch of the same name already holding other commits
-  (a moved default branch is not a conflict; the pull request shows it).
+  for GitHub, branch `flows/<runId>/<publishTaskId>` already holding
+  other commits (a moved default branch is not; the PR shows it).
 - Flows never merges. The run offers "Rerun with fresh pull" or leaving
-  the task failed.
-- Ops flagged `destructive` (delete, close, force push) always need a
-  person, whatever the policy.
+  the task failed. Ops flagged `destructive` (delete, close, force
+  push) always need a person, whatever the policy.
 
 ## Agent review
 
@@ -293,7 +292,7 @@ apps/server/src/routes/{connections,workitems,library}.ts
 
 ## First source
 
-GitHub comes first: its sign-in is delegated (no secrets for Flows), a
-repo is one shared clone, and its change set is a branch and a draft
-pull request, which is easy to undo. Confluence (MCP) and Rally
-(cookies) follow, and they prove the other two sign-in paths.
+GitHub comes first: delegated `gh` sign-in, one shared clone per repo,
+and a change set that pushes `flows/<runId>/<publishTaskId>` and opens
+a draft pull request (easy to undo; force push is `destructive`).
+Confluence (MCP) and Rally (cookies) follow for the other sign-in paths.
