@@ -1,15 +1,24 @@
 import { zValidator } from "@hono/zod-validator"
-import { listLibrary, pullNow, type Engine } from "@workspace/engine"
 import {
+  clearEntityRevisions,
+  LibraryCapError,
+  listLibrary,
+  pullNow,
+  type Engine,
+} from "@workspace/engine"
+import {
+  libraryClearBodySchema,
+  libraryClearResultSchema,
   libraryListSchema,
   libraryPullBodySchema,
   libraryPullResultSchema,
+  type LibraryClearResult,
   type LibraryList,
   type LibraryPullResult,
 } from "@workspace/shared"
 import { Hono } from "hono"
 
-/** GET /library and POST /library/pull (DES-026 / BL-043). */
+/** GET /library, POST /library/pull, POST /library/clear (DES-026). */
 export function libraryRoutes(engine: Engine) {
   return new Hono()
     .get("/library", (c) => {
@@ -34,10 +43,26 @@ export function libraryRoutes(engine: Engine) {
             200
           )
         } catch (err) {
+          if (err instanceof LibraryCapError) {
+            return c.json({ message: err.message, code: err.code }, 507)
+          }
           const message = err instanceof Error ? err.message : "pull failed"
           const status = /unknown connection/.test(message) ? 404 : 400
           return c.json({ message }, status)
         }
       }
     )
+    .post("/library/clear", zValidator("json", libraryClearBodySchema), (c) => {
+      const body = c.req.valid("json")
+      const result = clearEntityRevisions(
+        engine.home,
+        body.connection,
+        body.kind,
+        body.entityId
+      )
+      return c.json(
+        libraryClearResultSchema.parse(result) satisfies LibraryClearResult,
+        200
+      )
+    })
 }

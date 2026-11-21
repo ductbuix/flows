@@ -3,45 +3,16 @@ import { join } from "node:path"
 import type { LibraryEntity, LibraryList } from "@workspace/shared"
 import { readConnection } from "./connections.ts"
 import { isFresh, readRevisionMeta } from "./library-paths.ts"
-import { readResourcesJson } from "./library.ts"
+import { listPinningRuns } from "./library-pins.ts"
+import { libraryUsage } from "./library-usage.ts"
 import { decodeEntityId, libraryDir } from "./paths.ts"
 
-function listPinningRuns(
-  home: string,
-  connectionId: string,
-  kind: string,
-  entityId: string,
-  revision: string
-): string[] {
-  const workflowsRoot = join(home, "workflows")
-  if (!existsSync(workflowsRoot)) return []
-  const ids: string[] = []
-  for (const wf of readdirSync(workflowsRoot, { withFileTypes: true })) {
-    if (!wf.isDirectory()) continue
-    const runsRoot = join(workflowsRoot, wf.name, "runs")
-    if (!existsSync(runsRoot)) continue
-    for (const run of readdirSync(runsRoot, { withFileTypes: true })) {
-      if (!run.isDirectory()) continue
-      const res = readResourcesJson(join(runsRoot, run.name))
-      if (!res) continue
-      const hit = res.pins.some(
-        (p) =>
-          p.connection === connectionId &&
-          p.kind === kind &&
-          p.entityId === entityId &&
-          p.revision === revision
-      )
-      if (hit) ids.push(run.name)
-    }
-  }
-  return ids.sort()
-}
-
-/** GET /library: entities, revisions, freshness, pinning runs. */
+/** GET /library: entities, revisions, freshness, pinning runs, usage. */
 export function listLibrary(home: string): LibraryList {
   const root = libraryDir(home)
+  const usage = libraryUsage(home)
   const entities: LibraryEntity[] = []
-  if (!existsSync(root)) return { entities }
+  if (!existsSync(root)) return { entities, usage }
 
   for (const connEntry of readdirSync(root, { withFileTypes: true })) {
     if (!connEntry.isDirectory()) continue
@@ -103,5 +74,5 @@ export function listLibrary(home: string): LibraryList {
       `${b.connection}/${b.kind}/${b.entityId}`
     )
   )
-  return { entities }
+  return { entities, usage }
 }

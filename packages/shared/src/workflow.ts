@@ -185,9 +185,17 @@ export const workflowSchema = z.object({
   tasks: z.array(taskSchema).min(1),
 })
 
+/** Default library size cap: 5 GB (DES-026 / BL-047). */
+export const DEFAULT_LIBRARY_MAX_BYTES = 5 * 1024 * 1024 * 1024
+
 /** Global limits in ~/.flowapp/config.yaml (DES-002, DES-003). */
 export const appConfigSchema = z.object({
   limits: workflowLimitsSchema.optional(),
+  library: z
+    .object({
+      maxBytes: z.number().int().positive().optional(),
+    })
+    .optional(),
 })
 
 export type Need = z.infer<typeof needSchema>

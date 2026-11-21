@@ -19,17 +19,19 @@ Schema and writing rules: `docs/README.md`.
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
-  items, Workflows, Runs), Workflows group, Settings; `/work-items`
-  and `/work-items/:id` (Runs, Start with workItemId, Notes,
-  Attachments); `/workflows` and `/runs`; workflow Overview/Editor/Runs;
-  graph editor, start/rerun, run view with live websocket; Settings.
+  items, Workflows, Runs, Connections), Workflows group, Settings;
+  `/work-items` and `/work-items/:id` (Runs, Start with workItemId,
+  Notes, Attachments); `/connections` (Connections, Library tabs;
+  size warning at 80%); `/workflows` and `/runs`; workflow
+  Overview/Editor/Runs; graph editor, start/rerun, run view with live
+  websocket; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
   preflight, GET `/cli/:cli/models`, connections CRUD/check and
-  `GET /connectors`, library GET/pull, work item CRUD (notes,
-  attachments, trash), run REST (GET `/runs` with
-  status/workflowId/workItemId/limit, start with
+  `GET /connectors`, library GET/pull/clear (usage + retention sweep),
+  work item CRUD (notes, attachments, trash), run REST (GET `/runs`
+  with status/workflowId/workItemId/limit, start with
   trustGrant/values/files/workItemId, confirmDuplicate, cancel, rerun
   with refreshPins keeping workItemId, retry, approve, reject, delete),
   run input list/meta/files, log/summary/out, websocket run snapshots,
@@ -37,9 +39,9 @@ Schema and writing rules: `docs/README.md`.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
   scheduler, command and agent tasks (CliAdapter: trust, catalog,
   `composeFlags`), connector registry (`connectors/`, github read,
-  fake for tests), connections store, library revisions/pull/pins
-  (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
-  under `workitems/`,
+  fake for tests), connections store, library revisions/pull/pins/
+  retention (`library.ts`, maxBytes, sweep, clear, run `resources/` +
+  `RESOURCE_*`), work item store under `workitems/`,
   model/effort resolve and preflight warns (including connection uses),
   app-owned trust markers, spawn into `graph.json`, resume, approval,
   cancel, manual retry, conditions, retry, repeat, `agents` limits, run
@@ -48,10 +50,11 @@ Schema and writing rules: `docs/README.md`.
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
   `needsYou`/`workItemId`, `workItemSchema`), websocket
   (`runs_changed`), workflow (`inputs`, `agent` defaults, model/effort,
-  task `uses`), `connection.yaml`, library list/pull and
-  `resources.json`, events (`queued`, `run_activated`, `library_pulled`,
-  `workItemId` on `run_started`, attempt `model`/`effort`/`modelSource`)
-  and YAML Document edits that keep comments and key order.
+  task `uses`), `connection.yaml`, library list/pull/clear/usage and
+  `resources.json`, `config.yaml` `library.maxBytes`, events (`queued`,
+  `run_activated`, `library_pulled`, `workItemId` on `run_started`,
+  attempt `model`/`effort`/`modelSource`) and YAML Document edits that
+  keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.

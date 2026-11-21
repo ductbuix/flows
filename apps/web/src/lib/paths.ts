@@ -20,6 +20,21 @@ export function workItemPath(id: string): string {
   return `/work-items/${id}`
 }
 
+export type ConnectionsTab = "connections" | "library"
+
+/** Connections page; Library is a tab (DES-025 / BL-047). */
+export function connectionsPath(tab?: ConnectionsTab): string {
+  if (!tab || tab === "connections") return "/connections"
+  return `/connections?tab=${tab}`
+}
+
+export function parseConnectionsTab(
+  value: string | null
+): ConnectionsTab | null {
+  if (value === "connections" || value === "library") return value
+  return null
+}
+
 /** Deep link to a run task tab (e.g. failed task Terminal). */
 export function runTaskPath(
   runId: string,

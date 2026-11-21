@@ -51,6 +51,23 @@ export { materializeRunResources, pullNow } from "./library-run.ts"
 export { listLibrary } from "./library-list.ts"
 export { isFresh, currentRevision, readRevisionMeta } from "./library-paths.ts"
 export {
+  LIBRARY_RETENTION_MS,
+  LIBRARY_RETENTION_INTERVAL_MS,
+  sweepLibrary,
+  clearEntityRevisions,
+  connectionHasLiveWorkCopy,
+  pruneIdleClonesAsync,
+} from "./library-retention.ts"
+export {
+  LibraryCapError,
+  libraryMaxBytes,
+  libraryUsage,
+  assertLibraryHasSpace,
+  formatBytes,
+  pathByteSize,
+} from "./library-usage.ts"
+export { listPinningRuns, pinnedRevisionKeys } from "./library-pins.ts"
+export {
   listConnections,
   readConnection,
   createConnection,
