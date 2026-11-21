@@ -2,7 +2,7 @@
 id: BL-033
 title: Runs list across workflows
 type: backlog
-status: todo
+status: done
 summary: GET /runs returns a run summary for every workflow, filterable by status and workflow, without refolding all events per call.
 tags: [server, engine, runs, api]
 related: [DES-025, DES-003]
@@ -20,21 +20,21 @@ is cached per run and updated on append.
 
 ## Done when
 
-- [ ] Shared zod `runSummarySchema`: runId, workflowId, workflow name,
+- [x] Shared zod `runSummarySchema`: runId, workflowId, workflow name,
       status, `needsYou` (one `{ taskId, connectionId? }` per task in
       `awaiting_approval`; publish tasks set `connectionId` later),
       task counts (done, total), first failed task id, itemKey,
       startedAt, finishedAt. Run status is unchanged:
       waiting is derived from tasks, with no new event or status.
-- [ ] `GET /runs` returns summaries newest first; query `status` and
+- [x] `GET /runs` returns summaries newest first; query `status` and
       `workflowId` filter, `limit` caps (default 100). Deleted runs
       are absent.
-- [ ] The engine keeps a summary cache keyed by run id, updated from
+- [x] The engine keeps a summary cache keyed by run id, updated from
       `onEvent`, rebuilt on start after resume. A test shows a second
       call folds nothing.
-- [ ] The websocket sends a `runs_changed` message (run id and
+- [x] The websocket sends a `runs_changed` message (run id and
       summary) when any summary changes, so lists stay live without
       polling.
-- [ ] Server tests cover filters, deleted runs, awaiting approval and
+- [x] Server tests cover filters, deleted runs, awaiting approval and
       failed task.
-- [ ] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.
+- [x] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.

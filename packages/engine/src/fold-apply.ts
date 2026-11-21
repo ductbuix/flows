@@ -205,16 +205,19 @@ export function applyEvent(
     case "run_cancelled": {
       if (!state) return state
       state.status = "cancelled"
+      state.finishedAt = event.at
       return state
     }
     case "run_succeeded": {
       if (!state) return state
       state.status = "succeeded"
+      state.finishedAt = event.at
       return state
     }
     case "run_failed": {
       if (!state) return state
       state.status = "failed"
+      state.finishedAt = event.at
       return state
     }
     case "run_deleted": {

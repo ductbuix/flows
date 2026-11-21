@@ -128,8 +128,18 @@ describe("trust marker keep and remove", () => {
     const home = tempHome()
     const wf = writeAgentWorkflow(home, "concurrent")
     const sleepBin = join(home, "bin", "claude")
-    // Both runs sleep so neither finishes before the marker check.
-    writeFileSync(sleepBin, "#!/bin/sh\nsleep 2\nexit 0\n", { mode: 0o755 })
+    // Stagger sleeps so b is still running after a finishes (marker check).
+    writeFileSync(
+      sleepBin,
+      `#!/bin/sh
+case "$PWD" in
+  */runs/b/*|*/runs/b) sleep 3 ;;
+  *) sleep 0.4 ;;
+esac
+exit 0
+`,
+      { mode: 0o755 }
+    )
     const engine = createEngine({ home })
     const a = engine.startRun({
       workflowDir: wf,

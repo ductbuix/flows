@@ -57,6 +57,8 @@ export type RunState = {
   trustGrant?: "once"
   /** ISO time from run_started (DES-021 FIFO queue). */
   startedAt?: string
+  /** ISO time from run_succeeded / run_failed / run_cancelled. */
+  finishedAt?: string
   /** Manual item key from run_started (DES-021). */
   itemKey?: string
   source?: "manual"

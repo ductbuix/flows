@@ -195,7 +195,7 @@ export function WorkflowRunsPage() {
                         {run.startedAt}
                       </TableCell>
                       <TableCell>
-                        {run.taskCounts.finished}/{run.taskCounts.total}
+                        {run.taskCounts.done}/{run.taskCounts.total}
                       </TableCell>
                       <TableCell>
                         <RunRowMenu

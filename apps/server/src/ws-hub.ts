@@ -27,7 +27,9 @@ export class WsHub {
       this.broadcastFileChange(change)
     )
     this.offEvent = engine.onEvent((stored) => {
-      const sockets = this.runWatchers.get(stored.event.runId)
+      const runId = stored.event.runId
+      this.broadcastRunsChanged(runId)
+      const sockets = this.runWatchers.get(runId)
       if (!sockets) return
       for (const ws of sockets) this.pushRunEvent(ws, stored)
     })
@@ -132,6 +134,15 @@ export class WsHub {
       content: change.content,
     }
     for (const ws of sockets) this.send(ws, message)
+  }
+
+  private broadcastRunsChanged(runId: string) {
+    const message: WsServerMessage = {
+      type: "runs_changed",
+      runId,
+      summary: this.engine.getRunSummary(runId),
+    }
+    for (const ws of this.sockets.keys()) this.send(ws, message)
   }
 
   private subscribeRun(ws: WSContext, runId: string, afterSeq: number) {

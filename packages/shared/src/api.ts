@@ -15,17 +15,29 @@ export const workflowSummarySchema = z.object({
 
 export type WorkflowSummary = z.infer<typeof workflowSummarySchema>
 
+/** One task waiting on a person (DES-025); connectionId comes with publish. */
+export const needsYouEntrySchema = z.object({
+  taskId: z.string().min(1),
+  connectionId: z.string().min(1).optional(),
+})
+
+export type NeedsYouEntry = z.infer<typeof needsYouEntrySchema>
+
 export const runSummarySchema = z.object({
   id: z.string().min(1),
   workflowId: z.string().min(1),
+  /** Display name; today the workflow id (DES-025). */
+  workflowName: z.string().min(1),
   status: runStatusSchema,
+  needsYou: z.array(needsYouEntrySchema),
+  taskCounts: z.object({
+    done: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+  }),
+  firstFailedTaskId: z.string().min(1).optional(),
+  itemKey: z.string().min(1).optional(),
   startedAt: z.string().min(1),
   finishedAt: z.string().optional(),
-  taskCounts: z.object({
-    total: z.number().int().nonnegative(),
-    finished: z.number().int().nonnegative(),
-    awaitingApproval: z.number().int().nonnegative(),
-  }),
 })
 
 export type RunSummary = z.infer<typeof runSummarySchema>
@@ -235,6 +247,12 @@ export const wsServerMessageSchema = z.discriminatedUnion("type", [
     path: z.string().min(1),
     hash: z.string().min(1),
     content: z.string(),
+  }),
+  z.object({
+    type: z.literal("runs_changed"),
+    runId: z.string().min(1),
+    /** Null when the run was deleted (DES-025 / BL-033). */
+    summary: runSummarySchema.nullable(),
   }),
   z.object({
     type: z.literal("error"),
