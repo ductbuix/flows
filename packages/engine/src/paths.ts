@@ -26,6 +26,14 @@ export function workflowDir(home: string, workflowId: string): string {
   return join(home, "workflows", workflowId)
 }
 
+export function workItemsRoot(home: string): string {
+  return join(home, "workitems")
+}
+
+export function workItemDir(home: string, workItemId: string): string {
+  return join(home, "workitems", workItemId)
+}
+
 export function runDir(workflowRoot: string, runId: string): string {
   return join(workflowRoot, "runs", runId)
 }

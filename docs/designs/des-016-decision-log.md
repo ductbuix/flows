@@ -24,7 +24,7 @@ related:
     DES-024,
     DOC-001,
   ]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # Decision log
@@ -144,6 +144,8 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Publish is a `kind: publish` task the user places         | the graph decides when; reuses the approval gate         | DES-026      |
 | 2026-11-22 | Run `resources/` folder with every pin, for all tasks     | a work item's context is readable without YAML           | DES-026      |
 | 2026-11-22 | Pins are taken at start, frozen like inputs               | queued runs too; "Rerun with fresh pull" pins again      | DES-026      |
+| 2026-11-22 | Work item ids are generated slugs from the title          | POST creates the id; callers do not choose one           | DES-026      |
+| 2026-11-22 | Delete moves a work item to `workitems/.trash/`           | keep files; never delete runs when removing an item      | DES-026      |
 
 ## Docs and tooling
 

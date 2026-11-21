@@ -24,9 +24,9 @@ updated: 2026-11-22
 
 A workflow may use many outside systems (GitHub, Confluence, Rally,
 Jenkins, OpenSearch), and one workflow is applied to many pieces of work.
-This doc defines the model and the folders. Nothing here is built; the
-work is BL-038 to BL-056 and the UI is in
-[DES-025](des-025-journey-led-redesign.md).
+This doc defines the model and the folders. The ad hoc work item store
+and API are built (BL-038); connections, library and publish are
+BL-039 to BL-056. The UI is in [DES-025](des-025-journey-led-redesign.md).
 
 ## Concepts
 
