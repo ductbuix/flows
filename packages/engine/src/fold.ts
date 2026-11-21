@@ -28,6 +28,10 @@ export type AttemptState = {
   effort?: Effort
   /** Where model/effort came from (DES-023). */
   modelSource?: ModelSource
+  /** First port of the leased block (DES-026). */
+  portBase?: number
+  /** Size of the leased port block (DES-026). */
+  portCount?: number
 }
 
 export type TaskState = {
@@ -61,6 +65,8 @@ export type RunState = {
   finishedAt?: string
   /** Manual item key from run_started (DES-021). */
   itemKey?: string
+  /** Work item from run_started (DES-026 / BL-039). */
+  workItemId?: string
   source?: "manual"
   inputHash?: string
   inputFiles?: string[]

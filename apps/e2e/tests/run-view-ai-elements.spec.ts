@@ -27,6 +27,13 @@ test.describe("run view AI Elements", () => {
     await page.getByTestId("task-tab-environment").click()
     await expect(page.getByTestId("task-environment")).toBeVisible()
     await expect(page.getByTestId("task-env-vars")).toBeVisible()
+    await expect(page.getByTestId("task-env-vars")).toContainText("PORT")
+    await expect(page.getByTestId("task-env-vars")).toContainText(
+      "FLOWS_PORT_BASE"
+    )
+    await expect(page.getByTestId("task-env-vars")).toContainText(
+      "npm_config_cache"
+    )
     await expect(page.getByTestId("task-env-command")).toContainText("HELLO")
     await expect(page.getByTestId("task-env-raw-log")).toContainText(
       "HELLO_STDOUT"

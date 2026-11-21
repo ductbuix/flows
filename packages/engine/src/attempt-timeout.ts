@@ -6,6 +6,7 @@ import {
 } from "./failure-reason.ts"
 import { openAttempts, type RunState } from "./fold.ts"
 import { killProcessGroup, readExitCode } from "./pid.ts"
+import { portLeaseKey, portLeases } from "./port-lease.ts"
 import { remainingTimeoutMs } from "./timeout.ts"
 
 export type TimeoutWatchHost = {
@@ -46,6 +47,7 @@ export function appendFinished(
     ...(reason !== undefined ? { reason } : {}),
     at: now(),
   })
+  portLeases.release(portLeaseKey(host.runId, taskId, attempt))
   host.requestTick()
 }
 

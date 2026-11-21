@@ -16,7 +16,7 @@ export type SchedulerCore = {
   state: () => RunState
   append: (event: EngineEvent) => void
   requestTick: () => void
-  launchAgain: (taskId: string) => void
+  launchAgain: (taskId: string) => void | Promise<void>
   finish: (state: RunState) => void
 }
 
@@ -66,8 +66,9 @@ export function resolveHost(core: SchedulerCore): ResolveHost {
         if (core.state().status !== "running" || core.state().cancelRequested) {
           return
         }
-        core.launchAgain(taskId)
-        core.requestTick()
+        void Promise.resolve(core.launchAgain(taskId)).then(() =>
+          core.requestTick()
+        )
       })
     },
     launchAgain: core.launchAgain,
@@ -86,8 +87,9 @@ export function spawnHost(core: SchedulerCore): SpawnHost {
         if (core.state().status !== "running" || core.state().cancelRequested) {
           return
         }
-        core.launchAgain(taskId)
-        core.requestTick()
+        void Promise.resolve(core.launchAgain(taskId)).then(() =>
+          core.requestTick()
+        )
       })
     },
   }

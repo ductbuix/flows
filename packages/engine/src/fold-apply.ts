@@ -68,6 +68,7 @@ export function applyEvent(
         startedAt: event.at,
         source: event.source,
         itemKey: event.itemKey,
+        workItemId: event.workItemId,
         inputHash: event.inputHash,
         inputFiles: event.files,
       }
@@ -123,6 +124,8 @@ export function applyEvent(
         if (event.modelSource !== undefined) {
           attempt.modelSource = event.modelSource
         }
+        if (event.portBase !== undefined) attempt.portBase = event.portBase
+        if (event.portCount !== undefined) attempt.portCount = event.portCount
       }
       // Missing sandboxed (older events) counts as unrestricted.
       if (event.sandboxed !== true) state.sandboxed = false

@@ -49,6 +49,8 @@ export class Scheduler {
   private again = false
   private readonly waiters: Array<(state: RunState) => void> = []
   private settled = false
+  /** Set by Engine.close so in-flight ticks stop touching the log. */
+  private closed = false
   private readonly watching = new Set<string>()
   private readonly retries = new RetryQueue()
   private readonly judgeCache = new Map<string, Promise<boolean>>()
@@ -74,7 +76,17 @@ export class Scheduler {
     return new Promise((resolve) => this.waiters.push(resolve))
   }
 
+  /** Stop ticks; used when the engine closes the event log. */
+  dispose(): void {
+    this.closed = true
+    this.settled = true
+    this.again = false
+    this.retries.clear()
+    this.waiters.splice(0)
+  }
+
   requestTick(): void {
+    if (this.closed || this.settled) return
     if (this.ticking) {
       this.again = true
       return
@@ -146,8 +158,8 @@ export class Scheduler {
     }
   }
 
-  private launchAgain(taskId: string): void {
-    launchTaskAttempt(launchHost(this.core()), taskId, ["running"])
+  private async launchAgain(taskId: string): Promise<void> {
+    await launchTaskAttempt(launchHost(this.core()), taskId, ["running"])
   }
 
   private async runTicks(): Promise<void> {
@@ -155,8 +167,9 @@ export class Scheduler {
     try {
       do {
         this.again = false
+        if (this.closed) return
         await this.tickOnce()
-      } while (this.again)
+      } while (this.again && !this.closed)
     } finally {
       this.ticking = false
     }
@@ -167,7 +180,7 @@ export class Scheduler {
   }
 
   private async tickOnce(): Promise<void> {
-    if (this.settled) return
+    if (this.closed || this.settled) return
     const state = this.state()
     if (state.status !== "running" || state.cancelRequested) {
       if (state.cancelRequested && state.status === "running") {
@@ -179,13 +192,17 @@ export class Scheduler {
     }
     const host = resolveHost(this.core())
     await resolveLoops(host)
+    if (this.closed) return
     resolveSpawn(spawnHost(this.core()))
     await resolveSkips(host)
-    launchReadyTasks(launchHost(this.core()))
+    if (this.closed) return
+    await launchReadyTasks(launchHost(this.core()))
+    if (this.closed) return
     this.maybeSettle()
   }
 
   private maybeSettle(): void {
+    if (this.closed || this.settled) return
     const after = this.state()
     if (after.status !== "running") {
       this.finish(after)

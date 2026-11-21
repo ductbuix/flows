@@ -6,7 +6,7 @@ status: active
 summary: Task and run states (queued, approval gates, cancelled), append-then-act event log, resume, run deletion and limits.
 tags: [engine, lifecycle, events, resume, concurrency, approval]
 related: [DES-001, DES-004, DES-005, DES-019, DES-021]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # Task lifecycle, engine and concurrency
@@ -72,28 +72,28 @@ table in the same `app.db`, not in `events`.
 
 Schemas live in `packages/shared`. The fold and the UI use the same set.
 
-| Type                   | Meaning                                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `run_started`          | Run created; payload includes the frozen `graph`. DES-021 adds input fields; the run may be `queued`                                              |
-| `approval_requested`   | Gated task entered `awaiting_approval`                                                                                                            |
-| `task_approved`        | Human approved; next tick may launch                                                                                                              |
-| `task_rejected`        | Human rejected; task `failed` with reason `rejected`                                                                                              |
-| `attempt_started`      | Attempt id recorded before launch (append-then-act)                                                                                               |
-| `attempt_launched`     | Process spawned; includes `pid`, `sandboxed` (DES-006), resolved `timeout` (DES-019), and for agents `model` / `effort` / `modelSource` (DES-023) |
-| `attempt_finished`     | Process exited; includes `exitCode` and optional `reason` (`timeout` or mapped CLI stderr, DES-019)                                               |
-| `attempt_interrupted`  | Resume could not re-attach; no reliable exit code                                                                                                 |
-| `task_succeeded`       | Scheduler ended a looping or spawn task as succeeded                                                                                              |
-| `task_failed`          | Scheduler ended a looping task as failed                                                                                                          |
-| `task_skipped`         | `when` false, branch miss, or upstream skip                                                                                                       |
-| `tasks_spawned`        | Agent added tasks to this run's graph (DES-005)                                                                                                   |
-| `cancel_requested`     | Cancel begun; stop scheduling, end process groups                                                                                                 |
-| `task_cancelled`       | Unfinished task moved to `cancelled`                                                                                                              |
-| `run_cancelled`        | Run ended `cancelled`                                                                                                                             |
-| `run_succeeded`        | Every task terminal and none hard-failed                                                                                                          |
-| `run_failed`           | At least one hard failure (no ready work left)                                                                                                    |
-| `run_activated`        | Queued run is now `running`; the scheduler attaches (DES-021)                                                                                     |
-| `run_deleted`          | Marker before removing `runs/<runId>/`; fold hides the run                                                                                        |
-| `task_retry_requested` | Manual retry (DES-011): reopen run, reset task + dependants                                                                                       |
+| Type                   | Meaning                                                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `run_started`          | Run created; payload includes the frozen `graph`. DES-021 adds input fields; the run may be `queued`                                                                                  |
+| `approval_requested`   | Gated task entered `awaiting_approval`                                                                                                                                                |
+| `task_approved`        | Human approved; next tick may launch                                                                                                                                                  |
+| `task_rejected`        | Human rejected; task `failed` with reason `rejected`                                                                                                                                  |
+| `attempt_started`      | Attempt id recorded before launch (append-then-act)                                                                                                                                   |
+| `attempt_launched`     | Process spawned; includes `pid`, `sandboxed` (DES-006), resolved `timeout` (DES-019), for agents `model` / `effort` / `modelSource` (DES-023), and `portBase` / `portCount` (DES-026) |
+| `attempt_finished`     | Process exited; includes `exitCode` and optional `reason` (`timeout` or mapped CLI stderr, DES-019)                                                                                   |
+| `attempt_interrupted`  | Resume could not re-attach; no reliable exit code                                                                                                                                     |
+| `task_succeeded`       | Scheduler ended a looping or spawn task as succeeded                                                                                                                                  |
+| `task_failed`          | Scheduler ended a looping task as failed                                                                                                                                              |
+| `task_skipped`         | `when` false, branch miss, or upstream skip                                                                                                                                           |
+| `tasks_spawned`        | Agent added tasks to this run's graph (DES-005)                                                                                                                                       |
+| `cancel_requested`     | Cancel begun; stop scheduling, end process groups                                                                                                                                     |
+| `task_cancelled`       | Unfinished task moved to `cancelled`                                                                                                                                                  |
+| `run_cancelled`        | Run ended `cancelled`                                                                                                                                                                 |
+| `run_succeeded`        | Every task terminal and none hard-failed                                                                                                                                              |
+| `run_failed`           | At least one hard failure (no ready work left)                                                                                                                                        |
+| `run_activated`        | Queued run is now `running`; the scheduler attaches (DES-021)                                                                                                                         |
+| `run_deleted`          | Marker before removing `runs/<runId>/`; fold hides the run                                                                                                                            |
+| `task_retry_requested` | Manual retry (DES-011): reopen run, reset task + dependants                                                                                                                           |
 
 Each launch wraps the command so it writes `exit.code` under the attempt
 dir. On resume, a dead pid with that file becomes `attempt_finished`;

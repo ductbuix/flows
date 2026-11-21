@@ -1,5 +1,10 @@
 import { createHash } from "node:crypto"
-import type { Engine, ManualFilePart } from "@workspace/engine"
+import {
+  readWorkItem,
+  workItemItemKey,
+  type Engine,
+  type ManualFilePart,
+} from "@workspace/engine"
 import {
   applyInputDefaults,
   buildManualValuesSchema,
@@ -8,10 +13,12 @@ import {
   invalidInputErrorSchema,
   normalizeInputText,
   startRunBodySchema,
+  unknownWorkItemErrorSchema,
   type DuplicateInputError,
   type InvalidInputError,
   type ManualItemKeyField,
   type StartRunBody,
+  type UnknownWorkItemError,
   type Workflow,
   type WorkflowInputDecl,
 } from "@workspace/shared"
@@ -156,6 +163,34 @@ export function validateStartInput(
   const resolved = applyInputDefaults(decls, rawValues)
   const itemKey = computeItemKey(decls, resolved, files)
   return { values: resolved, files, itemKey }
+}
+
+export type ResolvedStartWorkItem = {
+  itemKey: string
+  workItemId?: string
+}
+
+/**
+ * When workItemId is set, require it on disk and derive itemKey from it.
+ * Ad hoc starts keep the field-based key (DES-026 / BL-039).
+ */
+export function resolveStartWorkItem(
+  c: Context,
+  engine: Engine,
+  workItemId: string | undefined,
+  fieldItemKey: string
+): ResolvedStartWorkItem | Response {
+  if (workItemId === undefined) {
+    return { itemKey: fieldItemKey }
+  }
+  if (!readWorkItem(engine.home, workItemId)) {
+    const body: UnknownWorkItemError = {
+      error: "unknown_work_item",
+      workItemId,
+    }
+    return c.json(unknownWorkItemErrorSchema.parse(body), 400)
+  }
+  return { itemKey: workItemItemKey(workItemId), workItemId }
 }
 
 function computeItemKey(

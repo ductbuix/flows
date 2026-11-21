@@ -2,7 +2,7 @@
 id: BL-056
 title: Port leases and per-workflow caches
 type: backlog
-status: todo
+status: done
 summary: Each attempt gets a leased port block in env, package caches go to <workflow>/.cache, and the watcher skips runs and caches.
 tags: [engine, sandbox, process, ports]
 related: [DES-026, DES-006]
@@ -21,19 +21,19 @@ wait for connectors. The per-connection `serial` lock is in BL-048.
 
 ## Done when
 
-- [ ] The engine leases a block of free ports per attempt and sets
+- [x] The engine leases a block of free ports per attempt and sets
       `PORT`, `FLOWS_PORT_BASE` and `FLOWS_PORT_COUNT` (default 10).
       A block is free when no live attempt holds it and a bind check
       succeeds. It is released when the attempt ends and after resume.
-- [ ] The lease is recorded on `attempt_launched` and shown in the
+- [x] The lease is recorded on `attempt_launched` and shown in the
       attempt's Environment tab.
-- [ ] Tasks get `npm_config_cache`, `PNPM_STORE_DIR`, `YARN_CACHE_FOLDER`,
+- [x] Tasks get `npm_config_cache`, `PNPM_STORE_DIR`, `YARN_CACHE_FOLDER`,
       `XDG_CACHE_HOME` and `PIP_CACHE_DIR` under `<workflow>/.cache/`,
       which the sandbox already allows. A task's own env overrides them.
-- [ ] The workflow file watcher no longer watches `runs/` or `.cache/`
+- [x] The workflow file watcher no longer watches `runs/` or `.cache/`
       (it watches `workflow.yaml` and `memory/` only), and workflow
       export or copy skips `.cache/`.
-- [ ] Tests cover two parallel attempts getting disjoint blocks, release
+- [x] Tests cover two parallel attempts getting disjoint blocks, release
       on finish and on resume, and `pnpm install` succeeding in a
       sandboxed task.
-- [ ] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.
+- [x] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.

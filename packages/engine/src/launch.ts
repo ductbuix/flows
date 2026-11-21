@@ -11,6 +11,7 @@ import { watchChild, type AttemptWatchHost } from "./attempt-watch.ts"
 import { prepareAttemptDirs } from "./dirs.ts"
 import { approvedAwaitingIds, readyTaskIds, type RunState } from "./fold.ts"
 import { fitsLimits, limitCaps } from "./limits.ts"
+import { portLeaseKey, portLeases, type PortBlock } from "./port-lease.ts"
 import { taskPromptAbs } from "./prompt-paths.ts"
 import { launchTask } from "./runner.ts"
 import { resolveAttemptTimeout } from "./timeout.ts"
@@ -31,7 +32,7 @@ export type LaunchHost = {
 }
 
 /** Request approval or launch ready / approved-awaiting tasks under limits. */
-export function launchReadyTasks(host: LaunchHost): void {
+export async function launchReadyTasks(host: LaunchHost): Promise<void> {
   const state = host.state()
   const graph = state.graph
   const byId = new Map(graph.tasks.map((t) => [t.id, t]))
@@ -58,21 +59,30 @@ export function launchReadyTasks(host: LaunchHost): void {
     // Re-fold after each launch so slots stay accurate.
     const live = host.state()
     if (!fitsLimits(spec, live, live.graph, caps)) continue
-    launchTaskAttempt(host, taskId, ["pending", "awaiting_approval"])
+    await launchTaskAttempt(host, taskId, ["pending", "awaiting_approval"])
   }
 }
 
 /** Launch another attempt for a running task (retry / repeat / spawn). */
-export function launchTaskAttempt(
+export async function launchTaskAttempt(
   host: LaunchHost,
   taskId: string,
   allowed: TaskStatus[]
-): void {
-  const graph = host.state().graph
+): Promise<void> {
+  let graph: Workflow
+  try {
+    graph = host.state().graph
+  } catch {
+    return
+  }
   const byId = new Map(graph.tasks.map((t) => [t.id, t]))
   const task = byId.get(taskId)
   if (!task) return
-  if (host.state().cancelRequested) return
+  try {
+    if (host.state().cancelRequested) return
+  } catch {
+    return
+  }
   const live = host.state().tasks[taskId]
   if (!live || !allowed.includes(live.status)) return
 
@@ -86,7 +96,6 @@ export function launchTaskAttempt(
     attempt,
     at: startedAt,
   })
-  prepareAttemptDirs(host.runRoot, taskId, attempt)
 
   if (isAgentTask(task)) {
     const prompt = taskPromptAbs(task, host.workflowRoot, host.runRoot)
@@ -104,30 +113,76 @@ export function launchTaskAttempt(
     }
   }
 
-  const { child, pid, sandboxed } = launchTask(
-    task,
-    attempt,
-    {
-      workflowRoot: host.workflowRoot,
-      runRoot: host.runRoot,
-      runId: host.runId,
-    },
-    host.state().graph
-  )
+  const leaseKey = portLeaseKey(host.runId, taskId, attempt)
+  let ports: PortBlock
+  try {
+    ports = await portLeases.lease(leaseKey)
+  } catch {
+    try {
+      host.append({
+        type: "attempt_finished",
+        runId: host.runId,
+        taskId,
+        attempt,
+        exitCode: 1,
+        reason: "no_port_block",
+        at: now(),
+      })
+    } catch {
+      /* engine closed during lease */
+    }
+    return
+  }
+
+  // Create attempt dirs after the lease so resume tests that wait on
+  // attempt-*/out do not kill the harness mid-bind-check.
+  prepareAttemptDirs(host.runRoot, taskId, attempt)
+
+  let launched
+  try {
+    launched = launchTask(
+      task,
+      attempt,
+      {
+        workflowRoot: host.workflowRoot,
+        runRoot: host.runRoot,
+        runId: host.runId,
+      },
+      host.state().graph,
+      ports
+    )
+  } catch (err) {
+    portLeases.release(leaseKey)
+    if (
+      err instanceof Error &&
+      (err.message.includes("database is not open") ||
+        err.message.includes("no events"))
+    ) {
+      return
+    }
+    throw err
+  }
 
   const modelFields = resolveAttemptModelFields(task, host.state().graph)
-  host.append({
-    type: "attempt_launched",
-    runId: host.runId,
-    taskId,
-    attempt,
-    pid,
-    sandboxed,
-    timeout,
-    ...(modelFields ?? {}),
-    at: now(),
-  })
-  watchChild(host.watchHost(), taskId, attempt, child, {
+  try {
+    host.append({
+      type: "attempt_launched",
+      runId: host.runId,
+      taskId,
+      attempt,
+      pid: launched.pid,
+      sandboxed: launched.sandboxed,
+      timeout,
+      portBase: ports.base,
+      portCount: ports.count,
+      ...(modelFields ?? {}),
+      at: now(),
+    })
+  } catch {
+    portLeases.release(leaseKey)
+    return
+  }
+  watchChild(host.watchHost(), taskId, attempt, launched.child, {
     timeoutSeconds: timeout,
     startedAt,
   })

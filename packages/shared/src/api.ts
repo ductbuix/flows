@@ -38,6 +38,8 @@ export const runSummarySchema = z.object({
   }),
   firstFailedTaskId: z.string().min(1).optional(),
   itemKey: z.string().min(1).optional(),
+  /** Work item this run belongs to (DES-026 / BL-039). */
+  workItemId: z.string().min(1).optional(),
   startedAt: z.string().min(1),
   finishedAt: z.string().optional(),
 })
@@ -58,6 +60,10 @@ export const attemptViewSchema = z.object({
   effort: effortSchema.optional(),
   /** Where model/effort came from (DES-023). */
   modelSource: z.enum(["task", "workflow", "cli"]).optional(),
+  /** First port of the leased block (DES-026). */
+  portBase: z.number().int().positive().optional(),
+  /** Size of the leased port block (DES-026). */
+  portCount: z.number().int().positive().optional(),
 })
 
 export type AttemptView = z.infer<typeof attemptViewSchema>

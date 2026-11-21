@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { enableAdvanced } from "./helpers"
+import { openEditor, openYamlTab } from "./helpers"
 
 test.describe("run inputs UI (BL-022)", () => {
   test("start form requires ticket and shows field error", async ({ page }) => {
@@ -83,15 +83,15 @@ test.describe("run inputs UI (BL-022)", () => {
   test("inspector edits inputs list and maxConcurrentRuns", async ({
     page,
   }) => {
-    await page.goto("/workflows/run-inputs")
+    await openEditor(page, "run-inputs")
     await expect(page.getByTestId("inputs-panel")).toBeVisible()
-    await enableAdvanced(page)
     await page.getByTestId("field-max-concurrent-runs").fill("3")
     await page.getByTestId("input-add").click()
     const last = page.getByTestId("input-decl-2")
     await expect(last).toBeVisible()
     await page.getByTestId("field-input-name-2").fill("extra")
     await page.getByTestId("save-button").click()
+    await openYamlTab(page)
     await expect(page.getByTestId("yaml-pane")).toContainText("extra")
     await expect(page.getByTestId("yaml-pane")).toContainText(
       "maxConcurrentRuns: 3"

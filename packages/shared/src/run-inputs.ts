@@ -10,15 +10,25 @@ const inputsJsonFieldSchema = z.union([
   z.object({ type: z.literal("file"), path: z.string().min(1) }),
 ])
 
-/** Frozen run input metadata written at start (DES-021). */
+/** Frozen run input metadata written at start (DES-021 / BL-039). */
 export const inputsJsonSchema = z.object({
   source: z.literal("manual"),
   itemKey: z.string().min(1),
   itemKeyVersion: z.literal(1),
   fields: z.record(z.string(), inputsJsonFieldSchema),
+  /** Present when the run was started for a work item (DES-026). */
+  workItemId: z.string().min(1).optional(),
 })
 
 export type InputsJson = z.infer<typeof inputsJsonSchema>
+
+/**
+ * Canonical JSON for a work-item-derived item key (DES-026 / BL-039).
+ * Hash with SHA-256 in Node; shared stays browser-safe.
+ */
+export function canonicalWorkItemKeyPayload(workItemId: string): string {
+  return JSON.stringify({ v: 1, source: "workItem", workItemId })
+}
 
 /** Text content of one file under runs/<id>/input/ (DES-021). */
 export const runInputFileDetailSchema = z.object({

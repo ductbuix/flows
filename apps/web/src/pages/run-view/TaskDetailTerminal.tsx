@@ -6,7 +6,7 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { Terminal } from "@/components/ai-elements/terminal"
-import { taskCommandLine } from "./task-advanced"
+import { taskCommandLine } from "./task-env"
 import { useTaskLog } from "./useTaskLog"
 
 type Props = {

@@ -7,8 +7,12 @@ vi.mock("@/pages/editor/WorkflowEditorPage", () => ({
   WorkflowEditorPage: () => <div data-testid="editor-page" />,
 }))
 
-vi.mock("@/pages/WorkflowRunsPage", () => ({
+vi.mock("./WorkflowRunsPage", () => ({
   WorkflowRunsPage: () => <div data-testid="runs-page" />,
+}))
+
+vi.mock("./WorkflowOverviewPage", () => ({
+  WorkflowOverviewPage: () => <div data-testid="overview-page" />,
 }))
 
 afterEach(() => {
@@ -26,20 +30,24 @@ function renderTab(search = "") {
 }
 
 describe("WorkflowPage", () => {
-  it("shows runs for tab=runs and editor otherwise", () => {
+  it("shows overview by default; editor and runs by tab", () => {
     renderTab("?tab=runs")
     expect(screen.getByTestId("runs-page")).toBeTruthy()
     cleanup()
 
-    renderTab()
+    renderTab("?tab=editor")
     expect(screen.getByTestId("editor-page")).toBeTruthy()
+    cleanup()
+
+    renderTab()
+    expect(screen.getByTestId("overview-page")).toBeTruthy()
     cleanup()
 
     renderTab("?tab=overview")
-    expect(screen.getByTestId("editor-page")).toBeTruthy()
+    expect(screen.getByTestId("overview-page")).toBeTruthy()
     cleanup()
 
     renderTab("?tab=nope")
-    expect(screen.getByTestId("editor-page")).toBeTruthy()
+    expect(screen.getByTestId("overview-page")).toBeTruthy()
   })
 })

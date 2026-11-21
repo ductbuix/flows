@@ -44,6 +44,8 @@ export const runStartedEventSchema = z.object({
   files: z.array(z.string()).optional(),
   /** True when the run waits under maxConcurrentRuns (DES-021). */
   queued: z.boolean().optional(),
+  /** Work item this run belongs to (DES-026 / BL-039). */
+  workItemId: z.string().min(1).optional(),
 })
 
 /** Queued run becomes running when a slot frees (DES-021). */
@@ -75,6 +77,10 @@ export const attemptLaunchedEventSchema = z.object({
   effort: effortSchema.optional(),
   /** Where model/effort came from (DES-023). */
   modelSource: z.enum(["task", "workflow", "cli"]).optional(),
+  /** First port of the leased block (DES-026). */
+  portBase: z.number().int().positive().optional(),
+  /** Size of the leased port block (DES-026). */
+  portCount: z.number().int().positive().optional(),
 })
 
 export const attemptFinishedEventSchema = z.object({

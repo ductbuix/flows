@@ -21,6 +21,7 @@ export type StartRunParams = {
   /** Prior run root to reuse pins from (rerun). */
   pinFromRunRoot?: string
   refreshPins?: boolean
+  workItemId?: string
 }
 
 export type StartRunResult = {
@@ -30,7 +31,7 @@ export type StartRunResult = {
   workflowId: string
 }
 
-/** Prepare dirs, pins, input, append run_started (DES-021 / BL-043). */
+/** Prepare dirs, pins, input, append run_started (DES-021 / BL-039 / BL-043). */
 export async function appendRunStarted(options: {
   log: EventLog
   graph: Workflow
@@ -62,14 +63,15 @@ export async function appendRunStarted(options: {
     refreshPins: params.refreshPins,
   })
 
-  const { itemKey, inputHash, files } = materializeRunInput(
+  const { itemKey, inputHash, files, workItemId } = materializeRunInput(
     params.workflowDir,
     runRoot,
     {
       decls: graph.inputs ?? [],
       values: params.values ?? {},
       files: params.files ?? [],
-    }
+    },
+    params.workItemId
   )
 
   const queued = shouldQueueRun(graph, options.workflowRuns)
@@ -88,6 +90,7 @@ export async function appendRunStarted(options: {
     files,
     ...(queued ? { queued: true } : {}),
     ...(trustOnce ? { trustGrant: trustOnce } : {}),
+    ...(workItemId !== undefined ? { workItemId } : {}),
   }
   log.append(event)
   for (const pulled of pulledEvents) log.append(pulled)

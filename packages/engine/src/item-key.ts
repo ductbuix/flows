@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import {
   canonicalManualItemPayload,
+  canonicalWorkItemKeyPayload,
   type ManualItemKeyField,
 } from "@workspace/shared"
 
@@ -8,5 +9,12 @@ import {
 export function manualItemKey(fields: ManualItemKeyField[]): string {
   return createHash("sha256")
     .update(canonicalManualItemPayload(fields), "utf8")
+    .digest("hex")
+}
+
+/** Hex SHA-256 of a work-item-derived item key (DES-026 / BL-039). */
+export function workItemItemKey(workItemId: string): string {
+  return createHash("sha256")
+    .update(canonicalWorkItemKeyPayload(workItemId), "utf8")
     .digest("hex")
 }

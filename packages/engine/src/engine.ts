@@ -50,6 +50,7 @@ export type StartRunOptions = {
   pinFromRunId?: string
   /** Pull and pin again instead of reusing prior pins (BL-043). */
   refreshPins?: boolean
+  workItemId?: string
 }
 
 export type RunHandle = {
@@ -235,6 +236,7 @@ export class Engine {
         home: this.home,
         pinFromRunRoot,
         refreshPins: options.refreshPins,
+        workItemId: options.workItemId,
       },
       homeRealpath: this.homeRealpath(),
       settings: this.getCliTrust(),
@@ -339,6 +341,7 @@ export class Engine {
   }
 
   close(): void {
+    for (const scheduler of this.schedulers.values()) scheduler.dispose()
     this.schedulers.clear()
     this.log.close()
   }

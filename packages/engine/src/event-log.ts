@@ -18,6 +18,7 @@ export type StoredEvent = {
 export class EventLog {
   private readonly db: DatabaseSync
   private readonly listeners = new Set<(stored: StoredEvent) => void>()
+  private closed = false
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -57,6 +58,7 @@ export class EventLog {
 
   /** Append an event in a write transaction; returns its sequence number. */
   append(event: EngineEvent): number {
+    if (this.closed) throw new Error("event log is closed")
     const parsed = engineEventSchema.parse(event)
     const insert = this.db.prepare(
       `INSERT INTO events (run_id, type, at, payload) VALUES (?, ?, ?, ?)`
@@ -79,6 +81,7 @@ export class EventLog {
   }
 
   listByRun(runId: string): StoredEvent[] {
+    if (this.closed) return []
     const rows = this.db
       .prepare(
         `SELECT seq, payload FROM events WHERE run_id = ? ORDER BY seq ASC`
@@ -138,6 +141,7 @@ export class EventLog {
   }
 
   close(): void {
+    this.closed = true
     this.db.close()
   }
 }

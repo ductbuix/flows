@@ -10,6 +10,7 @@ import {
 } from "./attempt-timeout.ts"
 import type { RunState } from "./fold.ts"
 import { readExitCode, waitForPid } from "./pid.ts"
+import { portLeaseKey, portLeases } from "./port-lease.ts"
 import { waitForExit } from "./runner.ts"
 
 export type AttemptWatchHost = {
@@ -112,6 +113,7 @@ export function watchPid(
       attempt,
       at: now(),
     })
+    portLeases.release(portLeaseKey(host.runId, taskId, attempt))
     host.requestTick()
   }
 

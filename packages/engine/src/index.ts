@@ -25,6 +25,8 @@ export {
   resolveAppHomeRealpath,
   appDbPath,
   workflowDir,
+  workItemsRoot,
+  workItemDir,
   runDir,
   taskDir,
   attemptDir,
@@ -70,6 +72,30 @@ export {
   type ConnectorChangeSet,
   type ConnectorPublishResult,
 } from "./connectors/index.ts"
+export {
+  hashText,
+  writeAtomic,
+  newWorkItemId,
+  readWorkItem,
+  listWorkItemSummaries,
+  createWorkItem,
+  updateWorkItem,
+  deleteWorkItem,
+  type CreateWorkItemInput,
+  type UpdateWorkItemInput,
+  type UpdateWorkItemResult,
+  type DeleteWorkItemResult,
+} from "./workitems.ts"
+export {
+  readWorkItemNotes,
+  writeWorkItemNotes,
+  listWorkItemAttachments,
+  writeWorkItemAttachment,
+  deleteWorkItemAttachment,
+  type WriteNotesResult,
+  type AttachmentWriteResult,
+  type AttachmentDeleteResult,
+} from "./workitem-files.ts"
 export { runInputDir } from "./run-input.ts"
 export { loadWorkflowFile, assertValidGraph } from "./workflow.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"
@@ -110,5 +136,20 @@ export {
 } from "./cursor-model-families.ts"
 export type { CliTrustValue } from "@workspace/shared"
 
-export { manualItemKey } from "./item-key.ts"
+export { manualItemKey, workItemItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"
+export {
+  DEFAULT_PORT_COUNT,
+  PORT_RANGE_START,
+  portLeaseKey,
+  portLeases,
+  type PortBlock,
+} from "./port-lease.ts"
+export {
+  workflowCacheEnv,
+  WORKFLOW_CACHE_ENV_TEMPLATES,
+} from "./task-cache-env.ts"
+export {
+  copyWorkflowExport,
+  isWorkflowExportOmitted,
+} from "./workflow-export.ts"
