@@ -5,8 +5,8 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022, DES-023, DES-024]
-updated: 2026-11-21
+related: [DES-014, DES-015, DES-018, DES-019, DES-020, DES-021, DES-022, DES-023, DES-024, DES-025, DES-026]
+updated: 2026-11-22
 ---
 
 # Roadmap
@@ -31,6 +31,11 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 11    | Remove a task in the editor  | BL-023 trash on save, BL-024 editor delete              | delete one task, undo before save, folder moves to tasks/.trash              |
 | 12    | Pick model and effort        | BL-025 adapters and records, BL-026 editor selects      | each agent task and judge can set model and effort, or use the CLI default   |
 | 13    | UI on the shadcn baseline    | BL-027 shell and alignment, BL-028 run view, BL-029 editor, BL-030 polish | one shadcn look everywhere; sidebar, Settings, Advanced and AI Elements |
+| 14    | Journey shell on today's data | BL-031 kit, BL-032 routes, BL-033 runs API, BL-034 pages, BL-035 Home, BL-036 run view, BL-037 workflow tabs | Home, Workflows, Runs and flat URLs; no Advanced switch |
+| 15    | Work items                   | BL-038 store, BL-039 run link, BL-040 pages, BL-041 Start card | pick a work item, run a workflow on it, see its runs   |
+| 16    | Connections and library (read) | BL-042 model, BL-043 library, BL-044 GitHub read, BL-045 pages, BL-046 editor and pins, BL-047 retention | tasks read pinned GitHub data; freshness and pins visible |
+| 17    | Gated publish                | BL-048 change sets, BL-049 policy gate, BL-050 GitHub publish, BL-051 publish UI, BL-052 agent review | a draft PR is published only after approval, with a ledger |
+| 18    | More sources                 | BL-053 Keychain, BL-054 Confluence, BL-055 Rally        | cookie and MCP sign-ins work with no secret on disk   |
 
 ## Why this order
 
@@ -69,6 +74,17 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
   capability. BL-027 comes first so later screens share the
   shell and the lint guard. BL-028 and BL-029 can go in either
   order. BL-030 is the final sweep.
+- Phase 14 rearranges existing data only (DES-025), so every later
+  page lands in the final shell. BL-031, BL-032 and BL-033 are
+  independent and go first; BL-036 comes before BL-037 so the
+  Advanced hook is removed once.
+- Phase 15 needs no outside system: a work item is a local record.
+  BL-038 and BL-039 come before the pages so the pages have an API.
+- Phase 16 is read only on purpose: tasks use pulled data and nothing
+  leaves the machine, so it is safe before any publish exists.
+- Phase 17 adds the only Cloud impact (DES-026), behind a policy
+  gate; GitHub first because a draft pull request is easy to undo.
+- Phase 18 needs the Keychain, which GitHub does not.
 
 ## Not on the roadmap
 
