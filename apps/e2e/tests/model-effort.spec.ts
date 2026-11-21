@@ -78,7 +78,7 @@ test.describe("model and effort UI (BL-026)", () => {
     expect(res.ok()).toBeTruthy()
     const { runId } = (await res.json()) as { runId: string }
 
-    await page.goto(`/workflows/agent-model/runs/${runId}?task=hello`)
+    await page.goto(`/runs/${runId}?task=hello`)
     await page.getByTestId("task-tab-attempts").click()
     await expect(page.getByTestId("attempt-model-1")).toContainText("haiku", {
       timeout: 30_000,
