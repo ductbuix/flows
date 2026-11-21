@@ -17,22 +17,27 @@ Schema and writing rules: `docs/README.md`.
 
 ## Layout
 
-- `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`).
-  Dev on `127.0.0.1:5173`, proxies `/api` to the server. Sidebar Platform
-  (Home, Workflows, Runs) plus Workflows group and Settings; graph editor;
-  run view; `/connections` and `/connections/:id` (browser sign-in /
-  remove); Settings for theme, CLI info and always-trust.
+- `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
+  on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
+  items, Workflows, Runs), Workflows group, Settings; `/work-items`
+  and `/work-items/:id`; `/connections` and `/connections/:id`
+  (browser sign-in / remove); `/workflows` and `/runs`; graph editor,
+  start/rerun, run view with live websocket; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflows,
   memory, files, promote, trust, CLI models, connections
-  CRUD/check/sign-in and `GET /connectors`, work items, run REST and
-  websockets.
+  CRUD/check/sign-in and `GET /connectors`, library GET/pull, work
+  items, run REST (workItemId, refreshPins), websockets.
 - `packages/engine`: SQLite event log + settings, fold, scheduler,
-  command/agent tasks, connector registry (fake for tests), connections,
-  cookie secrets under `secrets/` (Chrome sign-in, sandbox denies reads),
-  preflight, trust markers, spawn, resume, approval, conditions, retry,
-  ports/caches, work items.
-- `packages/shared`: zod schemas for API, websocket, workflow,
-  `connection.yaml`, events and YAML Document edits.
+  command/agent tasks, connector registry (github read, fake for
+  tests), connections, cookie secrets under `secrets/` (Chrome
+  sign-in, sandbox denies reads), library revisions/pull/pins
+  (`resources/` + `RESOURCE_*`), work items, preflight, trust markers,
+  spawn, resume, approval, ports/caches.
+- `packages/shared`: zod schemas for API (`runSummarySchema` with
+  `needsYou`/`workItemId`, `workItemSchema`), websocket, workflow,
+  `connection.yaml`, library list/pull and `resources.json`, events
+  (`queued`, `run_activated`, `library_pulled`, `workItemId`) and YAML
+  Document edits.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.

@@ -70,7 +70,7 @@ tasks:
     )
     const started = join(workflowDir, "started.txt")
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "t1" })
+    const handle = await engine.startRun({ workflowDir, runId: "t1" })
 
     await waitFor(() => existsSync(started))
     await waitFor(() => handle.state().tasks.slow?.status === "running")
@@ -112,7 +112,7 @@ tasks:
 `
       )
       const engine = createEngine({ home })
-      const handle = engine.startRun({
+      const handle = await engine.startRun({
         workflowDir: join(home, "workflows", "to-retry"),
         runId: "t2",
       })

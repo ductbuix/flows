@@ -8,7 +8,13 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import {
+  clearConnectors,
+  fakeConnector,
+  registerConnector,
+} from "./connectors/index.ts"
+import { createConnection } from "./connections.ts"
 import { createEngine } from "./engine.ts"
 import { loadWorkflowFile } from "./workflow.ts"
 import { resolveAppHomeRealpath } from "./paths.ts"
@@ -24,8 +30,13 @@ import {
 const homes: string[] = []
 const engines: Array<{ close: () => void }> = []
 
+beforeEach(() => {
+  registerConnector(fakeConnector)
+})
+
 afterEach(() => {
   delete process.env.FLOWAPP_SANDBOX
+  clearConnectors()
   for (const engine of engines.splice(0)) {
     engine.close()
   }
@@ -90,7 +101,9 @@ describe("sandbox write boundary", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await (
+      await engine.startRun({ workflowDir: wf, runId: "r1" })
+    ).wait()
 
     expect(state.status).toBe("succeeded")
     expect(state.tasks.inside?.status).toBe("succeeded")
@@ -130,7 +143,9 @@ describe("sandbox write boundary", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await (
+      await engine.startRun({ workflowDir: wf, runId: "r1" })
+    ).wait()
 
     expect(state.status).toBe("succeeded")
     expect(state.sandboxed).toBe(false)
@@ -177,7 +192,9 @@ describe("sandbox write boundary", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await engine.startRun({ workflowDir: wf, runId: "r1" }).wait()
+    const state = await (
+      await engine.startRun({ workflowDir: wf, runId: "r1" })
+    ).wait()
 
     expect(state.status).toBe("succeeded")
     expect(state.tasks["read-secret"]?.status).toBe("failed")
@@ -209,5 +226,54 @@ describe("sandbox write boundary", () => {
     if (spawn.sandboxed) {
       expect(spawn.args).toContain(`SECRETS_DIR=${sandboxSecretsRoot(wf)}`)
     }
+  })
+})
+
+describe("sandbox library boundary", () => {
+  it("allows reading resources/ and blocks writes under library/", async () => {
+    if (!canApplySandbox()) return
+
+    const home = tempHome()
+    createConnection(home, {
+      id: "demo",
+      connector: "fake",
+      name: "demo",
+      scope: { label: "z" },
+      signIn: "cli",
+      refresh: "never",
+    })
+
+    const wf = join(home, "workflows", "lib-sandbox")
+    mkdirSync(wf, { recursive: true })
+    const libraryFile = join(home, "library", "should-not-write.txt")
+    writeFileSync(
+      join(wf, "workflow.yaml"),
+      [
+        "id: lib-sandbox",
+        "tasks:",
+        "  - id: read",
+        "    kind: command",
+        "    uses:",
+        "      - { connection: demo, access: read }",
+        '    run: "test -f \\"$RESOURCE_DEMO/item/z/data.txt\\" && printf ok > \\"$TASK_OUT/ok.txt\\""',
+        "  - id: write-lib",
+        "    kind: command",
+        `    run: "printf bad > '${libraryFile.replaceAll("'", "'\\''")}'"`,
+        "    needs: [read]",
+        "    continueOnError: true",
+        "",
+      ].join("\n")
+    )
+
+    const engine = createEngine({ home })
+    engines.push(engine)
+    const state = await (
+      await engine.startRun({ workflowDir: wf, runId: "r1" })
+    ).wait()
+
+    expect(state.tasks.read?.status).toBe("succeeded")
+    expect(state.tasks["write-lib"]?.status).toBe("failed")
+    expect(state.sandboxed).toBe(true)
+    expect(() => readFileSync(libraryFile)).toThrow()
   })
 })

@@ -34,6 +34,10 @@ export {
   connectionDir,
   secretsRoot,
   secretsDir,
+  libraryDir,
+  libraryEntityDir,
+  encodeEntityId,
+  decodeEntityId,
 } from "./paths.ts"
 export {
   cookiesPath,
@@ -52,6 +56,18 @@ export {
   type BrowserSignInResult,
 } from "./browser-sign-in.ts"
 export {
+  LIBRARY_EVENT_RUN_ID,
+  resolveScopeEntity,
+  pullEntity,
+  linkRunResources,
+  readResourcesJson,
+  type ScopeEntity,
+  type PullEntityResult,
+} from "./library.ts"
+export { materializeRunResources, pullNow } from "./library-run.ts"
+export { listLibrary } from "./library-list.ts"
+export { isFresh, currentRevision, readRevisionMeta } from "./library-paths.ts"
+export {
   listConnections,
   readConnection,
   createConnection,
@@ -68,7 +84,10 @@ export {
   getConnector,
   listConnectors,
   clearConnectors,
+  registerBuiltinConnectors,
   fakeConnector,
+  githubConnector,
+  createGithubConnector,
   type Connector,
   type ConnectorChangeSet,
   type ConnectorPublishResult,
@@ -137,7 +156,7 @@ export {
 } from "./cursor-model-families.ts"
 export type { CliTrustValue } from "@workspace/shared"
 
-export { manualItemKey } from "./item-key.ts"
+export { manualItemKey, workItemItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"
 export {
   DEFAULT_PORT_COUNT,

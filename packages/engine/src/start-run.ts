@@ -4,6 +4,7 @@ import { prepareRunDirs } from "./dirs.ts"
 import { applyStartTrustGrant, prepareTrustMarker } from "./engine-trust.ts"
 import type { EventLog } from "./event-log.ts"
 import type { RunState } from "./fold.ts"
+import { materializeRunResources } from "./library-run.ts"
 import { materializeRunInput } from "./run-input.ts"
 import { shouldQueueRun } from "./run-queue.ts"
 import type { ManualFilePart } from "./source-manual.ts"
@@ -15,6 +16,12 @@ export type StartRunParams = {
   trustGrant?: TrustGrant
   values?: Record<string, string>
   files?: ManualFilePart[]
+  /** App home for library pulls (BL-043). */
+  home: string
+  /** Prior run root to reuse pins from (rerun). */
+  pinFromRunRoot?: string
+  refreshPins?: boolean
+  workItemId?: string
 }
 
 export type StartRunResult = {
@@ -24,8 +31,8 @@ export type StartRunResult = {
   workflowId: string
 }
 
-/** Prepare dirs, materialize input, append run_started (DES-021). */
-export function appendRunStarted(options: {
+/** Prepare dirs, pins, input, append run_started (DES-021 / BL-039 / BL-043). */
+export async function appendRunStarted(options: {
   log: EventLog
   graph: Workflow
   params: StartRunParams
@@ -33,7 +40,7 @@ export function appendRunStarted(options: {
   settings: CliTrustValue | null
   setAlwaysTrust: (value: CliTrustValue) => void
   workflowRuns: RunState[]
-}): StartRunResult {
+}): Promise<StartRunResult> {
   const { log, graph, params, homeRealpath, settings, setAlwaysTrust } = options
   const needsCli = workflowNeedsAgentCli(graph)
 
@@ -47,14 +54,24 @@ export function appendRunStarted(options: {
   }
 
   const runRoot = prepareRunDirs(params.workflowDir, params.runId, graph)
-  const { itemKey, inputHash, files } = materializeRunInput(
+  const { pulledEvents } = await materializeRunResources({
+    home: params.home,
+    workflow: graph,
+    runRoot,
+    runId: params.runId,
+    pinFromRunRoot: params.pinFromRunRoot,
+    refreshPins: params.refreshPins,
+  })
+
+  const { itemKey, inputHash, files, workItemId } = materializeRunInput(
     params.workflowDir,
     runRoot,
     {
       decls: graph.inputs ?? [],
       values: params.values ?? {},
       files: params.files ?? [],
-    }
+    },
+    params.workItemId
   )
 
   const queued = shouldQueueRun(graph, options.workflowRuns)
@@ -73,8 +90,10 @@ export function appendRunStarted(options: {
     files,
     ...(queued ? { queued: true } : {}),
     ...(trustOnce ? { trustGrant: trustOnce } : {}),
+    ...(workItemId !== undefined ? { workItemId } : {}),
   }
   log.append(event)
+  for (const pulled of pulledEvents) log.append(pulled)
 
   if (needsCli) prepareTrustMarker(homeRealpath, params.workflowDir)
 

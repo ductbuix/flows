@@ -9,11 +9,11 @@ import {
 
 type Props = {
   errors: YamlDiagnosticDto[]
-  onOpenAdvanced: () => void
+  onOpenYaml: () => void
 }
 
-/** Parse errors with Advanced off: Alert + button to open Advanced. */
-export function YamlErrorAlert({ errors, onOpenAdvanced }: Props) {
+/** Parse errors on the Graph pane: Alert + button to open the YAML tab. */
+export function YamlErrorAlert({ errors, onOpenYaml }: Props) {
   if (errors.length === 0) return null
   return (
     <div className="shrink-0 border-b p-3">
@@ -30,10 +30,10 @@ export function YamlErrorAlert({ errors, onOpenAdvanced }: Props) {
           <Button
             size="sm"
             variant="outline"
-            data-testid="open-advanced-yaml"
-            onClick={onOpenAdvanced}
+            data-testid="open-yaml-tab"
+            onClick={onOpenYaml}
           >
-            Open Advanced
+            Open YAML
           </Button>
         </AlertAction>
       </Alert>

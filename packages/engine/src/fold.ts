@@ -65,6 +65,8 @@ export type RunState = {
   finishedAt?: string
   /** Manual item key from run_started (DES-021). */
   itemKey?: string
+  /** Work item from run_started (DES-026 / BL-039). */
+  workItemId?: string
   source?: "manual"
   inputHash?: string
   inputFiles?: string[]

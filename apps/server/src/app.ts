@@ -39,6 +39,7 @@ import {
   writeWorkflowYaml,
 } from "./workflow-files.ts"
 import { connectionRoutes } from "./connection-routes.ts"
+import { libraryRoutes } from "./library-routes.ts"
 import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
 import { runInputRoutes } from "./run-input-routes.ts"
@@ -65,6 +66,7 @@ const logQuery = z.object({
 const runsQuery = z.object({
   status: runStatusSchema.optional(),
   workflowId: z.string().min(1).optional(),
+  workItemId: z.string().min(1).optional(),
   limit: z.coerce.number().int().positive().optional(),
 })
 
@@ -80,6 +82,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", runInputRoutes(engine))
     .route("/", trustRoutes(engine))
     .route("/", connectionRoutes(engine))
+    .route("/", libraryRoutes(engine))
     .route("/", workItemRoutes(engine))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)

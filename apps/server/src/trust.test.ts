@@ -66,7 +66,7 @@ describe("trust API", () => {
   })
 
   it("preflight and 409 trust_required on start", async () => {
-    const { app, engine, home } = setup()
+    const { app, engine } = setup()
     const pre = await app.request("/api/workflows/agent-hi/runs/preflight", {
       method: "POST",
     })
@@ -89,21 +89,19 @@ describe("trust API", () => {
     const err = (await start.json()) as { error: string }
     expect(err.error).toBe("trust_required")
 
-    // Grant once against a command workflow so the run finishes before close.
-    const cmd = join(home, "workflows", "cmd-hi")
-    mkdirSync(cmd, { recursive: true })
-    writeFileSync(
-      join(cmd, "workflow.yaml"),
-      "id: cmd-hi\ntasks:\n  - id: a\n    kind: command\n    run: echo ok\n"
-    )
-    const ok = await app.request("/api/workflows/cmd-hi/runs", {
+    // Grant once is accepted (200). Cancel immediately so scheduler ticks
+    // do not race engine.close(); a finished command path also works.
+    const granted = await app.request("/api/workflows/agent-hi/runs", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ requestId: "r2", trustGrant: "once" }),
     })
-    expect(ok.status).toBe(200)
-    const started = (await ok.json()) as { runId: string }
-    await engine.resumeRun(started.runId)!.wait()
+    expect(granted.status).toBe(200)
+    const { runId } = (await granted.json()) as { runId: string }
+    engine.cancelRun(runId)
+    await engine.resumeRun(runId)?.wait()
+    // Drain one macrotask so any in-flight tick finishes before close.
+    await new Promise<void>((resolve) => setTimeout(resolve, 0))
     engine.close()
   })
 })

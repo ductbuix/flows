@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router"
+import { useState } from "react"
+import { useParams } from "react-router"
 import { Button } from "@workspace/ui/components/button"
 import {
   ResizableHandle,
@@ -11,25 +12,22 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { AdvancedSwitch } from "@/components/AdvancedSwitch"
 import { PageHeader } from "@/components/PageHeader"
-import { useAdvanced } from "@/hooks/use-advanced"
-import { workflowPath } from "@/lib/paths"
+import { WorkflowDetailTabs } from "@/pages/WorkflowDetailTabs"
 import { ConflictDialog } from "./ConflictDialog"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
-import { EditorGraphPane } from "./EditorGraphPane"
+import { EditorMainPane, type EditorPane } from "./EditorMainPane"
 import { Inspector } from "./Inspector"
 import { useEditorHotkeys } from "./useEditorHotkeys"
 import { usePendingTaskDelete } from "./usePendingTaskDelete"
 import { YamlErrorAlert } from "./YamlErrorAlert"
-import { YamlPane } from "./YamlPane"
 import { useWorkflowEditor } from "./useWorkflowEditor"
 
 export function WorkflowEditorPage() {
   const { workflowId } = useParams() as { workflowId: string }
   const editor = useWorkflowEditor(workflowId)
   const { state } = editor
-  const { advanced, setAdvanced } = useAdvanced()
+  const [pane, setPane] = useState<EditorPane>("graph")
   const { pendingDelete, requestDelete, clearPendingDelete } =
     usePendingTaskDelete(workflowId, state.workflow)
 
@@ -40,7 +38,6 @@ export function WorkflowEditorPage() {
 
   const headerActions = (
     <>
-      <AdvancedSwitch />
       <Button size="sm" variant="outline" onClick={editor.addCommandTask}>
         Add task
       </Button>
@@ -51,13 +48,6 @@ export function WorkflowEditorPage() {
         onClick={() => void editor.save()}
       >
         Save
-      </Button>
-      <Button
-        variant="link"
-        size="sm"
-        render={<Link to={workflowPath(workflowId, "runs")} />}
-      >
-        Runs
       </Button>
     </>
   )
@@ -75,6 +65,7 @@ export function WorkflowEditorPage() {
       <div className="flex min-h-0 flex-1 flex-col">
         <PageHeader crumbs={[...crumbs]} actions={headerActions} />
         <div className="space-y-2 p-4">
+          <WorkflowDetailTabs workflowId={workflowId} tab="editor" />
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-120 w-full" />
         </div>
@@ -86,7 +77,8 @@ export function WorkflowEditorPage() {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <PageHeader crumbs={[...crumbs]} actions={headerActions} />
-        <div className="p-4">
+        <div className="space-y-4 p-4">
+          <WorkflowDetailTabs workflowId={workflowId} tab="editor" />
           <Alert variant="destructive">
             <AlertTitle>Not found</AlertTitle>
             <AlertDescription>
@@ -98,44 +90,35 @@ export function WorkflowEditorPage() {
     )
   }
 
-  const graphProps = {
-    workflow: state.workflow,
-    selectedTaskId: state.selectedTaskId,
-    onSelectTask: editor.setSelectedTaskId,
-    onConnect: editor.connectTasks,
-  }
-
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div
+      className="flex min-h-0 flex-1 flex-col"
+      data-testid="workflow-editor"
+    >
       <PageHeader crumbs={[...crumbs]} actions={headerActions} />
-      {!advanced ? (
+      <div className="shrink-0 px-4 pt-4">
+        <WorkflowDetailTabs workflowId={workflowId} tab="editor" />
+      </div>
+      {pane === "graph" ? (
         <YamlErrorAlert
           errors={state.errors}
-          onOpenAdvanced={() => setAdvanced(true)}
+          onOpenYaml={() => setPane("yaml")}
         />
       ) : null}
 
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         <ResizablePanel defaultSize="58%" minSize="30%">
-          {advanced ? (
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel defaultSize="65%" minSize="30%">
-                <EditorGraphPane {...graphProps} />
-              </ResizablePanel>
-              <ResizableHandle />
-              <ResizablePanel defaultSize="35%" minSize="15%">
-                <div className="h-full p-4">
-                  <YamlPane
-                    value={state.yaml}
-                    errors={state.errors}
-                    onChange={editor.setYaml}
-                  />
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          ) : (
-            <EditorGraphPane {...graphProps} />
-          )}
+          <EditorMainPane
+            pane={pane}
+            onPaneChange={setPane}
+            workflow={state.workflow}
+            selectedTaskId={state.selectedTaskId}
+            onSelectTask={editor.setSelectedTaskId}
+            onConnect={editor.connectTasks}
+            yaml={state.yaml}
+            errors={state.errors}
+            onChangeYaml={editor.setYaml}
+          />
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel defaultSize="42%" minSize="20%">

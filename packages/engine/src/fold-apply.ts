@@ -68,6 +68,7 @@ export function applyEvent(
         startedAt: event.at,
         source: event.source,
         itemKey: event.itemKey,
+        workItemId: event.workItemId,
         inputHash: event.inputHash,
         inputFiles: event.files,
       }
@@ -231,5 +232,8 @@ export function applyEvent(
       if (!state) return state
       return applyTaskRetryRequested(state, event.taskId)
     }
+    case "library_pulled":
+      // Read effect; does not change run fold state (DES-026 / BL-043).
+      return state
   }
 }

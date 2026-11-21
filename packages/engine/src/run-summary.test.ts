@@ -99,7 +99,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const handle = engine.startRun({ workflowDir, runId: "r-cache" })
+    const handle = await engine.startRun({ workflowDir, runId: "r-cache" })
     await handle.wait()
 
     const spy = vi.spyOn(engine, "fold")
@@ -130,7 +130,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    await engine.startRun({ workflowDir, runId: "r-resume" }).wait()
+    await (await engine.startRun({ workflowDir, runId: "r-resume" })).wait()
     engine.close()
 
     const again = createEngine({ home })

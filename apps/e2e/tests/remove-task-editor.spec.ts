@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { enableAdvanced } from "./helpers"
+import { openEditor, openGraphTab, openYamlTab } from "./helpers"
 
 const HOME = process.env.FLOWAPP_HOME!
 const isMac = process.platform === "darwin"
@@ -13,9 +13,8 @@ test.describe("remove task in editor", () => {
     page,
   }) => {
     const original = diamondYaml()
-    await page.goto("/workflows/diamond")
+    await openEditor(page, "diamond")
     await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
-    await enableAdvanced(page)
     await page.getByTestId("node-a").click()
     await expect(page.getByTestId("delete-task")).toBeEnabled()
 
@@ -28,13 +27,18 @@ test.describe("remove task in editor", () => {
     await page.getByTestId("confirm-ok").click()
     await expect(page.getByTestId("confirm-dialog")).toBeHidden()
     await expect(page.getByTestId("node-a")).toHaveCount(0)
-    await expect(page.getByTestId("yaml-pane")).not.toContainText("id: a")
     await expect(page.getByTestId("save-button")).toBeEnabled()
+
+    await openYamlTab(page)
+    await expect(page.getByTestId("yaml-pane")).not.toContainText("id: a")
+    await openGraphTab(page)
 
     await page.keyboard.press(isMac ? "Meta+z" : "Control+z")
     await expect(page.getByTestId("node-a")).toBeVisible()
+    await openYamlTab(page)
     await expect(page.getByTestId("yaml-pane")).toContainText("id: a")
 
+    await openGraphTab(page)
     await page.getByTestId("node-a").click()
     await page.getByTestId("delete-task").click()
     await page.getByTestId("confirm-ok").click()
@@ -52,8 +56,7 @@ test.describe("remove task in editor", () => {
   })
 
   test("Delete key opens confirm; ignored while typing", async ({ page }) => {
-    // Leaf task: nothing depends on d (even after the prior test removes a).
-    await page.goto("/workflows/diamond")
+    await openEditor(page, "diamond")
     await expect(page.getByTestId("node-d")).toBeVisible({ timeout: 15_000 })
     await page.getByTestId("node-d").click()
     await page.getByTestId("field-task-name").fill("Delta")
@@ -76,7 +79,7 @@ test.describe("remove task in editor", () => {
   })
 
   test("last task cannot be deleted", async ({ page }) => {
-    await page.goto("/workflows/fail-retry")
+    await openEditor(page, "fail-retry")
     await expect(page.getByTestId("node-flaky")).toBeVisible({
       timeout: 15_000,
     })

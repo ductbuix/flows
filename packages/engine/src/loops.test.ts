@@ -56,7 +56,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir, runId: "r1" }).wait()
+    const state = await (await engine.startRun({ workflowDir, runId: "r1" })).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.a?.status).toBe("skipped")
     expect(state.tasks.a?.skipReason).toBe("when")
@@ -91,7 +91,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir, runId: "r1" }).wait()
+    const state = await (await engine.startRun({ workflowDir, runId: "r1" })).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.check?.status).toBe("succeeded")
     expect(state.tasks.ok?.status).toBe("succeeded")
@@ -119,7 +119,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir, runId: "r1" }).wait()
+    const state = await (await engine.startRun({ workflowDir, runId: "r1" })).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.publish?.status).toBe("succeeded")
     engine.close()
@@ -158,7 +158,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir, runId: "r1" }).wait()
+    const state = await (await engine.startRun({ workflowDir, runId: "r1" })).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.flaky?.status).toBe("succeeded")
     expect(state.tasks.flaky?.attempts.length).toBe(2)
@@ -198,7 +198,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir, runId: "r1" }).wait()
+    const state = await (await engine.startRun({ workflowDir, runId: "r1" })).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.score?.status).toBe("succeeded")
     expect(state.tasks.score?.attempts.length).toBe(3)
@@ -231,7 +231,7 @@ tasks:
 `
     )
     const engine = createEngine({ home })
-    const state = await engine.startRun({ workflowDir, runId: "r1" }).wait()
+    const state = await (await engine.startRun({ workflowDir, runId: "r1" })).wait()
     expect(state.status).toBe("failed")
     expect(state.tasks.always?.status).toBe("failed")
     expect(state.tasks.always?.attempts.length).toBe(2)

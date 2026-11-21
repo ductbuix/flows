@@ -97,7 +97,7 @@ tasks:
     })
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r1",
       trustGrant: "once",
@@ -168,7 +168,7 @@ exit 0
     process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r2",
       trustGrant: "once",
@@ -212,7 +212,7 @@ tasks:
     installStubBin(home, { name: "claude", sleepMs: 200 })
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r3",
       trustGrant: "once",
@@ -269,7 +269,7 @@ exit 0
     process.env.PATH = `${bin}:${process.env.PATH ?? ""}`
 
     const engine = createEngine({ home })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r4",
       trustGrant: "once",
@@ -309,8 +309,8 @@ tasks:
     )
     installStubBin(home, { name: "claude" })
     const engine = createEngine({ home })
-    const state = await engine
-      .startRun({ workflowDir: wf, runId: "r5", trustGrant: "once" })
+    const state = await (await engine
+      .startRun({ workflowDir: wf, runId: "r5", trustGrant: "once" }))
       .wait()
     expect(state.status).toBe("failed")
     expect(state.tasks.plan?.status).toBe("failed")

@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/engine"
+import { workflowDir, workItemItemKey, type Engine } from "@workspace/engine"
 import {
   okResponseSchema,
   startRunBodySchema,
@@ -22,6 +22,7 @@ import type { IdempotencyStore } from "./idempotency.ts"
 import {
   duplicateInputResponse,
   parseStartRequest,
+  resolveStartWorkItem,
   validateStartInput,
 } from "./start-run-input.ts"
 
@@ -86,20 +87,28 @@ export function createRunControls({
           }
           const validated = validateStartInput(c, workflow, body.values, files)
           if (validated instanceof Response) return validated
+          const linked = resolveStartWorkItem(
+            c,
+            engine,
+            body.workItemId,
+            validated.itemKey
+          )
+          if (linked instanceof Response) return linked
           const dup = duplicateInputResponse(
             c,
             engine,
             workflowId,
-            validated.itemKey,
+            linked.itemKey,
             body.confirmDuplicate
           )
           if (dup) return dup
           try {
-            const handle = engine.startRun({
+            const handle = await engine.startRun({
               workflowDir: dir,
               trustGrant: body.trustGrant,
               values: validated.values,
               files: validated.files,
+              workItemId: linked.workItemId,
             })
             const resBody: StartRunResponse = {
               runId: handle.runId,
@@ -153,20 +162,29 @@ export function createRunControls({
         }
         const validated = validateStartInput(c, workflow, body.values, files)
         if (validated instanceof Response) return validated
+        // Keep the original workItemId even if the item was trashed (BL-039).
+        const workItemId = state.workItemId
+        const itemKey =
+          workItemId !== undefined
+            ? workItemItemKey(workItemId)
+            : validated.itemKey
         const dup = duplicateInputResponse(
           c,
           engine,
           state.workflowId,
-          validated.itemKey,
+          itemKey,
           body.confirmDuplicate
         )
         if (dup) return dup
         try {
-          const handle = engine.startRun({
+          const handle = await engine.startRun({
             workflowDir: dir,
             trustGrant: body.trustGrant,
             values: validated.values,
             files: validated.files,
+            pinFromRunId: runId,
+            refreshPins: body.refreshPins,
+            workItemId,
           })
           const resBody: StartRunResponse = {
             runId: handle.runId,

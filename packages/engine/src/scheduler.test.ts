@@ -59,7 +59,7 @@ describe("scheduler diamond graph", () => {
     const workflowDir = writeDiamond(home)
     const engine = createEngine({ home })
 
-    const handle = engine.startRun({ workflowDir, runId: "run-1" })
+    const handle = await engine.startRun({ workflowDir, runId: "run-1" })
     const state = await handle.wait()
 
     expect(state.status).toBe("succeeded")
@@ -109,7 +109,7 @@ describe("scheduler diamond graph", () => {
     const workflowDir = writeDiamond(home)
     const engine = createEngine({ home })
 
-    const handle = engine.startRun({ workflowDir, runId: "run-2" })
+    const handle = await engine.startRun({ workflowDir, runId: "run-2" })
     const live = await handle.wait()
     const replayed = foldEvents(engine.events("run-2"))
 

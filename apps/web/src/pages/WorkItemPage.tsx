@@ -1,0 +1,170 @@
+import { useEffect, useState } from "react"
+import { useParams } from "react-router"
+import { Link2 } from "lucide-react"
+import type { WorkItem, WorkItemAttachment } from "@workspace/shared"
+import {
+  workItemAttachmentListSchema,
+  workItemDetailSchema,
+} from "@workspace/shared"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
+import { Badge } from "@workspace/ui/components/badge"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty"
+import {
+  Item,
+  ItemContent,
+  ItemGroup,
+  ItemTitle,
+} from "@workspace/ui/components/item"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { toast } from "sonner"
+import { PageHeader } from "@/components/PageHeader"
+import { PageTitle } from "@/components/PageTitle"
+import { Section } from "@/components/Section"
+import { api } from "@/lib/api"
+import { WorkItemNotesSection } from "@/pages/WorkItemNotesSection"
+import { WorkItemRunsSection } from "@/pages/WorkItemRunsSection"
+import { WorkItemStartCard } from "@/pages/WorkItemStartCard"
+
+export function WorkItemPage() {
+  const { workItemId } = useParams() as { workItemId: string }
+  const [item, setItem] = useState<WorkItem | null>(null)
+  const [attachments, setAttachments] = useState<WorkItemAttachment[] | null>(
+    null
+  )
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let alive = true
+    setLoading(true)
+    setError(null)
+    void (async () => {
+      const [detailRes, filesRes] = await Promise.all([
+        api.workitems[":id"].$get({ param: { id: workItemId } }),
+        api.workitems[":id"].attachments.$get({ param: { id: workItemId } }),
+      ])
+      if (!alive) return
+      if (!detailRes.ok) {
+        setLoading(false)
+        setError(
+          detailRes.status === 404
+            ? `Work item ${workItemId} was not found.`
+            : "Could not load work item"
+        )
+        return
+      }
+      const detail = workItemDetailSchema.parse(await detailRes.json())
+      setItem(detail.item)
+      if (filesRes.ok) {
+        setAttachments(
+          workItemAttachmentListSchema.parse(await filesRes.json()).files
+        )
+      } else {
+        setAttachments([])
+      }
+      setLoading(false)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [workItemId])
+
+  function onStarted(runId: string) {
+    toast.success(`Started run ${runId}`)
+  }
+
+  const crumbs = [
+    { label: "Work items", to: "/work-items" },
+    { label: item?.title ?? workItemId },
+  ] as const
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col" data-testid="work-item-page">
+      <PageHeader crumbs={[...crumbs]} />
+      <div className="flex flex-1 flex-col gap-6 overflow-auto p-6">
+        {error ? (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : loading || !item ? (
+          <div className="space-y-3" data-testid="work-item-loading">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ) : (
+          <>
+            <PageTitle
+              title={item.title}
+              description="Context, runs, start a workflow and notes."
+              badge={
+                <Badge variant="secondary" data-testid="work-item-source">
+                  Ad hoc
+                </Badge>
+              }
+            />
+
+            <Section title="Context">
+              <Empty data-testid="work-item-context-empty">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Link2 />
+                  </EmptyMedia>
+                  <EmptyTitle>No linked library data</EmptyTitle>
+                  <EmptyDescription>
+                    Library links will appear here once connections can attach
+                    them.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            </Section>
+
+            <WorkItemRunsSection workItemId={workItemId} />
+
+            <WorkItemStartCard
+              workItemId={workItemId}
+              initialWorkflowId={item.workflowId}
+              initialInputs={item.inputs}
+              onStarted={onStarted}
+            />
+
+            <WorkItemNotesSection workItemId={workItemId} />
+
+            <Section title="Attachments">
+              {!attachments || attachments.length === 0 ? (
+                <Empty data-testid="work-item-attachments-empty">
+                  <EmptyHeader>
+                    <EmptyTitle>No attachments</EmptyTitle>
+                    <EmptyDescription>
+                      Files attached to this work item will list here.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                <ItemGroup data-testid="work-item-attachments">
+                  {attachments.map((file) => (
+                    <Item key={file.name} variant="outline" size="sm">
+                      <ItemContent>
+                        <ItemTitle className="font-mono">{file.name}</ItemTitle>
+                      </ItemContent>
+                    </Item>
+                  ))}
+                </ItemGroup>
+              )}
+            </Section>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

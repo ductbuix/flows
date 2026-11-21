@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { workItemIdSchema } from "./work-item.ts"
 
 /** Trust grant on start / always-trust store (DES-019). */
 export const trustGrantSchema = z.enum(["once", "always"])
@@ -21,6 +22,10 @@ export const startRunBodySchema = z.object({
   values: z.record(z.string(), z.string()).optional(),
   /** Start anyway when an item key already exists (DES-021). */
   confirmDuplicate: z.boolean().optional(),
+  /** Rerun: pull and pin again instead of reusing prior pins (BL-043). */
+  refreshPins: z.boolean().optional(),
+  /** Optional work item; unknown id is 400 unknown_work_item (BL-039). */
+  workItemId: workItemIdSchema.optional(),
 })
 
 export type StartRunBody = z.infer<typeof startRunBodySchema>
@@ -39,6 +44,13 @@ export const duplicateInputErrorSchema = z.object({
 })
 
 export type DuplicateInputError = z.infer<typeof duplicateInputErrorSchema>
+
+export const unknownWorkItemErrorSchema = z.object({
+  error: z.literal("unknown_work_item"),
+  workItemId: z.string().min(1),
+})
+
+export type UnknownWorkItemError = z.infer<typeof unknownWorkItemErrorSchema>
 
 export const trustCheckStatusSchema = z.enum(["pass", "warn"])
 export type TrustCheckStatus = z.infer<typeof trustCheckStatusSchema>

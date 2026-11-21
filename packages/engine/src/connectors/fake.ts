@@ -10,7 +10,8 @@ import type {
 
 /**
  * Test-only connector. Cookie sign-in reads secrets only in check/pull/
- * publish; nothing secret is written to the library (BL-042 / BL-053).
+ * publish; pull writes a small file; check/pull can fail when scope
+ * flags are set (BL-042 / BL-043 / BL-053).
  */
 export const fakeConnector: Connector = {
   id: "fake",
@@ -18,11 +19,21 @@ export const fakeConnector: Connector = {
     return {
       id: "fake",
       entityKinds: ["item"],
-      scopeFields: ["label", "ambient", "domain", "url"],
+      scopeFields: [
+        "label",
+        "ambient",
+        "domain",
+        "url",
+        "failPull",
+        "signedOut",
+      ],
       signInMethods: ["cli", "mcp", "cookies"],
     }
   },
   async check(connection, home): Promise<ConnectionCheckResult> {
+    if (connection.scope.signedOut === "1") {
+      return { ok: false, message: "fake signed out" }
+    }
     if (connection.signIn === "cookies") {
       if (!isSignedIn(home, connection.id)) {
         return { ok: false, message: "not signed in" }
@@ -40,23 +51,21 @@ export const fakeConnector: Connector = {
     return { ok: true, message: "fake sign-in ok" }
   },
   async pull(input) {
+    if (input.connection.scope.signedOut === "1") {
+      throw new Error("signed out")
+    }
     if (input.connection.signIn === "cookies") {
       const cookies = readCookies(input.home, input.connection.id)
       if (!cookies || cookies.length === 0) {
         throw new Error("not signed in")
       }
     }
-    // Pull body is BL-043; write a non-secret marker for leak tests.
+    const fail = input.connection.scope.failPull
+    if (fail) throw new Error(fail)
     mkdirSync(input.destDir, { recursive: true })
-    writeFileSync(
-      join(input.destDir, "item.json"),
-      `${JSON.stringify({
-        id: input.entityId,
-        kind: input.entityKind,
-        connection: input.connection.id,
-      })}\n`,
-      "utf8"
-    )
+    const body = input.connection.scope.label ?? input.entityId
+    writeFileSync(join(input.destDir, "data.txt"), body, "utf8")
+    return {}
   },
   async diff(input): Promise<ConnectorChangeSet> {
     return {

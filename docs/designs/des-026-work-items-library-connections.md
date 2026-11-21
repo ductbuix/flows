@@ -63,7 +63,9 @@ flowchart LR
 - It holds links to library entities (its context), the user's own notes,
   and attachments. Its runs are found by `workItemId` in the event log.
 - It generalizes `itemKey` and `inputs.json` of DES-021: a run's inputs
-  come from the work item, and the duplicate check can warn per item.
+  come from the work item, and when `workItemId` is set the item key is
+  derived from it so the duplicate check warns per work item and
+  workflow. Ad hoc runs keep the field-based key.
 
 ## Folder layout
 

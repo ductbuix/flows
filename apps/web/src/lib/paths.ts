@@ -1,8 +1,8 @@
 export type WorkflowTab = "overview" | "editor" | "runs"
 
-/** Flat workflow URL. Missing/unknown tab is treated as editor by the page. */
+/** Flat workflow URL. Missing/unknown tab is Overview (default). */
 export function workflowPath(workflowId: string, tab?: WorkflowTab): string {
-  if (!tab || tab === "editor") return `/workflows/${workflowId}`
+  if (!tab || tab === "overview") return `/workflows/${workflowId}`
   return `/workflows/${workflowId}?tab=${tab}`
 }
 
@@ -10,6 +10,14 @@ export type RunTaskTab = "output" | "terminal" | "attempts" | "environment"
 
 export function runPath(runId: string): string {
   return `/runs/${runId}`
+}
+
+export function workItemsPath(): string {
+  return "/work-items"
+}
+
+export function workItemPath(id: string): string {
+  return `/work-items/${id}`
 }
 
 /** Deep link to a run task tab (e.g. failed task Terminal). */

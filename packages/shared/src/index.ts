@@ -33,6 +33,24 @@ export {
   type ConnectionSignInStatus,
   type ConnectionBrowserSignInResult,
 } from "./api-connections.ts"
+export {
+  resourcePinSchema,
+  resourcesJsonSchema,
+  resourcesIndexSchema,
+  libraryPullBodySchema,
+  libraryRevisionSchema,
+  libraryEntitySchema,
+  libraryListSchema,
+  libraryPullResultSchema,
+  type ResourcePin,
+  type ResourcesJson,
+  type ResourcesIndex,
+  type LibraryPullBody,
+  type LibraryRevision,
+  type LibraryEntity,
+  type LibraryList,
+  type LibraryPullResult,
+} from "./library.ts"
 export { healthSchema, type Health } from "./health.ts"
 export {
   commandTaskSchema,
@@ -90,6 +108,7 @@ export {
 export {
   normalizeInputText,
   canonicalManualItemPayload,
+  canonicalWorkItemKeyPayload,
   buildManualValuesSchema,
   applyInputDefaults,
   inputsJsonSchema,
@@ -146,6 +165,7 @@ export {
   runFailedEventSchema,
   runDeletedEventSchema,
   taskRetryRequestedEventSchema,
+  libraryPulledEventSchema,
   type TaskStatus,
   type RunStatus,
   type EngineEvent,
@@ -208,6 +228,7 @@ export {
   startRunBodySchema,
   invalidInputErrorSchema,
   duplicateInputErrorSchema,
+  unknownWorkItemErrorSchema,
   trustCheckStatusSchema,
   trustCheckSchema,
   trustStatusSchema,
@@ -222,6 +243,7 @@ export {
   type StartRunBody,
   type InvalidInputError,
   type DuplicateInputError,
+  type UnknownWorkItemError,
   type TrustCheckStatus,
   type TrustCheck,
   type TrustStatus,

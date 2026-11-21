@@ -28,7 +28,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
-import { runPath, workflowPath } from "@/lib/paths"
+import { runPath } from "@/lib/paths"
 import { deleteRun } from "@/lib/run-actions"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ActionButton } from "@/components/ActionButton"
@@ -36,6 +36,7 @@ import { PageHeader } from "@/components/PageHeader"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { RunRowMenu } from "@/pages/RunRowMenu"
+import { WorkflowDetailTabs } from "@/pages/WorkflowDetailTabs"
 
 export function WorkflowRunsPage() {
   const { workflowId } = useParams() as { workflowId: string }
@@ -47,8 +48,7 @@ export function WorkflowRunsPage() {
 
   const crumbs = [
     { label: "Workflows", to: "/workflows" },
-    { label: workflowId, to: workflowPath(workflowId) },
-    { label: "Runs" },
+    { label: workflowId },
   ] as const
 
   const reload = useCallback(async () => {
@@ -138,6 +138,7 @@ export function WorkflowRunsPage() {
           />
 
           <div className="flex-1 space-y-4 overflow-auto p-4">
+            <WorkflowDetailTabs workflowId={workflowId} tab="runs" />
             {runs.length === 0 ? (
               <Empty data-testid="run-list">
                 <EmptyHeader>

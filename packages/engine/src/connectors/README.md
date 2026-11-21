@@ -14,4 +14,5 @@ In-repo adapters for outside systems (DES-026). There is no loading from
    in unit tests.
 
 The `fake` connector is for tests only. Register it in the test, not at
-app startup.
+app startup. Builtin connectors (today: `github`) are registered via
+`registerBuiltinConnectors()` from the server entrypoint.

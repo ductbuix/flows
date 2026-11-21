@@ -20,22 +20,25 @@ export function e2eHome(): string {
   return home
 }
 
-/** Turn on the shared Advanced switch (`flows-advanced`). */
-export async function enableAdvanced(page: Page): Promise<void> {
-  const control = page.getByTestId("advanced-switch-control")
-  await expect(control).toBeVisible()
-  if (!(await control.isChecked())) {
-    await control.click()
-  }
-  await expect(control).toBeChecked()
+/** Open the Editor tab for a workflow (Graph pane by default). */
+export async function openEditor(
+  page: Page,
+  workflowId: string
+): Promise<void> {
+  await page.goto(`/workflows/${workflowId}?tab=editor`)
+  await expect(page.getByTestId("graph-canvas")).toBeVisible({
+    timeout: 15_000,
+  })
 }
 
-/** Turn off the shared Advanced switch. */
-export async function disableAdvanced(page: Page): Promise<void> {
-  const control = page.getByTestId("advanced-switch-control")
-  await expect(control).toBeVisible()
-  if (await control.isChecked()) {
-    await control.click()
-  }
-  await expect(control).not.toBeChecked()
+/** Switch the Editor to the YAML pane. */
+export async function openYamlTab(page: Page): Promise<void> {
+  await page.getByTestId("editor-tab-yaml").click()
+  await expect(page.getByTestId("yaml-pane")).toBeVisible()
+}
+
+/** Switch the Editor to the Graph pane. */
+export async function openGraphTab(page: Page): Promise<void> {
+  await page.getByTestId("editor-tab-graph").click()
+  await expect(page.getByTestId("graph-canvas")).toBeVisible()
 }

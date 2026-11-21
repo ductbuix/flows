@@ -118,11 +118,13 @@ describe("cookie leak scan after pull", () => {
       },
     ])
 
-    const destDir = join(home, "library", "rally-payments", "item", "1", "r1")
+    const entityRoot = join(home, "library", "rally-payments", "item", "1")
+    const destDir = join(entityRoot, "r1")
     await fakeConnector.pull({
       connection: created.value,
       entityKind: "item",
       entityId: "1",
+      entityRoot,
       destDir,
       home,
     })

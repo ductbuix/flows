@@ -61,7 +61,7 @@ tasks:
 
     const engine = createEngine({ home })
     const app = createApp({ engine })
-    const handle = engine.startRun({
+    const handle = await engine.startRun({
       workflowDir: wf,
       runId: "r1",
       trustGrant: "once",
