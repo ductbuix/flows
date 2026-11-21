@@ -32,12 +32,29 @@ export {
   attemptDir,
   connectionsDir,
   connectionDir,
+  secretsRoot,
   secretsDir,
   libraryDir,
   libraryEntityDir,
   encodeEntityId,
   decodeEntityId,
 } from "./paths.ts"
+export {
+  cookiesPath,
+  profileDir,
+  ensureSecretsDir,
+  readCookies,
+  writeCookies,
+  isSignedIn,
+  removeSignIn,
+  type StoredCookie,
+} from "./secrets.ts"
+export {
+  BrowserSignInError,
+  connectionSignInHost,
+  signInWithBrowser,
+  type BrowserSignInResult,
+} from "./browser-sign-in.ts"
 export {
   LIBRARY_EVENT_RUN_ID,
   resolveScopeEntity,

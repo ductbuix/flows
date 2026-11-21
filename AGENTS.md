@@ -20,13 +20,13 @@ Schema and writing rules: `docs/README.md`.
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
   items, Workflows, Runs), Workflows group, Settings; `/work-items`
-  and `/work-items/:id` (Runs, Start with workItemId, Notes,
+  and `/work-items/:id`, `/connections` and `/connections/:id` (browser sign-in, remove) (Runs, Start with workItemId, Notes,
   Attachments); `/workflows` and `/runs`; workflow Overview/Editor/Runs;
   graph editor, start/rerun, run view with live websocket; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
-  preflight, GET `/cli/:cli/models`, connections CRUD/check and
+  preflight, GET `/cli/:cli/models`, connections CRUD/check/sign-in and
   `GET /connectors`, library GET/pull, work item CRUD (notes,
   attachments, trash), run REST (GET `/runs` with
   status/workflowId/workItemId/limit, start with
@@ -39,7 +39,7 @@ Schema and writing rules: `docs/README.md`.
   `composeFlags`), connector registry (`connectors/`, github read,
   fake for tests), connections store, library revisions/pull/pins
   (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
-  under `workitems/`, propose work copies (`work/`, serial lock,
+  under `workitems/`, cookie secrets under `secrets/` (Chrome sign-in, sandbox denies reads), propose work copies (`work/`, serial lock,
   change sets via `GET /runs/:id/changes/:connectionId`),
   model/effort resolve and preflight warns (including connection uses),
   app-owned trust markers, spawn into `graph.json`, resume, approval,
@@ -47,12 +47,10 @@ Schema and writing rules: `docs/README.md`.
   deletion, workflow id rebind, frozen `RUN_INPUT`, Manual source,
   queued runs, run summary cache, port leases and `<workflow>/.cache`.
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`/`workItemId`, `workItemSchema`), websocket
-  (`runs_changed`), workflow (`inputs`, `agent` defaults, model/effort,
-  task `uses`), `connection.yaml`, library list/pull and
-  `resources.json`, events (`queued`, `run_activated`, `library_pulled`,
-  `workItemId` on `run_started`, attempt `model`/`effort`/`modelSource`)
-  and YAML Document edits that keep comments and key order.
+  `needsYou`/`workItemId`, `workItemSchema`), websocket, workflow,
+  `connection.yaml`, library list/pull and `resources.json`, events
+  (`queued`, `run_activated`, `library_pulled`, `workItemId`) and YAML
+  Document edits.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.

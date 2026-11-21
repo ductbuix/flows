@@ -3,6 +3,8 @@ import { Toaster } from "@workspace/ui/components/sonner"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { WorkflowsProvider } from "@/lib/workflows-context"
+import { ConnectionPage } from "@/pages/ConnectionPage"
+import { ConnectionsPage } from "@/pages/ConnectionsPage"
 import { DevKitPage } from "@/pages/DevKitPage"
 import { HomePage } from "@/pages/HomePage"
 import { RunsPage } from "@/pages/RunsPage"
@@ -54,6 +56,8 @@ export function App() {
         />
         <Route path="runs" element={<RunsPage />} />
         <Route path="runs/:runId" element={<RunViewPage />} />
+        <Route path="connections" element={<ConnectionsPage />} />
+        <Route path="connections/:connectionId" element={<ConnectionPage />} />
       </Route>
     </Routes>
   )

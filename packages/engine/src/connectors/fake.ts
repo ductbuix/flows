@@ -8,6 +8,7 @@ import {
 } from "node:fs"
 import { join, relative } from "node:path"
 import type { ConnectionCheckResult } from "@workspace/shared"
+import { isSignedIn, readCookies } from "../secrets.ts"
 import type {
   Connector,
   ConnectorChangeSet,
@@ -47,8 +48,9 @@ function readText(root: string, rel: string): string | undefined {
 }
 
 /**
- * Test-only connector. Pull writes a small file; check/pull can fail when
- * scope flags are set. Diff compares work vs base (BL-042 / BL-043 / BL-048).
+ * Test-only connector. Cookie sign-in reads secrets only in check/pull/
+ * publish; pull writes a small file; check/pull can fail when scope
+ * flags are set. Diff compares work vs base (BL-042/043/048/053).
  */
 export const fakeConnector: Connector = {
   id: "fake",
@@ -56,13 +58,26 @@ export const fakeConnector: Connector = {
     return {
       id: "fake",
       entityKinds: ["item"],
-      scopeFields: ["label", "ambient", "failPull", "signedOut"],
+      scopeFields: [
+        "label",
+        "ambient",
+        "domain",
+        "url",
+        "failPull",
+        "signedOut",
+      ],
       signInMethods: ["cli", "mcp", "cookies"],
     }
   },
-  async check(connection): Promise<ConnectionCheckResult> {
+  async check(connection, home): Promise<ConnectionCheckResult> {
     if (connection.scope.signedOut === "1") {
       return { ok: false, message: "fake signed out" }
+    }
+    if (connection.signIn === "cookies") {
+      if (!isSignedIn(home, connection.id)) {
+        return { ok: false, message: "not signed in" }
+      }
+      return { ok: true, message: "fake cookie sign-in ok" }
     }
     const ambient = connection.scope.ambient
     if (ambient) {
@@ -77,6 +92,12 @@ export const fakeConnector: Connector = {
   async pull(input) {
     if (input.connection.scope.signedOut === "1") {
       throw new Error("signed out")
+    }
+    if (input.connection.signIn === "cookies") {
+      const cookies = readCookies(input.home, input.connection.id)
+      if (!cookies || cookies.length === 0) {
+        throw new Error("not signed in")
+      }
     }
     const fail = input.connection.scope.failPull
     if (fail) throw new Error(fail)
@@ -136,7 +157,13 @@ export const fakeConnector: Connector = {
       ops,
     }
   },
-  async publish(): Promise<ConnectorPublishResult> {
+  async publish(connection, _changeSet, home): Promise<ConnectorPublishResult> {
+    if (connection.signIn === "cookies") {
+      const cookies = readCookies(home, connection.id)
+      if (!cookies || cookies.length === 0) {
+        return { status: "rejected", message: "not signed in" }
+      }
+    }
     return { status: "rejected", message: "fake publish is not implemented" }
   },
 }

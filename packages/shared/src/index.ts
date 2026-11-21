@@ -30,10 +30,14 @@ export {
   connectionsListSchema,
   connectionParamSchema,
   connectionCheckResultSchema,
+  connectionSignInStatusSchema,
+  connectionBrowserSignInResultSchema,
   type ConnectorDescribe,
   type ConnectorsList,
   type ConnectionsList,
   type ConnectionCheckResult,
+  type ConnectionSignInStatus,
+  type ConnectionBrowserSignInResult,
 } from "./api-connections.ts"
 export {
   resourcePinSchema,

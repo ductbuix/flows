@@ -56,7 +56,8 @@ function checkSandbox(input: PreflightInput): TrustCheck {
     return {
       id: "sandbox",
       status: "warn",
-      message: "sandbox-exec will not apply; task writes are unrestricted",
+      message:
+        "sandbox-exec will not apply; secrets/ protection is off and task writes are unrestricted",
     }
   }
   try {

@@ -21,6 +21,7 @@ import {
   type ConnectorsList,
 } from "@workspace/shared"
 import { Hono } from "hono"
+import { connectionSignInRoutes } from "./connection-sign-in-routes.ts"
 
 function storeErrorStatus(kind: string): 400 | 404 | 409 {
   if (kind === "not_found") return 404
@@ -33,6 +34,7 @@ function storeErrorStatus(kind: string): 400 | 404 | 409 {
 /** GET /connectors, connections CRUD and check (DES-026 / BL-042). */
 export function connectionRoutes(engine: Engine) {
   return new Hono()
+    .route("/", connectionSignInRoutes(engine))
     .get("/connectors", (c) => {
       const body: ConnectorsList = {
         connectors: listConnectors().map((conn) => conn.describe()),
