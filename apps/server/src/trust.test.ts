@@ -89,12 +89,19 @@ describe("trust API", () => {
     const err = (await start.json()) as { error: string }
     expect(err.error).toBe("trust_required")
 
-    const ok = await app.request("/api/workflows/agent-hi/runs", {
+    // Grant once is accepted by the route (200). Starting an agent here leaves
+    // scheduler ticks racing engine.close(); engine trust tests cover the grant.
+    const granted = await app.request("/api/workflows/agent-hi/runs", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ requestId: "r2", trustGrant: "once" }),
     })
-    expect(ok.status).toBe(200)
+    expect(granted.status).toBe(200)
+    const { runId } = (await granted.json()) as { runId: string }
+    engine.cancelRun(runId)
+    await engine.resumeRun(runId)?.wait()
+    // Drain one macrotask so any in-flight tick finishes before close.
+    await new Promise<void>((resolve) => setTimeout(resolve, 0))
     engine.close()
   })
 })

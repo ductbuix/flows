@@ -7,6 +7,7 @@ import { apiWebSocketUrl } from "@/lib/ws-url"
 type Filters = {
   status?: RunStatus
   workflowId?: string
+  workItemId?: string
 }
 
 /** Load GET /runs and keep the list live via runs_changed. */
@@ -19,12 +20,13 @@ export function useRunsList(filters: Filters = {}) {
       query: {
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.workflowId ? { workflowId: filters.workflowId } : {}),
+        ...(filters.workItemId ? { workItemId: filters.workItemId } : {}),
       },
     })
     if (!res.ok) throw new Error("request failed")
     setRuns(runSummarySchema.array().parse(await res.json()))
     setError(null)
-  }, [filters.status, filters.workflowId])
+  }, [filters.status, filters.workflowId, filters.workItemId])
 
   useEffect(() => {
     let alive = true
