@@ -127,6 +127,7 @@ export {
 } from "./attempt-kind.ts"
 export {
   workflowSummarySchema,
+  needsYouEntrySchema,
   runSummarySchema,
   attemptViewSchema,
   taskViewSchema,
@@ -146,6 +147,7 @@ export {
   wsClientMessageSchema,
   wsServerMessageSchema,
   type WorkflowSummary,
+  type NeedsYouEntry,
   type RunSummary,
   type AttemptView,
   type TaskView,

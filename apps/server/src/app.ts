@@ -6,6 +6,7 @@ import {
   outListSchema,
   putWorkflowBodySchema,
   runDetailSchema,
+  runStatusSchema,
   runSummarySchema,
   summaryResponseSchema,
   taskInLiveRunErrorSchema,
@@ -58,6 +59,11 @@ const attemptParams = z.object({
 const logQuery = z.object({
   stream: z.enum(["stdout", "stderr"]),
   offset: z.coerce.number().int().nonnegative().optional(),
+})
+const runsQuery = z.object({
+  status: runStatusSchema.optional(),
+  workflowId: z.string().min(1).optional(),
+  limit: z.coerce.number().int().positive().optional(),
 })
 
 export function createApp({ engine }: { engine: Engine }) {
@@ -160,6 +166,14 @@ export function createApp({ engine }: { engine: Engine }) {
       )
     })
     .route("/", controls)
+    .get("/runs", zValidator("query", runsQuery), (c) => {
+      const query = c.req.valid("query")
+      const items = engine.listRunSummaries(query)
+      return c.json(
+        items.map((r) => runSummarySchema.parse(r)) satisfies RunSummary[],
+        200
+      )
+    })
     .get("/runs/:runId", zValidator("param", runParam), (c) => {
       const { runId } = c.req.valid("param")
       const detail = buildRunDetail(engine, runId)

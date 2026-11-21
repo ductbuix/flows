@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto"
 import type {
   CliTrustValue,
   EngineEvent,
+  RunSummary,
   TrustDecision,
   TrustGrant,
   Workflow,
@@ -27,6 +28,7 @@ import {
 } from "./paths.ts"
 import { runPreflightChecks, type PreflightInput } from "./preflight.ts"
 import { freeRunSlots, nextQueuedRun } from "./run-queue.ts"
+import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
 import { Scheduler } from "./scheduler.ts"
 import type { ManualFilePart } from "./source-manual.ts"
 import { appendRunStarted } from "./start-run.ts"
@@ -58,22 +60,25 @@ export class Engine {
   private readonly log: EventLog
   private readonly globalLimits: WorkflowLimits | undefined
   private readonly schedulers = new Map<string, Scheduler>()
+  private readonly summaryCache: RunSummaryCache
 
   constructor(options: CreateEngineOptions = {}) {
     this.home = resolveAppHome(options.home)
     this.log = new EventLog(appDbPath(this.home))
     this.globalLimits = loadAppConfig(this.home).limits
+    this.summaryCache = new RunSummaryCache((runId) => this.fold(runId))
     this.log.onAppend((stored) => {
+      const summary = this.summaryCache.refresh(stored.event.runId)
       if (
         stored.event.type === "run_succeeded" ||
         stored.event.type === "run_failed" ||
         stored.event.type === "run_cancelled"
       ) {
-        const state = this.fold(stored.event.runId)
         this.reconcileTrustMarker()
-        if (state) this.activateQueuedForWorkflow(state.workflowId)
+        if (summary) this.activateQueuedForWorkflow(summary.workflowId)
       }
     })
+    this.rebuildSummaryCache()
   }
 
   homeRealpath(): string {
@@ -162,6 +167,15 @@ export class Engine {
       .reverse()
   }
 
+  /** Cached summaries; does not fold (DES-025 / BL-033). */
+  listRunSummaries(opts?: ListRunSummariesOptions): RunSummary[] {
+    return this.summaryCache.list(opts)
+  }
+
+  getRunSummary(runId: string): RunSummary | null {
+    return this.summaryCache.get(runId)
+  }
+
   hasLiveRun(workflowId: string): boolean {
     return this.listRunsForWorkflow(workflowId).some((r) =>
       isLiveRunStatus(r.status)
@@ -170,6 +184,7 @@ export class Engine {
 
   rebindWorkflowId(fromId: string, toId: string): void {
     this.log.rebindWorkflowId(fromId, toId)
+    this.rebuildSummaryCache()
   }
 
   markWorkflowRunsDeleted(workflowId: string): void {
@@ -278,6 +293,7 @@ export class Engine {
       this.activateQueuedForWorkflow(workflowId)
     }
     this.reconcileTrustMarker()
+    this.rebuildSummaryCache()
     return handles
   }
 
@@ -341,6 +357,10 @@ export class Engine {
     const root = runDir(workflowRoot, state.runId)
     const scheduler = this.attachScheduler(state.runId, workflowRoot, root)
     scheduler.requestTick()
+  }
+
+  private rebuildSummaryCache(): void {
+    this.summaryCache.rebuild(this.log.listRunIds())
   }
 
   private finishPendingRemovals(): void {

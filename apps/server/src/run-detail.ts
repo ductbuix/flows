@@ -1,6 +1,6 @@
 import type { Engine } from "@workspace/engine"
 import type { RunDetail, RunSummary } from "@workspace/shared"
-import { runTimestamps, toRunDetail, toRunSummary } from "./run-mapper.ts"
+import { runTimestamps, toRunDetail } from "./run-mapper.ts"
 
 export function buildRunDetail(
   engine: Engine,
@@ -25,14 +25,5 @@ export function buildRunSummaries(
   engine: Engine,
   workflowId: string
 ): RunSummary[] {
-  return engine.listRunsForWorkflow(workflowId).map((state) => {
-    const ts = runTimestamps(engine.events(state.runId))
-    return toRunSummary(state, {
-      startedAt: ts.startedAt,
-      finishedAt:
-        state.status === "running" || state.status === "queued"
-          ? undefined
-          : ts.finishedAt,
-    })
-  })
+  return engine.listRunSummaries({ workflowId })
 }

@@ -1,7 +1,6 @@
 import {
   deriveAttemptKind,
   type RunDetail,
-  type RunSummary,
   type TaskView,
 } from "@workspace/shared"
 import { needTaskId } from "@workspace/shared"
@@ -127,20 +126,6 @@ export function toRunDetail(
     tasks: toTaskViews(state),
     taskCounts: taskCounts(state),
     inputFiles: state.inputFiles ?? [],
-  }
-}
-
-export function toRunSummary(
-  state: RunState,
-  opts: { startedAt: string; finishedAt?: string }
-): RunSummary {
-  return {
-    id: state.runId,
-    workflowId: state.workflowId,
-    status: state.status,
-    startedAt: opts.startedAt,
-    finishedAt: opts.finishedAt,
-    taskCounts: taskCounts(state),
   }
 }
 
