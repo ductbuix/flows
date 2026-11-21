@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog"
 import { Input } from "@workspace/ui/components/input"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
 import { workflowIdSchema } from "@workspace/shared"
 import { api } from "@/lib/api"
@@ -69,11 +70,7 @@ export function RenameWorkflowDialog({
         onOpenChange(next)
       }}
     >
-      <AlertDialogContent
-        data-testid="workflow-rename"
-        className="sm:max-w-md"
-        size="default"
-      >
+      <AlertDialogContent data-testid="workflow-rename" size="default">
         <AlertDialogHeader>
           <AlertDialogTitle>Rename workflow</AlertDialogTitle>
           <AlertDialogDescription>
@@ -106,7 +103,11 @@ export function RenameWorkflowDialog({
             onChange={(e) => setNewId(e.target.value)}
           />
         </Field>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction

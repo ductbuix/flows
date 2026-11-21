@@ -12,6 +12,8 @@ import {
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { Badge } from "@workspace/ui/components/badge"
+import { Card } from "@workspace/ui/components/card"
+import { cn } from "@workspace/ui/lib/utils"
 import { buildEditorGraph, type EditorNodeData } from "./editor-graph-layout"
 
 function EditorTaskNode({
@@ -20,11 +22,13 @@ function EditorTaskNode({
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
   return (
-    <div
+    <Card
+      size="sm"
       data-testid={`node-${id}`}
-      className={`min-w-[160px] rounded-md border bg-card px-2 py-1.5 text-xs shadow-sm ${
-        selected ? "ring-2 ring-ring" : ""
-      }`}
+      className={cn(
+        "min-w-40 overflow-visible shadow-sm",
+        selected && "ring-2 ring-ring"
+      )}
     >
       <Handle type="target" position={Position.Left} />
       <div className="font-mono font-medium">{data.label}</div>
@@ -37,7 +41,7 @@ function EditorTaskNode({
         ))}
       </div>
       <Handle type="source" position={Position.Right} />
-    </div>
+    </Card>
   )
 }
 
@@ -67,7 +71,7 @@ export function EditorGraph({
   )
 
   return (
-    <div className="h-full min-h-[280px] w-full" data-testid="graph-canvas">
+    <div className="h-full min-h-70 w-full" data-testid="graph-canvas">
       <ReactFlow
         nodes={flowNodes}
         edges={edges.map((e) => ({

@@ -7,6 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
+import { FieldLegend, FieldSet } from "@workspace/ui/components/field"
+import { ScrollArea } from "@workspace/ui/components/scroll-area"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -56,10 +59,10 @@ export function RunInputFiles({ runId, files }: Props) {
   }
 
   return (
-    <section data-testid="run-inputs" className="space-y-1">
-      <h2 className="text-xs font-medium text-muted-foreground">Run input</h2>
+    <FieldSet data-testid="run-inputs" className="gap-2">
+      <FieldLegend variant="label">Run input</FieldLegend>
       {files.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No input files.</p>
+        <p className="text-sm text-muted-foreground">No input files.</p>
       ) : (
         <ul className="flex flex-wrap gap-2">
           {files.map((path) => (
@@ -69,7 +72,7 @@ export function RunInputFiles({ runId, files }: Props) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 font-mono text-xs"
+                  className="font-mono"
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   onClick={() => void openPreview(path)}
                 >
@@ -79,7 +82,7 @@ export function RunInputFiles({ runId, files }: Props) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 font-mono text-xs"
+                  className="font-mono"
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   render={<a href={downloadHref(runId, path)} download />}
                 >
@@ -97,7 +100,7 @@ export function RunInputFiles({ runId, files }: Props) {
           if (!open) setPreviewPath(null)
         }}
       >
-        <DialogContent className="max-w-2xl" data-testid="run-input-preview">
+        <DialogContent className="sm:max-w-2xl" data-testid="run-input-preview">
           <DialogHeader>
             <DialogTitle className="font-mono text-sm">
               {previewPath}
@@ -106,14 +109,18 @@ export function RunInputFiles({ runId, files }: Props) {
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : previewError ? (
-            <p className="text-sm text-destructive">{previewError}</p>
+            <Alert variant="destructive">
+              <AlertDescription>{previewError}</AlertDescription>
+            </Alert>
           ) : (
-            <pre className="max-h-[60vh] overflow-auto rounded-md border bg-muted/40 p-3 font-mono text-xs whitespace-pre-wrap">
-              {previewContent}
-            </pre>
+            <ScrollArea className="max-h-96 rounded-lg border">
+              <pre className="p-3 font-mono text-xs whitespace-pre-wrap">
+                {previewContent}
+              </pre>
+            </ScrollArea>
           )}
         </DialogContent>
       </Dialog>
-    </section>
+    </FieldSet>
   )
 }

@@ -2,6 +2,20 @@ import { useEffect, useState } from "react"
 import type { MemoryFileSummary } from "@workspace/shared"
 import { memoryFileNameSchema, memoryListSchema } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
+import {
+  FieldDescription,
+  FieldLegend,
+  FieldSet,
+} from "@workspace/ui/components/field"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemGroup,
+  ItemTitle,
+} from "@workspace/ui/components/item"
+import { Separator } from "@workspace/ui/components/separator"
 import { api } from "@/lib/api"
 import { MemoryCollisionDialog } from "./MemoryCollisionDialog"
 import { MemoryCreateBar } from "./MemoryCreateBar"
@@ -91,50 +105,64 @@ export function MemoryPanel({ workflowId }: Props) {
   }
 
   return (
-    <div className="space-y-3" data-testid="memory-list">
-      <h2 className="text-sm font-medium">Memory files</h2>
-      <p className="text-xs text-muted-foreground">
+    <FieldSet className="gap-4" data-testid="memory-list">
+      <Separator />
+      <FieldLegend variant="label">Memory files</FieldLegend>
+      <FieldDescription>
         Edits apply to future launches only. Running and past attempts keep the
         copy they got.
-      </p>
-      <ul className="space-y-1">
+      </FieldDescription>
+      <ItemGroup>
         {files.map((f) => (
-          <li
+          <Item
             key={f.name}
-            className="flex items-center gap-2 text-sm"
+            size="sm"
+            variant="outline"
             data-testid={`memory-row-${f.name}`}
           >
-            <button
-              type="button"
-              className="font-mono underline-offset-4 hover:underline"
-              onClick={() => setEditing(f.name)}
-            >
-              {f.name}
-            </button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setPendingRename(f)}
-            >
-              Rename
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setPendingDelete(f)}
-            >
-              Delete
-            </Button>
-          </li>
+            <ItemContent>
+              <ItemTitle>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 font-mono"
+                  onClick={() => setEditing(f.name)}
+                >
+                  {f.name}
+                </Button>
+              </ItemTitle>
+            </ItemContent>
+            <ItemActions>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setPendingRename(f)}
+              >
+                Rename
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setPendingDelete(f)}
+              >
+                Delete
+              </Button>
+            </ItemActions>
+          </Item>
         ))}
-      </ul>
+      </ItemGroup>
       <MemoryCreateBar
         newName={newName}
         onNewNameChange={setNewName}
         onCreate={() => void createFile()}
         onPick={onPick}
       />
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {editing && (
         <MemoryEditorDialog
@@ -180,6 +208,6 @@ export function MemoryPanel({ workflowId }: Props) {
         onChanged={() => void reload()}
         onError={setError}
       />
-    </div>
+    </FieldSet>
   )
 }

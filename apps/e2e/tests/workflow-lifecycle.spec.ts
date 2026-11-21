@@ -46,6 +46,7 @@ test.describe("workflow lifecycle", () => {
       timeout: 15_000,
     })
 
+    await page.getByTestId(`sidebar-workflow-menu-${id}`).click()
     await page.getByTestId(`workflow-rename-open-${id}`).click()
     await expect(page.getByTestId("workflow-rename")).toBeVisible()
     await page.getByTestId("rename-id-input").fill(renamed)
@@ -65,6 +66,7 @@ test.describe("workflow lifecycle", () => {
     const list = (await runs.json()) as Array<{ id: string }>
     expect(list.map((r) => r.id)).toContain(runId)
 
+    await page.getByTestId(`sidebar-workflow-menu-${renamed}`).click()
     await page.getByTestId(`workflow-delete-open-${renamed}`).click()
     await expect(page.getByTestId("workflow-delete")).toBeVisible()
     await page.getByTestId("delete-confirm-input").fill(renamed)

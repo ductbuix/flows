@@ -1,4 +1,10 @@
 import type { MentionHit, TaskLabel } from "@workspace/shared"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
+import { TriangleAlert } from "lucide-react"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 
 type Props = {
@@ -35,11 +41,15 @@ export function DeleteTaskDialog({
                   .join(", ")}.`}
           </span>
           {mentions.length > 0 ? (
-            <span className="block text-amber-700 dark:text-amber-400">
-              Other tasks still mention this id or its UPSTREAM env var:{" "}
-              {mentions.map((m) => `${m.label} (${m.where})`).join(", ")}. Save
-              will move the folder anyway.
-            </span>
+            <Alert>
+              <TriangleAlert />
+              <AlertTitle>Task still referenced</AlertTitle>
+              <AlertDescription>
+                Other tasks still mention this id or its UPSTREAM env var:{" "}
+                {mentions.map((m) => `${m.label} (${m.where})`).join(", ")}.
+                Save will move the folder anyway.
+              </AlertDescription>
+            </Alert>
           ) : null}
         </span>
       }

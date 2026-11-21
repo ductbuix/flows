@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Textarea } from "@workspace/ui/components/textarea"
 import {
   Dialog,
@@ -43,7 +44,7 @@ export function FileEditorDialog({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl" data-testid={editorTestId}>
+      <DialogContent className="sm:max-w-2xl" data-testid={editorTestId}>
         <DialogHeader>
           <DialogTitle className="font-mono">{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -52,9 +53,13 @@ export function FileEditorDialog({
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
           rows={14}
-          className="min-h-[280px] font-mono text-xs"
+          className="min-h-70 font-mono text-xs"
         />
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <DialogFooter className="gap-2 sm:justify-between">
           {onRemove && removeTestId ? (
             <Button

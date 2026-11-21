@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 
-test("home lists workflows from FLOWAPP_HOME", async ({ page }) => {
+test("home shows empty state and sidebar lists workflows", async ({ page }) => {
   await page.goto("/")
-  await expect(page.getByRole("heading", { name: "Workflows" })).toBeVisible()
-  await expect(page.getByRole("link", { name: "diamond" })).toBeVisible()
+  await expect(page.getByTestId("home-empty")).toBeVisible()
+  await expect(page.getByTestId("sidebar-workflow-diamond")).toBeVisible()
 })

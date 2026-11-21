@@ -31,6 +31,13 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
+import {
+  Item,
+  ItemContent,
+  ItemGroup,
+  ItemTitle,
+} from "@workspace/ui/components/item"
+import { Badge } from "@workspace/ui/components/badge"
 import { AttemptKindBadge } from "./AttemptKindBadge"
 import { TaskActions } from "./TaskActions"
 import { TaskDetailSummary } from "./TaskDetailSummary"
@@ -80,7 +87,7 @@ export function TaskDetail({ run, task }: Props) {
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="logs" className="min-h-0 flex-1">
+      <TabsContent value="logs" className="flex min-h-0 flex-1 flex-col gap-2">
         <ToggleGroup
           value={[logStream]}
           onValueChange={(v) => {
@@ -89,7 +96,6 @@ export function TaskDetail({ run, task }: Props) {
           }}
           variant="outline"
           size="sm"
-          className="mb-2"
         >
           <ToggleGroupItem value="stdout">stdout</ToggleGroupItem>
           <ToggleGroupItem value="stderr">stderr</ToggleGroupItem>
@@ -97,7 +103,7 @@ export function TaskDetail({ run, task }: Props) {
         {logLoading && !logText ? (
           <p className="text-sm text-muted-foreground">Loading log…</p>
         ) : logText ? (
-          <ScrollArea className="h-[min(50vh,400px)] rounded-md border bg-muted/30 p-2">
+          <ScrollArea className="min-h-0 flex-1 rounded-lg border p-2">
             <pre
               data-testid="log-output"
               className="font-mono text-xs whitespace-pre-wrap"
@@ -193,14 +199,16 @@ export function TaskDetail({ run, task }: Props) {
             <EmptyContent />
           </Empty>
         ) : (
-          <ul className="text-sm">
+          <ItemGroup>
             {spawnedChildren.map((child) => (
-              <li key={child.id} className="font-mono">
-                {child.id}{" "}
-                <span className="text-muted-foreground">({child.status})</span>
-              </li>
+              <Item key={child.id} size="sm" variant="outline">
+                <ItemContent className="flex-row items-center gap-2">
+                  <ItemTitle className="font-mono">{child.id}</ItemTitle>
+                  <Badge variant="secondary">{child.status}</Badge>
+                </ItemContent>
+              </Item>
             ))}
-          </ul>
+          </ItemGroup>
         )}
       </TabsContent>
     </Tabs>

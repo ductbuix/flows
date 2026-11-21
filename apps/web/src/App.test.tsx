@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { MemoryRouter } from "react-router"
 import { App } from "./App"
+import { ThemeProvider } from "@/components/theme-provider"
 
 beforeEach(() => {
   Object.defineProperty(window, "matchMedia", {
@@ -37,6 +38,16 @@ function mockFetch(handlers: Record<string, unknown>) {
       if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
         return Response.json(handlers.runs ?? [])
       }
+      if (url.includes("/api/cli-status")) {
+        return Response.json(
+          handlers.cliStatus ?? {
+            clis: [
+              { id: "claude", installed: false, version: null },
+              { id: "cursor", installed: false, version: null },
+            ],
+          }
+        )
+      }
       if (url.includes("/api/trust")) {
         return Response.json(
           handlers.trust ?? {
@@ -54,17 +65,24 @@ function mockFetch(handlers: Record<string, unknown>) {
   )
 }
 
+function renderApp(path = "/") {
+  return render(
+    <ThemeProvider defaultTheme="light">
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    </ThemeProvider>
+  )
+}
+
 describe("App", () => {
-  it("lists workflows on the home route", async () => {
+  it("lists workflows in the sidebar and shows home empty state", async () => {
     mockFetch({
       workflows: [{ id: "demo", goal: "test goal" }],
     })
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <App />
-      </MemoryRouter>
-    )
-    expect(await screen.findByText("demo")).toBeTruthy()
-    expect(screen.getByText("test goal")).toBeTruthy()
+    renderApp("/")
+    expect(await screen.findByTestId("sidebar-workflow-demo")).toBeTruthy()
+    expect(await screen.findByTestId("home-empty")).toBeTruthy()
+    expect(screen.getByText(/Select a workflow or create one/i)).toBeTruthy()
   })
 })

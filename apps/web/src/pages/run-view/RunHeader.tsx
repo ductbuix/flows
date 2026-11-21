@@ -1,12 +1,4 @@
 import type { RunDetail } from "@workspace/shared"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@workspace/ui/components/breadcrumb"
 import { Badge } from "@workspace/ui/components/badge"
 import { Progress } from "@workspace/ui/components/progress"
 import {
@@ -18,7 +10,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { Link } from "react-router"
 import type { RunBodyView } from "./useSearchView"
 import type { WsConnectionState } from "./useRunSocket"
 import { RunControls } from "./RunControls"
@@ -45,23 +36,7 @@ export function RunHeader({
   const pct = total > 0 ? Math.round((finished / total) * 100) : 0
 
   return (
-    <header className="flex flex-col gap-3 border-b pb-4">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              render={<Link to={`/workflows/${workflowId}/runs`} />}
-            >
-              {workflowId}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{run.id}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
+    <div className="flex flex-col gap-3">
       {stale && (
         <Alert variant="destructive">
           <AlertTitle>Live updates paused</AlertTitle>
@@ -83,8 +58,8 @@ export function RunHeader({
           className="flex min-w-40 flex-1 items-center gap-2"
           data-testid="run-progress"
         >
-          <Progress value={pct} className="h-2 flex-1" />
-          <span className="text-xs whitespace-nowrap text-muted-foreground">
+          <Progress value={pct} className="flex-1" />
+          <span className="text-sm whitespace-nowrap text-muted-foreground">
             {finished}/{total}
           </span>
         </div>
@@ -113,10 +88,10 @@ export function RunHeader({
             Graph
           </ToggleGroupItem>
         </ToggleGroup>
-        <span data-testid="ws-status" className="text-xs text-muted-foreground">
+        <span data-testid="ws-status" className="text-sm text-muted-foreground">
           ws: {wsState}
         </span>
       </div>
-    </header>
+    </div>
   )
 }

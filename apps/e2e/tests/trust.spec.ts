@@ -41,7 +41,7 @@ test.describe("agent CLI trust dialog", () => {
     expect(after).toBe(before)
   })
 
-  test("always trust then revoke from home", async ({ page }) => {
+  test("always trust then revoke from settings", async ({ page }) => {
     await page.goto("/workflows/agent-trust/runs")
     await page.getByTestId("run-start").first().click()
     await page.getByTestId("start-run-submit").click()
@@ -49,14 +49,15 @@ test.describe("agent CLI trust dialog", () => {
     await page.getByTestId("trust-always").click()
     await expect(page).toHaveURL(/\/workflows\/agent-trust\/runs\/[^/]+$/)
 
-    await page.goto("/")
+    await page.goto("/settings")
     await expect(page.getByTestId("trust-settings")).toBeVisible()
+    await expect(page.getByTestId("trust-revoke")).toBeVisible()
     await page.screenshot({
-      path: "test-results/trust-revoke-home.png",
+      path: "test-results/trust-revoke-settings.png",
       fullPage: true,
     })
     await page.getByTestId("trust-revoke").click()
-    await expect(page.getByTestId("trust-settings")).toBeHidden()
+    await expect(page.getByTestId("trust-revoke")).toHaveCount(0)
 
     await page.goto("/workflows/agent-trust/runs")
     await page.getByTestId("run-start").first().click()

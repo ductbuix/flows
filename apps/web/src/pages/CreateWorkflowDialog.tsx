@@ -10,6 +10,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Textarea } from "@workspace/ui/components/textarea"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
 import { workflowIdSchema } from "@workspace/shared"
 import { api } from "@/lib/api"
@@ -63,12 +64,12 @@ export function CreateWorkflowDialog({ open, onOpenChange, onCreated }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="workflow-create">
+      <DialogContent className="sm:max-w-lg" data-testid="workflow-create">
         <DialogHeader>
           <DialogTitle>Create workflow</DialogTitle>
           <DialogDescription>
-            Creates a new directory under workflows/ with workflow.yaml and empty
-            memory, input and output folders.
+            Creates a new directory under workflows/ with workflow.yaml and
+            empty memory, input and output folders.
           </DialogDescription>
         </DialogHeader>
         <Field>
@@ -91,7 +92,11 @@ export function CreateWorkflowDialog({ open, onOpenChange, onCreated }: Props) {
             rows={3}
           />
         </Field>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel

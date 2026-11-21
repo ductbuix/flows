@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog"
 import { Input } from "@workspace/ui/components/input"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
 import { api } from "@/lib/api"
 
@@ -68,11 +69,7 @@ export function DeleteWorkflowDialog({
         onOpenChange(next)
       }}
     >
-      <AlertDialogContent
-        data-testid="workflow-delete"
-        className="sm:max-w-md"
-        size="default"
-      >
+      <AlertDialogContent data-testid="workflow-delete" size="default">
         <AlertDialogHeader>
           <AlertDialogTitle>Delete workflow</AlertDialogTitle>
           <AlertDialogDescription>
@@ -98,7 +95,11 @@ export function DeleteWorkflowDialog({
             onChange={(e) => setConfirm(e.target.value)}
           />
         </Field>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
