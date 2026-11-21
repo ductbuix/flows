@@ -8,9 +8,16 @@ export type ConnectorPullInput = {
   connection: Connection
   entityKind: string
   entityId: string
-  /** Absolute path of the revision folder to write into. */
+  /** Absolute path of the entity root (shared clone may live here). */
+  entityRoot: string
+  /** Absolute path of the staging folder to write the revision into. */
   destDir: string
   home: string
+}
+
+/** Optional revision id from pull (e.g. git commit sha). */
+export type ConnectorPullResult = {
+  revision?: string
 }
 
 export type ConnectorDiffInput = {
@@ -48,7 +55,7 @@ export type Connector = {
     connection: Connection,
     home: string
   ) => Promise<ConnectionCheckResult>
-  pull: (input: ConnectorPullInput) => Promise<void>
+  pull: (input: ConnectorPullInput) => Promise<ConnectorPullResult | void>
   diff: (input: ConnectorDiffInput) => Promise<ConnectorChangeSet>
   publish: (
     connection: Connection,

@@ -44,6 +44,7 @@ export const fakeConnector: Connector = {
     mkdirSync(input.destDir, { recursive: true })
     const body = input.connection.scope.label ?? input.entityId
     writeFileSync(join(input.destDir, "data.txt"), body, "utf8")
+    return {}
   },
   async diff(input): Promise<ConnectorChangeSet> {
     return {
