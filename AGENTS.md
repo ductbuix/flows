@@ -32,9 +32,10 @@ Schema and writing rules: `docs/README.md`.
   `runs_changed`, log chunks and workflow file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
   scheduler, command and agent tasks (CliAdapter: trust, catalog,
-  `composeFlags`), connector registry (`connectors/`, fake for tests),
-  connections store, library revisions/pull/pins (`library.ts`, run
-  `resources/` + `RESOURCE_*`), work item store under `workitems/`,
+  `composeFlags`), connector registry (`connectors/`, github read,
+  fake for tests), connections store, library revisions/pull/pins
+  (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
+  under `workitems/`,
   model/effort resolve and preflight warns (including connection uses),
   app-owned trust markers, spawn into `graph.json`, resume, approval,
   cancel, manual retry, conditions, retry, repeat, `agents` limits, run

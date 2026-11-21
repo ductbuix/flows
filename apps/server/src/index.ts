@@ -1,8 +1,9 @@
 import { serve } from "@hono/node-server"
-import { createEngine } from "@workspace/engine"
+import { createEngine, registerBuiltinConnectors } from "@workspace/engine"
 import { WebSocketServer } from "ws"
 import { createApp } from "./app.ts"
 
+registerBuiltinConnectors()
 const engine = createEngine()
 engine.resumeAll()
 const app = createApp({ engine })
