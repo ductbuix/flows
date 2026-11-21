@@ -41,15 +41,14 @@ Schema and writing rules: `docs/README.md`.
   attempt `model`/`effort`/`modelSource`) and YAML Document edits that
   keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/web`: Sidebar shell (workflows, Settings), graph editor (React
-  Flow Card nodes + Button Group controls, YAML behind Advanced,
-  Prompt Input, Model Selector, inputs, maxConcurrentRuns, PageTitle,
-  Section, RunStatusBadge, dev-only `/dev/kit`),
-  memory/*.md editor, run list, start/rerun input form, run view
-  (Confirmation or failure Alert first, Plan beside Table, task Card
-  Tabs: Output/Terminal/Attempts/Environment, SUMMARY.md, run inputs,
-  promote) with live websocket updates and run controls; Settings for
-  theme, CLI info and always-trust.
+- `apps/web`: Sidebar Platform (Home, Workflows, Runs) plus Workflows
+  group and Settings; `/workflows` and `/runs` tables; graph editor
+  (React Flow Card nodes, YAML behind Advanced, Prompt Input, Model
+  Selector, inputs, maxConcurrentRuns, PageTitle, Section,
+  RunStatusBadge, `/dev/kit`), memory/*.md editor, workflow run list,
+  start/rerun form, run view (Confirmation or failure Alert first, Plan
+  beside Table, task Card Tabs Output/Terminal/Attempts/Environment,
+  SUMMARY.md, promote) with live websocket updates; Settings for theme, CLI info and always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.

@@ -48,6 +48,7 @@ describe("workflow lifecycle API", () => {
     expect(workflowSummarySchema.parse(await createRes.json())).toEqual({
       id: "alpha",
       goal: "first goal",
+      taskCount: 1,
     })
     expect(existsSync(join(home, "workflows", "alpha", "memory"))).toBe(true)
     expect(existsSync(join(home, "workflows", "alpha", "input"))).toBe(true)

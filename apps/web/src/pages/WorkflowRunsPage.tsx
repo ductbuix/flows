@@ -46,7 +46,7 @@ export function WorkflowRunsPage() {
   const [deleting, setDeleting] = useState(false)
 
   const crumbs = [
-    { label: "Workflows", to: "/" },
+    { label: "Workflows", to: "/workflows" },
     { label: workflowId, to: workflowPath(workflowId) },
     { label: "Runs" },
   ] as const

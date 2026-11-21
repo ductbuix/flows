@@ -18,6 +18,15 @@ beforeEach(() => {
       dispatchEvent: vi.fn(),
     })),
   })
+  vi.stubGlobal(
+    "WebSocket",
+    class {
+      addEventListener = vi.fn()
+      close = vi.fn()
+      send = vi.fn()
+      readyState = 1
+    }
+  )
 })
 
 afterEach(() => {
@@ -36,7 +45,10 @@ function mockFetch(handlers: Record<string, unknown>) {
             ? input.href
             : input.url
       if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
-        return Response.json(handlers.runs ?? [])
+        return Response.json(handlers.workflowRuns ?? handlers.runs ?? [])
+      }
+      if (/\/api\/runs(\?|$)/.test(url) || url.endsWith("/api/runs")) {
+        return Response.json(handlers.allRuns ?? handlers.runs ?? [])
       }
       if (url.includes("/api/cli-status")) {
         return Response.json(
@@ -65,6 +77,8 @@ function mockFetch(handlers: Record<string, unknown>) {
   )
 }
 
+const demoWorkflow = { id: "demo", goal: "test goal", taskCount: 1 }
+
 function renderApp(path = "/") {
   return render(
     <ThemeProvider defaultTheme="light">
@@ -76,21 +90,28 @@ function renderApp(path = "/") {
 }
 
 describe("App", () => {
-  it("lists workflows in the sidebar and shows home empty state", async () => {
+  it("lists workflows in the sidebar and shows home sections", async () => {
     mockFetch({
-      workflows: [{ id: "demo", goal: "test goal" }],
+      workflows: [demoWorkflow],
+      allRuns: [],
     })
     renderApp("/")
     expect(await screen.findByTestId("sidebar-workflow-demo")).toBeTruthy()
-    expect(await screen.findByTestId("home-empty")).toBeTruthy()
-    expect(screen.getByText(/Select a workflow or create one/i)).toBeTruthy()
+    expect(await screen.findByTestId("home-page")).toBeTruthy()
+    expect(await screen.findByTestId("home-running")).toBeTruthy()
+    expect(screen.getByTestId("home-recent")).toBeTruthy()
+    expect(screen.queryByTestId("home-empty")).toBeNull()
+    expect(await screen.findByTestId("sidebar-platform")).toBeTruthy()
   })
 
-  it("shows sidebar empty when there are no workflows", async () => {
+  it("shows home empty create action when there are no workflows", async () => {
     mockFetch({ workflows: [] })
     renderApp("/")
     expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
+    expect(await screen.findByTestId("home-empty")).toBeTruthy()
+    expect(screen.getByTestId("home-create-workflow")).toBeTruthy()
     expect(screen.getByTestId("sidebar-settings")).toBeTruthy()
+    expect(screen.getByTestId("sidebar-home")).toBeTruthy()
   })
 
   it("shows sidebar skeletons while workflows load", async () => {
@@ -110,6 +131,13 @@ describe("App", () => {
         if (url.includes("/api/workflows") && !url.includes("/runs")) {
           return workflowsPromise
         }
+        if (
+          url.includes("/api/runs") &&
+          !url.includes("/api/runs/") &&
+          !url.includes("/tasks/")
+        ) {
+          return Response.json([])
+        }
         throw new Error(`unexpected fetch: ${url}`)
       })
     )
@@ -121,10 +149,25 @@ describe("App", () => {
 
   it("shows the runs list for ?tab=runs", async () => {
     mockFetch({
-      workflows: [{ id: "demo", goal: "test goal" }],
-      runs: [],
+      workflows: [demoWorkflow],
+      workflowRuns: [],
     })
     renderApp("/workflows/demo?tab=runs")
     expect(await screen.findByTestId("run-list")).toBeTruthy()
+  })
+
+  it("shows the workflows page table", async () => {
+    mockFetch({ workflows: [demoWorkflow], allRuns: [] })
+    renderApp("/workflows")
+    expect(await screen.findByTestId("workflows-page")).toBeTruthy()
+    expect(await screen.findByTestId("workflows-table")).toBeTruthy()
+    expect(screen.getByTestId("workflows-row-demo")).toBeTruthy()
+  })
+
+  it("shows the runs page empty state", async () => {
+    mockFetch({ workflows: [demoWorkflow], allRuns: [] })
+    renderApp("/runs")
+    expect(await screen.findByTestId("runs-page")).toBeTruthy()
+    expect(await screen.findByTestId("runs-empty")).toBeTruthy()
   })
 })

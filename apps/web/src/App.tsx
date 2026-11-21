@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar"
 import { WorkflowsProvider } from "@/lib/workflows-context"
 import { DevKitPage } from "@/pages/DevKitPage"
 import { HomePage } from "@/pages/HomePage"
+import { RunsPage } from "@/pages/RunsPage"
 import { SettingsPage } from "@/pages/SettingsPage"
 import {
   LegacyRunRedirect,
@@ -12,6 +13,7 @@ import {
 } from "@/pages/LegacyRedirects"
 import { RunViewPage } from "@/pages/run-view/RunViewPage"
 import { WorkflowPage } from "@/pages/WorkflowPage"
+import { WorkflowsPage } from "@/pages/WorkflowsPage"
 
 function AppShell() {
   return (
@@ -36,6 +38,7 @@ export function App() {
         {import.meta.env.DEV ? (
           <Route path="dev/kit" element={<DevKitPage />} />
         ) : null}
+        <Route path="workflows" element={<WorkflowsPage />} />
         <Route path="workflows/:workflowId" element={<WorkflowPage />} />
         <Route
           path="workflows/:workflowId/runs/:runId"
@@ -45,6 +48,7 @@ export function App() {
           path="workflows/:workflowId/runs"
           element={<LegacyWorkflowRunsRedirect />}
         />
+        <Route path="runs" element={<RunsPage />} />
         <Route path="runs/:runId" element={<RunViewPage />} />
       </Route>
     </Routes>
