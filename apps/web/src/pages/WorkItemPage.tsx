@@ -11,7 +11,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { Badge } from "@workspace/ui/components/badge"
 import {
   Empty,
   EmptyDescription,
@@ -30,6 +29,7 @@ import { toast } from "sonner"
 import { PageHeader } from "@/components/PageHeader"
 import { PageTitle } from "@/components/PageTitle"
 import { Section } from "@/components/Section"
+import { WorkItemSourceBadge } from "@/components/WorkItemSourceBadge"
 import { api } from "@/lib/api"
 import { WorkItemNotesSection } from "@/pages/WorkItemNotesSection"
 import { WorkItemRunsSection } from "@/pages/WorkItemRunsSection"
@@ -107,11 +107,7 @@ export function WorkItemPage() {
             <PageTitle
               title={item.title}
               description="Context, runs, start a workflow and notes."
-              badge={
-                <Badge variant="secondary" data-testid="work-item-source">
-                  Ad hoc
-                </Badge>
-              }
+              badge={<WorkItemSourceBadge source={item.source} />}
             />
 
             <Section title="Context">
