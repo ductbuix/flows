@@ -24,7 +24,9 @@ import {
   watchHost,
   type SchedulerCore,
 } from "./scheduler-hosts.ts"
+import { serialLocks } from "./serial-lock.ts"
 import { resolveSpawn } from "./spawn.ts"
+import { recordUnpublishedLocalEffects } from "./work-copy.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -35,6 +37,7 @@ export type SchedulerOptions = {
   runId: string
   workflowRoot: string
   runRoot: string
+  home: string
   globalLimits?: WorkflowLimits
 }
 
@@ -44,6 +47,7 @@ export class Scheduler {
   private readonly runId: string
   private readonly workflowRoot: string
   private readonly runRoot: string
+  private readonly home: string
   private readonly globalLimits?: WorkflowLimits
   private ticking = false
   private again = false
@@ -60,6 +64,7 @@ export class Scheduler {
     this.runId = options.runId
     this.workflowRoot = options.workflowRoot
     this.runRoot = options.runRoot
+    this.home = options.home
     this.globalLimits = options.globalLimits
   }
 
@@ -146,6 +151,7 @@ export class Scheduler {
       runId: this.runId,
       runRoot: this.runRoot,
       workflowRoot: this.workflowRoot,
+      home: this.home,
       watching: this.watching,
       retries: this.retries,
       judgeCache: this.judgeCache,
@@ -198,10 +204,10 @@ export class Scheduler {
     if (this.closed) return
     await launchReadyTasks(launchHost(this.core()))
     if (this.closed) return
-    this.maybeSettle()
+    await this.maybeSettle()
   }
 
-  private maybeSettle(): void {
+  private async maybeSettle(): Promise<void> {
     if (this.closed || this.settled) return
     const after = this.state()
     if (after.status !== "running") {
@@ -211,12 +217,18 @@ export class Scheduler {
     const waiting = Object.values(after.tasks).some(
       (t) => t.status === "awaiting_approval" && !t.approved
     )
+    // Ready but blocked on a serial lock must not settle the run.
+    const readyIds = readyTaskIds(after)
+    const launchable = readyIds.filter((id) => {
+      const reason = serialLocks.waitingReason(this.runId, id)
+      return !reason
+    })
     if (
       !shouldSettleRun(
         after,
-        readyTaskIds(after).length,
+        launchable.length,
         approvedAwaitingIds(after).length,
-        waiting,
+        waiting || readyIds.length > launchable.length,
         this.retries.size
       )
     )
@@ -225,6 +237,12 @@ export class Scheduler {
       type: runHasHardFailure(after) ? "run_failed" : "run_succeeded",
       runId: this.runId,
       at: now(),
+    })
+    await recordUnpublishedLocalEffects({
+      home: this.home,
+      runRoot: this.runRoot,
+      runId: this.runId,
+      append: (event) => this.append(event),
     })
     this.finish(this.state())
   }

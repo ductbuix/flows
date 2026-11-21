@@ -12,6 +12,7 @@ import type { RunState } from "./fold.ts"
 import { readExitCode, waitForPid } from "./pid.ts"
 import { portLeaseKey, portLeases } from "./port-lease.ts"
 import { waitForExit } from "./runner.ts"
+import { serialLocks } from "./serial-lock.ts"
 
 export type AttemptWatchHost = {
   runId: string
@@ -114,6 +115,7 @@ export function watchPid(
       at: now(),
     })
     portLeases.release(portLeaseKey(host.runId, taskId, attempt))
+    serialLocks.release(host.runId, taskId, attempt)
     host.requestTick()
   }
 

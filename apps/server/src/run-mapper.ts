@@ -4,7 +4,7 @@ import {
   type TaskView,
 } from "@workspace/shared"
 import { needTaskId } from "@workspace/shared"
-import type { RunState } from "@workspace/engine"
+import { serialLocks, type RunState } from "@workspace/engine"
 
 const TERMINAL = new Set(["succeeded", "failed", "skipped", "cancelled"])
 
@@ -100,6 +100,7 @@ export function toTaskViews(state: RunState): TaskView[] {
       ...(a.portBase !== undefined ? { portBase: a.portBase } : {}),
       ...(a.portCount !== undefined ? { portCount: a.portCount } : {}),
     }))
+    const waitingReason = serialLocks.waitingReason(state.runId, id)
     return {
       id,
       status: taskState?.status ?? "pending",
@@ -107,6 +108,7 @@ export function toTaskViews(state: RunState): TaskView[] {
       spawnedBy: spec?.spawnedBy,
       failReason: taskState?.failReason,
       skipReason: taskState?.skipReason,
+      ...(waitingReason ? { waitingReason } : {}),
       attempts,
     }
   })

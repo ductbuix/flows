@@ -17,47 +17,27 @@ Schema and writing rules: `docs/README.md`.
 
 ## Layout
 
-- `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`).
-  Dev on `127.0.0.1:5173`, proxies `/api` to the server.
+- `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (`base-nova`). Dev on
+  `127.0.0.1:5173`, proxies `/api`. Sidebar Platform + Workflows +
+  Settings; workflow detail (Overview/Editor/Runs), graph editor, run
+  view with live websocket updates, start/rerun, theme and always-trust.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
-  create/rename/delete (409 while live), GET/PUT (hash, 409), memory
-  CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
-  preflight, GET `/cli/:cli/models`, connections CRUD/check and
-  `GET /connectors`, library GET/pull, work item CRUD (notes,
-  attachments, trash), run REST (GET `/runs` with
-  status/workflowId/workItemId/limit, start with
-  trustGrant/values/files/workItemId, confirmDuplicate, cancel, rerun
-  with refreshPins keeping workItemId, retry, approve, reject, delete),
-  run input list/meta/files, log/summary/out, websocket run snapshots,
-  `runs_changed`, log chunks and workflow file watches.
-- `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command and agent tasks (CliAdapter: trust, catalog,
-  `composeFlags`), connector registry (`connectors/`, fake for tests),
-  connections store, library revisions/pull/pins (`library.ts`, run
-  `resources/` + `RESOURCE_*`), work item store under `workitems/`,
-  model/effort resolve and preflight warns (including connection uses),
-  app-owned trust markers, spawn into `graph.json`, resume, approval,
-  cancel, manual retry, conditions, retry, repeat, `agents` limits, run
-  deletion, workflow id rebind, frozen `RUN_INPUT`, Manual source,
-  queued runs, run summary cache, port leases and `<workflow>/.cache`.
-- `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`/`workItemId`, `workItemSchema`), websocket
-  (`runs_changed`), workflow (`inputs`, `agent` defaults, model/effort,
-  task `uses`), `connection.yaml`, library list/pull and
-  `resources.json`, events (`queued`, `run_activated`, `library_pulled`,
-  `workItemId` on `run_started`, attempt `model`/`effort`/`modelSource`)
-  and YAML Document edits that keep comments and key order.
+  CRUD (409 while live), memory/files, promote, trust/preflight,
+  connections/connectors, library, work items, run REST (list/start/
+  cancel/rerun/retry/approve/reject/delete),
+  `GET /runs/:runId/changes/:connectionId`, run input, log/summary/out,
+  websocket snapshots and watches.
+- `packages/engine`: SQLite event log, fold, scheduler, command/agent
+  tasks, connectors (fake for tests), connections (`serial`), library
+  pins/`RESOURCE_*`, work copies (`work-copy.ts`, shared clone / `cp -cR`,
+  serial lock, change sets, Local effects), work items, preflight,
+  trust markers, spawn/resume/approval/cancel/retry/repeat, port leases,
+  `<workflow>/.cache`, queued runs, run deletion.
+- `packages/shared`: zod for API (`needsYou`/`workItemId`, change sets,
+  `waitingReason`), workflow (`uses`, propose ordering),
+  `connection.yaml` (`serial`), library/resources, events
+  (`library_pulled`, `work_copy_changed`), YAML Document edits.
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/web`: Sidebar Platform (Home, Workflows, Runs) plus Workflows
-  group and Settings; `/workflows` and `/runs` tables; workflow detail
-  tabs (Overview with tasks/inputs/Start card, Editor Graph/YAML tabs,
-  Runs); graph editor (React Flow Card nodes, Prompt Input, Model
-  Selector, inputs, maxConcurrentRuns, PageTitle, Section,
-  RunStatusBadge, `/dev/kit`), memory/*.md editor, start/rerun form,
-  run view (Confirmation or failure Alert first, Plan beside Table,
-  task Card Tabs Output/Terminal/Attempts/Environment, SUMMARY.md,
-  promote) with live websocket updates; Settings for theme, CLI info
-  and always-trust.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.

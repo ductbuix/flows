@@ -25,7 +25,7 @@ afterEach(() => {
 })
 
 describe("checkConnectionUses", () => {
-  it("warns on unknown connection, propose, and ambient login", async () => {
+  it("warns on unknown connection and ambient login, not propose", async () => {
     const home = mkdtempSync(join(tmpdir(), "flowapp-pf-conn-"))
     dirs.push(home)
     createConnection(home, {
@@ -57,8 +57,8 @@ tasks:
     expect(checks.some((c) => c.id === "connection_unknown_missing-one")).toBe(
       true
     )
-    expect(checks.some((c) => c.id === "connection_propose_github-acme")).toBe(
-      true
+    expect(checks.some((c) => c.id.startsWith("connection_propose_"))).toBe(
+      false
     )
     expect(
       checks.find((c) => c.id === "connection_ambient_github-acme")?.message

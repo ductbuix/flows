@@ -145,6 +145,18 @@ export {
   portLeases,
   type PortBlock,
 } from "./port-lease.ts"
+export { serialLocks, type SerialHolder } from "./serial-lock.ts"
+export {
+  ensureWorkCopies,
+  copyPinnedEntity,
+  workConnectionDir,
+  workEntityDir,
+  diffWorkCopy,
+  recordUnpublishedLocalEffects,
+  listWorkConnections,
+  removeWorkCopies,
+  ensureLibraryGcAutoOff,
+} from "./work-copy.ts"
 export {
   workflowCacheEnv,
   WORKFLOW_CACHE_ENV_TEMPLATES,

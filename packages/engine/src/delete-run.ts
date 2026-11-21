@@ -1,6 +1,7 @@
 import { existsSync, rmSync } from "node:fs"
 import type { EngineEvent } from "@workspace/shared"
 import type { RunState } from "./fold.ts"
+import { removeWorkCopies } from "./work-copy.ts"
 
 function now(): string {
   return new Date().toISOString()
@@ -31,8 +32,9 @@ export function deleteRunFiles(
   finishRunRemoval(runRoot)
 }
 
-/** Remove the run directory if it still exists. */
+/** Remove the run directory if it still exists (work copies included). */
 export function finishRunRemoval(runRoot: string): void {
   if (!existsSync(runRoot)) return
+  removeWorkCopies(runRoot)
   rmSync(runRoot, { recursive: true, force: true })
 }
