@@ -20,8 +20,11 @@ impact). Nothing leaves the machine yet; publishing is BL-049.
 
 - [ ] With `access: propose`, the task's `RESOURCE_<ID>` points at
       `runs/<runId>/work/<connectionId>/`, a copy of the pinned
-      revision (a git worktree for repo connectors). It is inside the
-      workflow dir, so the sandbox allows writes.
+      revision inside the workflow dir, so the sandbox allows writes.
+      Repos use `git clone --shared` from the library clone, checked
+      out at the pinned commit; new objects stay local. Other sources
+      use an APFS clone (`cp -cR`), with a plain copy as fallback.
+      No git worktree: its metadata lives outside the workflow dir.
 - [ ] After the task succeeds, the connector's `diff` writes
       `changes/<connectionId>/changeset.json` (the envelope in
       DES-026) and `preview.md`. An empty diff writes nothing.
@@ -30,5 +33,6 @@ impact). Nothing leaves the machine yet; publishing is BL-049.
       derived from events.
 - [ ] Preflight stops warning on `propose`.
 - [ ] Tests use the fake connector: work copy, diff, empty diff,
-      destructive op flag, ledger after restart.
+      destructive op flag, ledger after restart, and `git commit`
+      inside a sandboxed work copy.
 - [ ] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass.

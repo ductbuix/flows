@@ -19,16 +19,19 @@ connector yet: tests register a `fake` connector. Nothing is pulled.
 ## Done when
 
 - [ ] `packages/shared/src/connection.ts`: zod for `connection.yaml`
-      (id, connector, name, scope, sign-in method, refresh rule `15m`,
+      (id, connector, name, scope, sign-in method `cli`, `mcp` or
+      `cookies`, refresh rule `15m`,
       `1h`, `1d` or `never`, policy `read-only` default) and task
-      `uses: [{{ connection, access: read | propose }}]`.
+      `uses: [{ connection, access: read | propose }]`.
 - [ ] `packages/engine/src/connectors/` holds the interface
       (`describe`, `check`, `pull`, `diff`, `publish`) and a registry
       keyed by connector id, the same pattern as `CliAdapter`.
-- [ ] Routes: `GET /connectors` (describe of each), `GET/POST
-    /connections`, `GET/PUT/DELETE /connections/:id`, `POST
-    /connections/:id/check`. Delete is 409 while a workflow uses the
-      connection.
+      Connectors are in-repo modules only; there is no loading from
+      `FLOWAPP_HOME`.
+- [ ] Routes: `GET /connectors` (describe of each),
+      `GET/POST /connections`, `GET/PUT/DELETE /connections/:id`,
+      `POST /connections/:id/check`. Delete is 409 while a workflow
+      uses the connection.
 - [ ] Workflow parse accepts `uses`. Preflight warns on an unknown
       connection, on `propose` (not built yet), and on an ambient
       login the connector reports.

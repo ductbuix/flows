@@ -134,6 +134,13 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | GitHub is the first connector                     | delegated sign-in, shared clone, draft PR is undoable    | DES-026      |
 | 2026-11-22 | Publish policy per connection (draft)             | read only, approve each publish, or trust agent review   | DES-025      |
 | 2026-11-22 | Connection access declared and warned (draft)     | no network blocking yet; credentials never reach tasks   | DES-025      |
+| 2026-11-22 | No Keychain; reverses the Keychain row above      | any user process reads it via `security`; tasks too      | DES-026      |
+| 2026-11-22 | Sign-in is CLI-owned, allowed local MCP, or cookies | no API tokens; cookies from a Chrome sign-in by Flows  | DES-026      |
+| 2026-11-22 | Cookies in `secrets/`, 0700, sandbox denies reads | enforced for sandboxed tasks, unlike the Keychain        | DES-026      |
+| 2026-11-22 | Connectors are in-repo adapters only              | no plugin loading; J12 is a pull request                 | DES-026      |
+| 2026-11-22 | Repo work copy is `git clone --shared`, no worktree | worktree metadata is outside the sandbox write root    | DES-026      |
+| 2026-11-22 | Port lease per attempt, `serial` repos, local caches | parallel copies do not clash; installs work sandboxed | DES-026      |
+| 2026-11-22 | Waiting is derived (`needsYou`), no new run status | no event or fold change; old runs fold unchanged        | DES-025      |
 
 ## Docs and tooling
 

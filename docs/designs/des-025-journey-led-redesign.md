@@ -47,7 +47,7 @@ an artifact in the session that wrote this doc; they are not in the repo.
 | J9  | Product owner    | Review changes before they reach a shared system   | Home, changes to publish with warning and preview, publish, ledger    |
 | J10 | Developer        | See what is pulled, how fresh, and what uses it    | Library tab, refresh rule, run pins                                   |
 | J11 | Developer        | Know the impact of a mistake and undo it           | Effects ledger, clear an entity, tighten a policy                     |
-| J12 | Developer        | Add a source Flows does not know yet               | Add connection with a custom connector; same pages as built-ins       |
+| J12 | Developer        | Add a source Flows does not know yet               | Add an in-repo connector adapter; same pages as built-ins             |
 | J13 | Developer        | Set up the machine and inspect a run               | Settings, Attempts, Terminal                                          |
 
 What the journeys demand of the UI:
@@ -174,12 +174,16 @@ flowchart LR
   run with two actions (pull again and rerun, or discard). An agent
   review that escalates becomes the same "Awaiting approval" Confirmation
   as a person-reviewed policy. Both reuse existing parts.
-- Model questions (secrets, change sets, agent review, retention, first
-  source) are resolved in DES-026.
+- **Waiting on a person.** Run status does not change. The run summary
+  has `needsYou` (approvals, later pending publishes), derived from
+  tasks and publish events; the "Awaiting approval" Badge and Home's
+  Needs you read it.
+- Model questions (secrets, change sets, agent review, retention, work
+  copies, first source) are resolved in DES-026.
 
 ## Done when
 
 Backlog phases 14 to 18 in [DES-017](des-017-roadmap.md): the shell on
 today's data (BL-031 to BL-037), work items (BL-038 to BL-041), then
-connections and publish (BL-042 to BL-055, with DES-026). Custom
-connectors (J12), Bots and Logs have no backlog item yet.
+connections and publish (BL-042 to BL-056, with DES-026). Bots and
+Logs have no backlog item yet.

@@ -26,8 +26,9 @@ data in BL-045 and BL-051), any page layout change.
       `Section` (`h2 font-heading text-base`, `gap-3`) exist in
       `apps/web` and are used by Settings.
 - [ ] `RunStatusBadge` maps queued, running, succeeded, failed,
-      cancelled and "awaiting approval" (any task in
-      `awaiting_approval`) to the variant and icon in DES-025.
+      cancelled and "awaiting approval" (a `needsYou` prop, filled
+      from the run summary of BL-033) to the variant and icon in
+      DES-025.
       Existing run badges use it.
 - [ ] `/dev/kit` renders title block, Section, every run status Badge,
       a task Card, Confirmation and Plan. The route exists only when

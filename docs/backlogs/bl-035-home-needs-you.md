@@ -19,7 +19,7 @@ later. Work items on Home come with BL-041.
 
 ## Done when
 
-- [ ] Section "Needs you" lists each task in `awaiting_approval` as a
+- [ ] Section "Needs you" lists each `needsYou` approval entry as a
       Confirmation with the workflow, run and task name, and Approve
       and Reject that call the existing endpoints. Empty hides the
       section.
