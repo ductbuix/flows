@@ -5,7 +5,7 @@ type: design
 status: active
 summary: macOS only on day one; baseline isolation, writes limited to the workflow dir via sandbox-exec, warned fallback.
 tags: [sandbox, security, process]
-related: [DES-003, DES-005, DES-007]
+related: [DES-003, DES-005, DES-007, DES-019]
 updated: 2026-11-21
 ---
 

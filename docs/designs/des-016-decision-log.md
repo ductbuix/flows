@@ -7,7 +7,7 @@ summary: One line per key decision with date, reason and the doc that holds it. 
 tags: [direction, decisions, adr]
 related:
   [DES-001, DES-003, DES-005, DES-006, DES-007, DES-012, DES-013, DES-014,
-   DES-018, DOC-001]
+   DES-018, DES-019, DOC-001]
 updated: 2026-11-21
 ---
 
@@ -48,6 +48,11 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | `cancelled` terminal state for tasks and runs     | cancel is not failure                                    | DES-003      |
 | 2026-11-21 | Run delete keeps events with a deleted marker     | the log stays append-only; files are removed             | DES-003      |
 | 2026-11-21 | Manual retry via `task_retry_requested` event     | reopen finished runs; UI retry is not `retry.max`        | DES-003, 011 |
+| 2026-11-21 | Per-attempt timeout, default 900s                 | a hung CLI must not sit in `running` until cancel        | DES-004, 019 |
+| 2026-11-21 | App-owned trust for all of `FLOWAPP_HOME`         | CLIs stay headless; the human decision stays in the app  | DES-019      |
+| 2026-11-21 | Always-trust is a settings row, bound to realpath | not run state; the events table requires `run_id`        | DES-003, 019 |
+| 2026-11-21 | Pre-run checks warn only, including paths outside | the user can still run after a double check              | DES-019, 007 |
+| 2026-11-21 | CLI adapter, check list, and `decideTrust`        | add a CLI or check without new layers; no plugin loader  | DES-019      |
 
 ## UI
 

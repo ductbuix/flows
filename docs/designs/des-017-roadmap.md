@@ -5,7 +5,7 @@ type: direction
 status: active
 summary: Build phases in backlog order, the goal of each phase and what it unlocks. Status lives in the backlogs index.
 tags: [direction, roadmap, backlog, phases]
-related: [DES-014, DES-015, DES-018]
+related: [DES-014, DES-015, DES-018, DES-019]
 updated: 2026-11-21
 ---
 
@@ -25,6 +25,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 5     | Author workflows             | BL-009 graph editor, BL-013 workflow lifecycle          | edit graph and YAML in sync, manage workflows     |
 | 6     | Hardening                    | BL-011 agent judge, BL-010 sandboxing                   | judge conditions; writes held to the workflow dir |
 | 7     | Use the editor               | BL-015 agent kind, BL-016 file editing                  | switch a task to agent; edit memory and instructions  |
+| 8     | Safe agent runs              | BL-017 timeouts, BL-018 app trust                       | hung agents end; trust and pre-run check before CLIs  |
 
 ## Why this order
 
@@ -40,6 +41,9 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 - Phase 7 is follow-up after the editor shipped (phase 5). BL-015 is
   first because a kind switch must produce a valid agent task before
   the instructions editor in BL-016 is useful.
+- Phase 8 is next because agent CLIs can hang or prompt outside the
+  app. BL-017 comes first so a hung prompt, or the live Cursor
+  check in BL-018, cannot sit in `running`.
 
 ## Not on the roadmap
 

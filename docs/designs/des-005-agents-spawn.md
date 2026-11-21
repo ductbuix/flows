@@ -5,7 +5,7 @@ type: design
 status: active
 summary: How agent CLI tasks run stateless with memories, and how they grow a run's graph, including fan-out.
 tags: [agents, spawn, memory, cli, fan-out, dynamic]
-related: [DES-002, DES-003, DES-006]
+related: [DES-002, DES-003, DES-006, DES-019]
 updated: 2026-11-21
 ---
 

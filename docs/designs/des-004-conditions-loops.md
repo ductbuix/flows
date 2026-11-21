@@ -5,7 +5,7 @@ type: design
 status: active
 summary: Condition kinds (exit, expr, agent) shared by when, until and branches; retry and repeat policies.
 tags: [engine, conditions, loops, retry]
-related: [DES-002, DES-003]
+related: [DES-002, DES-003, DES-019]
 updated: 2026-11-21
 ---
 
@@ -90,6 +90,25 @@ needs:
 ```yaml
 retry: { max: 2 }
 repeat: { max: 5, until: { expr: "json('out/score.json').score >= 0.8" } }
+```
+
+## Timeout
+
+Every attempt, including agent judges, has a timeout
+([DES-019](des-019-agent-trust-and-timeouts.md)). When it fires, the
+engine ends the process group and fails the attempt with reason
+`timeout`. Retry applies as for any failed attempt.
+
+`timeout` is a positive integer, in seconds. Resolve in this order:
+the task value, the workflow value, then the builtin default of
+`900` (15 minutes). Each attempt gets a fresh clock.
+
+```yaml
+timeout: 900
+tasks:
+  - id: plan
+    kind: agent
+    timeout: 1800
 ```
 
 ## Events and fold

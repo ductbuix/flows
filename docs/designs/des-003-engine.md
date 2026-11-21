@@ -5,7 +5,7 @@ type: design
 status: active
 summary: Task and run states (approval gates, cancelled), append-then-act event log, resume, run deletion and limits.
 tags: [engine, lifecycle, events, resume, concurrency, approval]
-related: [DES-001, DES-004, DES-005]
+related: [DES-001, DES-004, DES-005, DES-019]
 updated: 2026-11-21
 ---
 
@@ -59,6 +59,10 @@ is waiting.
    removes `runs/<runId>/`. The log keeps the run's events; the fold
    hides deleted runs from every view. If the process dies between the
    event and the removal, resume finishes the removal.
+
+App preference that is not run state (always-trust in
+[DES-019](des-019-agent-trust-and-timeouts.md)) lives in a `settings`
+table in the same `app.db`, not in `events`.
 
 ## Event kinds (BL-004, BL-005, BL-006, BL-007, BL-012, BL-014)
 
