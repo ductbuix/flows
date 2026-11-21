@@ -1,4 +1,3 @@
-import { useState } from "react"
 import type { Task, Workflow, YamlDiagnosticDto } from "@workspace/shared"
 import { Input } from "@workspace/ui/components/input"
 import { Textarea } from "@workspace/ui/components/textarea"
@@ -12,7 +11,6 @@ import {
 } from "@workspace/ui/components/select"
 import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
 import { AgentTaskFields } from "./AgentTaskFields"
-import { InstructionsEditorDialog } from "./InstructionsEditorDialog"
 import { MemoryPanel } from "./MemoryPanel"
 import { taskFieldErrors } from "./field-errors"
 
@@ -35,7 +33,6 @@ export function Inspector({
   onChangeTask,
   onRenameTask,
 }: Props) {
-  const [instructionsOpen, setInstructionsOpen] = useState(false)
   const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
   const task = taskIndex >= 0 ? workflow.tasks[taskIndex] : undefined
 
@@ -117,7 +114,6 @@ export function Inspector({
           taskIndex={taskIndex}
           errors={errors}
           onChangeTask={onChangeTask}
-          onEditInstructions={() => setInstructionsOpen(true)}
         />
       )}
       <Field className="flex items-center justify-between gap-2">
@@ -129,14 +125,6 @@ export function Inspector({
           onCheckedChange={(approval) => onChangeTask(task.id, { approval })}
         />
       </Field>
-      {task.kind === "agent" && (
-        <InstructionsEditorDialog
-          workflowId={workflowId}
-          path={task.instructions}
-          open={instructionsOpen}
-          onOpenChange={setInstructionsOpen}
-        />
-      )}
     </div>
   )
 }

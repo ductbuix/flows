@@ -35,8 +35,8 @@ function tempHome(): string {
 
 function writeAgentWorkflow(home: string, id: string): string {
   const wf = join(home, "workflows", id)
-  mkdirSync(join(wf, "tasks"), { recursive: true })
-  writeFileSync(join(wf, "tasks", "a.md"), "say hi\n")
+  mkdirSync(join(wf, "tasks", "a"), { recursive: true })
+  writeFileSync(join(wf, "tasks", "a", "prompt.md"), "say hi\n")
   writeFileSync(
     join(wf, "workflow.yaml"),
     `
@@ -45,7 +45,6 @@ tasks:
   - id: a
     kind: agent
     cli: claude
-    instructions: tasks/a.md
 `
   )
   const bin = join(home, "bin")

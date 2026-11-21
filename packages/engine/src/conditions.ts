@@ -1,4 +1,4 @@
-import type { Condition } from "@workspace/shared"
+import type { AgentJudge, Condition } from "@workspace/shared"
 import { evaluateExpr } from "./conditions-expr.ts"
 import { judgeCacheKey, runAgentJudge } from "./judge.ts"
 
@@ -9,6 +9,11 @@ export type ConditionContext = {
   attemptRoot?: string
   /** Workflow root; required to resolve agent instructions. */
   workflowRoot?: string
+  /**
+   * Absolute path of the judge file for this slot (DES-020).
+   * Required when the condition tree contains an agent leaf.
+   */
+  judgeInstructionsAbs?: string
   /** For task-level `when` with exit: latest exit per need task id. */
   needExitCodes?: Record<string, number | undefined>
   /** Per-run cache of in-flight / finished agent judges. */
@@ -84,15 +89,23 @@ function matchExit(
 }
 
 async function evaluateAgent(
-  agent: { cli: "claude" | "cursor"; instructions: string },
+  agent: AgentJudge,
   ctx: ConditionContext
 ): Promise<boolean> {
-  if (!ctx.attemptRoot || !ctx.workflowRoot) return false
-  const key = judgeCacheKey(agent, ctx.workflowRoot, ctx.attemptRoot)
+  if (!ctx.attemptRoot || !ctx.workflowRoot || !ctx.judgeInstructionsAbs) {
+    return false
+  }
+  const key = judgeCacheKey(
+    agent,
+    ctx.judgeInstructionsAbs,
+    ctx.workflowRoot,
+    ctx.attemptRoot
+  )
   const cache = ctx.judgeCache
   if (cache?.has(key)) return cache.get(key)!
   const pending = runAgentJudge({
     judge: agent,
+    instructionsAbsPath: ctx.judgeInstructionsAbs,
     workflowRoot: ctx.workflowRoot,
     attemptRoot: ctx.attemptRoot,
     timeoutSeconds: ctx.timeoutSeconds,

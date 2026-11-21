@@ -1,4 +1,11 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { join } from "node:path"
 import { workflowDir, type Engine } from "@workspace/engine"
 import {
@@ -86,6 +93,19 @@ export function promoteSpawnedTask(
   const workflowId = state.workflowId
   const path = workflowYamlPath(engine, workflowId)
   if (!existsSync(path)) return { ok: false, kind: "not_found" }
+
+  if (spec.promptDir) {
+    const runRoot = join(workflowDir(engine.home, workflowId), "runs", runId)
+    const from = join(runRoot, spec.promptDir)
+    const to = join(workflowDir(engine.home, workflowId), "tasks", taskId)
+    if (existsSync(from)) {
+      mkdirSync(join(workflowDir(engine.home, workflowId), "tasks"), {
+        recursive: true,
+      })
+      rmSync(to, { recursive: true, force: true })
+      cpSync(from, to, { recursive: true })
+    }
+  }
 
   const yaml = readFileSync(path, "utf8")
   const cleaned = stripSpawnMeta(spec as Task)

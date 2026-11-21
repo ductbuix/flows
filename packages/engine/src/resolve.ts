@@ -15,6 +15,7 @@ import {
   shouldPropagateSkip,
 } from "./needs.ts"
 import { attemptDir } from "./paths.ts"
+import { judgePromptAbs } from "./prompt-paths.ts"
 import { resolveAttemptTimeout } from "./timeout.ts"
 
 function now(): string {
@@ -92,6 +93,12 @@ async function branchWhenFails(
         exitCode: latestExitCode(up),
         attemptRoot,
         workflowRoot: host.workflowRoot,
+        judgeInstructionsAbs: judgePromptAbs(
+          task,
+          { kind: "need", needTaskId: need.task },
+          host.workflowRoot,
+          host.runRoot
+        ),
         judgeCache: host.judgeCache,
         timeoutSeconds: upSpec
           ? resolveAttemptTimeout(upSpec, state.graph)
@@ -127,6 +134,12 @@ async function evalWhen(
     needExitCodes,
     attemptRoot,
     workflowRoot: host.workflowRoot,
+    judgeInstructionsAbs: judgePromptAbs(
+      task,
+      { kind: "when" },
+      host.workflowRoot,
+      host.runRoot
+    ),
     judgeCache: host.judgeCache,
     timeoutSeconds: resolveAttemptTimeout(task, state.graph),
   }
@@ -174,6 +187,12 @@ export async function resolveLoops(host: ResolveHost): Promise<void> {
       last.exitCode === 0
         ? await evalUntil(task, attemptRoot, last.exitCode, {
             workflowRoot: host.workflowRoot,
+            judgeInstructionsAbs: judgePromptAbs(
+              task,
+              { kind: "until" },
+              host.workflowRoot,
+              host.runRoot
+            ),
             judgeCache: host.judgeCache,
             timeoutSeconds: resolveAttemptTimeout(task, state.graph),
           })

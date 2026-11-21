@@ -89,15 +89,12 @@ describe("evaluateCondition", () => {
   it("marks agent leaves and groups containing them as slow", () => {
     expect(
       conditionIsSlow({
-        agent: { cli: "claude", instructions: "j.md" },
+        agent: { cli: "claude" },
       })
     ).toBe(true)
     expect(
       conditionIsSlow({
-        all: [
-          { exit: 0 },
-          { agent: { cli: "cursor", instructions: "j.md" } },
-        ],
+        all: [{ exit: 0 }, { agent: { cli: "cursor" } }],
       })
     ).toBe(true)
     expect(conditionIsSlow({ all: [{ exit: 0 }, { expr: "true" }] })).toBe(

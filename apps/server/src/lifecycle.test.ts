@@ -156,7 +156,6 @@ tasks:
   - id: plan
     kind: agent
     cli: claude
-    instructions: tasks/plan.md
     memory: [memory/style.md]
 `
     )

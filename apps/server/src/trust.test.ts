@@ -21,8 +21,8 @@ function setup() {
   homes.push(home)
   process.env.FLOWAPP_CURSOR_PROJECTS = join(home, ".cursor-projects")
   const wf = join(home, "workflows", "agent-hi")
-  mkdirSync(join(wf, "tasks"), { recursive: true })
-  writeFileSync(join(wf, "tasks", "a.md"), "hi\n")
+  mkdirSync(join(wf, "tasks", "a"), { recursive: true })
+  writeFileSync(join(wf, "tasks", "a", "prompt.md"), "hi\n")
   writeFileSync(
     join(wf, "workflow.yaml"),
     `
@@ -31,7 +31,6 @@ tasks:
   - id: a
     kind: agent
     cli: claude
-    instructions: tasks/a.md
 `
   )
   const engine = createEngine({ home })

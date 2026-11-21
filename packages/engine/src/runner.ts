@@ -1,7 +1,12 @@
 import { spawn, type ChildProcess } from "node:child_process"
-import { closeSync, mkdirSync, openSync } from "node:fs"
-import { join, resolve } from "node:path"
-import { isAgentTask, type Task, type Workflow } from "@workspace/shared"
+import { closeSync, existsSync, mkdirSync, openSync } from "node:fs"
+import { join } from "node:path"
+import {
+  isAgentTask,
+  upstreamEnvName,
+  type Task,
+  type Workflow,
+} from "@workspace/shared"
 import {
   buildAgentShellCommand,
   copyTaskMemories,
@@ -10,6 +15,7 @@ import {
 import { writeCursorTrustMarker } from "./cursor-trust.ts"
 import { attemptDir, taskDir } from "./paths.ts"
 import { exitCodePath } from "./pid.ts"
+import { taskPromptAbs } from "./prompt-paths.ts"
 import { buildSandboxSpawn } from "./sandbox.ts"
 
 export type LaunchResult = {
@@ -25,16 +31,17 @@ export type TaskEnvPaths = {
   runId: string
 }
 
-/** Absolute path to a task's instructions file, or undefined. */
+/** Absolute path to a task's prompt file, or undefined for non-agents. */
 export function instructionsAbsPath(
   task: Task,
-  workflowRoot: string
+  workflowRoot: string,
+  runRoot: string
 ): string | undefined {
-  if (!("instructions" in task) || !task.instructions) return undefined
-  return resolve(workflowRoot, task.instructions)
+  if (!isAgentTask(task)) return undefined
+  return taskPromptAbs(task, workflowRoot, runRoot)
 }
 
-/** Build the env vars a task process receives (DES-002, DES-006). */
+/** Build the env vars a task process receives (DES-002, DES-006, DES-020). */
 export function buildTaskEnv(
   task: Task,
   attempt: number,
@@ -45,7 +52,7 @@ export function buildTaskEnv(
   const attemptRoot = attemptDir(runRoot, task.id, attempt)
   const tmpDir = join(attemptRoot, "tmp")
   mkdirSync(tmpDir, { recursive: true })
-  const instructions = instructionsAbsPath(task, workflowRoot)
+  const instructions = instructionsAbsPath(task, workflowRoot, runRoot)
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     TMPDIR: tmpDir,
@@ -62,7 +69,7 @@ export function buildTaskEnv(
   if (instructions) env.TASK_INSTRUCTIONS = instructions
 
   for (const upstream of graph.tasks) {
-    env[`UPSTREAM_${upstream.id}`] = join(
+    env[upstreamEnvName(upstream.id)] = join(
       taskDir(runRoot, upstream.id),
       "latest",
       "out"
@@ -142,9 +149,13 @@ export function launchTask(
   const env = buildTaskEnv(task, attempt, paths, graph)
 
   if (isAgentTask(task)) {
-    const instructions = instructionsAbsPath(task, paths.workflowRoot)
-    if (!instructions) {
-      throw new Error(`agent task ${task.id} missing instructions`)
+    const instructions = instructionsAbsPath(
+      task,
+      paths.workflowRoot,
+      paths.runRoot
+    )
+    if (!instructions || !existsSync(instructions)) {
+      throw new Error(`missing_prompt`)
     }
     copyTaskMemories(
       task,

@@ -2,10 +2,21 @@
 id: DES-020
 title: Fixed prompt files and generated task ids
 type: design
-status: draft
+status: active
 summary: Agent prompts live at tasks/<taskId>/; task ids are engine-generated; a name field is the display label.
 tags: [agents, yaml, editor, files, spawn]
-related: [DES-002, DES-004, DES-005, DES-010, DES-013, DES-018, DES-019, BL-019, BL-020]
+related:
+  [
+    DES-002,
+    DES-004,
+    DES-005,
+    DES-010,
+    DES-013,
+    DES-018,
+    DES-019,
+    BL-019,
+    BL-020,
+  ]
 updated: 2026-11-21
 ---
 
@@ -205,14 +216,14 @@ hand. That is an accepted risk (DES-007).
 
 ## Impact
 
-| Area | What changes |
-| ---- | ------------ |
-| `packages/shared` | Drop `instructions`; reject the leftover key; one-judge-per-slot refine; `newTaskId`, `taskPromptPath`, `judgePromptPath`, `upstreamEnvName`; optional `name` and `promptDir` on tasks; no `renames` on the PUT body. |
-| `workflow-yaml-kind.ts` | Kind switch to agent no longer sets `instructions`. The id is unchanged. |
-| `packages/engine` | Prompt resolution via the helpers and `promptDir`; spawn assigns ids from stems and rewrites `needs`; `UPSTREAM_*` uses `upstreamEnvName`; preflight missing-prompt check. |
-| `apps/server` | Promote copies the folder; files API already allows `tasks/...`. |
-| `apps/web` | Inspector: read-only id, editable Name, Edit prompt; add-node uses `newTaskId()`; rename `InstructionsEditorDialog.tsx` to `PromptEditorDialog`. Graph and run view show `name`. |
-| Tests | About 30 fixtures still use `instructions:`; spawn fixtures that set `id:`; e2e graph-editor tests. |
+| Area                    | What changes                                                                                                                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/shared`       | Drop `instructions`; reject the leftover key; one-judge-per-slot refine; `newTaskId`, `taskPromptPath`, `judgePromptPath`, `upstreamEnvName`; optional `name` and `promptDir` on tasks; no `renames` on the PUT body. |
+| `workflow-yaml-kind.ts` | Kind switch to agent no longer sets `instructions`. The id is unchanged.                                                                                                                                              |
+| `packages/engine`       | Prompt resolution via the helpers and `promptDir`; spawn assigns ids from stems and rewrites `needs`; `UPSTREAM_*` uses `upstreamEnvName`; preflight missing-prompt check.                                            |
+| `apps/server`           | Promote copies the folder; files API already allows `tasks/...`.                                                                                                                                                      |
+| `apps/web`              | Inspector: read-only id, editable Name, Edit prompt; add-node uses `newTaskId()`; rename `InstructionsEditorDialog.tsx` to `PromptEditorDialog`. Graph and run view show `name`.                                      |
+| Tests                   | About 30 fixtures still use `instructions:`; spawn fixtures that set `id:`; e2e graph-editor tests.                                                                                                                   |
 
 The real workflow `implement-ticket` is updated by hand for the
 prompt path only, not by the app. Its legacy ids stay.

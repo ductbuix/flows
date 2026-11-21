@@ -1,10 +1,9 @@
 import { z } from "zod"
+import { isSafeTaskId } from "./task-ids.ts"
 
-/** Agent judge leaf (DES-004 / BL-011). */
+/** Agent judge leaf: `{ cli }` only; path is derived (DES-020). */
 export const agentJudgeSchema = z.object({
   cli: z.enum(["claude", "cursor"]),
-  /** Path relative to the workflow dir. */
-  instructions: z.string().min(1),
 })
 
 export type AgentJudge = z.infer<typeof agentJudgeSchema>
@@ -51,8 +50,15 @@ export const repeatSchema = z.object({
 /** Positive seconds; task → workflow → 900 (DES-004 / DES-019). */
 export const timeoutSecondsSchema = z.number().int().positive()
 
+const taskIdSchema = z
+  .string()
+  .min(1)
+  .refine(isSafeTaskId, "task id must be a single path segment")
+
 const taskBaseFields = {
-  id: z.string().min(1),
+  id: taskIdSchema,
+  /** Display label; falls back to id when missing (DES-020). */
+  name: z.string().optional(),
   needs: z.array(needSchema).default([]),
   /** Gate before the first launch; retries do not ask again (DES-003). */
   approval: z.boolean().optional(),
@@ -68,6 +74,11 @@ const taskBaseFields = {
   spawnDepth: z.number().int().nonnegative().optional(),
   /** Engine-stamped parent agent id when this task was spawned. */
   spawnedBy: z.string().min(1).optional(),
+  /**
+   * Engine-stamped run-root-relative prompt folder for spawned tasks
+   * (DES-020). Authored tasks omit this and use `tasks/<id>/`.
+   */
+  promptDir: z.string().min(1).optional(),
 }
 
 /** Command task (BL-004, BL-006, BL-014). */
@@ -75,17 +86,13 @@ export const commandTaskSchema = z.object({
   ...taskBaseFields,
   kind: z.literal("command"),
   run: z.string().min(1),
-  /** Path relative to the workflow dir (DES-002). */
-  instructions: z.string().min(1).optional(),
 })
 
-/** Agent CLI task (BL-007 / DES-005). */
+/** Agent CLI task (BL-007 / DES-005 / DES-020). */
 export const agentTaskSchema = z.object({
   ...taskBaseFields,
   kind: z.literal("agent"),
   cli: z.enum(["claude", "cursor"]),
-  /** Path relative to the workflow dir; the agent's prompt (DES-002). */
-  instructions: z.string().min(1),
   /** Workflow-relative memory/*.md paths copied to input/memory/. */
   memory: z.array(z.string().min(1)).optional(),
   /** When true, engine reads out/spawn/*.yaml after a successful attempt. */

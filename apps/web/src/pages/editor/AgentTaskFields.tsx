@@ -1,8 +1,5 @@
 import type { Task, YamlDiagnosticDto } from "@workspace/shared"
-import { isAllowedWorkflowFilePath } from "@workspace/shared"
-import { Input } from "@workspace/ui/components/input"
 import { Switch } from "@workspace/ui/components/switch"
-import { Button } from "@workspace/ui/components/button"
 import {
   Select,
   SelectContent,
@@ -20,7 +17,6 @@ type Props = {
   taskIndex: number
   errors: YamlDiagnosticDto[]
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
-  onEditInstructions: () => void
 }
 
 export function AgentTaskFields({
@@ -28,10 +24,8 @@ export function AgentTaskFields({
   taskIndex,
   errors,
   onChangeTask,
-  onEditInstructions,
 }: Props) {
   const cliErrors = taskFieldErrors(errors, taskIndex, "cli")
-  const instructionsErrors = taskFieldErrors(errors, taskIndex, "instructions")
 
   return (
     <>
@@ -57,34 +51,6 @@ export function AgentTaskFields({
           </SelectContent>
         </Select>
         <FieldError data-testid="field-error-cli" errors={cliErrors} />
-      </Field>
-      <Field data-invalid={instructionsErrors.length > 0 || undefined}>
-        <FieldLabel htmlFor="field-instructions">Instructions</FieldLabel>
-        <div className="flex gap-2">
-          <Input
-            id="field-instructions"
-            data-testid="field-instructions"
-            value={task.instructions}
-            aria-invalid={instructionsErrors.length > 0 || undefined}
-            onChange={(e) =>
-              onChangeTask(task.id, { instructions: e.target.value })
-            }
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            data-testid="edit-instructions"
-            disabled={!isAllowedWorkflowFilePath(task.instructions)}
-            onClick={onEditInstructions}
-          >
-            Edit instructions
-          </Button>
-        </div>
-        <FieldError
-          data-testid="field-error-instructions"
-          errors={instructionsErrors}
-        />
       </Field>
       <Field className="flex items-center justify-between gap-2">
         <FieldLabel htmlFor="field-spawn">Spawn</FieldLabel>

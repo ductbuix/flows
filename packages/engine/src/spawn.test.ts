@@ -8,7 +8,11 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import type { AgentTask, Workflow } from "@workspace/shared"
+import {
+  GENERATED_TASK_ID_RE,
+  type AgentTask,
+  type Workflow,
+} from "@workspace/shared"
 import { processSpawnDir, writeSpawnRejections } from "./spawn.ts"
 
 const dirs: string[] = []
@@ -29,7 +33,6 @@ const parent: AgentTask = {
   id: "plan",
   kind: "agent",
   cli: "claude",
-  instructions: "tasks/plan.md",
   needs: [],
   spawn: true,
 }
@@ -41,48 +44,54 @@ const baseGraph: Workflow = {
 }
 
 describe("processSpawnDir", () => {
-  it("accepts a valid batch and stamps spawnDepth", () => {
-    const root = tempDir()
-    const spawnDir = join(root, "out", "spawn")
+  it("accepts a valid batch, assigns ids, and stamps promptDir", () => {
+    const runRoot = tempDir()
+    const attemptRoot = join(runRoot, "tasks", "plan", "attempt-1")
+    const spawnDir = join(attemptRoot, "out", "spawn")
     mkdirSync(spawnDir, { recursive: true })
     writeFileSync(
       join(spawnDir, "fetch.yaml"),
-      "id: fetch\nkind: command\nrun: echo fetch\nneeds: [plan]\n"
+      "kind: command\nrun: echo fetch\nneeds: [plan]\n"
     )
     writeFileSync(
       join(spawnDir, "merge.yaml"),
-      "id: merge\nkind: command\nrun: echo merge\nneeds: [fetch]\n"
+      "kind: command\nrun: echo merge\nneeds: [fetch]\n"
     )
 
     const { accepted, rejections } = processSpawnDir(
       parent,
-      root,
+      attemptRoot,
+      runRoot,
       baseGraph,
       undefined
     )
     expect(rejections).toEqual([])
     expect(accepted).toHaveLength(2)
+    expect(accepted[0]?.id).toMatch(GENERATED_TASK_ID_RE)
     expect(accepted[0]).toMatchObject({
-      id: "fetch",
       spawnDepth: 1,
       spawnedBy: "plan",
+      promptDir: "tasks/plan/attempt-1/out/spawn/fetch",
     })
-    expect(accepted[1]?.id).toBe("merge")
+    expect(accepted[1]?.id).toMatch(GENERATED_TASK_ID_RE)
+    expect(accepted[1]?.needs).toEqual([accepted[0]!.id])
   })
 
-  it("rejects duplicate ids and schema errors", () => {
-    const root = tempDir()
-    const spawnDir = join(root, "out", "spawn")
+  it("rejects leftover id keys and schema errors", () => {
+    const runRoot = tempDir()
+    const attemptRoot = join(runRoot, "tasks", "plan", "attempt-1")
+    const spawnDir = join(attemptRoot, "out", "spawn")
     mkdirSync(spawnDir, { recursive: true })
     writeFileSync(
       join(spawnDir, "dup.yaml"),
       "id: plan\nkind: command\nrun: echo x\n"
     )
-    writeFileSync(join(spawnDir, "bad.yaml"), "id: bad\nkind: command\n")
+    writeFileSync(join(spawnDir, "bad.yaml"), "kind: command\n")
 
     const { accepted, rejections } = processSpawnDir(
       parent,
-      root,
+      attemptRoot,
+      runRoot,
       baseGraph,
       undefined
     )
@@ -91,20 +100,25 @@ describe("processSpawnDir", () => {
       "bad.yaml",
       "dup.yaml",
     ])
+    expect(rejections.find((r) => r.file === "dup.yaml")?.reason).toContain(
+      "remove the id key"
+    )
   })
 
   it("rejects when maxSpawnDepth would be exceeded", () => {
-    const root = tempDir()
-    const spawnDir = join(root, "out", "spawn")
+    const runRoot = tempDir()
+    const attemptRoot = join(runRoot, "tasks", "plan", "attempt-1")
+    const spawnDir = join(attemptRoot, "out", "spawn")
     mkdirSync(spawnDir, { recursive: true })
     writeFileSync(
       join(spawnDir, "x.yaml"),
-      "id: x\nkind: command\nrun: echo x\nneeds: [plan]\n"
+      "kind: command\nrun: echo x\nneeds: [plan]\n"
     )
     const deepParent: AgentTask = { ...parent, spawnDepth: 2 }
     const { accepted, rejections } = processSpawnDir(
       deepParent,
-      root,
+      attemptRoot,
+      runRoot,
       { ...baseGraph, limits: { maxSpawnDepth: 2 } },
       undefined
     )
@@ -112,16 +126,36 @@ describe("processSpawnDir", () => {
     expect(rejections[0]?.reason).toContain("maxSpawnDepth")
   })
 
+  it("rejects leftover instructions on a spawn spec", () => {
+    const runRoot = tempDir()
+    const attemptRoot = join(runRoot, "tasks", "plan", "attempt-1")
+    const spawnDir = join(attemptRoot, "out", "spawn")
+    mkdirSync(spawnDir, { recursive: true })
+    writeFileSync(
+      join(spawnDir, "child.yaml"),
+      "kind: agent\ncli: claude\ninstructions: tasks/x.md\n"
+    )
+    const { accepted, rejections } = processSpawnDir(
+      parent,
+      attemptRoot,
+      runRoot,
+      baseGraph,
+      undefined
+    )
+    expect(accepted).toEqual([])
+    expect(rejections[0]?.reason).toContain("instructions")
+  })
+
   it("writes rejection feedback for the next input", () => {
     const runRoot = tempDir()
     writeSpawnRejections(runRoot, "plan", [
-      { file: "x.yaml", reason: "duplicate task id x" },
+      { file: "x.yaml", reason: "duplicate stem x" },
     ])
     const text = readFileSync(
       join(runRoot, "tasks", "plan", "input", "spawn-rejections.md"),
       "utf8"
     )
     expect(text).toContain("x.yaml")
-    expect(text).toContain("duplicate task id x")
+    expect(text).toContain("duplicate stem x")
   })
 })

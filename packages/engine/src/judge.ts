@@ -18,6 +18,8 @@ export function buildJudgeShellCommand(
 
 export type RunJudgeOptions = {
   judge: AgentJudge
+  /** Absolute path of the derived judge file (DES-020). */
+  instructionsAbsPath: string
   workflowRoot: string
   attemptRoot: string
   /** Seconds; defaults to 900 (DES-019). */
@@ -29,10 +31,10 @@ export type RunJudgeOptions = {
  * Missing instructions, spawn failure, or timeout → fail.
  */
 export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
-  const { judge, workflowRoot, attemptRoot } = options
+  const { judge, workflowRoot, attemptRoot, instructionsAbsPath } = options
   const timeoutSeconds =
     options.timeoutSeconds ?? DEFAULT_ATTEMPT_TIMEOUT_SECONDS
-  const instructionsAbs = resolve(workflowRoot, judge.instructions)
+  const instructionsAbs = resolve(instructionsAbsPath)
   const root = resolve(workflowRoot)
   if (
     (!instructionsAbs.startsWith(root + "/") && instructionsAbs !== root) ||
@@ -71,8 +73,9 @@ export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
 /** Cache key so a run tick does not re-spawn the same judge. */
 export function judgeCacheKey(
   judge: AgentJudge,
+  instructionsAbsPath: string,
   workflowRoot: string,
   attemptRoot: string
 ): string {
-  return `${judge.cli}\0${judge.instructions}\0${workflowRoot}\0${attemptRoot}`
+  return `${judge.cli}\0${instructionsAbsPath}\0${workflowRoot}\0${attemptRoot}`
 }

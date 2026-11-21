@@ -89,7 +89,11 @@ export function attemptContext(
   exitCode: number | undefined,
   extras?: Pick<
     ConditionContext,
-    "needExitCodes" | "workflowRoot" | "judgeCache" | "timeoutSeconds"
+    | "needExitCodes"
+    | "workflowRoot"
+    | "judgeInstructionsAbs"
+    | "judgeCache"
+    | "timeoutSeconds"
   >
 ): ConditionContext {
   return { attemptRoot, exitCode, ...extras }
@@ -101,7 +105,7 @@ export async function evalUntil(
   exitCode: number,
   extras?: Pick<
     ConditionContext,
-    "workflowRoot" | "judgeCache" | "timeoutSeconds"
+    "workflowRoot" | "judgeInstructionsAbs" | "judgeCache" | "timeoutSeconds"
   >
 ): Promise<boolean> {
   const until = untilCondition(task)

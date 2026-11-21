@@ -1,5 +1,14 @@
-import { realpathSync } from "node:fs"
-import type { TrustCheck, Workflow } from "@workspace/shared"
+import { existsSync, realpathSync } from "node:fs"
+import { resolve } from "node:path"
+import {
+  countAgentJudges,
+  isAgentTask,
+  judgePromptPath,
+  needTaskId,
+  taskPromptPath,
+  type TrustCheck,
+  type Workflow,
+} from "@workspace/shared"
 import { getCliAdapter, type CliKind } from "./cli-adapters.ts"
 import { checkPathInsideHome } from "./path-checks.ts"
 import { canApplySandbox, sandboxWriteRoot } from "./sandbox.ts"
@@ -97,8 +106,8 @@ function checkCliFlags(cli: CliKind): TrustCheck {
 }
 
 /**
- * Warn-only pre-run checks (DES-019). Never block; the dialog lists
- * pass/warn and asks the user to double check.
+ * Warn-only pre-run checks (DES-019 / DES-020). Never block; the dialog
+ * lists pass/warn and asks the user to double check.
  */
 export async function runPreflightChecks(
   input: PreflightInput
@@ -107,6 +116,7 @@ export async function runPreflightChecks(
     checkWorkflowDir(input),
     checkAttemptDir(input),
     checkSandbox(input),
+    ...checkMissingPrompts(input),
   ]
   const clis = workflowAgentClis(input.workflow)
   for (const cli of clis) {
@@ -114,6 +124,82 @@ export async function runPreflightChecks(
     checks.push(checkCliFlags(cli))
   }
   return checks
+}
+
+/** Warn when authored agent prompts or judge files are missing (DES-020). */
+function checkMissingPrompts(input: PreflightInput): TrustCheck[] {
+  const missing: string[] = []
+  for (const task of input.workflow.tasks) {
+    if (task.promptDir) continue
+    if (isAgentTask(task)) {
+      const path = taskPromptPath(task.id)
+      if (!existsSync(resolve(input.workflowDir, path))) {
+        missing.push(path)
+      }
+    }
+    pushMissingJudge(missing, input.workflowDir, task.id, task.when, "when.md")
+    pushMissingJudge(
+      missing,
+      input.workflowDir,
+      task.id,
+      task.repeat?.until,
+      "until.md"
+    )
+    for (const need of task.needs) {
+      if (typeof need === "string" || !need.when) continue
+      pushMissingJudge(
+        missing,
+        input.workflowDir,
+        task.id,
+        need.when,
+        `need-${needTaskId(need)}.md`
+      )
+    }
+  }
+  if (missing.length === 0) {
+    return [
+      {
+        id: "prompts",
+        status: "pass",
+        message: "Authored prompt and judge files are present",
+      },
+    ]
+  }
+  return [
+    {
+      id: "prompts",
+      status: "warn",
+      message: `Missing prompt or judge files: ${missing.join(", ")}`,
+    },
+  ]
+}
+
+function pushMissingJudge(
+  missing: string[],
+  workflowDir: string,
+  taskId: string,
+  condition: unknown,
+  file: string
+): void {
+  if (
+    !condition ||
+    typeof condition === "boolean" ||
+    typeof condition !== "object"
+  ) {
+    return
+  }
+  if (countAgentJudges(condition as never) === 0) return
+  const slot =
+    file === "when.md"
+      ? ({ kind: "when" } as const)
+      : file === "until.md"
+        ? ({ kind: "until" } as const)
+        : ({
+            kind: "need",
+            needTaskId: file.slice("need-".length, -".md".length),
+          } as const)
+  const path = judgePromptPath(taskId, slot)
+  if (!existsSync(resolve(workflowDir, path))) missing.push(path)
 }
 
 export function hasWarning(checks: TrustCheck[]): boolean {

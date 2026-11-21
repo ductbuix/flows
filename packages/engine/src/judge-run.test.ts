@@ -82,10 +82,13 @@ tasks:
     when:
       agent:
         cli: claude
-        instructions: tasks/judge.md
 `
     )
-    writeFileSync(join(wf, "tasks", "judge.md"), "Pass if out/ok.txt exists.\n")
+    mkdirSync(join(wf, "tasks", "next"), { recursive: true })
+    writeFileSync(
+      join(wf, "tasks", "next", "when.md"),
+      "Pass if out/ok.txt exists.\n"
+    )
     const engine = createEngine({ home })
     const state = await engine
       .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
@@ -115,10 +118,10 @@ tasks:
     when:
       agent:
         cli: claude
-        instructions: tasks/judge.md
 `
     )
-    writeFileSync(join(wf, "tasks", "judge.md"), "Always fail.\n")
+    mkdirSync(join(wf, "tasks", "next"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "next", "when.md"), "Always fail.\n")
     const engine = createEngine({ home })
     const state = await engine
       .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
@@ -150,10 +153,10 @@ tasks:
         when:
           agent:
             cli: cursor
-            instructions: tasks/judge.md
 `
     )
-    writeFileSync(join(wf, "tasks", "judge.md"), "Pass.\n")
+    mkdirSync(join(wf, "tasks", "ok"), { recursive: true })
+    writeFileSync(join(wf, "tasks", "ok", "need-check.md"), "Pass.\n")
     const engine = createEngine({ home })
     const state = await engine
       .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
@@ -183,10 +186,13 @@ tasks:
       until:
         agent:
           cli: claude
-          instructions: tasks/judge.md
 `
     )
-    writeFileSync(join(wf, "tasks", "judge.md"), "Pass when score is ready.\n")
+    mkdirSync(join(wf, "tasks", "work"), { recursive: true })
+    writeFileSync(
+      join(wf, "tasks", "work", "until.md"),
+      "Pass when score is ready.\n"
+    )
     const engine = createEngine({ home })
     const state = await engine
       .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })
@@ -222,10 +228,13 @@ tasks:
             - exit: 0
             - agent:
                 cli: claude
-                instructions: tasks/judge.md
 `
     )
-    writeFileSync(join(wf, "tasks", "judge.md"), "Should not run.\n")
+    mkdirSync(join(wf, "tasks", "next"), { recursive: true })
+    writeFileSync(
+      join(wf, "tasks", "next", "need-produce.md"),
+      "Should not run.\n"
+    )
     const engine = createEngine({ home })
     const state = await engine
       .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" })

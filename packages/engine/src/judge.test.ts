@@ -36,18 +36,12 @@ function installStub(name: "claude" | "agent", exitCode: number): string {
 
 describe("judge adapters", () => {
   it("builds claude and cursor judge commands", () => {
-    expect(
-      buildJudgeShellCommand(
-        { cli: "claude", instructions: "j.md" },
-        "/wf/j.md"
-      )
-    ).toContain("claude --print --permission-mode dontAsk")
-    expect(
-      buildJudgeShellCommand(
-        { cli: "cursor", instructions: "j.md" },
-        "/wf/j.md"
-      )
-    ).toContain("agent -p --force --trust")
+    expect(buildJudgeShellCommand({ cli: "claude" }, "/wf/j.md")).toContain(
+      "claude --print --permission-mode dontAsk"
+    )
+    expect(buildJudgeShellCommand({ cli: "cursor" }, "/wf/j.md")).toContain(
+      "agent -p --force --trust"
+    )
     expect(judgePrompt("/wf/j.md")).toContain("Exit with code 0")
   })
 
@@ -56,10 +50,12 @@ describe("judge adapters", () => {
     const wf = tempDir("flow-judge-wf-")
     const attempt = tempDir("flow-judge-att-")
     mkdirSync(join(attempt, "out"), { recursive: true })
-    writeFileSync(join(wf, "judge.md"), "pass\n")
+    const path = join(wf, "judge.md")
+    writeFileSync(path, "pass\n")
     await expect(
       runAgentJudge({
-        judge: { cli: "claude", instructions: "judge.md" },
+        judge: { cli: "claude" },
+        instructionsAbsPath: path,
         workflowRoot: wf,
         attemptRoot: attempt,
       })
@@ -71,10 +67,12 @@ describe("judge adapters", () => {
     const wf = tempDir("flow-judge-wf-")
     const attempt = tempDir("flow-judge-att-")
     mkdirSync(join(attempt, "out"), { recursive: true })
-    writeFileSync(join(wf, "judge.md"), "fail\n")
+    const path = join(wf, "judge.md")
+    writeFileSync(path, "fail\n")
     await expect(
       runAgentJudge({
-        judge: { cli: "cursor", instructions: "judge.md" },
+        judge: { cli: "cursor" },
+        instructionsAbsPath: path,
         workflowRoot: wf,
         attemptRoot: attempt,
       })
@@ -90,11 +88,13 @@ describe("judge adapters", () => {
     const wf = tempDir("flow-judge-wf-")
     const attempt = tempDir("flow-judge-att-")
     mkdirSync(join(attempt, "out"), { recursive: true })
-    writeFileSync(join(wf, "judge.md"), "pass\n")
+    const path = join(wf, "judge.md")
+    writeFileSync(path, "pass\n")
     const start = Date.now()
     await expect(
       runAgentJudge({
-        judge: { cli: "claude", instructions: "judge.md" },
+        judge: { cli: "claude" },
+        instructionsAbsPath: path,
         workflowRoot: wf,
         attemptRoot: attempt,
         timeoutSeconds: 1,

@@ -6,6 +6,7 @@ import { taskIndex } from "./workflow-yaml.ts"
 type SharedTaskFields = Pick<
   Task,
   | "id"
+  | "name"
   | "needs"
   | "approval"
   | "when"
@@ -14,10 +15,12 @@ type SharedTaskFields = Pick<
   | "continueOnError"
   | "spawnDepth"
   | "spawnedBy"
+  | "promptDir"
 >
 
 type TaskSharedInput = {
   id: string
+  name?: Task["name"]
   needs?: Task["needs"]
   approval?: Task["approval"]
   when?: Task["when"]
@@ -26,12 +29,14 @@ type TaskSharedInput = {
   continueOnError?: Task["continueOnError"]
   spawnDepth?: Task["spawnDepth"]
   spawnedBy?: Task["spawnedBy"]
+  promptDir?: Task["promptDir"]
 }
 
 function sharedTaskFields(task: TaskSharedInput): SharedTaskFields {
   return {
     id: task.id,
     needs: task.needs ?? [],
+    ...(task.name !== undefined ? { name: task.name } : {}),
     ...(task.approval !== undefined ? { approval: task.approval } : {}),
     ...(task.when !== undefined ? { when: task.when } : {}),
     ...(task.retry !== undefined ? { retry: task.retry } : {}),
@@ -41,10 +46,11 @@ function sharedTaskFields(task: TaskSharedInput): SharedTaskFields {
       : {}),
     ...(task.spawnDepth !== undefined ? { spawnDepth: task.spawnDepth } : {}),
     ...(task.spawnedBy !== undefined ? { spawnedBy: task.spawnedBy } : {}),
+    ...(task.promptDir !== undefined ? { promptDir: task.promptDir } : {}),
   }
 }
 
-/** Build a valid task for `kind`, keeping shared fields (DES-018). */
+/** Build a valid task for `kind`, keeping shared fields (DES-018 / DES-020). */
 export function taskWithKind(
   task: TaskSharedInput,
   kind: "command" | "agent"
@@ -55,7 +61,6 @@ export function taskWithKind(
       ...shared,
       kind: "agent",
       cli: "claude",
-      instructions: `tasks/${task.id}.md`,
     }
   }
   return {

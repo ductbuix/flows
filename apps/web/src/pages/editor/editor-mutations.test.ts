@@ -34,7 +34,7 @@ describe("yamlAfterTaskPatch kind switch", () => {
     expect(alpha).toMatchObject({
       kind: "agent",
       cli: "claude",
-      instructions: "tasks/alpha.md",
+
       approval: true,
     })
     expect(alpha && "run" in alpha).toBe(false)
