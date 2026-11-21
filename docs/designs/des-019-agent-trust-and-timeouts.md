@@ -2,7 +2,7 @@
 id: DES-019
 title: Agent CLI trust, pre-run check and timeouts
 type: design
-status: draft
+status: active
 summary: App-owned trust for ~/.flowapp, a warn-only pre-run check, and a per-attempt timeout with mapped failure reasons.
 tags: [agents, trust, sandbox, timeout, engine, ui]
 related: [DES-003, DES-004, DES-005, DES-006, DES-007, DES-015, BL-017, BL-018]
@@ -87,18 +87,21 @@ diverge.
 
 ## Cursor trust marker
 
-The engine runs outside the sandbox. After a grant, and before the
-first agent spawn in that run, it writes Cursor's trust marker for
-the `FLOWAPP_HOME` realpath:
-`~/.cursor/projects/<sanitized-path>/.workspace-trusted` with
-`trustedAt` and `workspacePath`. Cursor inherits trust from parent
-directories, except the home directory and paths shallower than three
-components. `/Users/dbx/.flowapp` has three components, so it should
-qualify; a shallower `FLOWAPP_HOME` (for example a two-component
-temp dir in tests) may not. Live verification (BL-018) confirms this.
-If inheritance does not apply, also write the marker for the
-workflow dir (deeper, still unsandboxed). Do not guess a second
-path before that result.
+The engine runs outside the sandbox. After a grant, and before each
+Cursor agent spawn, it writes Cursor's trust marker for
+`FLOWAPP_HOME`, the workflow dir, and the attempt dir
+(`--workspace`): `~/.cursor/projects/<sanitized-path>/.workspace-trusted`
+with `trustedAt` and `workspacePath`. Sanitization strips a leading
+`/` and replaces `/` with `-`. On macOS, `/var` is a symlink to
+`/private/var`; Cursor often keeps the `/var` form, so the engine
+writes markers for both path variants.
+
+BL-018 live check: home-only inheritance was not enough under
+`sandbox-exec` (Cursor still mkdir's under `~/.cursor/projects` and
+`~/.cursor/chats`). The fix is workflow + attempt markers plus a
+sandbox write allow for `~/.cursor` on Cursor agent launches
+([DES-006](des-006-sandboxing.md)). Override the projects root in
+tests with `FLOWAPP_CURSOR_PROJECTS`.
 
 Keep the marker while always-trust is valid, or while any live run
 that received a trust grant is still active. When the last such run

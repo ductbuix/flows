@@ -1,0 +1,64 @@
+import { z } from "zod"
+
+/** Trust grant on start / always-trust store (DES-019). */
+export const trustGrantSchema = z.enum(["once", "always"])
+export type TrustGrant = z.infer<typeof trustGrantSchema>
+
+/** Always-trust settings row in app.db (DES-019). */
+export const cliTrustValueSchema = z.object({
+  homeRealpath: z.string().min(1),
+  trustedAt: z.string().min(1),
+})
+export type CliTrustValue = z.infer<typeof cliTrustValueSchema>
+
+export const trustDecisionSchema = z.enum(["once", "always", "none"])
+export type TrustDecision = z.infer<typeof trustDecisionSchema>
+
+export const startRunBodySchema = z.object({
+  requestId: z.string().min(1),
+  trustGrant: trustGrantSchema.optional(),
+})
+
+export type StartRunBody = z.infer<typeof startRunBodySchema>
+
+export const trustCheckStatusSchema = z.enum(["pass", "warn"])
+export type TrustCheckStatus = z.infer<typeof trustCheckStatusSchema>
+
+export const trustCheckSchema = z.object({
+  id: z.string().min(1),
+  status: trustCheckStatusSchema,
+  message: z.string().min(1),
+})
+
+export type TrustCheck = z.infer<typeof trustCheckSchema>
+
+export const trustStatusSchema = z.object({
+  trust: trustDecisionSchema,
+  homeRealpath: z.string().min(1),
+  alwaysTrusted: z.boolean(),
+})
+
+export type TrustStatus = z.infer<typeof trustStatusSchema>
+
+export const putTrustBodySchema = z.object({
+  grant: z.enum(["always", "none"]),
+})
+
+export type PutTrustBody = z.infer<typeof putTrustBodySchema>
+
+export const preflightResponseSchema = z.object({
+  trust: trustDecisionSchema,
+  checks: z.array(trustCheckSchema),
+  needsAgentCli: z.boolean(),
+})
+
+export type PreflightResponse = z.infer<typeof preflightResponseSchema>
+
+export const trustRequiredErrorSchema = z.object({
+  error: z.literal("trust_required"),
+  message: z.string().min(1),
+  trust: z.literal("none"),
+  checks: z.array(trustCheckSchema),
+})
+
+export type TrustRequiredError = z.infer<typeof trustRequiredErrorSchema>

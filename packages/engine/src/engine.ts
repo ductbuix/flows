@@ -1,25 +1,45 @@
 import { randomUUID } from "node:crypto"
-import type { EngineEvent, Workflow, WorkflowLimits } from "@workspace/shared"
+import type {
+  CliTrustValue,
+  EngineEvent,
+  TrustDecision,
+  TrustGrant,
+  Workflow,
+  WorkflowLimits,
+} from "@workspace/shared"
 import { loadAppConfig } from "./config.ts"
 import { prepareRunDirs } from "./dirs.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
+import {
+  applyStartTrustGrant,
+  prepareTrustMarker,
+  reconcileEngineTrustMarker,
+  trustDecisionFor,
+} from "./engine-trust.ts"
 import { EventLog, type StoredEvent } from "./event-log.ts"
 import { foldEvents, type RunState } from "./fold.ts"
 import { requestManualRetry } from "./manual-retry.ts"
-import { appDbPath, resolveAppHome, runDir, workflowDir } from "./paths.ts"
+import {
+  appDbPath,
+  resolveAppHome,
+  resolveAppHomeRealpath,
+  runDir,
+  workflowDir,
+} from "./paths.ts"
+import { runPreflightChecks, type PreflightInput } from "./preflight.ts"
 import { Scheduler } from "./scheduler.ts"
+import { decideTrust } from "./trust-policy.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
+import { workflowNeedsAgentCli } from "./workflow-agents.ts"
 
 export type CreateEngineOptions = {
-  /** App home directory. Defaults to FLOWAPP_HOME or ~/.flowapp. */
   home?: string
 }
 
 export type StartRunOptions = {
-  /** Absolute path to the workflow directory (contains workflow.yaml). */
   workflowDir: string
-  /** Optional run id; random UUID if omitted. */
   runId?: string
+  trustGrant?: TrustGrant
 }
 
 export type RunHandle = {
@@ -38,6 +58,64 @@ export class Engine {
     this.home = resolveAppHome(options.home)
     this.log = new EventLog(appDbPath(this.home))
     this.globalLimits = loadAppConfig(this.home).limits
+    this.log.onAppend((stored) => {
+      if (
+        stored.event.type === "run_succeeded" ||
+        stored.event.type === "run_failed" ||
+        stored.event.type === "run_cancelled"
+      ) {
+        this.reconcileTrustMarker()
+      }
+    })
+  }
+
+  homeRealpath(): string {
+    return resolveAppHomeRealpath(this.home)
+  }
+
+  getCliTrust(): CliTrustValue | null {
+    return this.log.getCliTrust()
+  }
+
+  trustDecision(): TrustDecision {
+    return trustDecisionFor(this.homeRealpath(), this.getCliTrust())
+  }
+
+  setAlwaysTrust(): void {
+    this.log.setCliTrust({
+      homeRealpath: this.homeRealpath(),
+      trustedAt: new Date().toISOString(),
+    })
+    prepareTrustMarker(this.homeRealpath())
+  }
+
+  revokeAlwaysTrust(): void {
+    this.log.clearCliTrust()
+    this.reconcileTrustMarker()
+  }
+
+  reconcileTrustMarker(): void {
+    reconcileEngineTrustMarker({
+      home: this.home,
+      homeRealpath: this.homeRealpath(),
+      settings: this.getCliTrust(),
+      runs: this.listRuns(),
+    })
+  }
+
+  async preflight(options: { workflowDir: string; attemptDir?: string }) {
+    const workflow = this.loadWorkflow(options.workflowDir)
+    const input: PreflightInput = {
+      homeRealpath: this.homeRealpath(),
+      workflowDir: options.workflowDir,
+      workflow,
+      attemptDir: options.attemptDir,
+    }
+    return {
+      trust: this.trustDecision(),
+      checks: await runPreflightChecks(input),
+      needsAgentCli: workflowNeedsAgentCli(workflow),
+    }
   }
 
   loadWorkflow(workflowDirPath: string): Workflow {
@@ -50,12 +128,10 @@ export class Engine {
     return this.log.listByRun(runId).map((e) => e.event)
   }
 
-  /** Events with sequence numbers for websocket catch-up (DES-009). */
   eventsWithSeq(runId: string): StoredEvent[] {
     return this.log.listByRun(runId)
   }
 
-  /** Subscribe to every append across runs. */
   onEvent(listener: (stored: StoredEvent) => void): () => void {
     return this.log.onAppend(listener)
   }
@@ -64,7 +140,6 @@ export class Engine {
     return foldEvents(this.events(runId))
   }
 
-  /** Non-deleted runs in log order (DES-003). */
   listRuns(): RunState[] {
     const out: RunState[] = []
     for (const runId of this.log.listRunIds()) {
@@ -74,26 +149,22 @@ export class Engine {
     return out
   }
 
-  /** Non-deleted runs for one workflow, newest first. */
   listRunsForWorkflow(workflowId: string): RunState[] {
     return this.listRuns()
       .filter((r) => r.workflowId === workflowId)
       .reverse()
   }
 
-  /** True when any non-deleted run of the workflow is still running. */
   hasLiveRun(workflowId: string): boolean {
     return this.listRunsForWorkflow(workflowId).some(
       (r) => r.status === "running"
     )
   }
 
-  /** After workflows/<old>/ moves to <new>/, rebind event log ids (DES-013). */
   rebindWorkflowId(fromId: string, toId: string): void {
     this.log.rebindWorkflowId(fromId, toId)
   }
 
-  /** Mark every non-deleted run of a workflow deleted (before dir removal). */
   markWorkflowRunsDeleted(workflowId: string): void {
     for (const state of this.listRunsForWorkflow(workflowId)) {
       if (state.status === "running") {
@@ -108,11 +179,25 @@ export class Engine {
     }
   }
 
-  /** Start a run from workflow.yaml under workflowDir. */
   startRun(options: StartRunOptions): RunHandle {
     const graph = this.loadWorkflow(options.workflowDir)
+    const needsCli = workflowNeedsAgentCli(graph)
+    const homeRealpath = this.homeRealpath()
+    const settings = this.getCliTrust()
+
+    if (needsCli) {
+      applyStartTrustGrant(
+        options.trustGrant,
+        homeRealpath,
+        settings,
+        (value) => this.log.setCliTrust(value)
+      )
+    }
+
     const runId = options.runId ?? randomUUID()
     const runRoot = prepareRunDirs(options.workflowDir, runId, graph)
+    const trustOnce =
+      needsCli && options.trustGrant === "once" ? ("once" as const) : undefined
 
     this.log.append({
       type: "run_started",
@@ -120,11 +205,13 @@ export class Engine {
       workflowId: graph.id,
       graph,
       at: new Date().toISOString(),
+      ...(trustOnce ? { trustGrant: trustOnce } : {}),
     })
+
+    if (needsCli) prepareTrustMarker(homeRealpath, options.workflowDir)
 
     const scheduler = this.attachScheduler(runId, options.workflowDir, runRoot)
     scheduler.requestTick()
-
     return this.handleFor(runId, scheduler)
   }
 
@@ -140,10 +227,6 @@ export class Engine {
     this.requireScheduler(runId).cancel()
   }
 
-  /**
-   * Manual retry: reopen a finished run if needed, reset the task and
-   * dependants, then schedule a new attempt (DES-011).
-   */
   retryTask(runId: string, taskId: string): RunHandle {
     const state = this.fold(runId)
     if (!state) throw new Error(`unknown run ${runId}`)
@@ -151,14 +234,21 @@ export class Engine {
     this.schedulers.delete(runId)
     const workflowRoot = workflowDir(this.home, state.workflowId)
     const root = runDir(workflowRoot, runId)
+    if (workflowNeedsAgentCli(state.graph)) {
+      const decision = decideTrust({
+        homeRealpath: this.homeRealpath(),
+        settings: this.getCliTrust(),
+        runGrant: state.trustGrant,
+      })
+      if (decision !== "none") {
+        prepareTrustMarker(this.homeRealpath(), workflowRoot)
+      }
+    }
     const scheduler = this.attachScheduler(runId, workflowRoot, root)
     scheduler.requestTick()
     return this.handleFor(runId, scheduler)
   }
 
-  /**
-   * Append run_deleted then remove runs/<runId>/. Blocked while live.
-   */
   deleteRun(runId: string): void {
     const state = this.fold(runId)
     if (!state) throw new Error(`unknown run ${runId}`)
@@ -167,11 +257,6 @@ export class Engine {
     this.schedulers.delete(runId)
   }
 
-  /**
-   * Resume every run still `running` in the log: re-attach live pids or
-   * record interrupted, then continue scheduling (DES-003 / BL-005).
-   * Also finishes interrupted run deletions.
-   */
   resumeAll(): RunHandle[] {
     this.finishPendingRemovals()
     const handles: RunHandle[] = []
@@ -179,18 +264,13 @@ export class Engine {
       const handle = this.resumeRun(runId)
       if (handle) handles.push(handle)
     }
+    this.reconcileTrustMarker()
     return handles
   }
 
-  /**
-   * Resume one run if it is still running. Returns null if the run is
-   * missing, deleted, or already terminal.
-   */
   resumeRun(runId: string): RunHandle | null {
     const existing = this.schedulers.get(runId)
-    if (existing) {
-      return this.handleFor(runId, existing)
-    }
+    if (existing) return this.handleFor(runId, existing)
 
     const state = this.fold(runId)
     if (!state || state.deleted || state.status !== "running") return null

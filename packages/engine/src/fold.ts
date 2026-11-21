@@ -45,6 +45,8 @@ export type RunState = {
    * first unrestricted launch (DES-006 warning badge).
    */
   sandboxed: boolean
+  /** Trust-once grant from run_started (DES-019). */
+  trustGrant?: "once"
   cancelRequested?: boolean
   deleted?: boolean
 }

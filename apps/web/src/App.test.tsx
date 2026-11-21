@@ -37,6 +37,15 @@ function mockFetch(handlers: Record<string, unknown>) {
       if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
         return Response.json(handlers.runs ?? [])
       }
+      if (url.includes("/api/trust")) {
+        return Response.json(
+          handlers.trust ?? {
+            trust: "none",
+            homeRealpath: "/tmp/flowapp",
+            alwaysTrusted: false,
+          }
+        )
+      }
       if (url.includes("/api/workflows") && !url.includes("/runs")) {
         return Response.json(handlers.workflows ?? [])
       }

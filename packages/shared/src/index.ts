@@ -107,6 +107,28 @@ export {
   type WsServerMessage,
 } from "./api.ts"
 export {
+  trustGrantSchema,
+  cliTrustValueSchema,
+  trustDecisionSchema,
+  startRunBodySchema,
+  trustCheckStatusSchema,
+  trustCheckSchema,
+  trustStatusSchema,
+  putTrustBodySchema,
+  preflightResponseSchema,
+  trustRequiredErrorSchema,
+  type TrustGrant,
+  type CliTrustValue,
+  type TrustDecision,
+  type StartRunBody,
+  type TrustCheckStatus,
+  type TrustCheck,
+  type TrustStatus,
+  type PutTrustBody,
+  type PreflightResponse,
+  type TrustRequiredError,
+} from "./api-trust.ts"
+export {
   workflowIdSchema,
   createWorkflowBodySchema,
   renameWorkflowBodySchema,

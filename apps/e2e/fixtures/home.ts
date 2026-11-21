@@ -81,6 +81,16 @@ tasks:
     approval: true
 `
 
+const agentTrustYaml = `id: agent-trust
+goal: e2e trust dialog
+tasks:
+  - id: hello
+    kind: agent
+    cli: cursor
+    instructions: tasks/hello.md
+    timeout: 5
+`
+
 /** Create a temp FLOWAPP_HOME with e2e workflow fixtures. */
 export function createE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-"))
@@ -92,10 +102,17 @@ export function createE2eHome(): string {
     ["fail-manual", failManualYaml],
     ["gate", gateYaml],
     ["gate-reject", gateRejectYaml],
+    ["agent-trust", agentTrustYaml],
   ] as const) {
     const dir = join(home, "workflows", id)
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), yaml)
   }
+  const agentTasks = join(home, "workflows", "agent-trust", "tasks")
+  mkdirSync(agentTasks, { recursive: true })
+  writeFileSync(
+    join(agentTasks, "hello.md"),
+    "Write ok to out/done.txt and exit.\n"
+  )
   return home
 }

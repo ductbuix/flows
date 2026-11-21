@@ -31,6 +31,8 @@ export const runStartedEventSchema = z.object({
   ...eventBase,
   workflowId: z.string().min(1),
   graph: workflowSchema,
+  /** Trust-once for this run so resume does not re-ask (DES-019). */
+  trustGrant: z.literal("once").optional(),
 })
 
 export const attemptStartedEventSchema = z.object({

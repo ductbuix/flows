@@ -21,6 +21,10 @@ scope for now (DES-007 ledger).
   `file-write*`.
 - Agent CLIs: Claude `--add-dir <workflow>`; Cursor
   `--workspace <attempt> --add-dir <workflow>`, on top of the OS sandbox.
+  Cursor agent launches also allow writes under `~/.cursor`
+  (`-D CURSOR_HOME`) so the CLI can create project and chat dirs; the
+  engine still pre-writes trust markers unsandboxed ([DES-019](des-019-agent-trust-and-timeouts.md),
+  BL-018 live check).
 - Fallback: when `sandbox-exec` cannot be applied (non-macOS, missing
   binary, or `FLOWAPP_SANDBOX=0`), the task runs unrestricted.
   `attempt_launched.sandboxed` records the choice; the run stays
