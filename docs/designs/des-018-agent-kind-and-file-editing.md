@@ -191,8 +191,8 @@ Zod schemas in `packages/shared`, next to `api-lifecycle.ts`.
 
 ## Test ids
 
-`field-kind`, `field-cli`, `field-instructions`,
-`edit-instructions`, `instructions-editor`, `instructions-save`,
+`field-kind`, `field-cli`, `field-task-id`, `field-task-name`,
+`field-prompt-path`, `edit-prompt`, `prompt-editor`, `prompt-save`,
 `field-error-<name>`, `memory-editor`, `memory-save`,
 `memory-remove`, `memory-pick`, `memory-collision`,
 `memory-collision-overwrite`, `memory-collision-add`.

@@ -32,7 +32,7 @@ export function buildEditorGraph(workflow: Workflow): {
       id: task.id,
       type: "editorTask",
       position: { x: 0, y: 0 },
-      data: { label: task.id, kind: task.kind, markers },
+      data: { label: task.name ?? task.id, kind: task.kind, markers },
       draggable: false,
       selectable: true,
     }

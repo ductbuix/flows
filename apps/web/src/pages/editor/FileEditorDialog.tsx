@@ -25,7 +25,7 @@ type Props = {
   onRemove?: () => void
 }
 
-/** Plain textarea editor for memory and instructions (DES-018). */
+/** Plain textarea editor for memory and prompt files (DES-018). */
 export function FileEditorDialog({
   open,
   onOpenChange,

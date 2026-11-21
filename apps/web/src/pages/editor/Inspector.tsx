@@ -21,7 +21,6 @@ type Props = {
   errors: YamlDiagnosticDto[]
   onChangeGoal: (goal: string) => void
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
-  onRenameTask: (fromId: string, toId: string) => void
 }
 
 export function Inspector({
@@ -31,7 +30,6 @@ export function Inspector({
   errors,
   onChangeGoal,
   onChangeTask,
-  onRenameTask,
 }: Props) {
   const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
   const task = taskIndex >= 0 ? workflow.tasks[taskIndex] : undefined
@@ -62,20 +60,29 @@ export function Inspector({
 
   return (
     <div className="space-y-3 overflow-auto p-3" data-testid="inspector">
-      <h2 className="font-mono text-sm font-medium">{task.id}</h2>
       <Field>
-        <FieldLabel htmlFor="field-id">Id</FieldLabel>
+        <FieldLabel htmlFor="field-task-name">Name</FieldLabel>
         <Input
-          id="field-id"
-          data-testid="field-id"
-          defaultValue={task.id}
-          key={task.id}
-          onBlur={(e) => {
-            const next = e.target.value.trim()
-            if (next && next !== task.id) onRenameTask(task.id, next)
+          id="field-task-name"
+          data-testid="field-task-name"
+          value={task.name ?? ""}
+          onChange={(e) => {
+            const next = e.target.value
+            onChangeTask(task.id, {
+              name: next === "" ? undefined : next,
+            })
           }}
         />
       </Field>
+      <div>
+        <p className="text-xs text-muted-foreground">Id</p>
+        <p
+          className="font-mono text-xs text-muted-foreground select-all"
+          data-testid="field-task-id"
+        >
+          {task.id}
+        </p>
+      </div>
       <Field>
         <FieldLabel>Kind</FieldLabel>
         <Select
@@ -110,6 +117,7 @@ export function Inspector({
         </Field>
       ) : (
         <AgentTaskFields
+          workflowId={workflowId}
           task={task}
           taskIndex={taskIndex}
           errors={errors}

@@ -11,13 +11,15 @@ type Props = {
   path: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSaved?: () => void
 }
 
-export function InstructionsEditorDialog({
+export function PromptEditorDialog({
   workflowId,
   path,
   open,
   onOpenChange,
+  onSaved,
 }: Props) {
   const [content, setContent] = useState("")
   const [hash, setHash] = useState<string | undefined>(undefined)
@@ -79,6 +81,7 @@ export function InstructionsEditorDialog({
       }
       const detail = workflowFileDetailSchema.parse(await res.json())
       setHash(detail.hash)
+      onSaved?.()
       onOpenChange(false)
     } finally {
       setBusy(false)
@@ -90,9 +93,9 @@ export function InstructionsEditorDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={path}
-      description="Instructions for this agent task. Saving creates the file if it is missing."
-      editorTestId="instructions-editor"
-      saveTestId="instructions-save"
+      description="Prompt for this agent task. Saving creates the file if it is missing."
+      editorTestId="prompt-editor"
+      saveTestId="prompt-save"
       content={content}
       onContentChange={setContent}
       error={error}

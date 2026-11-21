@@ -13,7 +13,6 @@ import {
   yamlAfterAddTask,
   yamlAfterConnect,
   yamlAfterGoal,
-  yamlAfterRename,
   yamlAfterTaskPatch,
 } from "./editor-mutations"
 import {
@@ -171,10 +170,6 @@ export function useWorkflowEditor(workflowId: string) {
       const next = yamlAfterTaskPatch(yaml, workflow, taskId, patch)
       withYaml(next.yaml, { fallbackWorkflow: next.workflow })
     },
-    rename: (fromId: string, toId: string) =>
-      withYaml(yamlAfterRename(yaml, fromId, toId), {
-        selectedTaskId: toId,
-      }),
     save,
     reloadConflict: () => {
       if (!conflict) return

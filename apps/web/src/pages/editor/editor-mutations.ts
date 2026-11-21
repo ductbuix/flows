@@ -1,8 +1,8 @@
 import {
   addTask,
   applyWorkflowDiff,
+  newTaskId,
   parseWorkflowYaml,
-  renameTask,
   setTaskField,
   setTaskNeeds,
   setWorkflowField,
@@ -20,11 +20,8 @@ export function yamlAfterAddTask(
   yaml: string
   taskId: string
 } {
-  let n = 1
-  const ids = new Set(workflow.tasks.map((t) => t.id))
-  while (ids.has(`task-${n}`)) n++
   const task: Task = {
-    id: `task-${n}`,
+    id: newTaskId(workflow.tasks.map((t) => t.id)),
     kind: "command",
     run: "echo ok",
     needs: [],
@@ -100,12 +97,4 @@ export function yamlAfterTaskPatch(
       tasks: workflow.tasks.map((t) => (t.id === taskId ? next : t)),
     },
   }
-}
-
-export function yamlAfterRename(
-  yaml: string,
-  fromId: string,
-  toId: string
-): string {
-  return renameTask(yaml, fromId, toId)
 }

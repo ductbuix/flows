@@ -22,6 +22,9 @@ function spawnedIndent(task: TaskView): string {
 }
 
 export function TaskList({ run, selectedTaskId, onSelectTask }: Props) {
+  const labels = new Map(
+    run.graph.tasks.map((t) => [t.id, t.name ?? t.id] as const)
+  )
   return (
     <ScrollArea className="h-full">
       <Table>
@@ -44,7 +47,9 @@ export function TaskList({ run, selectedTaskId, onSelectTask }: Props) {
               onClick={() => onSelectTask(task.id)}
             >
               <TableCell className={spawnedIndent(task)}>
-                <span className="font-mono text-xs">{task.id}</span>
+                <span className="font-mono text-xs">
+                  {labels.get(task.id) ?? task.id}
+                </span>
                 {task.spawned && (
                   <Badge
                     className="ml-2"

@@ -13,8 +13,13 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("node-a")).toBeVisible()
 
     await page.getByRole("button", { name: "Add task" }).click()
-    await expect(page.getByTestId("node-task-1")).toBeVisible()
-    await expect(page.getByTestId("yaml-pane")).toContainText("task-1")
+    const newNode = page.locator('[data-testid^="node-task-"]')
+    await expect(newNode).toBeVisible()
+    const nodeTestId = await newNode.getAttribute("data-testid")
+    expect(nodeTestId).toMatch(/^node-task-[0-9a-f]{8}$/)
+    const taskId = nodeTestId!.slice("node-".length)
+    await expect(page.getByTestId("yaml-pane")).toContainText(taskId)
+    await expect(page.getByTestId("field-task-id")).toHaveText(taskId)
 
     await page.getByTestId("save-button").click()
     await expect(page.getByTestId("save-button")).toBeDisabled({
@@ -25,7 +30,63 @@ test.describe("graph editor", () => {
       join(HOME, "workflows", "diamond", "workflow.yaml"),
       "utf8"
     )
-    expect(onDisk).toContain("id: task-1")
+    expect(onDisk).toContain(`id: ${taskId}`)
+  })
+
+  test("edit task name updates graph label", async ({ page }) => {
+    await page.goto("/workflows/diamond")
+    await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
+    await page.getByTestId("node-a").click()
+    await page.getByTestId("field-task-name").fill("Alpha")
+    await expect(page.getByTestId("node-a")).toContainText("Alpha")
+    await expect(page.getByTestId("yaml-pane")).toContainText("name: Alpha")
+    await expect(page.getByTestId("field-task-id")).toHaveText("a")
+
+    await page.getByTestId("save-button").click()
+    await expect(page.getByTestId("save-button")).toBeDisabled({
+      timeout: 10_000,
+    })
+    await page.screenshot({ path: "test-results/edit-task-name.png" })
+  })
+
+  test("edit prompt creates tasks/<id>/prompt.md", async ({ page }) => {
+    await page.goto("/workflows/fail-retry")
+    await expect(page.getByTestId("node-flaky")).toBeVisible({
+      timeout: 15_000,
+    })
+    await page.getByTestId("node-flaky").click()
+    await page.getByTestId("field-kind").click()
+    await page.getByRole("option", { name: "agent" }).click()
+    await expect(page.getByTestId("edit-prompt")).toBeVisible()
+    await expect(page.getByTestId("field-prompt-path")).toContainText(
+      "tasks/flaky/prompt.md"
+    )
+    await expect(page.getByTestId("field-prompt-path")).toContainText(
+      "Not created yet."
+    )
+
+    await page.getByTestId("edit-prompt").click()
+    await expect(page.getByTestId("prompt-editor")).toBeVisible()
+    await page
+      .getByTestId("prompt-editor")
+      .locator("textarea")
+      .fill("Do the flaky work.\n")
+    await page.getByTestId("prompt-save").click()
+    await expect(page.getByTestId("prompt-editor")).toBeHidden()
+    await expect(page.getByTestId("field-prompt-path")).not.toContainText(
+      "Not created yet."
+    )
+
+    const promptPath = join(
+      HOME,
+      "workflows",
+      "fail-retry",
+      "tasks",
+      "flaky",
+      "prompt.md"
+    )
+    expect(readFileSync(promptPath, "utf8")).toContain("Do the flaky work.")
+    await page.screenshot({ path: "test-results/edit-prompt.png" })
   })
 
   test("edit YAML rename updates the node label", async ({ page }) => {

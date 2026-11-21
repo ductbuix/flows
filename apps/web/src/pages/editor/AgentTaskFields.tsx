@@ -1,4 +1,10 @@
-import type { Task, YamlDiagnosticDto } from "@workspace/shared"
+import { useEffect, useState } from "react"
+import {
+  taskPromptPath,
+  type Task,
+  type YamlDiagnosticDto,
+} from "@workspace/shared"
+import { Button } from "@workspace/ui/components/button"
 import { Switch } from "@workspace/ui/components/switch"
 import {
   Select,
@@ -8,11 +14,14 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
+import { PromptEditorDialog } from "./PromptEditorDialog"
 import { taskFieldErrors } from "./field-errors"
+import { api } from "@/lib/api"
 
 type AgentTask = Extract<Task, { kind: "agent" }>
 
 type Props = {
+  workflowId: string
   task: AgentTask
   taskIndex: number
   errors: YamlDiagnosticDto[]
@@ -20,12 +29,31 @@ type Props = {
 }
 
 export function AgentTaskFields({
+  workflowId,
   task,
   taskIndex,
   errors,
   onChangeTask,
 }: Props) {
   const cliErrors = taskFieldErrors(errors, taskIndex, "cli")
+  const promptPath = taskPromptPath(task.id)
+  const [promptOpen, setPromptOpen] = useState(false)
+  const [promptExists, setPromptExists] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    setPromptExists(null)
+    void (async () => {
+      const res = await api.workflows[":workflowId"].files[":path"].$get({
+        param: { workflowId, path: promptPath },
+      })
+      if (!alive) return
+      setPromptExists(res.ok)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [workflowId, promptPath])
 
   return (
     <>
@@ -52,6 +80,27 @@ export function AgentTaskFields({
         </Select>
         <FieldError data-testid="field-error-cli" errors={cliErrors} />
       </Field>
+      <Field>
+        <FieldLabel>Prompt</FieldLabel>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full"
+          data-testid="edit-prompt"
+          onClick={() => setPromptOpen(true)}
+        >
+          Edit prompt
+        </Button>
+        <p
+          className="text-xs text-muted-foreground"
+          data-testid="field-prompt-path"
+        >
+          Stored at <span className="font-mono">{promptPath}</span> in this
+          workflow.
+          {promptExists === false ? " Not created yet." : null}
+        </p>
+      </Field>
       <Field className="flex items-center justify-between gap-2">
         <FieldLabel htmlFor="field-spawn">Spawn</FieldLabel>
         <Switch
@@ -61,6 +110,13 @@ export function AgentTaskFields({
           onCheckedChange={(spawn) => onChangeTask(task.id, { spawn })}
         />
       </Field>
+      <PromptEditorDialog
+        workflowId={workflowId}
+        path={promptPath}
+        open={promptOpen}
+        onOpenChange={setPromptOpen}
+        onSaved={() => setPromptExists(true)}
+      />
     </>
   )
 }

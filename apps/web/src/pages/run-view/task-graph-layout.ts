@@ -24,7 +24,7 @@ export function buildTaskGraph(run: RunDetail): {
       type: "task",
       position: { x: 0, y: 0 },
       data: {
-        label: spec.id,
+        label: spec.name ?? spec.id,
         status: view?.status ?? "pending",
         attempts: view?.attempts.length ?? 0,
         spawned: view?.spawned ?? false,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { parseWorkflowYaml } from "@workspace/shared"
-import { yamlAfterTaskPatch } from "./editor-mutations"
+import { GENERATED_TASK_ID_RE, parseWorkflowYaml } from "@workspace/shared"
+import { yamlAfterAddTask, yamlAfterTaskPatch } from "./editor-mutations"
 
 const yaml = `id: demo
 # keep me
@@ -15,6 +15,15 @@ tasks:
     run: echo b
     needs: [alpha]
 `
+
+describe("yamlAfterAddTask", () => {
+  it("assigns a generated task id", () => {
+    const { workflow } = parseWorkflowYaml(yaml)
+    const next = yamlAfterAddTask(yaml, workflow!)
+    expect(next.taskId).toMatch(GENERATED_TASK_ID_RE)
+    expect(next.yaml).toContain(`id: ${next.taskId}`)
+  })
+})
 
 describe("yamlAfterTaskPatch kind switch", () => {
   it("replaces a command task with a valid agent shape", () => {
