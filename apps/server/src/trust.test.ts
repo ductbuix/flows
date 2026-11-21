@@ -99,18 +99,34 @@ describe("trust API", () => {
   })
 })
 
-  it("GET /cli-status lists claude and cursor", async () => {
-    const { app, engine } = setup()
-    const res = await app.request("/api/cli-status")
-    expect(res.status).toBe(200)
-    const body = (await res.json()) as {
-      clis: Array<{ id: string; installed: boolean; version: string | null }>
-    }
-    expect(body.clis.map((c) => c.id).sort()).toEqual(["claude", "cursor"])
-    for (const cli of body.clis) {
-      expect(typeof cli.installed).toBe("boolean")
-      expect(cli.version === null || typeof cli.version === "string").toBe(true)
-    }
-    engine.close()
-  })
+it("GET /cli-status lists claude and cursor", async () => {
+  const { app, engine } = setup()
+  const res = await app.request("/api/cli-status")
+  expect(res.status).toBe(200)
+  const body = (await res.json()) as {
+    clis: Array<{ id: string; installed: boolean; version: string | null }>
+  }
+  expect(body.clis.map((c) => c.id).sort()).toEqual(["claude", "cursor"])
+  for (const cli of body.clis) {
+    expect(typeof cli.installed).toBe("boolean")
+    expect(cli.version === null || typeof cli.version === "string").toBe(true)
+  }
+  engine.close()
+})
 
+it("GET /cli/claude/models returns Default and aliases", async () => {
+  const { app, engine } = setup()
+  const res = await app.request("/api/cli/claude/models")
+  expect(res.status).toBe(200)
+  const body = (await res.json()) as {
+    cli: string
+    defaultLabel: string
+    models: Array<{ id: string }>
+  }
+  expect(body.cli).toBe("claude")
+  expect(body.defaultLabel).toMatch(/^Default/)
+  expect(body.models.map((m) => m.id)).toEqual(
+    expect.arrayContaining(["opus", "sonnet", "haiku"])
+  )
+  engine.close()
+})

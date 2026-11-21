@@ -1,9 +1,16 @@
 import { z } from "zod"
 import { isSafeTaskId } from "./task-ids.ts"
+import {
+  effortSchema,
+  modelIdSchema,
+  workflowAgentSchema,
+} from "./model-effort.ts"
 
-/** Agent judge leaf: `{ cli }` only; path is derived (DES-020). */
+/** Agent judge leaf; optional model/effort (DES-020, DES-023). */
 export const agentJudgeSchema = z.object({
   cli: z.enum(["claude", "cursor"]),
+  model: modelIdSchema.optional(),
+  effort: effortSchema.optional(),
 })
 
 export type AgentJudge = z.infer<typeof agentJudgeSchema>
@@ -88,11 +95,13 @@ export const commandTaskSchema = z.object({
   run: z.string().min(1),
 })
 
-/** Agent CLI task (BL-007 / DES-005 / DES-020). */
+/** Agent CLI task (BL-007 / DES-005 / DES-020 / DES-023). */
 export const agentTaskSchema = z.object({
   ...taskBaseFields,
   kind: z.literal("agent"),
   cli: z.enum(["claude", "cursor"]),
+  model: modelIdSchema.optional(),
+  effort: effortSchema.optional(),
   /** Workflow-relative memory/*.md paths copied to input/memory/. */
   memory: z.array(z.string().min(1)).optional(),
   /** When true, engine reads out/spawn/*.yaml after a successful attempt. */
@@ -166,6 +175,8 @@ export const workflowSchema = z.object({
   limits: workflowLimitsSchema.optional(),
   /** Declared start-run form fields (DES-021). */
   inputs: workflowInputsSchema.optional(),
+  /** Per-CLI model and effort defaults (DES-023). */
+  agent: workflowAgentSchema.optional(),
   /** Default per-attempt timeout in seconds (DES-019). */
   timeout: timeoutSecondsSchema.optional(),
   tasks: z.array(taskSchema).min(1),

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { enableAdvanced } from "./helpers"
 
 const HOME = process.env.FLOWAPP_HOME!
 const isMac = process.platform === "darwin"
@@ -14,6 +15,7 @@ test.describe("remove task in editor", () => {
     const original = diamondYaml()
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
+    await enableAdvanced(page)
     await page.getByTestId("node-a").click()
     await expect(page.getByTestId("delete-task")).toBeEnabled()
 

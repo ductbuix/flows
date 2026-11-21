@@ -35,6 +35,23 @@ export {
   type AppConfig,
 } from "./workflow.ts"
 export {
+  effortSchema,
+  modelIdSchema,
+  agentCliDefaultsSchema,
+  workflowAgentSchema,
+  cliModelEntrySchema,
+  cliModelCatalogSchema,
+  resolveModelEffort,
+  EFFORTS,
+  type Effort,
+  type AgentCliDefaults,
+  type WorkflowAgent,
+  type CliModelEntry,
+  type CliModelCatalog,
+  type ModelSource,
+  type ResolvedModelEffort,
+} from "./model-effort.ts"
+export {
   normalizeInputText,
   canonicalManualItemPayload,
   buildManualValuesSchema,

@@ -1,6 +1,7 @@
 import type {
   Task,
   Workflow,
+  WorkflowAgent,
   WorkflowInputDecl,
   WorkflowLimits,
 } from "@workspace/shared"
@@ -15,6 +16,7 @@ import {
 } from "./editor-history"
 import {
   yamlAfterAddTask,
+  yamlAfterAgent,
   yamlAfterConnect,
   yamlAfterGoal,
   yamlAfterInputs,
@@ -95,6 +97,8 @@ export function useEditorMutations({
       withYaml(yamlAfterInputs(yaml, inputs)),
     changeLimits: (limits: WorkflowLimits | undefined) =>
       withYaml(yamlAfterLimits(yaml, limits)),
+    changeAgent: (agent: WorkflowAgent | undefined) =>
+      withYaml(yamlAfterAgent(yaml, agent)),
     changeTask: (taskId: string, patch: Partial<Task>) => {
       if (!workflow) return
       const next = yamlAfterTaskPatch(yaml, workflow, taskId, patch)

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
-import { readFileSync, writeFileSync } from "node:fs"
+import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { enableAdvanced } from "./helpers"
 
 const HOME = process.env.FLOWAPP_HOME!
 
@@ -11,6 +12,7 @@ test.describe("graph editor", () => {
       timeout: 15_000,
     })
     await expect(page.getByTestId("node-a")).toBeVisible()
+    await enableAdvanced(page)
 
     await page.getByRole("button", { name: "Add task" }).click()
     const newNode = page.locator('[data-testid^="node-task-"]')
@@ -36,6 +38,7 @@ test.describe("graph editor", () => {
   test("edit task name updates graph label", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
+    await enableAdvanced(page)
     await page.getByTestId("node-a").click()
     await page.getByTestId("field-task-name").fill("Alpha")
     await expect(page.getByTestId("node-a")).toContainText("Alpha")
@@ -50,6 +53,10 @@ test.describe("graph editor", () => {
   })
 
   test("edit prompt creates tasks/<id>/prompt.md", async ({ page }) => {
+    rmSync(join(HOME, "workflows", "fail-retry", "tasks", "flaky"), {
+      recursive: true,
+      force: true,
+    })
     await page.goto("/workflows/fail-retry")
     await expect(page.getByTestId("node-flaky")).toBeVisible({
       timeout: 15_000,
@@ -94,6 +101,7 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("node-flaky")).toBeVisible({
       timeout: 15_000,
     })
+    await enableAdvanced(page)
 
     const detail = await page.evaluate(async () => {
       const res = await fetch("/api/workflows/fail-retry")
@@ -115,6 +123,7 @@ test.describe("graph editor", () => {
   test("invalid YAML shows errors and keeps graph", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
+    await enableAdvanced(page)
 
     const content = page.getByTestId("yaml-pane").locator(".cm-content")
     await content.click()
@@ -132,6 +141,7 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("node-flaky")).toBeVisible({
       timeout: 15_000,
     })
+    await enableAdvanced(page)
     await page.getByTestId("node-flaky").click()
     await expect(page.getByTestId("field-kind")).toBeVisible()
 
@@ -154,6 +164,7 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("node-flaky")).toBeVisible({
       timeout: 15_000,
     })
+    await enableAdvanced(page)
     await page.getByTestId("node-flaky").click()
     await expect(page.getByTestId("field-cli")).toBeVisible()
     const onDisk = readFileSync(
@@ -194,11 +205,13 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("field-error-run")).toBeVisible()
     await expect(page.getByTestId("save-button")).toBeDisabled()
     await expect(page.getByTestId("yaml-errors")).toBeVisible()
+    await expect(page.getByTestId("open-advanced-yaml")).toBeVisible()
   })
 
   test("kind switch keeps other tasks in diamond", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("node-a")).toBeVisible({ timeout: 15_000 })
+    await enableAdvanced(page)
     await page.getByTestId("node-a").click()
 
     await page.getByTestId("field-kind").click()
@@ -222,6 +235,7 @@ test.describe("graph editor", () => {
     await expect(page.getByTestId("graph-canvas")).toBeVisible({
       timeout: 15_000,
     })
+    await enableAdvanced(page)
 
     const content = page.getByTestId("yaml-pane").locator(".cm-content")
     await content.click()

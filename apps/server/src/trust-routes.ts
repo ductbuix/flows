@@ -3,15 +3,18 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 import {
   getCliAdapter,
+  listCliModels,
   workflowDir,
   type Engine,
   type CliKind,
 } from "@workspace/engine"
 import {
+  cliModelCatalogSchema,
   cliStatusSchema,
   preflightResponseSchema,
   putTrustBodySchema,
   trustStatusSchema,
+  type CliModelCatalog,
   type CliStatus,
   type PreflightResponse,
   type TrustStatus,
@@ -21,9 +24,13 @@ import { z } from "zod"
 import { errorJson } from "./control-helpers.ts"
 
 const workflowParam = z.object({ workflowId: z.string().min(1) })
+const cliParam = z.object({ cli: z.enum(["claude", "cursor"]) })
 const CLI_KINDS: CliKind[] = ["claude", "cursor"]
 
-/** GET/PUT /trust, GET /cli-status, POST .../runs/preflight (DES-019, 024). */
+const MODEL_CACHE_MS = 60_000
+const modelCache = new Map<CliKind, { at: number; catalog: CliModelCatalog }>()
+
+/** GET/PUT /trust, GET /cli-status, GET /cli/:cli/models, preflight. */
 export function trustRoutes(engine: Engine) {
   return new Hono()
     .get("/trust", (c) => {
@@ -57,6 +64,17 @@ export function trustRoutes(engine: Engine) {
       )
       const body: CliStatus = { clis }
       return c.json(cliStatusSchema.parse(body), 200)
+    })
+    .get("/cli/:cli/models", zValidator("param", cliParam), async (c) => {
+      const { cli } = c.req.valid("param")
+      const cached = modelCache.get(cli)
+      const now = Date.now()
+      if (cached && now - cached.at < MODEL_CACHE_MS) {
+        return c.json(cliModelCatalogSchema.parse(cached.catalog), 200)
+      }
+      const catalog = await listCliModels(cli)
+      modelCache.set(cli, { at: now, catalog })
+      return c.json(cliModelCatalogSchema.parse(catalog), 200)
     })
     .post(
       "/workflows/:workflowId/runs/preflight",

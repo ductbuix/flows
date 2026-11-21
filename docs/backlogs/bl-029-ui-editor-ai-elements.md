@@ -2,7 +2,7 @@
 id: BL-029
 title: Editor Advanced YAML, Prompt Input and Model Selector
 type: backlog
-status: todo
+status: done
 summary: YAML pane behind Advanced, Prompt Input for prompts, and Model Selector for DES-023 model and effort.
 tags: [ui, web, editor, ai-elements]
 related: [DES-024, DES-010, DES-023, BL-026]
@@ -23,17 +23,25 @@ DES-023 contract. Supersedes BL-029 on the unmerged branch
 
 ## Done when
 
-- [ ] The YAML pane shows only with Advanced on
+- [x] The YAML pane shows only with Advanced on
       (`flows-advanced`). With it off, the graph takes its
       space. A YAML parse error shows an `Alert` with a button
       that turns Advanced on.
-- [ ] Edit prompt uses Prompt Input. The Inspector uses Model
+- [x] Edit prompt uses Prompt Input. The Inspector uses Model
       Selector for model and effort, including Default and a
       custom id. Combined judge conditions stay yaml-only.
-- [ ] The graph stays React Flow, with nodes as `Card size="sm"`
+- [x] The graph stays React Flow, with nodes as `Card size="sm"`
       and controls as Button Group. No AI Elements graph parts.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test` and
       `pnpm test:e2e` pass.
-- [ ] Playwright covers Advanced on and off, a parse error,
+- [x] Playwright covers Advanced on and off, a parse error,
       saving a prompt through Prompt Input, and picking a model
       and effort, with video and screenshots in light and dark.
+
+## Notes
+
+Schema fields, `GET /api/cli/:cli/models`, and Cursor family
+parsing landed here so Model Selector works. Engine
+`composeFlags`, attempt `modelSource` records, and run-view
+attempt rows remain for [BL-025](bl-025-agent-model-effort.md)
+and [BL-026](bl-026-agent-model-effort-ui.md).

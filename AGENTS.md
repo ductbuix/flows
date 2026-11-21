@@ -22,25 +22,27 @@ Schema and writing rules: `docs/README.md`.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
-  preflight, run REST (start with trustGrant/values/files,
-  confirmDuplicate, cancel, rerun, retry, approve, reject, delete),
-  run input list/meta/files, log/summary/out, websocket run
-  snapshots, log chunks and workflow file watches.
+  preflight, GET `/cli/:cli/models`, run REST (start with
+  trustGrant/values/files, confirmDuplicate, cancel, rerun, retry,
+  approve, reject, delete), run input list/meta/files, log/summary/out,
+  websocket run snapshots, log chunks and workflow file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
   scheduler, command and agent tasks (CliAdapter for Claude / Cursor),
-  app-owned trust markers, preflight checks, spawn into `graph.json`,
-  resume, approval, cancel, manual retry, conditions (exit / expr /
-  agent judge), retry, repeat, `agents` limits, run deletion, workflow
-  id rebind on rename, frozen `RUN_INPUT`, Manual source, queued runs
-  under `maxConcurrentRuns`.
+  model catalog (`listCliModels`, Cursor families), app-owned trust
+  markers, preflight checks, spawn into `graph.json`, resume, approval,
+  cancel, manual retry, conditions (exit / expr / agent judge), retry,
+  repeat, `agents` limits, run deletion, workflow id rebind on rename,
+  frozen `RUN_INPUT`, Manual source, queued runs under
+  `maxConcurrentRuns`.
 - `packages/shared`: zod schemas for API, websocket, workflow (`inputs`,
-  `maxConcurrentRuns`), events (`queued`, `run_activated`) and YAML
-  Document edits that keep comments and key order.
+  `agent` defaults, model/effort), events (`queued`, `run_activated`)
+  and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: Sidebar shell (workflows, Settings), graph editor (React
-  Flow + CodeMirror YAML, inputs list, maxConcurrentRuns), memory/*.md
-  editor, run list, start/rerun input form, run view (list/graph,
-  Terminal/Task/Plan/Stack Trace/File Tree/Confirmation AI Elements,
+  Flow Card nodes + Button Group controls, YAML behind Advanced,
+  Prompt Input, Model Selector, inputs, maxConcurrentRuns),
+  memory/*.md editor, run list, start/rerun input form, run view
+  (list/graph, Terminal/Task/Plan/Stack Trace/File Tree/Confirmation,
   Advanced env/raw logs, SUMMARY.md, run inputs, promote) with live
   websocket updates and run controls; Settings for theme, CLI info and
   always-trust.

@@ -29,6 +29,9 @@ export function applyWorkflowDiff(text: string, next: Workflow): string {
         : next.inputs
     )
   }
+  if (JSON.stringify(prev.agent) !== JSON.stringify(next.agent)) {
+    out = setWorkflowField(out, "agent", next.agent)
+  }
   if (prev.id !== next.id) out = setWorkflowField(out, "id", next.id)
 
   const prevIds = new Set(prev.tasks.map((t) => t.id))
