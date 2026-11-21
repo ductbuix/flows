@@ -13,10 +13,12 @@ export {
   hasOpenAttempts,
   isOpenAttempt,
   isUnfinishedTask,
+  isLiveRunStatus,
   type RunState,
   type TaskState,
   type AttemptState,
 } from "./fold.ts"
+export type { ManualFilePart } from "./source-manual.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
 export {
   resolveAppHome,
@@ -53,3 +55,5 @@ export {
   type CliKind,
 } from "./cli-adapters.ts"
 export type { CliTrustValue } from "@workspace/shared"
+
+export { manualItemKey } from "./item-key.ts"

@@ -42,8 +42,9 @@ export function reconcileEngineTrustMarker(options: {
       options.runs
         .filter(
           (r) =>
-            r.trustGrant === "once" ||
-            (r.status === "running" &&
+            (r.trustGrant === "once" &&
+              (r.status === "running" || r.status === "queued")) ||
+            ((r.status === "running" || r.status === "queued") &&
               isAlwaysTrusted(options.homeRealpath, options.settings))
         )
         .map((r) => workflowDir(options.home, r.workflowId))

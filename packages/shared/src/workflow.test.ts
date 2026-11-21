@@ -131,6 +131,43 @@ describe("workflowSchema", () => {
       agent: { cli: "claude" },
     })
   })
+
+  it("accepts inputs and maxConcurrentRuns", () => {
+    const workflow = workflowSchema.parse({
+      id: "with-inputs",
+      limits: { maxConcurrentRuns: 2 },
+      inputs: [
+        {
+          name: "ticket",
+          type: "text",
+          required: true,
+          description: "Ticket key",
+        },
+        { name: "brief", type: "markdown", required: false, default: "" },
+        { name: "attachment", type: "file", required: false },
+      ],
+      tasks: [{ id: "a", kind: "command", run: "echo a" }],
+    })
+    expect(workflow.limits?.maxConcurrentRuns).toBe(2)
+    expect(workflow.inputs).toHaveLength(3)
+  })
+
+  it("rejects reserved input names and defaults on file", () => {
+    expect(
+      workflowSchema.safeParse({
+        id: "bad",
+        inputs: [{ name: "inputs", type: "text", required: true }],
+        tasks: [{ id: "a", kind: "command", run: "echo" }],
+      }).success
+    ).toBe(false)
+    expect(
+      workflowSchema.safeParse({
+        id: "bad",
+        inputs: [{ name: "f", type: "file", required: false, default: "x" }],
+        tasks: [{ id: "a", kind: "command", run: "echo" }],
+      }).success
+    ).toBe(false)
+  })
 })
 
 describe("parseWorkflowYaml DES-020 checks", () => {

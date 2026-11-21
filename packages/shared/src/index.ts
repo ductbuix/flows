@@ -15,6 +15,7 @@ export {
   retrySchema,
   repeatSchema,
   workflowLimitsSchema,
+  workflowInputDeclSchema,
   workflowSchema,
   appConfigSchema,
   type AgentJudge,
@@ -29,8 +30,17 @@ export {
   type Task,
   type Workflow,
   type WorkflowLimits,
+  type WorkflowInputDecl,
+  type WorkflowInputType,
   type AppConfig,
 } from "./workflow.ts"
+export {
+  normalizeInputText,
+  canonicalManualItemPayload,
+  buildManualValuesSchema,
+  applyInputDefaults,
+  type ManualItemKeyField,
+} from "./run-inputs.ts"
 export {
   GENERATED_TASK_ID_RE,
   isSafeTaskId,
@@ -52,6 +62,7 @@ export {
   runStatusSchema,
   engineEventSchema,
   runStartedEventSchema,
+  runActivatedEventSchema,
   attemptStartedEventSchema,
   attemptLaunchedEventSchema,
   attemptFinishedEventSchema,
@@ -74,6 +85,7 @@ export {
   type RunStatus,
   type EngineEvent,
   type RunStartedEvent,
+  type RunActivatedEvent,
 } from "./events.ts"
 export {
   attemptKindSchema,
@@ -127,6 +139,8 @@ export {
   cliTrustValueSchema,
   trustDecisionSchema,
   startRunBodySchema,
+  invalidInputErrorSchema,
+  duplicateInputErrorSchema,
   trustCheckStatusSchema,
   trustCheckSchema,
   trustStatusSchema,
@@ -137,6 +151,8 @@ export {
   type CliTrustValue,
   type TrustDecision,
   type StartRunBody,
+  type InvalidInputError,
+  type DuplicateInputError,
   type TrustCheckStatus,
   type TrustCheck,
   type TrustStatus,

@@ -12,6 +12,7 @@ export const taskStatusSchema = z.enum([
 ])
 
 export const runStatusSchema = z.enum([
+  "queued",
   "running",
   "succeeded",
   "failed",
@@ -33,6 +34,20 @@ export const runStartedEventSchema = z.object({
   graph: workflowSchema,
   /** Trust-once for this run so resume does not re-ask (DES-019). */
   trustGrant: z.literal("once").optional(),
+  /** Input source id (DES-021). */
+  source: z.literal("manual").optional(),
+  itemKey: z.string().min(1).optional(),
+  inputHash: z.string().min(1).optional(),
+  /** Relative paths under runs/<id>/input/ (DES-021). */
+  files: z.array(z.string()).optional(),
+  /** True when the run waits under maxConcurrentRuns (DES-021). */
+  queued: z.boolean().optional(),
+})
+
+/** Queued run becomes running when a slot frees (DES-021). */
+export const runActivatedEventSchema = z.object({
+  type: z.literal("run_activated"),
+  ...eventBase,
 })
 
 export const attemptStartedEventSchema = z.object({
@@ -165,6 +180,7 @@ export const taskRetryRequestedEventSchema = z.object({
 
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
+  runActivatedEventSchema,
   attemptStartedEventSchema,
   attemptLaunchedEventSchema,
   attemptFinishedEventSchema,
@@ -187,3 +203,4 @@ export const engineEventSchema = z.discriminatedUnion("type", [
 
 export type EngineEvent = z.infer<typeof engineEventSchema>
 export type RunStartedEvent = z.infer<typeof runStartedEventSchema>
+export type RunActivatedEvent = z.infer<typeof runActivatedEventSchema>

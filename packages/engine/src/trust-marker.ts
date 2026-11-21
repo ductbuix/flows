@@ -12,7 +12,9 @@ export function runNeedsTrustMarker(
   homeRealpath: string,
   settings: CliTrustValue | null
 ): boolean {
-  if (state.deleted || state.status !== "running") return false
+  if (state.deleted) return false
+  // Queued trust-once grants stay live for the marker (DES-021).
+  if (state.status !== "running" && state.status !== "queued") return false
   if (isAlwaysTrusted(homeRealpath, settings)) return true
   return (
     decideTrust({

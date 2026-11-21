@@ -19,6 +19,11 @@ import {
   withIdempotency,
 } from "./control-helpers.ts"
 import type { IdempotencyStore } from "./idempotency.ts"
+import {
+  duplicateInputResponse,
+  parseStartRequest,
+  validateStartInput,
+} from "./start-run-input.ts"
 
 const runParam = z.object({ runId: z.string().min(1) })
 const taskParam = z.object({
@@ -50,7 +55,7 @@ function isTrustRequired(err: unknown): boolean {
   return err instanceof Error && err.message === "trust_required"
 }
 
-/** Mutating run-control routes (DES-011 / BL-012 / DES-019). */
+/** Mutating run-control routes (DES-011 / BL-012 / DES-019 / DES-021). */
 export function createRunControls({
   engine,
   idempotency,
@@ -62,22 +67,45 @@ export function createRunControls({
     .post(
       "/workflows/:workflowId/runs",
       zValidator("param", workflowParam),
-      zValidator("json", startRunBodySchema),
       async (c) => {
         const { workflowId } = c.req.valid("param")
-        const { requestId, trustGrant } = c.req.valid("json")
-        return withIdempotency(c, idempotency, requestId, async () => {
-          const dir = workflowDir(engine.home, workflowId)
-          if (!existsSync(join(dir, "workflow.yaml"))) {
-            return errorJson(c, 404, "not_found", "workflow not found")
+        const dir = workflowDir(engine.home, workflowId)
+        if (!existsSync(join(dir, "workflow.yaml"))) {
+          return errorJson(c, 404, "not_found", "workflow not found")
+        }
+        const parsed = await parseStartRequest(c)
+        if (parsed instanceof Response) return parsed
+        const { body, files } = parsed
+
+        return withIdempotency(c, idempotency, body.requestId, async () => {
+          let workflow
+          try {
+            workflow = engine.loadWorkflow(dir)
+          } catch (err) {
+            return mapEngineError(c, err)
           }
+          const validated = validateStartInput(c, workflow, body.values, files)
+          if (validated instanceof Response) return validated
+          const dup = duplicateInputResponse(
+            c,
+            engine,
+            workflowId,
+            validated.itemKey,
+            body.confirmDuplicate
+          )
+          if (dup) return dup
           try {
             const handle = engine.startRun({
               workflowDir: dir,
-              trustGrant,
+              trustGrant: body.trustGrant,
+              values: validated.values,
+              files: validated.files,
             })
-            const body: StartRunResponse = { runId: handle.runId }
-            return c.json(startRunResponseSchema.parse(body), 200)
+            const resBody: StartRunResponse = {
+              runId: handle.runId,
+              status: handle.status,
+            }
+            return c.json(startRunResponseSchema.parse(resBody), 200)
           } catch (err) {
             if (isTrustRequired(err)) return trustRequired(c, engine, dir)
             return mapEngineError(c, err)
@@ -102,36 +130,55 @@ export function createRunControls({
         })
       }
     )
-    .post(
-      "/runs/:runId/rerun",
-      zValidator("param", runParam),
-      zValidator("json", startRunBodySchema),
-      async (c) => {
-        const { runId } = c.req.valid("param")
-        const { requestId, trustGrant } = c.req.valid("json")
-        return withIdempotency(c, idempotency, requestId, async () => {
-          const state = engine.fold(runId)
-          if (!state || state.deleted) {
-            return errorJson(c, 404, "not_found", "run not found")
+    .post("/runs/:runId/rerun", zValidator("param", runParam), async (c) => {
+      const { runId } = c.req.valid("param")
+      const parsed = await parseStartRequest(c)
+      if (parsed instanceof Response) return parsed
+      const { body, files } = parsed
+
+      return withIdempotency(c, idempotency, body.requestId, async () => {
+        const state = engine.fold(runId)
+        if (!state || state.deleted) {
+          return errorJson(c, 404, "not_found", "run not found")
+        }
+        if (state.status === "running" || state.status === "queued") {
+          return errorJson(c, 409, "conflict", "run is still live")
+        }
+        const dir = workflowDir(engine.home, state.workflowId)
+        let workflow
+        try {
+          workflow = engine.loadWorkflow(dir)
+        } catch (err) {
+          return mapEngineError(c, err)
+        }
+        const validated = validateStartInput(c, workflow, body.values, files)
+        if (validated instanceof Response) return validated
+        const dup = duplicateInputResponse(
+          c,
+          engine,
+          state.workflowId,
+          validated.itemKey,
+          body.confirmDuplicate
+        )
+        if (dup) return dup
+        try {
+          const handle = engine.startRun({
+            workflowDir: dir,
+            trustGrant: body.trustGrant,
+            values: validated.values,
+            files: validated.files,
+          })
+          const resBody: StartRunResponse = {
+            runId: handle.runId,
+            status: handle.status,
           }
-          if (state.status === "running") {
-            return errorJson(c, 409, "conflict", "run is still live")
-          }
-          const dir = workflowDir(engine.home, state.workflowId)
-          try {
-            const handle = engine.startRun({
-              workflowDir: dir,
-              trustGrant,
-            })
-            const body: StartRunResponse = { runId: handle.runId }
-            return c.json(startRunResponseSchema.parse(body), 200)
-          } catch (err) {
-            if (isTrustRequired(err)) return trustRequired(c, engine, dir)
-            return mapEngineError(c, err)
-          }
-        })
-      }
-    )
+          return c.json(startRunResponseSchema.parse(resBody), 200)
+        } catch (err) {
+          if (isTrustRequired(err)) return trustRequired(c, engine, dir)
+          return mapEngineError(c, err)
+        }
+      })
+    })
     .post(
       "/runs/:runId/tasks/:taskId/retry",
       zValidator("param", taskParam),

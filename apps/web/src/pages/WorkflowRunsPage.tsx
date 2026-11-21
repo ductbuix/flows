@@ -165,7 +165,9 @@ export function WorkflowRunsPage() {
                     <TableCell>
                       <RunRowMenu
                         runId={run.id}
-                        live={run.status === "running"}
+                        live={
+                          run.status === "running" || run.status === "queued"
+                        }
                         onDelete={() => setDeleteTarget(run)}
                       />
                     </TableCell>

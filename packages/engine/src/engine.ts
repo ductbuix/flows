@@ -7,17 +7,16 @@ import type {
   Workflow,
   WorkflowLimits,
 } from "@workspace/shared"
+import { cancelQueuedRun } from "./cancel-queued.ts"
 import { loadAppConfig } from "./config.ts"
-import { prepareRunDirs } from "./dirs.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
 import {
-  applyStartTrustGrant,
   prepareTrustMarker,
   reconcileEngineTrustMarker,
   trustDecisionFor,
 } from "./engine-trust.ts"
 import { EventLog, type StoredEvent } from "./event-log.ts"
-import { foldEvents, type RunState } from "./fold.ts"
+import { foldEvents, isLiveRunStatus, type RunState } from "./fold.ts"
 import { requestManualRetry } from "./manual-retry.ts"
 import {
   appDbPath,
@@ -27,7 +26,10 @@ import {
   workflowDir,
 } from "./paths.ts"
 import { runPreflightChecks, type PreflightInput } from "./preflight.ts"
+import { freeRunSlots, nextQueuedRun } from "./run-queue.ts"
 import { Scheduler } from "./scheduler.ts"
+import type { ManualFilePart } from "./source-manual.ts"
+import { appendRunStarted } from "./start-run.ts"
 import { decideTrust } from "./trust-policy.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
 import { workflowNeedsAgentCli } from "./workflow-agents.ts"
@@ -40,10 +42,13 @@ export type StartRunOptions = {
   workflowDir: string
   runId?: string
   trustGrant?: TrustGrant
+  values?: Record<string, string>
+  files?: ManualFilePart[]
 }
 
 export type RunHandle = {
   runId: string
+  status: "queued" | "running"
   wait: () => Promise<RunState>
   state: () => RunState
 }
@@ -64,7 +69,9 @@ export class Engine {
         stored.event.type === "run_failed" ||
         stored.event.type === "run_cancelled"
       ) {
+        const state = this.fold(stored.event.runId)
         this.reconcileTrustMarker()
+        if (state) this.activateQueuedForWorkflow(state.workflowId)
       }
     })
   }
@@ -156,8 +163,8 @@ export class Engine {
   }
 
   hasLiveRun(workflowId: string): boolean {
-    return this.listRunsForWorkflow(workflowId).some(
-      (r) => r.status === "running"
+    return this.listRunsForWorkflow(workflowId).some((r) =>
+      isLiveRunStatus(r.status)
     )
   }
 
@@ -167,7 +174,7 @@ export class Engine {
 
   markWorkflowRunsDeleted(workflowId: string): void {
     for (const state of this.listRunsForWorkflow(workflowId)) {
-      if (state.status === "running") {
+      if (isLiveRunStatus(state.status)) {
         throw new Error(`cannot delete live run ${state.runId}`)
       }
       this.log.append({
@@ -181,38 +188,33 @@ export class Engine {
 
   startRun(options: StartRunOptions): RunHandle {
     const graph = this.loadWorkflow(options.workflowDir)
-    const needsCli = workflowNeedsAgentCli(graph)
-    const homeRealpath = this.homeRealpath()
-    const settings = this.getCliTrust()
-
-    if (needsCli) {
-      applyStartTrustGrant(
-        options.trustGrant,
-        homeRealpath,
-        settings,
-        (value) => this.log.setCliTrust(value)
-      )
-    }
-
     const runId = options.runId ?? randomUUID()
-    const runRoot = prepareRunDirs(options.workflowDir, runId, graph)
-    const trustOnce =
-      needsCli && options.trustGrant === "once" ? ("once" as const) : undefined
-
-    this.log.append({
-      type: "run_started",
-      runId,
-      workflowId: graph.id,
+    const started = appendRunStarted({
+      log: this.log,
       graph,
-      at: new Date().toISOString(),
-      ...(trustOnce ? { trustGrant: trustOnce } : {}),
+      params: {
+        workflowDir: options.workflowDir,
+        runId,
+        trustGrant: options.trustGrant,
+        values: options.values,
+        files: options.files,
+      },
+      homeRealpath: this.homeRealpath(),
+      settings: this.getCliTrust(),
+      setAlwaysTrust: (value) => this.log.setCliTrust(value),
+      workflowRuns: this.listRunsForWorkflow(graph.id),
     })
 
-    if (needsCli) prepareTrustMarker(homeRealpath, options.workflowDir)
-
-    const scheduler = this.attachScheduler(runId, options.workflowDir, runRoot)
+    if (started.queued) {
+      return this.queuedHandle(started.runId)
+    }
+    const scheduler = this.attachScheduler(
+      started.runId,
+      options.workflowDir,
+      started.runRoot
+    )
     scheduler.requestTick()
-    return this.handleFor(runId, scheduler)
+    return this.handleFor(started.runId, scheduler, "running")
   }
 
   approveTask(runId: string, taskId: string): void {
@@ -224,6 +226,12 @@ export class Engine {
   }
 
   cancelRun(runId: string): void {
+    const state = this.fold(runId)
+    if (!state || state.deleted) throw new Error(`unknown run ${runId}`)
+    if (state.status === "queued") {
+      cancelQueuedRun(state, (event) => this.log.append(event))
+      return
+    }
     this.requireScheduler(runId).cancel()
   }
 
@@ -246,7 +254,7 @@ export class Engine {
     }
     const scheduler = this.attachScheduler(runId, workflowRoot, root)
     scheduler.requestTick()
-    return this.handleFor(runId, scheduler)
+    return this.handleFor(runId, scheduler, "running")
   }
 
   deleteRun(runId: string): void {
@@ -264,13 +272,18 @@ export class Engine {
       const handle = this.resumeRun(runId)
       if (handle) handles.push(handle)
     }
+    for (const workflowId of new Set(
+      this.listRuns().map((r) => r.workflowId)
+    )) {
+      this.activateQueuedForWorkflow(workflowId)
+    }
     this.reconcileTrustMarker()
     return handles
   }
 
   resumeRun(runId: string): RunHandle | null {
     const existing = this.schedulers.get(runId)
-    if (existing) return this.handleFor(runId, existing)
+    if (existing) return this.handleFor(runId, existing, "running")
 
     const state = this.fold(runId)
     if (!state || state.deleted || state.status !== "running") return null
@@ -280,15 +293,54 @@ export class Engine {
     const scheduler = this.attachScheduler(runId, workflowRoot, runRoot)
     scheduler.resumeCancelIfNeeded()
     if (scheduler.state().status !== "running") {
-      return this.handleFor(runId, scheduler)
+      return this.handleFor(runId, scheduler, "running")
     }
     scheduler.resumeOpenAttempts()
     scheduler.requestTick()
-    return this.handleFor(runId, scheduler)
+    return this.handleFor(runId, scheduler, "running")
   }
 
   close(): void {
+    this.schedulers.clear()
     this.log.close()
+  }
+
+  private activateQueuedForWorkflow(workflowId: string): void {
+    const workflowRoot = workflowDir(this.home, workflowId)
+    let graph: Workflow
+    try {
+      graph = this.loadWorkflow(workflowRoot)
+    } catch {
+      return
+    }
+    for (;;) {
+      const runs = this.listRunsForWorkflow(workflowId)
+      if (freeRunSlots(graph, runs) <= 0) return
+      const next = nextQueuedRun(runs)
+      if (!next) return
+      this.activateRun(next, workflowRoot)
+    }
+  }
+
+  private activateRun(state: RunState, workflowRoot: string): void {
+    this.log.append({
+      type: "run_activated",
+      runId: state.runId,
+      at: new Date().toISOString(),
+    })
+    if (workflowNeedsAgentCli(state.graph)) {
+      const decision = decideTrust({
+        homeRealpath: this.homeRealpath(),
+        settings: this.getCliTrust(),
+        runGrant: state.trustGrant,
+      })
+      if (decision !== "none") {
+        prepareTrustMarker(this.homeRealpath(), workflowRoot)
+      }
+    }
+    const root = runDir(workflowRoot, state.runId)
+    const scheduler = this.attachScheduler(state.runId, workflowRoot, root)
+    scheduler.requestTick()
   }
 
   private finishPendingRemovals(): void {
@@ -326,12 +378,71 @@ export class Engine {
     return scheduler
   }
 
-  private handleFor(runId: string, scheduler: Scheduler): RunHandle {
+  private handleFor(
+    runId: string,
+    scheduler: Scheduler,
+    status: "queued" | "running"
+  ): RunHandle {
     return {
       runId,
+      status,
       wait: () => scheduler.wait(),
       state: () => scheduler.state(),
     }
+  }
+
+  private queuedHandle(runId: string): RunHandle {
+    return {
+      runId,
+      status: "queued",
+      state: () => {
+        const state = this.fold(runId)
+        if (!state) throw new Error(`unknown run ${runId}`)
+        return state
+      },
+      wait: () => this.waitUntilTerminal(runId),
+    }
+  }
+
+  private waitUntilTerminal(runId: string): Promise<RunState> {
+    const current = this.fold(runId)
+    if (!current) return Promise.reject(new Error(`unknown run ${runId}`))
+    if (
+      current.status === "succeeded" ||
+      current.status === "failed" ||
+      current.status === "cancelled"
+    ) {
+      return Promise.resolve(current)
+    }
+    const existing = this.schedulers.get(runId)
+    if (existing) return existing.wait()
+    return new Promise((resolve, reject) => {
+      const unsub = this.log.onAppend((stored) => {
+        if (stored.event.runId !== runId) return
+        const state = this.fold(runId)
+        if (!state) {
+          unsub()
+          reject(new Error(`unknown run ${runId}`))
+          return
+        }
+        if (state.status === "running") {
+          const scheduler = this.schedulers.get(runId)
+          if (scheduler) {
+            unsub()
+            void scheduler.wait().then(resolve, reject)
+          }
+          return
+        }
+        if (
+          state.status === "succeeded" ||
+          state.status === "failed" ||
+          state.status === "cancelled"
+        ) {
+          unsub()
+          resolve(state)
+        }
+      })
+    })
   }
 }
 

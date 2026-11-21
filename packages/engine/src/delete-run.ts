@@ -19,7 +19,7 @@ export function deleteRunFiles(
     finishRunRemoval(runRoot)
     return
   }
-  if (state.status === "running") {
+  if (state.status === "running" || state.status === "queued") {
     throw new Error(`cannot delete live run ${state.runId}`)
   }
 

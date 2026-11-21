@@ -59,13 +59,23 @@ export function applyEvent(
       return {
         runId: event.runId,
         workflowId: event.workflowId,
-        status: "running",
+        status: event.queued === true ? "queued" : "running",
         graph: event.graph,
         tasks: emptyTasks(event.graph),
         // Optimistic until an unrestricted attempt_launched (DES-006).
         sandboxed: true,
         trustGrant: event.trustGrant,
+        startedAt: event.at,
+        source: event.source,
+        itemKey: event.itemKey,
+        inputHash: event.inputHash,
+        inputFiles: event.files,
       }
+    case "run_activated": {
+      if (!state) return state
+      if (state.status === "queued") state.status = "running"
+      return state
+    }
     case "approval_requested": {
       if (!state) return state
       const task = state.tasks[event.taskId]
