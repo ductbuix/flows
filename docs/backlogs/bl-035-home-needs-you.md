@@ -14,7 +14,7 @@ depends: [BL-031, BL-033]
 # Home with Needs you, Running and Recent runs
 
 Design: [DES-025](../designs/des-025-journey-led-redesign.md) (J1, J4, Pages: Home). Needs you holds approvals
-now; pending publishes (BL-051) and expired sign-ins (BL-045) join it
+now; waiting publish tasks (BL-051) and expired sign-ins (BL-045) join it
 later. Work items on Home come with BL-041.
 
 ## Done when

@@ -21,9 +21,10 @@ is cached per run and updated on append.
 ## Done when
 
 - [ ] Shared zod `runSummarySchema`: runId, workflowId, workflow name,
-      status, `needsYou` (list of `{ kind: approval, taskId }`, later
-      `{ kind: publish, connectionId }`), first failed task id,
-      itemKey, startedAt, finishedAt. Run status is unchanged:
+      status, `needsYou` (one `{ taskId, connectionId? }` per task in
+      `awaiting_approval`; publish tasks set `connectionId` later),
+      task counts (done, total), first failed task id, itemKey,
+      startedAt, finishedAt. Run status is unchanged:
       waiting is derived from tasks, with no new event or status.
 - [ ] `GET /runs` returns summaries newest first; query `status` and
       `workflowId` filter, `limit` caps (default 100). Deleted runs

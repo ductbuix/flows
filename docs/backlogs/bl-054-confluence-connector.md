@@ -8,7 +8,7 @@ tags: [engine, connections, confluence, mcp]
 related: [DES-026]
 updated: 2026-11-22
 priority: P2
-depends: [BL-048]
+depends: [BL-049]
 ---
 
 # Confluence connector via MCP

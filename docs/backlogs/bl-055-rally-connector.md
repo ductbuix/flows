@@ -8,7 +8,7 @@ tags: [engine, connections, rally]
 related: [DES-026]
 updated: 2026-11-22
 priority: P2
-depends: [BL-048, BL-053]
+depends: [BL-049, BL-053]
 ---
 
 # Rally connector via session cookies
