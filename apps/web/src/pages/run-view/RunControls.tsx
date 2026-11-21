@@ -22,14 +22,14 @@ import { toast } from "sonner"
 import { ActionButton } from "@/components/ActionButton"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { TrustStartGate } from "@/components/TrustStartGate"
+import { runPath, workflowPath } from "@/lib/paths"
 import { approveTask, cancelRun, deleteRun } from "@/lib/run-actions"
 
 type Props = {
   run: RunDetail
-  workflowId: string
 }
 
-export function RunControls({ run, workflowId }: Props) {
+export function RunControls({ run }: Props) {
   const navigate = useNavigate()
   const live = run.status === "running" || run.status === "queued"
   const waiting = run.tasks.filter((t) => t.status === "awaiting_approval")
@@ -55,7 +55,7 @@ export function RunControls({ run, workflowId }: Props) {
       return
     }
     toast.success("Run deleted")
-    void navigate(`/workflows/${workflowId}/runs`)
+    void navigate(workflowPath(run.workflowId, "runs"))
   }
 
   async function onApprove(taskId: string) {
@@ -67,8 +67,8 @@ export function RunControls({ run, workflowId }: Props) {
 
   return (
     <TrustStartGate
-      onStarted={(wfId, runId) => {
-        void navigate(`/workflows/${wfId}/runs/${runId}`)
+      onStarted={(_wfId, runId) => {
+        void navigate(runPath(runId))
       }}
     >
       {({ begin, pending: trustPending }) => (
@@ -115,7 +115,11 @@ export function RunControls({ run, workflowId }: Props) {
               disabledReason="Cancel or wait for the run to finish"
               tooltip="Starts a new run from the current workflow.yaml (may differ from this run's frozen graph)"
               onClick={() =>
-                begin({ mode: "rerun", runId: run.id, workflowId })
+                begin({
+                  mode: "rerun",
+                  runId: run.id,
+                  workflowId: run.workflowId,
+                })
               }
             >
               Rerun

@@ -28,6 +28,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
+import { runPath, workflowPath } from "@/lib/paths"
 import { deleteRun } from "@/lib/run-actions"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ActionButton } from "@/components/ActionButton"
@@ -46,7 +47,7 @@ export function WorkflowRunsPage() {
 
   const crumbs = [
     { label: "Workflows", to: "/" },
-    { label: workflowId, to: `/workflows/${workflowId}` },
+    { label: workflowId, to: workflowPath(workflowId) },
     { label: "Runs" },
   ] as const
 
@@ -117,8 +118,8 @@ export function WorkflowRunsPage() {
 
   return (
     <TrustStartGate
-      onStarted={(wfId, runId) => {
-        void navigate(`/workflows/${wfId}/runs/${runId}`)
+      onStarted={(_wfId, runId) => {
+        void navigate(runPath(runId))
       }}
     >
       {({ begin, pending }) => (
@@ -176,11 +177,7 @@ export function WorkflowRunsPage() {
                         <Button
                           variant="link"
                           className="h-auto p-0 font-mono"
-                          render={
-                            <Link
-                              to={`/workflows/${workflowId}/runs/${run.id}`}
-                            />
-                          }
+                          render={<Link to={runPath(run.id)} />}
                         >
                           {run.id}
                         </Button>

@@ -8,7 +8,7 @@ test.describe("run view", () => {
   }) => {
     const runId = await startRun(request, "diamond")
 
-    await page.goto(`/workflows/diamond/runs/${runId}?task=a`)
+    await page.goto(`/runs/${runId}?task=a`)
 
     await expect(page.getByTestId("run-status")).toBeVisible()
     await expect(page.getByTestId("ws-status")).toBeVisible()
@@ -42,7 +42,7 @@ test.describe("run view", () => {
 
   test("failed retry shows Retry attempt badge", async ({ page, request }) => {
     const runId = await startRun(request, "fail-retry")
-    await page.goto(`/workflows/fail-retry/runs/${runId}?task=flaky`)
+    await page.goto(`/runs/${runId}?task=flaky`)
 
     await expect(page.getByTestId("task-state-flaky")).toHaveText("failed", {
       timeout: 30_000,
@@ -57,7 +57,7 @@ test.describe("run view", () => {
     request,
   }) => {
     const runId = await startRun(request, "timeout-short")
-    await page.goto(`/workflows/timeout-short/runs/${runId}?task=slow`)
+    await page.goto(`/runs/${runId}?task=slow`)
 
     await expect(page.getByTestId("task-state-slow")).toHaveText("failed", {
       timeout: 30_000,

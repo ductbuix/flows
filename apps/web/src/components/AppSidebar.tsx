@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
 import { api } from "@/lib/api"
+import { workflowPath } from "@/lib/paths"
 import { useWorkflows } from "@/lib/workflows-context"
 import { WorkflowSidebarList } from "@/components/WorkflowSidebarList"
 import { CreateWorkflowDialog } from "@/pages/CreateWorkflowDialog"
@@ -92,7 +93,7 @@ export function AppSidebar() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={(id) => {
-          void reload().then(() => navigate(`/workflows/${id}`))
+          void reload().then(() => navigate(workflowPath(id)))
         }}
       />
       {renameId ? (
@@ -104,12 +105,12 @@ export function AppSidebar() {
             const oldId = renameId
             setRenameId(null)
             void reload().then(() => {
-              if (location.pathname.includes(oldId)) {
+              if (location.pathname.startsWith(workflowPath(oldId))) {
                 navigate(
-                  location.pathname.replace(
-                    `/workflows/${oldId}`,
-                    `/workflows/${newId}`
-                  )
+                  `${location.pathname.replace(
+                    workflowPath(oldId),
+                    workflowPath(newId)
+                  )}${location.search}`
                 )
               }
             })
@@ -125,7 +126,7 @@ export function AppSidebar() {
           onDeleted={() => {
             setDeleteTarget(null)
             void reload().then(() => {
-              if (location.pathname.startsWith(`/workflows/${deleteTarget.id}`))
+              if (location.pathname.startsWith(workflowPath(deleteTarget.id)))
                 navigate("/")
             })
           }}

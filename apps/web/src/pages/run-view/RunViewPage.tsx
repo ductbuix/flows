@@ -14,6 +14,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { AdvancedSwitch } from "@/components/AdvancedSwitch"
 import { PageHeader } from "@/components/PageHeader"
+import { workflowPath } from "@/lib/paths"
 import { RunHeader } from "./RunHeader"
 import { TaskList } from "./TaskList"
 import { TaskDetail } from "./TaskDetail"
@@ -26,19 +27,19 @@ const TaskGraph = lazy(() =>
 )
 
 export function RunViewPage() {
-  const { workflowId, runId } = useParams() as {
-    workflowId: string
-    runId: string
-  }
+  const { runId } = useParams() as { runId: string }
   const { view, taskId, setView, setTaskId } = useSearchView()
   const { run, loading, error, setRun } = useRunFetch(runId)
+  const workflowId = run?.workflowId
 
-  const crumbs = [
-    { label: "Workflows", to: "/" },
-    { label: workflowId, to: `/workflows/${workflowId}` },
-    { label: "Runs", to: `/workflows/${workflowId}/runs` },
-    { label: runId },
-  ] as const
+  const crumbs = workflowId
+    ? ([
+        { label: "Workflows", to: "/" },
+        { label: workflowId, to: workflowPath(workflowId) },
+        { label: "Runs", to: workflowPath(workflowId, "runs") },
+        { label: runId },
+      ] as const)
+    : ([{ label: "Workflows", to: "/" }, { label: runId }] as const)
 
   const onSnapshot = useCallback(
     (next: Parameters<typeof setRun>[0]) => {
@@ -86,7 +87,6 @@ export function RunViewPage() {
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
         <RunHeader
           run={run}
-          workflowId={workflowId}
           view={view}
           onViewChange={setView}
           wsState={wsState}
