@@ -1,21 +1,43 @@
 ---
 id: DES-020
-title: Fixed prompt files
+title: Fixed prompt files and generated task ids
 type: design
 status: draft
-summary: Agent prompts and judge files live at fixed paths under tasks/<taskId>/; the instructions key is removed.
+summary: Agent prompts live at tasks/<taskId>/; task ids are engine-generated; a name field is the display label.
 tags: [agents, yaml, editor, files, spawn]
 related: [DES-002, DES-004, DES-005, DES-010, DES-013, DES-018, DES-019, BL-019, BL-020]
 updated: 2026-11-21
 ---
 
-# Fixed prompt files
+# Fixed prompt files and generated task ids
 
-The `instructions` key is a free path today. The Inspector lets the
-user edit it, and it is easy for the yaml and the file to drift. This
-design removes the key. Paths are derived from the task id and the
-judge slot. `TASK_INSTRUCTIONS` keeps its name and points at the
-derived file.
+The `instructions` key is a free path today, and task ids are
+free-text. This design removes the key, derives prompt paths from
+the task id, and has the engine generate ids. `TASK_INSTRUCTIONS`
+keeps its name and points at the derived file.
+
+## Task ids and names
+
+New task ids are generated when a task is created: adding a node in
+the editor, kind-switch templates that insert a new task, and spawn
+acceptance. The format is `task-` plus the first eight hex characters
+of a UUID v4, for example `task-3f9a1c2e`. If that id already exists
+in the workflow or the run graph, generate again.
+
+Ids are immutable. The Inspector has no id edit field. A shared
+helper `newTaskId()` in `packages/shared` is used by the editor and
+the engine, so they cannot drift.
+
+Every task may have an optional `name`, a display label the user can
+edit. The graph, the Inspector, and the run view show `name`, and
+fall back to `id` when `name` is missing or blank. Names need not be
+unique.
+
+Legacy ids such as `start` or `plan` stay valid. `parseWorkflowYaml`
+accepts any single path segment (no `/`, backslash, or `..`) and does
+not require the `task-[0-9a-f]{8}` pattern. Only newly generated ids
+follow the pattern. Existing workflows do not have to be rewritten.
+Ledger: [DES-007](des-007-tradeoffs.md).
 
 ## Paths
 
@@ -32,12 +54,14 @@ workflows/<workflowId>/
 
 Helpers in `packages/shared`, used by the server, engine and web:
 
+- `newTaskId()` → a fresh `task-<8 hex>` id
 - `taskPromptPath(taskId)` → `tasks/<taskId>/prompt.md`
 - `judgePromptPath(taskId, slot)` → the slot file above
+- `upstreamEnvName(taskId)` → `UPSTREAM_` plus the id with every
+  `-` replaced by `_` (see below)
 
-A task id must be a single path segment (no `/`, `\`, or `..`).
-`parseWorkflowYaml` rejects an unsafe id with a clear error. No other
-new abstraction.
+`parseWorkflowYaml` rejects an unsafe id with a clear error. No
+other new abstraction.
 
 ## Workflow yaml
 
@@ -48,19 +72,21 @@ tasks.
 
 ```yaml
 tasks:
-  - id: plan
+  - id: task-a1b2c3d4
+    name: Plan
     kind: agent
     cli: claude
     spawn: true
-  - id: check
+  - id: task-e5f60718
+    name: Check
     kind: command
     run: python check.py
-    needs: [plan]
+    needs: [task-a1b2c3d4]
     repeat:
       until:
         any:
           - expr: "json('out/score.json').score >= 0.8"
-          - agent: { cli: claude } # reads tasks/check/until.md
+          - agent: { cli: claude } # reads tasks/task-e5f60718/until.md
 ```
 
 Any leftover `instructions` key, on a task or a judge, is a parse
@@ -69,56 +95,50 @@ path (when that path can be computed) and to delete the key. There
 is no auto-migration. The one known real workflow is
 `~/.flowapp/workflows/implement-ticket` (`instructions: tasks/start.md`
 on task `start`). That is fixed by hand: move the file to
-`tasks/start/prompt.md` and drop the key.
+`tasks/start/prompt.md` and drop the key. Its ids (`start`,
+`analyze-ticket`) stay as they are.
+
+## Upstream env names
+
+Today the runner sets `UPSTREAM_<id>` with the raw id
+(`runner.ts`). A hyphen is not valid in a shell variable name, so
+`$UPSTREAM_task-3f9a1c2e` would not work (the shell would parse a
+`-` as part of `${var-default}`). The env name is therefore
+`UPSTREAM_` plus the id with every `-` replaced by `_`. The id
+`task-3f9a1c2e` is `UPSTREAM_task_3f9a1c2e`. A legacy id
+`analyze-ticket` is `UPSTREAM_analyze_ticket`.
+
+Two tasks in the same graph must not map to the same env name. If
+they would, `parseWorkflowYaml` reports a clear error.
 
 ## Inspector
 
-The path input goes away. The label is **Prompt**. The button is
-**Edit prompt**, always enabled. Muted text under it reads "Stored at
-`tasks/<id>/prompt.md` in this workflow." If the file is missing, it
-also says "Not created yet." **Edit prompt** opens the existing
+The path input and the id edit input go away. The id is shown as
+read-only muted text (copyable). A **Name** field sits above it.
+The prompt label is **Prompt**. The button is **Edit prompt**,
+always enabled. Muted text under it reads "Stored at
+`tasks/<id>/prompt.md` in this workflow." If the file is missing,
+it also says "Not created yet." **Edit prompt** opens the existing
 textarea dialog (`FileEditorDialog`) and creates the file on first
 save, through the files API from DES-018.
 
 Kind switch to `agent` no longer writes an `instructions` field
 (DES-018 still requires a valid shape: `cli: claude`, drop `run`).
+The task keeps its id and `name`.
 
 The first UI cut is the agent task prompt only. The Inspector does
 not yet edit `when` or `until`. Judge files can be written through
 the files API. Revisit when the Inspector grows condition editors.
 
-Test ids: `field-prompt-path`, `edit-prompt`, `prompt-editor`,
-`prompt-save`.
+Test ids: `field-task-id`, `field-task-name`, `field-prompt-path`,
+`edit-prompt`, `prompt-editor`, `prompt-save`.
 
-## Rename and delete
-
-Renaming a task moves `tasks/<old>/` to `tasks/<new>/`. The editor
-tracks renames and sends them with the workflow PUT:
-`{ yaml, baseHash, renames?: [{ from, to }] }`. The server applies
-the folder moves in the same request as the yaml write, so the file
-and the yaml never disagree.
-
-It also renames `need-<old>` files to `need-<new>` in every task
-folder, because a dependant's judge file is named after the upstream
-id, which `renameTask` already updates in the yaml.
-
-Order:
-
-1. Validate `baseHash`, the new yaml, and every rename. If a target
-   folder exists and the source still exists, return `409` and write
-   nothing.
-2. A missing source is fine (no prompt folder yet) and is skipped.
-   A missing source with the target already present is treated as
-   already applied (idempotent).
-3. Apply the folder moves, then the `need-*` file renames, then
-   write the yaml.
-4. If the yaml write fails after moves, roll the moves back and
-   return the yaml error. If rollback fails, return `500` and say
-   the folders were moved and the yaml was not; a retry is
-   idempotent.
+## Delete
 
 Deleting a task does not delete its folder. Orphans are harmless.
-Ledger: [DES-007](des-007-tradeoffs.md).
+There is no task-id rename in the app, so the workflow PUT does not
+take a `renames` list and the server does not move `tasks/<id>/`
+or `need-*` files. Ledger: [DES-007](des-007-tradeoffs.md).
 
 ## Judges
 
@@ -135,26 +155,33 @@ uses the derived path, the cli, and the attempt root.
 
 ## Spawn and promote
 
-The spawner still writes `out/spawn/<id>.yaml`. For an agent (or a
-task with an agent judge) it also writes the prompt and judge files
-next to the spec, under `out/spawn/<id>/`, using the same file
-names (`prompt.md`, `when.md`, and so on). Spawn validation rejects
-an agent spec whose `prompt.md` is missing, or a spec with an agent
-judge whose slot file is missing. Rejections go to
-`input/spawn-rejections.md` as today. A leftover `instructions` key
-in a spec is rejected with the same class of message as parse.
+Spawn specs no longer carry `id`. Each spec is identified by its
+file stem: `out/spawn/<stem>.yaml`, with prompt and judge files
+under `out/spawn/<stem>/`. A leftover `id` key in a spec is
+rejected, with a message that the stem is the identity.
 
-The engine stamps `promptDir` on the accepted task in `graph.json`,
-next to `spawnDepth` and `spawnedBy`. The value is relative to the
-run root, for example
-`tasks/<parent>/attempt-<n>/out/spawn/<id>`. Resume and later
-launches resolve the prompt from that directory, not from the
-workflow folder. Authored tasks have no `promptDir`; they use
+A stem must be a single path segment, must not match
+`task-[0-9a-f]{8}`, must be unique in the batch, and must not equal
+any task id already in the graph. That makes a `needs` entry
+unambiguous: it is either a sibling stem or an existing task id,
+never both. The engine assigns each accepted spec a new id, rewrites
+`needs` from stems to real ids, and stamps `promptDir` (run-root
+relative, for example
+`tasks/<parent>/attempt-<n>/out/spawn/<stem>`), plus `spawnDepth`
+and `spawnedBy`. Resume and later launches resolve the prompt from
+that directory. Authored tasks have no `promptDir`; they use
 `tasks/<taskId>/` under the workflow folder.
+
+Spawn validation still checks schema, unique generated ids, existing
+needs, no cycles, `maxTasks`, `maxSpawnDepth`, and that required
+prompt and judge files exist. Rejections go to
+`input/spawn-rejections.md` as today. A leftover `instructions` key
+is rejected with the same class of message as parse. An optional
+`name` in the spec is kept.
 
 Promoting a spawned task into `workflow.yaml` copies that folder to
 `workflows/<workflowId>/tasks/<id>/` and strips `promptDir` with the
-other spawn meta.
+other spawn meta. The generated id is kept.
 
 ## Missing prompt and pre-run check
 
@@ -168,17 +195,24 @@ authored agent task in the starting graph has no `prompt.md`, or
 when an agent judge slot has no file. Warnings never block. The
 reason at launch stays `missing_prompt`.
 
+## Hand-edited yaml
+
+The YAML pane can still change a task's `id`, as long as the new
+value is a safe single path segment and is unique in the file.
+The app does not move `tasks/<old>/` or rewrite `needs` or
+`need-*` files. The user must move files and update references by
+hand. That is an accepted risk (DES-007).
+
 ## Impact
 
 | Area | What changes |
 | ---- | ------------ |
-| `packages/shared` | Drop `instructions` from agent, command and judge schemas; reject the leftover key; one-judge-per-slot refine; `taskPromptPath` / `judgePromptPath`; optional `promptDir` on tasks; `renames` on `putWorkflowBodySchema`. |
-| `workflow-yaml-kind.ts` | Kind switch to agent no longer sets `instructions`. |
-| `workflow-yaml-edit.ts` | `renameTask` stays; the server performs the folder moves. |
-| `packages/engine` | `instructionsAbsPath` in `runner.ts` uses the helpers and `promptDir`; `judge.ts` and `conditions.ts` use slot paths; spawn validation checks the files and stamps `promptDir`; preflight adds the warn-only missing-prompt check; `agent-prompt.ts` signatures stay. |
-| `apps/server` | Workflow PUT applies `renames` as above; promote copies the folder; files API already allows `tasks/...`. |
-| `apps/web` | `AgentTaskFields.tsx`, `Inspector.tsx`, rename `InstructionsEditorDialog.tsx` to `PromptEditorDialog`; the editor sends `renames` with save. |
-| Tests | About 30 fixtures still use `instructions:`; plus e2e graph-editor tests. |
+| `packages/shared` | Drop `instructions`; reject the leftover key; one-judge-per-slot refine; `newTaskId`, `taskPromptPath`, `judgePromptPath`, `upstreamEnvName`; optional `name` and `promptDir` on tasks; no `renames` on the PUT body. |
+| `workflow-yaml-kind.ts` | Kind switch to agent no longer sets `instructions`. The id is unchanged. |
+| `packages/engine` | Prompt resolution via the helpers and `promptDir`; spawn assigns ids from stems and rewrites `needs`; `UPSTREAM_*` uses `upstreamEnvName`; preflight missing-prompt check. |
+| `apps/server` | Promote copies the folder; files API already allows `tasks/...`. |
+| `apps/web` | Inspector: read-only id, editable Name, Edit prompt; add-node uses `newTaskId()`; rename `InstructionsEditorDialog.tsx` to `PromptEditorDialog`. Graph and run view show `name`. |
+| Tests | About 30 fixtures still use `instructions:`; spawn fixtures that set `id:`; e2e graph-editor tests. |
 
-The real workflow `implement-ticket` is updated by hand, not by the
-app.
+The real workflow `implement-ticket` is updated by hand for the
+prompt path only, not by the app. Its legacy ids stay.
