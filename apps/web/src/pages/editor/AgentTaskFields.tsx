@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import {
   taskPromptPath,
+  type Effort,
   type Task,
   type YamlDiagnosticDto,
 } from "@workspace/shared"
@@ -19,6 +20,8 @@ import {
   FieldError,
   FieldLabel,
 } from "@workspace/ui/components/field"
+import { ModelSelector } from "@/components/ai-elements/model-selector"
+import { useCliModels } from "@/hooks/use-cli-models"
 import { PromptEditorDialog } from "./PromptEditorDialog"
 import { taskFieldErrors } from "./field-errors"
 import { api } from "@/lib/api"
@@ -44,6 +47,7 @@ export function AgentTaskFields({
   const promptPath = taskPromptPath(task.id)
   const [promptOpen, setPromptOpen] = useState(false)
   const [promptExists, setPromptExists] = useState<boolean | null>(null)
+  const { catalog } = useCliModels(task.cli)
 
   useEffect(() => {
     let alive = true
@@ -84,6 +88,22 @@ export function AgentTaskFields({
           </SelectContent>
         </Select>
         <FieldError data-testid="field-error-cli" errors={cliErrors} />
+      </Field>
+      <Field>
+        <FieldLabel>Model and effort</FieldLabel>
+        <ModelSelector
+          catalog={catalog}
+          model={task.model}
+          effort={task.effort}
+          onChangeModel={(model) => onChangeTask(task.id, { model })}
+          onChangeEffort={(effort: Effort | undefined) =>
+            onChangeTask(task.id, { effort })
+          }
+        />
+        <FieldDescription>
+          Empty means the CLI settings apply. Changing CLI keeps the current
+          values.
+        </FieldDescription>
       </Field>
       <Field>
         <FieldLabel>Prompt</FieldLabel>

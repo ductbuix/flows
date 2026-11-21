@@ -12,6 +12,7 @@ import {
   type Need,
   type Task,
   type Workflow,
+  type WorkflowAgent,
   type WorkflowInputDecl,
   type WorkflowLimits,
 } from "@workspace/shared"
@@ -83,6 +84,13 @@ export function yamlAfterLimits(
     "limits",
     limitsEmpty(limits) ? undefined : limits
   )
+}
+
+export function yamlAfterAgent(
+  yaml: string,
+  agent: WorkflowAgent | undefined
+): string {
+  return setWorkflowField(yaml, "agent", agent)
 }
 
 export function yamlAfterTaskPatch(

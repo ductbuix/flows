@@ -2,16 +2,23 @@ import { useMemo } from "react"
 import type { Workflow } from "@workspace/shared"
 import {
   Background,
-  Controls,
   Handle,
+  Panel,
   Position,
   ReactFlow,
+  useReactFlow,
   type Connection,
   type Node,
   type NodeProps,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
+import { MinusIcon, PlusIcon, ScanIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
+import { Button } from "@workspace/ui/components/button"
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@workspace/ui/components/button-group"
 import { Card } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
 import { buildEditorGraph, type EditorNodeData } from "./editor-graph-layout"
@@ -46,6 +53,45 @@ function EditorTaskNode({
 }
 
 const nodeTypes = { editorTask: EditorTaskNode }
+
+function GraphControls() {
+  const { zoomIn, zoomOut, fitView } = useReactFlow()
+  return (
+    <Panel position="bottom-left">
+      <ButtonGroup data-testid="graph-controls">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-label="Zoom out"
+          onClick={() => void zoomOut()}
+        >
+          <MinusIcon />
+        </Button>
+        <ButtonGroupSeparator />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-label="Zoom in"
+          onClick={() => void zoomIn()}
+        >
+          <PlusIcon />
+        </Button>
+        <ButtonGroupSeparator />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-label="Fit view"
+          onClick={() => void fitView()}
+        >
+          <ScanIcon />
+        </Button>
+      </ButtonGroup>
+    </Panel>
+  )
+}
 
 type Props = {
   workflow: Workflow
@@ -93,7 +139,7 @@ export function EditorGraph({
         proOptions={{ hideAttribution: true }}
       >
         <Background />
-        <Controls showInteractive={false} />
+        <GraphControls />
       </ReactFlow>
     </div>
   )

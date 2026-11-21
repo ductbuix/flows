@@ -11,13 +11,16 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
+import { AdvancedSwitch } from "@/components/AdvancedSwitch"
 import { PageHeader } from "@/components/PageHeader"
+import { useAdvanced } from "@/hooks/use-advanced"
 import { ConflictDialog } from "./ConflictDialog"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
-import { EditorGraph } from "./EditorGraph"
+import { EditorGraphPane } from "./EditorGraphPane"
 import { Inspector } from "./Inspector"
 import { useEditorHotkeys } from "./useEditorHotkeys"
 import { usePendingTaskDelete } from "./usePendingTaskDelete"
+import { YamlErrorAlert } from "./YamlErrorAlert"
 import { YamlPane } from "./YamlPane"
 import { useWorkflowEditor } from "./useWorkflowEditor"
 
@@ -25,6 +28,7 @@ export function WorkflowEditorPage() {
   const { workflowId } = useParams() as { workflowId: string }
   const editor = useWorkflowEditor(workflowId)
   const { state } = editor
+  const { advanced, setAdvanced } = useAdvanced()
   const { pendingDelete, requestDelete, clearPendingDelete } =
     usePendingTaskDelete(workflowId, state.workflow)
 
@@ -35,6 +39,7 @@ export function WorkflowEditorPage() {
 
   const headerActions = (
     <>
+      <AdvancedSwitch />
       <Button size="sm" variant="outline" onClick={editor.addCommandTask}>
         Add task
       </Button>
@@ -92,39 +97,44 @@ export function WorkflowEditorPage() {
     )
   }
 
+  const graphProps = {
+    workflow: state.workflow,
+    selectedTaskId: state.selectedTaskId,
+    onSelectTask: editor.setSelectedTaskId,
+    onConnect: editor.connectTasks,
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <PageHeader crumbs={[...crumbs]} actions={headerActions} />
+      {!advanced ? (
+        <YamlErrorAlert
+          errors={state.errors}
+          onOpenAdvanced={() => setAdvanced(true)}
+        />
+      ) : null}
 
       <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
         <ResizablePanel defaultSize="58%" minSize="30%">
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel defaultSize="65%" minSize="30%">
-              {state.workflow ? (
-                <EditorGraph
-                  workflow={state.workflow}
-                  selectedTaskId={state.selectedTaskId}
-                  onSelectTask={editor.setSelectedTaskId}
-                  onConnect={editor.connectTasks}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center p-4 text-sm text-muted-foreground">
-                  Fix YAML errors to show the graph (last valid state kept when
-                  possible).
+          {advanced ? (
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel defaultSize="65%" minSize="30%">
+                <EditorGraphPane {...graphProps} />
+              </ResizablePanel>
+              <ResizableHandle />
+              <ResizablePanel defaultSize="35%" minSize="15%">
+                <div className="h-full p-4">
+                  <YamlPane
+                    value={state.yaml}
+                    errors={state.errors}
+                    onChange={editor.setYaml}
+                  />
                 </div>
-              )}
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel defaultSize="35%" minSize="15%">
-              <div className="h-full p-4">
-                <YamlPane
-                  value={state.yaml}
-                  errors={state.errors}
-                  onChange={editor.setYaml}
-                />
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            <EditorGraphPane {...graphProps} />
+          )}
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel defaultSize="42%" minSize="20%">
@@ -138,6 +148,7 @@ export function WorkflowEditorPage() {
               onChangeTask={editor.changeTask}
               onChangeInputs={editor.changeInputs}
               onChangeLimits={editor.changeLimits}
+              onChangeAgent={editor.changeAgent}
               onDeleteTask={requestDelete}
             />
           ) : (

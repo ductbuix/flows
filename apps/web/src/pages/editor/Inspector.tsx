@@ -1,6 +1,7 @@
 import type {
   Task,
   Workflow,
+  WorkflowAgent,
   WorkflowInputDecl,
   WorkflowLimits,
   YamlDiagnosticDto,
@@ -26,6 +27,7 @@ import {
 } from "@workspace/ui/components/field"
 import { Separator } from "@workspace/ui/components/separator"
 import { ActionButton } from "@/components/ActionButton"
+import { AgentDefaultsFields } from "./AgentDefaultsFields"
 import { AgentTaskFields } from "./AgentTaskFields"
 import { InputsPanel } from "./InputsPanel"
 import { MemoryPanel } from "./MemoryPanel"
@@ -40,6 +42,7 @@ type Props = {
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
   onChangeInputs: (inputs: WorkflowInputDecl[] | undefined) => void
   onChangeLimits: (limits: WorkflowLimits | undefined) => void
+  onChangeAgent: (agent: WorkflowAgent | undefined) => void
   onDeleteTask: (taskId: string) => void
 }
 
@@ -52,6 +55,7 @@ export function Inspector({
   onChangeTask,
   onChangeInputs,
   onChangeLimits,
+  onChangeAgent,
   onDeleteTask,
 }: Props) {
   const taskIndex = workflow.tasks.findIndex((t) => t.id === selectedTaskId)
@@ -79,6 +83,10 @@ export function Inspector({
             limits={workflow.limits}
             onChangeInputs={onChangeInputs}
             onChangeLimits={onChangeLimits}
+          />
+          <AgentDefaultsFields
+            agent={workflow.agent}
+            onChange={onChangeAgent}
           />
           <FieldDescription>Select a task to edit its fields.</FieldDescription>
           <MemoryPanel workflowId={workflowId} />

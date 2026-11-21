@@ -25,7 +25,7 @@ updated: 2026-11-21
 
 # UI: workflow list and graph editor
 
-Screens for BL-009. Follow [DES-008](des-008-ui.md) and
+Screens for BL-009 / BL-029. Follow [DES-008](des-008-ui.md) and
 [DES-012](des-012-ui-libraries.md) for libraries. `workflow.yaml` is the
 source of truth ([DES-002](des-002-workflow-files.md)); the graph and the
 file are two views of it and must stay in sync both ways. File sync,
@@ -56,8 +56,9 @@ preservation are in [DES-013](des-013-workflow-editing.md).
   `maxTasks`, `maxSpawnDepth`, `maxConcurrentRuns`) (DES-021), and
   per-CLI agent defaults for `model` and `effort` (DES-023).
 - The YAML text next to the graph in a CodeMirror 6 editor with YAML
-  highlighting and inline diagnostics. Editing either side updates the
-  other.
+  highlighting and inline diagnostics, shown only when Advanced is on
+  (`flows-advanced`, DES-024). Editing either side updates the other.
+  A parse error with Advanced off shows an Alert that opens Advanced.
 - The workflow's `memory/*.md` files, editable (DES-013).
 - Validation errors from the workflow schema, on the field and in YAML.
 - Promote a spawned task from a run ([DES-005](des-005-agents-spawn.md),

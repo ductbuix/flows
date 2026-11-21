@@ -3,8 +3,16 @@ import {
   isAllowedWorkflowFilePath,
   workflowFileDetailSchema,
 } from "@workspace/shared"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
+import { PromptInput } from "@/components/ai-elements/prompt-input"
 import { api } from "@/lib/api"
-import { FileEditorDialog } from "./FileEditorDialog"
 
 type Props = {
   workflowId: string
@@ -89,18 +97,28 @@ export function PromptEditorDialog({
   }
 
   return (
-    <FileEditorDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title={path}
-      description="Prompt for this agent task. Saving creates the file if it is missing."
-      editorTestId="prompt-editor"
-      saveTestId="prompt-save"
-      content={content}
-      onContentChange={setContent}
-      error={error}
-      busy={busy}
-      onSave={() => void save()}
-    />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl" data-testid="prompt-editor">
+        <DialogHeader>
+          <DialogTitle className="font-mono">{path}</DialogTitle>
+          <DialogDescription>
+            Prompt for this agent task. Saving creates the file if it is
+            missing.
+          </DialogDescription>
+        </DialogHeader>
+        <PromptInput
+          value={content}
+          onChange={setContent}
+          onSubmit={() => void save()}
+          disabled={busy}
+          submitTestId="prompt-save"
+        />
+        {error ? (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+      </DialogContent>
+    </Dialog>
   )
 }

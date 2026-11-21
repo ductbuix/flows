@@ -55,6 +55,17 @@ export {
   type CliAdapter,
   type CliKind,
 } from "./cli-adapters.ts"
+export {
+  listCliModels,
+  readCliDefaults,
+  parseCursorListOutput,
+  type CliDefaults,
+} from "./cli-models.ts"
+export {
+  parseCursorModelList,
+  parseCursorModelId,
+  composeCursorModelId,
+} from "./cursor-model-families.ts"
 export type { CliTrustValue } from "@workspace/shared"
 
 export { manualItemKey } from "./item-key.ts"

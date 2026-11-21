@@ -19,16 +19,16 @@ the catalog API, and the attempt fields.
 
 ## Done when
 
-- [ ] After the CLI select, the drawer has Model and Effort
+- [x] After the CLI select, the drawer has Model and Effort
       selects. The first option is "Default (haiku)" (or
       "Default" / "Default (auto)" when that is what the catalog
       provides). Effort options come from the chosen model.
-      A custom model id is allowed.
-- [ ] Changing `cli` keeps the current values. If they are not
+      A custom model id is allowed. (Model Selector in BL-029)
+- [x] Changing `cli` keeps the current values. If they are not
       in the new catalog, they stay as a custom value.
-- [ ] The workflow inspector (no node selected) has an Agent
+- [x] The workflow inspector (no node selected) has an Agent
       defaults section, grouped by Claude and Cursor, with the
-      same selects.
+      same selects. (BL-029)
 - [ ] When `when`, `repeat.until`, or a need's `when` is a lone
       agent leaf, the drawer shows Model and Effort on that
       leaf. Combined conditions stay yaml-only.
@@ -37,3 +37,5 @@ the catalog API, and the attempt fields.
 - [ ] Playwright covers the default option, picking a model and
       effort, a custom id, workflow defaults, a lone judge leaf,
       and the attempt row, with video and screenshots.
+      (drawer/model/effort covered in BL-029; judge leaf and
+      attempt row still open)
