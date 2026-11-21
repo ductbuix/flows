@@ -1,5 +1,6 @@
 import {
   isAgentTask,
+  isPublishTask,
   type Condition,
   type Need,
   type Task,
@@ -7,6 +8,7 @@ import {
   type Workflow,
 } from "@workspace/shared"
 import type { CliKind } from "./cli-adapters.ts"
+import { readConnection } from "./connections.ts"
 
 function conditionNeedsAgent(cond: Condition): boolean {
   if ("agent" in cond) return true
@@ -32,13 +34,40 @@ function taskNeedsAgent(task: Task): boolean {
   return task.needs.some(needNeedsAgent)
 }
 
+/** True when a publish task uses trust-agent-review (DES-026 / BL-052). */
+export function workflowHasTrustAgentReview(
+  home: string,
+  workflow: Workflow
+): boolean {
+  for (const task of workflow.tasks) {
+    if (!isPublishTask(task)) continue
+    const conn = readConnection(home, task.connection)
+    if (conn?.policy === "trust-agent-review") return true
+  }
+  return false
+}
+
 /** True when the graph may launch an agent CLI (task or judge). */
 export function workflowNeedsAgentCli(workflow: Workflow): boolean {
   return workflow.tasks.some(taskNeedsAgent)
 }
 
+/**
+ * True when the run may spawn an agent CLI, including publish agent
+ * review (DES-026 / BL-052).
+ */
+export function runNeedsAgentCli(home: string, workflow: Workflow): boolean {
+  return (
+    workflowNeedsAgentCli(workflow) ||
+    workflowHasTrustAgentReview(home, workflow)
+  )
+}
+
 /** Distinct CLIs the graph may invoke. */
-export function workflowAgentClis(workflow: Workflow): CliKind[] {
+export function workflowAgentClis(
+  workflow: Workflow,
+  home?: string
+): CliKind[] {
   const found = new Set<CliKind>()
 
   function walkCondition(cond: Condition): void {
@@ -59,6 +88,9 @@ export function workflowAgentClis(workflow: Workflow): CliKind[] {
     for (const need of task.needs) {
       if (typeof need !== "string" && need.when) walkCondition(need.when)
     }
+  }
+  if (home && workflowHasTrustAgentReview(home, workflow)) {
+    found.add("claude")
   }
   return [...found]
 }

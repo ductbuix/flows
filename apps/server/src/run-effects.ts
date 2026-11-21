@@ -33,6 +33,15 @@ export function effectsFromEvents(events: EngineEvent[]): RunEffect[] {
       })
       continue
     }
+    if (event.type === "agent_review_finished") {
+      rows.push({
+        what: `Agent review: ${event.verdict}`,
+        connection: event.connection,
+        impact: "local",
+        result: event.reason,
+      })
+      continue
+    }
     if (event.type === "publish_finished" && event.status === "applied") {
       rows.push({
         what: `Published via ${event.taskId}`,

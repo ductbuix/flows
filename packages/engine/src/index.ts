@@ -169,7 +169,16 @@ export {
   pathComponentCount,
   resolveCursorProjectsDir,
 } from "./cursor-trust.ts"
-export { workflowNeedsAgentCli, workflowAgentClis } from "./workflow-agents.ts"
+export {
+  workflowNeedsAgentCli,
+  workflowAgentClis,
+  workflowHasTrustAgentReview,
+  runNeedsAgentCli,
+} from "./workflow-agents.ts"
+export {
+  runPublishAgentReview,
+  proposeGoalsMarkdown,
+} from "./publish-review.ts"
 export { runPreflightChecks, hasWarning } from "./preflight.ts"
 export {
   checkPathInsideHome,

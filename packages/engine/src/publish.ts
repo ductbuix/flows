@@ -11,7 +11,7 @@ import { readConnection } from "./connections.ts"
 import {
   appendPublishFinished,
   callPublish,
-  needsPersonGate,
+  gatePublish,
   nowIso,
   type PublishHost,
 } from "./publish-apply.ts"
@@ -64,7 +64,7 @@ export function hasOpenPublish(events: EngineEvent[], taskId: string): boolean {
 }
 
 /**
- * Run or gate a ready / approved publish task (DES-026 / BL-049).
+ * Run or gate a ready / approved publish task (DES-026 / BL-049 / BL-052).
  * Empty change sets succeed with nothing sent.
  */
 export async function runPublishTask(
@@ -105,15 +105,8 @@ export async function runPublishTask(
     return
   }
 
-  if (needsPersonGate(conn.policy, changeSet) && !live.approved) {
-    host.append({
-      type: "approval_requested",
-      runId: host.runId,
-      taskId: task.id,
-      at: nowIso(),
-    })
-    return
-  }
+  const allowed = await gatePublish(host, task, changeSet, conn.policy)
+  if (!allowed) return
 
   host.append({
     type: "publish_started",

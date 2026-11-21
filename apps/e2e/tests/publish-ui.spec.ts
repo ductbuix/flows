@@ -113,6 +113,30 @@ tasks:
     await expect(
       page.getByTestId("connection-policy-help-approve-each-publish")
     ).toBeVisible()
+    await page.getByTestId("connection-policy-select").click()
+    await page.getByRole("option", { name: "Trust agent review" }).click()
+    await expect(
+      page.getByTestId("connection-policy-help-trust-agent-review")
+    ).toBeVisible()
+    await expect
+      .poll(async () => {
+        const res = await request.get(`${API}/api/connections/${connId}`)
+        const body = (await res.json()) as { policy?: string }
+        return body.policy
+      })
+      .toBe("trust-agent-review")
+    await page.getByTestId("connection-policy-select").click()
+    await page.getByRole("option", { name: "Approve each publish" }).click()
+    await expect(
+      page.getByTestId("connection-policy-help-approve-each-publish")
+    ).toBeVisible()
+    await expect
+      .poll(async () => {
+        const res = await request.get(`${API}/api/connections/${connId}`)
+        const body = (await res.json()) as { policy?: string }
+        return body.policy
+      })
+      .toBe("approve-each-publish")
     await screenshotThemes(page, "connection-policy")
 
     const runId = await startRun(request, workflowId)

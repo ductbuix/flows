@@ -78,6 +78,10 @@ export const taskViewSchema = z.object({
   skipReason: z.enum(["when", "upstream_skip", "branch"]).optional(),
   /** Why a ready task has not launched yet (e.g. serial lock, BL-048). */
   waitingReason: z.string().min(1).optional(),
+  /** Agent review verdict under trust-agent-review (DES-026 / BL-052). */
+  reviewVerdict: z.enum(["approve", "escalate"]).optional(),
+  /** Reason for the agent review verdict (DES-026 / BL-052). */
+  reviewReason: z.string().min(1).optional(),
   attempts: z.array(attemptViewSchema),
 })
 

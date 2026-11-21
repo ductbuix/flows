@@ -65,4 +65,41 @@ describe("effectsFromEvents", () => {
       },
     ])
   })
+
+  it("maps agent review verdicts into the ledger", () => {
+    const events: EngineEvent[] = [
+      {
+        type: "agent_review_finished",
+        runId: "r1",
+        at: "t1",
+        taskId: "ship",
+        connection: "demo",
+        verdict: "approve",
+        reason: "looks safe",
+      },
+      {
+        type: "agent_review_finished",
+        runId: "r1",
+        at: "t2",
+        taskId: "ship2",
+        connection: "demo",
+        verdict: "escalate",
+        reason: "timeout",
+      },
+    ]
+    expect(effectsFromEvents(events)).toEqual([
+      {
+        what: "Agent review: approve",
+        connection: "demo",
+        impact: "local",
+        result: "looks safe",
+      },
+      {
+        what: "Agent review: escalate",
+        connection: "demo",
+        impact: "local",
+        result: "timeout",
+      },
+    ])
+  })
 })

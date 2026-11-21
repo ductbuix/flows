@@ -105,6 +105,7 @@ export class Scheduler {
     const publishHost: PublishHost = {
       runId: this.runId,
       runRoot: this.runRoot,
+      workflowRoot: this.workflowRoot,
       home: this.home,
       state: () => this.state(),
       append: (event) => this.append(event),

@@ -27,6 +27,14 @@ describe("connectionSchema", () => {
     expect(conn.serial).toBe(true)
   })
 
+  it("accepts trust-agent-review policy", () => {
+    const conn = connectionSchema.parse({
+      ...valid,
+      policy: "trust-agent-review",
+    })
+    expect(conn.policy).toBe("trust-agent-review")
+  })
+
   it("rejects secret keys token, password and cookie", () => {
     for (const key of ["token", "password", "cookie"] as const) {
       const result = connectionSchema.safeParse({ ...valid, [key]: "secret" })

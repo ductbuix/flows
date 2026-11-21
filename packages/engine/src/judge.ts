@@ -57,11 +57,16 @@ export type RunJudgeOptions = {
   workflowAgent?: WorkflowAgent
 }
 
+export type JudgeOutcome =
+  { ok: true } | { ok: false; reason: "missing" | "fail" | "timeout" | "error" }
+
 /**
  * Spawn the judge CLI with cwd at the attempt root. Exit 0 → pass.
- * Missing instructions, spawn failure, or timeout → fail.
+ * Missing instructions, spawn failure, or timeout → fail with reason.
  */
-export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
+export function runAgentJudgeDetailed(
+  options: RunJudgeOptions
+): Promise<JudgeOutcome> {
   const { judge, workflowRoot, attemptRoot, instructionsAbsPath } = options
   const timeoutSeconds =
     options.timeoutSeconds ?? DEFAULT_ATTEMPT_TIMEOUT_SECONDS
@@ -71,9 +76,11 @@ export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
     (!instructionsAbs.startsWith(root + "/") && instructionsAbs !== root) ||
     !existsSync(instructionsAbs)
   ) {
-    return Promise.resolve(false)
+    return Promise.resolve({ ok: false, reason: "missing" })
   }
-  if (!existsSync(attemptRoot)) return Promise.resolve(false)
+  if (!existsSync(attemptRoot)) {
+    return Promise.resolve({ ok: false, reason: "missing" })
+  }
 
   const cmd = buildJudgeShellCommand(judge, instructionsAbs, {
     parentTask: options.parentTask,
@@ -81,11 +88,11 @@ export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
   })
   return new Promise((resolvePromise) => {
     let settled = false
-    const finish = (ok: boolean) => {
+    const finish = (outcome: JudgeOutcome) => {
       if (settled) return
       settled = true
       clearTimeout(timer)
-      resolvePromise(ok)
+      resolvePromise(outcome)
     }
 
     const child: ChildProcess = spawn("/bin/sh", ["-c", cmd], {
@@ -96,12 +103,23 @@ export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
     })
     const timer = setTimeout(() => {
       if (child.pid !== undefined) killProcessGroup(child.pid)
-      finish(false)
+      finish({ ok: false, reason: "timeout" })
     }, timeoutSeconds * 1000)
 
-    child.on("error", () => finish(false))
-    child.on("close", (code) => finish(code === 0))
+    child.on("error", () => finish({ ok: false, reason: "error" }))
+    child.on("close", (code) => {
+      if (code === 0) finish({ ok: true })
+      else finish({ ok: false, reason: "fail" })
+    })
   })
+}
+
+/**
+ * Spawn the judge CLI with cwd at the attempt root. Exit 0 → pass.
+ * Missing instructions, spawn failure, or timeout → fail.
+ */
+export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
+  return runAgentJudgeDetailed(options).then((o) => o.ok)
 }
 
 /** Cache key so a run tick does not re-spawn the same judge. */

@@ -109,6 +109,12 @@ export function toTaskViews(state: RunState): TaskView[] {
       failReason: taskState?.failReason,
       skipReason: taskState?.skipReason,
       ...(waitingReason ? { waitingReason } : {}),
+      ...(taskState?.reviewVerdict
+        ? { reviewVerdict: taskState.reviewVerdict }
+        : {}),
+      ...(taskState?.reviewReason
+        ? { reviewReason: taskState.reviewReason }
+        : {}),
       attempts,
     }
   })

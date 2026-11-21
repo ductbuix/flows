@@ -13,11 +13,16 @@ import {
 } from "@workspace/ui/components/select"
 import { Section } from "@/components/Section"
 
-const POLICIES: PublishPolicy[] = ["read-only", "approve-each-publish"]
+const POLICIES: PublishPolicy[] = [
+  "read-only",
+  "approve-each-publish",
+  "trust-agent-review",
+]
 
 const LABELS: Record<PublishPolicy, string> = {
   "read-only": "Read only",
   "approve-each-publish": "Approve each publish",
+  "trust-agent-review": "Trust agent review",
 }
 
 const DESCRIPTIONS: Record<PublishPolicy, string> = {
@@ -25,6 +30,8 @@ const DESCRIPTIONS: Record<PublishPolicy, string> = {
     "Nobody publishes; the source is only context. Default for new connections.",
   "approve-each-publish":
     "A person reviews each publish with a warning. Use when a mistake affects others or is hard to undo.",
+  "trust-agent-review":
+    "An agent reviews each publish with no pause. Escalate, error, timeout or a destructive change waits for a person. Use when a mistake is easy to undo.",
 }
 
 type Props = {

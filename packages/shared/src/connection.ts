@@ -12,8 +12,12 @@ export type SignInMethod = z.infer<typeof signInMethodSchema>
 export const refreshRuleSchema = z.enum(["15m", "1h", "1d", "never"])
 export type RefreshRule = z.infer<typeof refreshRuleSchema>
 
-/** Publish policy; read-only is the default (DES-026 / BL-042). */
-export const publishPolicySchema = z.enum(["read-only", "approve-each-publish"])
+/** Publish policy; read-only is the default (DES-026 / BL-042 / BL-052). */
+export const publishPolicySchema = z.enum([
+  "read-only",
+  "approve-each-publish",
+  "trust-agent-review",
+])
 export type PublishPolicy = z.infer<typeof publishPolicySchema>
 
 export const connectionAccessSchema = z.enum(["read", "propose"])

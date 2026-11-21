@@ -82,6 +82,10 @@ export function DevKitPage() {
               policy="approve-each-publish"
               data-testid="kit-policy-approve"
             />
+            <PublishPolicyBadge
+              policy="trust-agent-review"
+              data-testid="kit-policy-agent-review"
+            />
           </div>
         </Section>
 
