@@ -9,7 +9,9 @@ import {
   setApproval,
   setRetryMax,
   setTaskNeeds,
+  setWorkflowField,
 } from "./workflow-yaml-edit.ts"
+import { applyWorkflowDiff } from "./workflow-yaml-diff.ts"
 import { switchTaskKind } from "./workflow-yaml-kind.ts"
 import { replaceMemoryRef } from "./workflow-yaml-memory.ts"
 import { parseWorkflowYaml } from "./workflow-yaml.ts"
@@ -106,6 +108,39 @@ tasks:
     const next = replaceMemoryRef(text, "memory/style.md", "memory/voice.md")
     expect(next).toContain("memory/voice.md")
     expect(next).not.toContain("memory/style.md")
+  })
+
+  it("setWorkflowField inputs and maxConcurrentRuns keep comments", () => {
+    let text = fixture
+    text = setWorkflowField(text, "inputs", [
+      {
+        name: "ticket",
+        type: "text",
+        required: true,
+        description: "Ticket key",
+      },
+    ])
+    text = setWorkflowField(text, "limits", {
+      concurrency: 2,
+      agents: 1,
+      maxConcurrentRuns: 2,
+    })
+    expect(text).toContain("# header: research workflow")
+    expect(text).toContain("# inline on goal")
+    expect(text).toContain("name: ticket")
+    expect(text).toContain("maxConcurrentRuns: 2")
+    const parsed = workflowSchema.parse(parseYaml(text))
+    expect(parsed.inputs?.[0]?.name).toBe("ticket")
+    expect(parsed.limits?.maxConcurrentRuns).toBe(2)
+
+    const cleared = applyWorkflowDiff(text, {
+      ...parsed,
+      inputs: undefined,
+      limits: { concurrency: 2, agents: 1 },
+    })
+    expect(cleared).toContain("# header: research workflow")
+    expect(cleared).not.toMatch(/^inputs:/m)
+    expect(cleared).not.toContain("maxConcurrentRuns")
   })
 
   it("switchTaskKind writes a valid agent or command shape", () => {

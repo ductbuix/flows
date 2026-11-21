@@ -68,6 +68,8 @@ export const runDetailSchema = z.object({
     finished: z.number().int().nonnegative(),
     awaitingApproval: z.number().int().nonnegative(),
   }),
+  /** Relative paths under runs/<id>/input/ (DES-021). */
+  inputFiles: z.array(z.string()).default([]),
 })
 
 export type RunDetail = z.infer<typeof runDetailSchema>

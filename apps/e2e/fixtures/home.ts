@@ -90,6 +90,38 @@ tasks:
     timeout: 5
 `
 
+const runInputsYaml = `id: run-inputs
+goal: e2e start form and inputs editor
+limits:
+  maxConcurrentRuns: 1
+inputs:
+  - name: ticket
+    type: text
+    required: true
+    description: Ticket key
+  - name: brief
+    type: markdown
+    required: false
+tasks:
+  - id: echo
+    kind: command
+    run: "printf done > \\"$TASK_OUT/out.txt\\""
+`
+
+const runInputsSlowYaml = `id: run-inputs-slow
+goal: e2e queued run cancel
+limits:
+  maxConcurrentRuns: 1
+inputs:
+  - name: ticket
+    type: text
+    required: true
+tasks:
+  - id: slow
+    kind: command
+    run: "sleep 60"
+`
+
 /** Create a temp FLOWAPP_HOME with e2e workflow fixtures. */
 export function createE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-"))
@@ -102,6 +134,8 @@ export function createE2eHome(): string {
     ["gate", gateYaml],
     ["gate-reject", gateRejectYaml],
     ["agent-trust", agentTrustYaml],
+    ["run-inputs", runInputsYaml],
+    ["run-inputs-slow", runInputsSlowYaml],
   ] as const) {
     const dir = join(home, "workflows", id)
     mkdirSync(dir, { recursive: true })

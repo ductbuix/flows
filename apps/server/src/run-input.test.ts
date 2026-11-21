@@ -11,7 +11,11 @@ import { join } from "node:path"
 import { createEngine, runDir } from "@workspace/engine"
 import {
   duplicateInputErrorSchema,
+  inputsJsonSchema,
   invalidInputErrorSchema,
+  outListSchema,
+  runDetailSchema,
+  runInputFileDetailSchema,
   startRunResponseSchema,
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
@@ -137,6 +141,63 @@ tasks:
         "utf8"
       )
     ).toContain("manual")
+    engine.close()
+  }, 20_000)
+
+  it("exposes run input files on detail and GET routes", async () => {
+    const { engine, app } = stack(`
+id: in-wf
+inputs:
+  - name: ticket
+    type: text
+    required: true
+tasks:
+  - id: a
+    kind: command
+    run: echo ok
+`)
+    const started = startRunResponseSchema.parse(
+      await (
+        await app.request("/api/workflows/in-wf/runs", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            requestId: randomUUID(),
+            values: { ticket: "ABC-1" },
+          }),
+        })
+      ).json()
+    )
+    await engine.resumeRun(started.runId)!.wait()
+
+    const detailRes = await app.request(`/api/runs/${started.runId}`)
+    expect(detailRes.status).toBe(200)
+    const detail = runDetailSchema.parse(await detailRes.json())
+    expect(detail.inputFiles).toContain("ticket.txt")
+    expect(detail.inputFiles).toContain("inputs.json")
+
+    const listRes = await app.request(`/api/runs/${started.runId}/input`)
+    expect(listRes.status).toBe(200)
+    const listed = outListSchema.parse(await listRes.json())
+    expect(listed.files.some((f) => f.path === "ticket.txt")).toBe(true)
+
+    const metaRes = await app.request(`/api/runs/${started.runId}/input/meta`)
+    expect(metaRes.status).toBe(200)
+    const meta = inputsJsonSchema.parse(await metaRes.json())
+    expect(meta.fields.ticket).toEqual({ type: "text", value: "ABC-1" })
+
+    const fileRes = await app.request(
+      `/api/runs/${started.runId}/input/files/ticket.txt`
+    )
+    expect(fileRes.status).toBe(200)
+    const file = runInputFileDetailSchema.parse(await fileRes.json())
+    expect(file.content).toBe("ABC-1")
+
+    const dl = await app.request(
+      `/api/runs/${started.runId}/input/files/ticket.txt?download=1`
+    )
+    expect(dl.status).toBe(200)
+    expect(await dl.text()).toBe("ABC-1")
     engine.close()
   }, 20_000)
 })

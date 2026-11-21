@@ -16,6 +16,7 @@ test.describe("agent CLI trust dialog", () => {
   test("trust once starts a run", async ({ page }) => {
     await page.goto("/workflows/agent-trust/runs")
     await page.getByTestId("run-start").first().click()
+    await page.getByTestId("start-run-submit").click()
     const dialog = page.getByTestId("trust-dialog")
     await expect(dialog).toBeVisible()
     await page.screenshot({
@@ -31,6 +32,7 @@ test.describe("agent CLI trust dialog", () => {
     await page.goto("/workflows/agent-trust/runs")
     const before = await page.getByTestId("run-list").textContent()
     await page.getByTestId("run-start").first().click()
+    await page.getByTestId("start-run-submit").click()
     await expect(page.getByTestId("trust-dialog")).toBeVisible()
     await page.getByTestId("trust-cancel").click()
     await expect(page.getByTestId("trust-dialog")).toBeHidden()
@@ -42,6 +44,7 @@ test.describe("agent CLI trust dialog", () => {
   test("always trust then revoke from home", async ({ page }) => {
     await page.goto("/workflows/agent-trust/runs")
     await page.getByTestId("run-start").first().click()
+    await page.getByTestId("start-run-submit").click()
     await expect(page.getByTestId("trust-dialog")).toBeVisible()
     await page.getByTestId("trust-always").click()
     await expect(page).toHaveURL(/\/workflows\/agent-trust\/runs\/[^/]+$/)
@@ -57,6 +60,7 @@ test.describe("agent CLI trust dialog", () => {
 
     await page.goto("/workflows/agent-trust/runs")
     await page.getByTestId("run-start").first().click()
+    await page.getByTestId("start-run-submit").click()
     await expect(page.getByTestId("trust-dialog")).toBeVisible()
     await page.getByTestId("trust-cancel").click()
   })
@@ -72,6 +76,7 @@ test.describe("agent CLI trust dialog", () => {
 
     await page.goto("/workflows/agent-trust/runs")
     await page.getByTestId("run-start").first().click()
+    await page.getByTestId("start-run-submit").click()
     const dialog = page.getByTestId("trust-dialog")
     // Always-trust + missing/warn checks → Run, not Trust once/always.
     // If every check passes, the dialog is skipped and we land on a run.

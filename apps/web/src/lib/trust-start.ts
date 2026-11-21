@@ -5,7 +5,13 @@ import {
   type TrustGrant,
 } from "@workspace/shared"
 import { api } from "@/lib/api"
-import { rerunRun, startRun, type ActionResult } from "@/lib/run-actions"
+import {
+  rerunRun,
+  startRun,
+  type StartRunOptions,
+  type StartRunResult,
+  type ActionResult,
+} from "@/lib/run-actions"
 
 export type TrustStartPlan =
   | { kind: "start"; grant?: TrustGrant }
@@ -39,16 +45,16 @@ export async function fetchPreflight(
 
 export async function startRunWithGrant(
   workflowId: string,
-  trustGrant?: TrustGrant
-): Promise<ActionResult<{ runId: string }>> {
-  return startRun(workflowId, trustGrant)
+  options: StartRunOptions = {}
+): Promise<StartRunResult> {
+  return startRun(workflowId, options)
 }
 
 export async function rerunWithGrant(
   runId: string,
-  trustGrant?: TrustGrant
-): Promise<ActionResult<{ runId: string }>> {
-  return rerunRun(runId, trustGrant)
+  options: StartRunOptions = {}
+): Promise<StartRunResult> {
+  return rerunRun(runId, options)
 }
 
 export function parseTrustRequired(body: unknown): PreflightResponse | null {
@@ -60,3 +66,5 @@ export function parseTrustRequired(body: unknown): PreflightResponse | null {
     needsAgentCli: true,
   }
 }
+
+export type { StartRunOptions, StartRunResult }

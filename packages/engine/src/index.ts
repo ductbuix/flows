@@ -29,6 +29,7 @@ export {
   taskDir,
   attemptDir,
 } from "./paths.ts"
+export { runInputDir } from "./run-input.ts"
 export { loadWorkflowFile, assertValidGraph } from "./workflow.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"
 export {

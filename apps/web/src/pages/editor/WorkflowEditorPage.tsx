@@ -135,6 +135,8 @@ export function WorkflowEditorPage() {
               errors={state.errors}
               onChangeGoal={editor.changeGoal}
               onChangeTask={editor.changeTask}
+              onChangeInputs={editor.changeInputs}
+              onChangeLimits={editor.changeLimits}
             />
           ) : (
             <p className="p-3 text-sm text-muted-foreground">

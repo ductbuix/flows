@@ -20,6 +20,15 @@ export function applyWorkflowDiff(text: string, next: Workflow): string {
   if (JSON.stringify(prev.limits) !== JSON.stringify(next.limits)) {
     out = setWorkflowField(out, "limits", next.limits)
   }
+  if (JSON.stringify(prev.inputs) !== JSON.stringify(next.inputs)) {
+    out = setWorkflowField(
+      out,
+      "inputs",
+      next.inputs === undefined || next.inputs.length === 0
+        ? undefined
+        : next.inputs
+    )
+  }
   if (prev.id !== next.id) out = setWorkflowField(out, "id", next.id)
 
   const prevIds = new Set(prev.tasks.map((t) => t.id))

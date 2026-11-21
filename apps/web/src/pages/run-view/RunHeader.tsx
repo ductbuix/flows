@@ -22,6 +22,7 @@ import { Link } from "react-router"
 import type { RunBodyView } from "./useSearchView"
 import type { WsConnectionState } from "./useRunSocket"
 import { RunControls } from "./RunControls"
+import { RunInputFiles } from "./RunInputFiles"
 
 type Props = {
   run: RunDetail
@@ -71,6 +72,8 @@ export function RunHeader({
       )}
 
       <RunControls run={run} workflowId={workflowId} />
+
+      <RunInputFiles runId={run.id} files={run.inputFiles} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Badge data-testid="run-status" variant="secondary">
