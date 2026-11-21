@@ -77,4 +77,58 @@ describe("library routes", () => {
     })
     expect(res.status).toBe(404)
   })
+
+  it("POST /library/clear removes unpinned revisions", async () => {
+    const { app } = testStack()
+    await app.request("/api/connections", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "demo",
+        connector: "fake",
+        name: "Demo",
+        scope: { label: "item-1" },
+        signIn: "cli",
+        refresh: "1h",
+      }),
+    })
+    await app.request("/api/library/pull", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ connection: "demo" }),
+    })
+    // Second pull with force via another scope value on fake uses same entity
+    // from connection scope; pull again still creates a new revision.
+    await app.request("/api/library/pull", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ connection: "demo" }),
+    })
+
+    const before = libraryListSchema.parse(
+      await (await app.request("/api/library")).json()
+    )
+    const entity = before.entities[0]
+    expect(entity).toBeTruthy()
+    expect(entity!.revisions.length).toBeGreaterThanOrEqual(1)
+
+    const clearRes = await app.request("/api/library/clear", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        connection: "demo",
+        kind: entity!.kind,
+        entityId: entity!.entityId,
+      }),
+    })
+    expect(clearRes.status).toBe(200)
+    const cleared = (await clearRes.json()) as { removed: string[] }
+    expect(Array.isArray(cleared.removed)).toBe(true)
+    const after = libraryListSchema.parse(
+      await (await app.request("/api/library")).json()
+    )
+    expect(after.usage.maxBytes).toBeGreaterThan(0)
+    expect(after.entities[0].revisions).toHaveLength(1)
+    expect(after.entities[0].revisions[0]?.current).toBe(true)
+  })
 })

@@ -16,6 +16,7 @@ if (process.env.FLOWAPP_FAKE_CONNECTOR === "1") {
 
 const engine = createEngine()
 engine.resumeAll()
+engine.startLibraryRetention()
 const app = createApp({ engine })
 
 const port = Number(process.env.PORT ?? 8787)

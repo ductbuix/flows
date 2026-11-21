@@ -20,42 +20,33 @@ Schema and writing rules: `docs/README.md`.
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
   on `127.0.0.1:5173`, proxies `/api`. Sidebar Platform (Home, Work
   items, Workflows, Runs, Connections), Workflows group, Settings;
-  `/work-items` and `/work-items/:id` (Runs, Start with workItemId,
-  Notes, Attachments); `/connections` (Connections/Library tabs) and
-  `/connections/:id` (sign-in check, browser sign-in/remove, local
-  data, used by, refresh, policy); Impact/Freshness/Policy Badges on
-  `/dev/kit`; Home Needs you (approvals, expired sign-ins);
-  `/workflows` and `/runs`; workflow Overview/Editor/Runs; graph
-  editor, start/rerun, run view with live websocket; Settings.
+  `/work-items` and `/work-items/:id`; `/connections` (Connections/
+  Library tabs, size warning at 80%) and `/connections/:id` (sign-in,
+  local data, used by, refresh, policy); Impact/Freshness/Policy on
+  `/dev/kit`; Home Needs you; `/workflows` and `/runs`; Overview/
+  Editor/Runs; graph editor, start/rerun, run view; Settings.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
-  CRUD, workflow-scoped file GET/PUT, promote, trust GET/PUT and run
-  preflight, GET `/cli/:cli/models`, connections CRUD/check/sign-in and
-  `GET /connectors`, library GET/pull, work item CRUD (notes,
-  attachments, trash), run REST (GET `/runs` with
-  status/workflowId/workItemId/limit, start with
-  trustGrant/values/files/workItemId, confirmDuplicate, cancel, rerun
-  with refreshPins keeping workItemId, retry, approve, reject, delete),
-  run input list/meta/files, log/summary/out, websocket run snapshots,
-  `runs_changed`, log chunks and workflow file watches.
+  CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
+  `/cli/:cli/models`, connections CRUD/check/sign-in and
+  `GET /connectors`, library GET/pull/clear (usage + retention), work
+  item CRUD, run REST (list/start/cancel/rerun/retry/approve/reject/
+  delete, changes), run input/files, log/summary/out, websocket
+  snapshots, `runs_changed`, log chunks and file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command and agent tasks (CliAdapter: trust, catalog,
-  `composeFlags`), connector registry (`connectors/`, github read,
-  fake for tests), connections store, library revisions/pull/pins
-  (`library.ts`, run `resources/` + `RESOURCE_*`), work item store
-  under `workitems/`, cookie secrets under `secrets/` (Chrome sign-in,
-  sandbox denies reads), propose work copies (`work/`, serial lock,
-  change sets via `GET /runs/:id/changes/:connectionId`),
-  model/effort resolve and preflight warns (including connection uses),
-  app-owned trust markers, spawn into `graph.json`, resume, approval,
-  cancel, manual retry, conditions, retry, repeat, `agents` limits, run
-  deletion, workflow id rebind, frozen `RUN_INPUT`, Manual source,
-  queued runs, run summary cache, port leases and `<workflow>/.cache`.
-- `packages/shared`: zod schemas for API (`runSummarySchema` with
-  `needsYou`/`workItemId`, `workItemSchema`), websocket, workflow,
-  `connection.yaml`, library list/pull and `resources.json`, events
-  (`queued`, `run_activated`, `library_pulled`, `workItemId`) and YAML
-  Document edits.
+  scheduler, command/agent tasks (CliAdapter), connectors (github,
+  fake), connections, library pull/pins/retention (`library.ts`,
+  maxBytes, sweep, clear, `resources/` + `RESOURCE_*`), work items,
+  cookie secrets under `secrets/` (Chrome sign-in, sandbox denies),
+  propose work copies (`work/`, serial lock, change sets), model/
+  effort resolve and preflight, trust markers, spawn, resume,
+  approval, cancel, retry, repeat, `agents` limits, run deletion,
+  frozen `RUN_INPUT`, queued runs, summary cache, port leases,
+  `<workflow>/.cache`.
+- `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
+  websocket, workflow, `connection.yaml`, library list/pull/clear/
+  usage, `resources.json`, `config.yaml` `library.maxBytes`, events
+  and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
 - `packages/docs-tools`: docs index generator and checker.

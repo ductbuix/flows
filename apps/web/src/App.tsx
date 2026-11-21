@@ -44,6 +44,8 @@ export function App() {
         ) : null}
         <Route path="work-items" element={<WorkItemsPage />} />
         <Route path="work-items/:workItemId" element={<WorkItemPage />} />
+        <Route path="connections" element={<ConnectionsPage />} />
+        <Route path="connections/:connectionId" element={<ConnectionPage />} />
         <Route path="workflows" element={<WorkflowsPage />} />
         <Route path="workflows/:workflowId" element={<WorkflowPage />} />
         <Route
@@ -56,8 +58,6 @@ export function App() {
         />
         <Route path="runs" element={<RunsPage />} />
         <Route path="runs/:runId" element={<RunViewPage />} />
-        <Route path="connections" element={<ConnectionsPage />} />
-        <Route path="connections/:connectionId" element={<ConnectionPage />} />
       </Route>
     </Routes>
   )

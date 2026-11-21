@@ -32,6 +32,10 @@ import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
 import { Scheduler } from "./scheduler.ts"
 import type { ManualFilePart } from "./source-manual.ts"
 import { appendRunStarted } from "./start-run.ts"
+import {
+  LIBRARY_RETENTION_INTERVAL_MS,
+  sweepLibrary,
+} from "./library-retention.ts"
 import { decideTrust } from "./trust-policy.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
 import { workflowNeedsAgentCli } from "./workflow-agents.ts"
@@ -66,6 +70,7 @@ export class Engine {
   private readonly globalLimits: WorkflowLimits | undefined
   private readonly schedulers = new Map<string, Scheduler>()
   private readonly summaryCache: RunSummaryCache
+  private retentionTimer: ReturnType<typeof setInterval> | undefined
 
   constructor(options: CreateEngineOptions = {}) {
     this.home = resolveAppHome(options.home)
@@ -340,7 +345,32 @@ export class Engine {
     return this.handleFor(runId, scheduler, "running")
   }
 
+  /** Run ids with queued or running status (block shared-clone gc). */
+  liveRunIds(): string[] {
+    return this.listRuns()
+      .filter((r) => isLiveRunStatus(r.status))
+      .map((r) => r.runId)
+  }
+
+  /**
+   * Sweep unpinned revisions on start and every hour (DES-026 / BL-047).
+   * Call from the server process only; tests invoke sweepLibrary directly.
+   */
+  startLibraryRetention(): void {
+    if (this.retentionTimer) return
+    const tick = () => {
+      void sweepLibrary(this.home, { liveRunIds: this.liveRunIds() })
+    }
+    tick()
+    this.retentionTimer = setInterval(tick, LIBRARY_RETENTION_INTERVAL_MS)
+    this.retentionTimer.unref?.()
+  }
+
   close(): void {
+    if (this.retentionTimer) {
+      clearInterval(this.retentionTimer)
+      this.retentionTimer = undefined
+    }
     for (const scheduler of this.schedulers.values()) scheduler.dispose()
     this.schedulers.clear()
     this.log.close()

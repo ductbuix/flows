@@ -23,6 +23,7 @@ import {
   revisionMetaPath,
   type RevisionMeta,
 } from "./library-paths.ts"
+import { assertLibraryHasSpace } from "./library-usage.ts"
 import { libraryEntityDir } from "./paths.ts"
 
 /** Pseudo run id for manual pulls outside a run (BL-043). */
@@ -105,6 +106,8 @@ export async function pullEntity(options: {
   }
   const check = await connector.check(connection, home)
   if (!check.ok) throw new Error(check.message)
+
+  assertLibraryHasSpace(home)
 
   mkdirSync(entityRoot, { recursive: true })
   const staging = join(entityRoot, `.pull-${randomUUID()}`)
