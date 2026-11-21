@@ -9,7 +9,6 @@ import {
 } from "@workspace/ui/components/dialog"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { FieldLegend, FieldSet } from "@workspace/ui/components/field"
-import { ScrollArea } from "@workspace/ui/components/scroll-area"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -113,11 +112,11 @@ export function RunInputFiles({ runId, files }: Props) {
               <AlertDescription>{previewError}</AlertDescription>
             </Alert>
           ) : (
-            <ScrollArea className="max-h-96 rounded-lg border">
+            <div className="max-h-96 overflow-auto rounded-lg border">
               <pre className="p-3 font-mono text-xs whitespace-pre-wrap">
                 {previewContent}
               </pre>
-            </ScrollArea>
+            </div>
           )}
         </DialogContent>
       </Dialog>

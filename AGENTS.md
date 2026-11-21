@@ -40,7 +40,8 @@ Schema and writing rules: `docs/README.md`.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/web`: Sidebar shell (workflows, Settings), graph editor (React
   Flow Card nodes + Button Group controls, YAML behind Advanced,
-  Prompt Input, Model Selector, inputs, maxConcurrentRuns),
+  Prompt Input, Model Selector, inputs, maxConcurrentRuns, PageTitle,
+  Section, RunStatusBadge, dev-only `/dev/kit`),
   memory/*.md editor, run list, start/rerun input form, run view
   (list/graph, Terminal/Task/Plan/Stack Trace/File Tree/Confirmation,
   Advanced env/raw logs, SUMMARY.md, run inputs, promote) with live
