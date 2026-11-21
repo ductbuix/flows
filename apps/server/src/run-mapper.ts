@@ -84,6 +84,7 @@ export function toTaskViews(state: RunState): TaskView[] {
       pid: a.pid,
       exitCode: a.exitCode,
       interrupted: a.interrupted,
+      reason: a.reason,
       kind: deriveAttemptKind(
         spec!,
         taskState!.attempts.map((x) => ({

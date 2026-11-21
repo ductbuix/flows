@@ -51,4 +51,20 @@ test.describe("run view", () => {
     await page.getByTestId("task-tab-attempts").click()
     await expect(page.getByTestId("attempt-kind-2")).toContainText(/Retry/)
   })
+
+  test("short timeout fails with visible timeout reason", async ({
+    page,
+    request,
+  }) => {
+    const runId = await startRun(request, "timeout-short")
+    await page.goto(`/workflows/timeout-short/runs/${runId}?task=slow`)
+
+    await expect(page.getByTestId("task-state-slow")).toHaveText("failed", {
+      timeout: 30_000,
+    })
+    await expect(page.getByTestId("run-status")).toHaveText("failed")
+
+    await page.getByTestId("task-tab-attempts").click()
+    await expect(page.getByTestId("attempt-reason-1")).toHaveText("timeout")
+  })
 })

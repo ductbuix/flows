@@ -13,6 +13,8 @@ export type ConditionContext = {
   needExitCodes?: Record<string, number | undefined>
   /** Per-run cache of in-flight / finished agent judges. */
   judgeCache?: Map<string, Promise<boolean>>
+  /** Judge process timeout in seconds (DES-019). */
+  timeoutSeconds?: number
 }
 
 export { evaluateExpr } from "./conditions-expr.ts"
@@ -93,6 +95,7 @@ async function evaluateAgent(
     judge: agent,
     workflowRoot: ctx.workflowRoot,
     attemptRoot: ctx.attemptRoot,
+    timeoutSeconds: ctx.timeoutSeconds,
   })
   cache?.set(key, pending)
   return pending

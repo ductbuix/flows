@@ -1,4 +1,9 @@
-import type { EngineEvent, RunStatus, TaskStatus, Workflow } from "@workspace/shared"
+import type {
+  EngineEvent,
+  RunStatus,
+  TaskStatus,
+  Workflow,
+} from "@workspace/shared"
 import { applyEvent } from "./fold-apply.ts"
 import { needsStructurallyReady } from "./needs.ts"
 
@@ -7,6 +12,12 @@ export type AttemptState = {
   pid?: number
   exitCode?: number
   interrupted?: boolean
+  /** ISO time from attempt_started (DES-019 resume). */
+  startedAt?: string
+  /** Resolved seconds from attempt_launched (DES-019). */
+  timeout?: number
+  /** timeout or mapped CLI stderr (DES-019). */
+  reason?: string
   /** Next attempt after task_retry_requested (DES-011). */
   manualRetry?: boolean
 }

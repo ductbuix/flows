@@ -107,6 +107,7 @@ describe("foldEvents", () => {
     expect(state?.tasks.a?.status).toBe("succeeded")
     expect(state?.tasks.a?.attempts[0]).toEqual({
       attempt: 1,
+      startedAt: "t1",
       pid: 42,
       exitCode: 0,
     })
@@ -279,8 +280,20 @@ describe("foldEvents", () => {
         exitCode: 1,
         at: "t2",
       },
-      { type: "task_skipped", runId: "r1", taskId: "b", reason: "when", at: "t3" },
-      { type: "task_skipped", runId: "r1", taskId: "c", reason: "when", at: "t4" },
+      {
+        type: "task_skipped",
+        runId: "r1",
+        taskId: "b",
+        reason: "when",
+        at: "t3",
+      },
+      {
+        type: "task_skipped",
+        runId: "r1",
+        taskId: "c",
+        reason: "when",
+        at: "t4",
+      },
       {
         type: "task_skipped",
         runId: "r1",

@@ -42,6 +42,15 @@ tasks:
     run: "sleep 60"
 `
 
+const timeoutShortYaml = `id: timeout-short
+goal: e2e attempt timeout reason
+tasks:
+  - id: slow
+    kind: command
+    timeout: 1
+    run: "sleep 30"
+`
+
 const failManualYaml = `id: fail-manual
 goal: e2e manual retry
 tasks:
@@ -79,6 +88,7 @@ export function createE2eHome(): string {
     ["diamond", diamondYaml],
     ["fail-retry", failRetryYaml],
     ["slow-cancel", slowCancelYaml],
+    ["timeout-short", timeoutShortYaml],
     ["fail-manual", failManualYaml],
     ["gate", gateYaml],
     ["gate-reject", gateRejectYaml],

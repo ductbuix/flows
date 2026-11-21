@@ -1,15 +1,23 @@
-import type { EngineEvent } from "@workspace/shared"
-import { watchKey, watchPid, type AttemptWatchHost } from "./attempt-watch.ts"
+import { isAgentTask, type EngineEvent } from "@workspace/shared"
+import {
+  appendFinished,
+  watchKey,
+  watchPid,
+  type AttemptWatchHost,
+} from "./attempt-watch.ts"
+import { readAttemptStderr, resolveFinishReason } from "./failure-reason.ts"
 import { openAttempts } from "./fold.ts"
-import { isPidAlive, readExitCode } from "./pid.ts"
+import { isPidAlive, killProcessGroup, readExitCode } from "./pid.ts"
+import { remainingTimeoutMs } from "./timeout.ts"
 
 function now(): string {
   return new Date().toISOString()
 }
 
 /**
- * For each open attempt: re-attach by pid if alive, else finish from
- * exit.code or record interrupted (DES-003 / BL-005).
+ * For each open attempt: re-attach by pid if alive (with remaining
+ * timeout), else finish from exit.code or record interrupted
+ * (DES-003 / BL-005 / DES-019).
  */
 export function resumeOpenAttempts(
   host: AttemptWatchHost,
@@ -22,21 +30,50 @@ export function resumeOpenAttempts(
     const n = attempt.attempt
     if (host.watching.has(watchKey(taskId, n))) continue
 
+    const timeout = attempt.timeout
+    const startedAt = attempt.startedAt
+    const overdue =
+      timeout !== undefined &&
+      startedAt !== undefined &&
+      remainingTimeoutMs(startedAt, timeout) <= 0
+
     if (attempt.pid !== undefined && isPidAlive(attempt.pid)) {
-      watchPid(host, taskId, n, attempt.pid)
+      if (overdue) {
+        killProcessGroup(attempt.pid)
+        finishTimedOut(host, taskId, n)
+        continue
+      }
+      watchPid(
+        host,
+        taskId,
+        n,
+        attempt.pid,
+        timeout !== undefined && startedAt !== undefined
+          ? { timeoutSeconds: timeout, startedAt }
+          : undefined
+      )
       continue
     }
 
     const code = readExitCode(host.runRoot, taskId, n)
     if (code !== null) {
+      const task = state.graph.tasks.find((t) => t.id === taskId)
+      const reason = resolveFinishReason({
+        stderr: readAttemptStderr(host.runRoot, taskId, n),
+        cli: task && isAgentTask(task) ? task.cli : undefined,
+        timedOut: overdue,
+      })
       append({
         type: "attempt_finished",
         runId: host.runId,
         taskId,
         attempt: n,
         exitCode: code,
+        ...(reason !== undefined ? { reason } : {}),
         at: now(),
       })
+    } else if (overdue) {
+      finishTimedOut(host, taskId, n)
     } else {
       append({
         type: "attempt_interrupted",
@@ -47,4 +84,19 @@ export function resumeOpenAttempts(
       })
     }
   }
+}
+
+function finishTimedOut(
+  host: AttemptWatchHost,
+  taskId: string,
+  attempt: number
+): void {
+  const code = readExitCode(host.runRoot, taskId, attempt) ?? 1
+  const task = host.state().graph.tasks.find((t) => t.id === taskId)
+  const reason = resolveFinishReason({
+    stderr: readAttemptStderr(host.runRoot, taskId, attempt),
+    cli: task && isAgentTask(task) ? task.cli : undefined,
+    timedOut: true,
+  })
+  appendFinished(host, taskId, attempt, code, reason)
 }

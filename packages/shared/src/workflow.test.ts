@@ -17,6 +17,16 @@ describe("workflowSchema", () => {
     expect(workflow.tasks[3]?.needs).toEqual(["b", "c"])
   })
 
+  it("accepts timeout on workflow and task", () => {
+    const workflow = workflowSchema.parse({
+      id: "timed",
+      timeout: 900,
+      tasks: [{ id: "a", kind: "command", run: "echo a", timeout: 30 }],
+    })
+    expect(workflow.timeout).toBe(900)
+    expect(workflow.tasks[0]?.timeout).toBe(30)
+  })
+
   it("accepts agent tasks with cli, instructions and memory", () => {
     const workflow = workflowSchema.parse({
       id: "agents",
