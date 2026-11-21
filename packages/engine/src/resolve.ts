@@ -30,7 +30,7 @@ export type ResolveHost = {
   state: () => RunState
   append: (event: EngineEvent) => void
   scheduleRetry: (taskId: string, backoffMs: number) => void
-  launchAgain: (taskId: string) => void
+  launchAgain: (taskId: string) => void | Promise<void>
   judgeCache: Map<string, Promise<boolean>>
 }
 
@@ -227,7 +227,7 @@ export async function resolveLoops(host: ResolveHost): Promise<void> {
     } else if (decision.action === "retry") {
       host.scheduleRetry(task.id, decision.backoffMs)
     } else {
-      host.launchAgain(task.id)
+      await host.launchAgain(task.id)
     }
   }
 }

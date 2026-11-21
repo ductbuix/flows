@@ -28,6 +28,10 @@ export type AttemptState = {
   effort?: Effort
   /** Where model/effort came from (DES-023). */
   modelSource?: ModelSource
+  /** First port of the leased block (DES-026). */
+  portBase?: number
+  /** Size of the leased port block (DES-026). */
+  portCount?: number
 }
 
 export type TaskState = {

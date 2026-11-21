@@ -6,7 +6,7 @@ status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
 related: [DES-001, DES-004, DES-005, DES-020, DES-021, DES-022, DES-023]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # Folder layout and workflow file
@@ -24,6 +24,7 @@ updated: 2026-11-21
     tasks/.trash/<id>-<stamp>/  # removed task folders (DES-022)
     memory/*.md               # initial memories for agent tasks
     input/  output/  SUMMARY.md
+    .cache/                   # package caches for sandboxed installs (DES-026)
     runs/<runId>/
       graph.json              # starting graph plus tasks spawned in this run
       input/                  # frozen run input, including inputs.json (DES-021)
@@ -41,7 +42,14 @@ A dir is the compacted context of its object. Each task writes its own
 ```yaml
 id: research-report
 goal: Produce a sourced report on input/topic.md
-limits: { concurrency: 3, agents: 2, maxTasks: 50, maxSpawnDepth: 2, maxConcurrentRuns: 1 }
+limits:
+  {
+    concurrency: 3,
+    agents: 2,
+    maxTasks: 50,
+    maxSpawnDepth: 2,
+    maxConcurrentRuns: 1,
+  }
 timeout: 900 # default per-attempt seconds; task timeout wins (DES-019)
 agent: # optional per-CLI model and effort defaults (DES-023)
   claude: { model: sonnet, effort: high }
@@ -125,3 +133,9 @@ because a hyphen is not valid in a shell variable name (DES-020). For
 `TASK_INSTRUCTIONS` is set only for agent tasks, and is the absolute
 path of `tasks/<taskId>/prompt.md` (or the stamped spawn `promptDir`
 for a spawned task).
+
+Each attempt also gets a leased port block (`PORT`, `FLOWS_PORT_BASE`,
+`FLOWS_PORT_COUNT`, default count 10) and package-cache dirs under
+`<workflow>/.cache/` (`npm_config_cache`, `PNPM_STORE_DIR`,
+`YARN_CACHE_FOLDER`, `XDG_CACHE_HOME`, `PIP_CACHE_DIR`) so parallel
+copies and sandboxed installs do not clash (DES-026).

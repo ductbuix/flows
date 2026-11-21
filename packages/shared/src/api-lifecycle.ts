@@ -80,8 +80,8 @@ export type MemoryConflict = z.infer<typeof memoryConflictSchema>
 
 /**
  * Workflow-relative text path (DES-018). Relative only; no `..`, absolute,
- * backslashes, `workflow.yaml`, anything under `runs/`, or `tasks/.trash/`
- * (DES-022).
+ * backslashes, `workflow.yaml`, anything under `runs/` or `.cache/`
+ * (DES-026), or `tasks/.trash/` (DES-022).
  */
 export function isAllowedWorkflowFilePath(rel: string): boolean {
   if (!rel || rel.startsWith("/") || rel.includes("\\")) return false
@@ -89,6 +89,7 @@ export function isAllowedWorkflowFilePath(rel: string): boolean {
   if (parts.some((p) => !p || p === "." || p === "..")) return false
   if (rel === "workflow.yaml") return false
   if (parts[0] === "runs") return false
+  if (parts[0] === ".cache") return false
   if (parts[0] === "tasks" && parts[1] === ".trash") return false
   return true
 }

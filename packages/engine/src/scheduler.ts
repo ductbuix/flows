@@ -146,8 +146,8 @@ export class Scheduler {
     }
   }
 
-  private launchAgain(taskId: string): void {
-    launchTaskAttempt(launchHost(this.core()), taskId, ["running"])
+  private async launchAgain(taskId: string): Promise<void> {
+    await launchTaskAttempt(launchHost(this.core()), taskId, ["running"])
   }
 
   private async runTicks(): Promise<void> {
@@ -181,7 +181,7 @@ export class Scheduler {
     await resolveLoops(host)
     resolveSpawn(spawnHost(this.core()))
     await resolveSkips(host)
-    launchReadyTasks(launchHost(this.core()))
+    await launchReadyTasks(launchHost(this.core()))
     this.maybeSettle()
   }
 

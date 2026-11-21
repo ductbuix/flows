@@ -39,7 +39,8 @@ Schema and writing rules: `docs/README.md`.
   deletion, workflow id rebind on rename, frozen `RUN_INPUT`, Manual
   source, queued runs under `maxConcurrentRuns`, run summary cache
   (onEvent + rebuild after resume), work item store under `workitems/`
-  (atomic yaml/notes, attachments, `.trash`).
+  (atomic yaml/notes, attachments, `.trash`), per-attempt port leases
+  (`PORT` / `FLOWS_PORT_*`) and `<workflow>/.cache` package dirs.
 - `packages/shared`: zod schemas for API (`runSummarySchema` with
   `needsYou`, `workItemSchema`), websocket (`runs_changed`), workflow (`inputs`,
   `agent` defaults, model/effort, task `uses`), `connection.yaml`,

@@ -8,6 +8,7 @@ import {
 import { readAttemptStderr, resolveFinishReason } from "./failure-reason.ts"
 import { openAttempts } from "./fold.ts"
 import { isPidAlive, killProcessGroup, readExitCode } from "./pid.ts"
+import { DEFAULT_PORT_COUNT, portLeaseKey, portLeases } from "./port-lease.ts"
 import { remainingTimeoutMs } from "./timeout.ts"
 
 function now(): string {
@@ -37,11 +38,19 @@ export function resumeOpenAttempts(
       startedAt !== undefined &&
       remainingTimeoutMs(startedAt, timeout) <= 0
 
+    const leaseKey = portLeaseKey(host.runId, taskId, n)
+
     if (attempt.pid !== undefined && isPidAlive(attempt.pid)) {
       if (overdue) {
         killProcessGroup(attempt.pid)
         finishTimedOut(host, taskId, n)
         continue
+      }
+      if (attempt.portBase !== undefined) {
+        portLeases.rehold(leaseKey, {
+          base: attempt.portBase,
+          count: attempt.portCount ?? DEFAULT_PORT_COUNT,
+        })
       }
       watchPid(
         host,
@@ -54,6 +63,9 @@ export function resumeOpenAttempts(
       )
       continue
     }
+
+    // Dead attempt: ports are free after resume (fresh process memory).
+    portLeases.release(leaseKey)
 
     const code = readExitCode(host.runRoot, taskId, n)
     if (code !== null) {

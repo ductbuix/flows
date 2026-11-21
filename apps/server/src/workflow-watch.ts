@@ -11,8 +11,9 @@ export type FileChange = {
 }
 
 /**
- * Watch open workflow dirs for workflow.yaml changes. Ignores hashes that
- * match the last server write for that path.
+ * Watch open workflow dirs for workflow.yaml and memory/ only. Skips
+ * `runs/` and `.cache/` (DES-026). Ignores hashes that match the last
+ * server write for that path.
  */
 export class WorkflowWatcher {
   private readonly watchers = new Map<string, FSWatcher>()
@@ -35,7 +36,7 @@ export class WorkflowWatcher {
     const watcher = watch(dir, { recursive: true }, (_event, filename) => {
       if (!filename) return
       const rel = filename.toString().replaceAll("\\", "/")
-      if (rel !== "workflow.yaml" && !rel.startsWith("memory/")) return
+      if (!isWatchedWorkflowPath(rel)) return
       this.schedule(workflowId, rel)
     })
     this.watchers.set(workflowId, watcher)
@@ -72,7 +73,7 @@ export class WorkflowWatcher {
     const abs = join(workflowDir(this.engine.home, workflowId), relativePath)
     if (!existsSync(abs)) return
     // Only notify for files still under the workflow dir.
-    if (basename(dirname(abs)) === ".." ) return
+    if (basename(dirname(abs)) === "..") return
     let content: string
     try {
       content = readFileSync(abs, "utf8")
@@ -84,4 +85,9 @@ export class WorkflowWatcher {
     if (this.lastWriteHash.get(key) === hash) return
     this.onChange({ workflowId, path: relativePath, hash, content })
   }
+}
+
+/** Only workflow.yaml and memory/* are watched (not runs/ or .cache/). */
+export function isWatchedWorkflowPath(rel: string): boolean {
+  return rel === "workflow.yaml" || rel.startsWith("memory/")
 }

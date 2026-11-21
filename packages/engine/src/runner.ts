@@ -16,7 +16,9 @@ import { writeCursorTrustMarker } from "./cursor-trust.ts"
 import { attemptDir, taskDir } from "./paths.ts"
 import { exitCodePath } from "./pid.ts"
 import { taskPromptAbs } from "./prompt-paths.ts"
+import type { PortBlock } from "./port-lease.ts"
 import { buildSandboxSpawn } from "./sandbox.ts"
+import { workflowCacheEnv } from "./task-cache-env.ts"
 
 export type LaunchResult = {
   child: ChildProcess
@@ -31,6 +33,12 @@ export type TaskEnvPaths = {
   runId: string
 }
 
+export type BuildTaskEnvOptions = {
+  ports: PortBlock
+  /** Optional task env; overrides cache defaults and Flows paths. */
+  taskEnv?: Record<string, string>
+}
+
 /** Absolute path to a task's prompt file, or undefined for non-agents. */
 export function instructionsAbsPath(
   task: Task,
@@ -41,20 +49,24 @@ export function instructionsAbsPath(
   return taskPromptAbs(task, workflowRoot, runRoot)
 }
 
-/** Build the env vars a task process receives (DES-002, DES-006, DES-020). */
+/** Build the env vars a task process receives (DES-002, DES-006, DES-020, DES-026). */
 export function buildTaskEnv(
   task: Task,
   attempt: number,
   paths: TaskEnvPaths,
-  graph: Workflow
+  graph: Workflow,
+  options: BuildTaskEnvOptions
 ): NodeJS.ProcessEnv {
   const { workflowRoot, runRoot, runId } = paths
   const attemptRoot = attemptDir(runRoot, task.id, attempt)
   const tmpDir = join(attemptRoot, "tmp")
   mkdirSync(tmpDir, { recursive: true })
   const instructions = instructionsAbsPath(task, workflowRoot, runRoot)
+  const { base, count } = options.ports
+  // Cache defaults, then Flows paths/ports; taskEnv last so a task can override.
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    ...workflowCacheEnv(workflowRoot),
     TMPDIR: tmpDir,
     TMP: tmpDir,
     TEMP: tmpDir,
@@ -66,6 +78,10 @@ export function buildTaskEnv(
     TASK_IN: join(taskDir(runRoot, task.id), "input"),
     TASK_OUT: join(attemptRoot, "out"),
     PREV_ATTEMPT: attempt > 1 ? attemptDir(runRoot, task.id, attempt - 1) : "",
+    PORT: String(base),
+    FLOWS_PORT_BASE: String(base),
+    FLOWS_PORT_COUNT: String(count),
+    ...options.taskEnv,
   }
   if (instructions) env.TASK_INSTRUCTIONS = instructions
 
@@ -143,11 +159,12 @@ export function launchTask(
   task: Task,
   attempt: number,
   paths: TaskEnvPaths,
-  graph: Workflow
+  graph: Workflow,
+  ports: PortBlock
 ): LaunchResult {
   const attemptRoot = attemptDir(paths.runRoot, task.id, attempt)
   const codePath = exitCodePath(paths.runRoot, task.id, attempt)
-  const env = buildTaskEnv(task, attempt, paths, graph)
+  const env = buildTaskEnv(task, attempt, paths, graph, { ports })
 
   if (isAgentTask(task)) {
     const instructions = instructionsAbsPath(
