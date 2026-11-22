@@ -17,6 +17,7 @@ import {
 import { api } from "@/lib/api"
 import { workflowPath } from "@/lib/paths"
 import { useWorkflows } from "@/lib/workflows-context"
+import { NoticeBell } from "@/components/NoticeBell"
 import { PlatformNav } from "@/components/PlatformNav"
 import { WorkflowSidebarList } from "@/components/WorkflowSidebarList"
 import { CreateWorkflowDialog } from "@/pages/CreateWorkflowDialog"
@@ -78,6 +79,7 @@ export function AppSidebar() {
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
+            <NoticeBell />
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={location.pathname === "/settings"}

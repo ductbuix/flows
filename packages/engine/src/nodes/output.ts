@@ -1,5 +1,6 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs"
 import { join } from "node:path"
+import { joinedInputText } from "./forward.ts"
 import { defineExecutor } from "./define.ts"
 import { relOut } from "./step-paths.ts"
 
@@ -14,6 +15,7 @@ function listFiles(root: string, dir = root, out: string[] = []): string[] {
 
 /**
  * Folder target: copies each input's step files to the run `output/`.
+ * Notify target: posts an in-app notice with the title and input text.
  * Publish target: asks the tick to send the work copy (`nodes/publish.ts`).
  */
 export const outputExecutor = defineExecutor({
@@ -22,6 +24,15 @@ export const outputExecutor = defineExecutor({
     if (ctx.node.kind === "output" && ctx.node.target === "publish") {
       if (!ctx.node.connection) throw new Error("publish needs a connection")
       return { publish: { connection: ctx.node.connection } }
+    }
+    if (ctx.node.kind === "output" && ctx.node.target === "notify") {
+      return {
+        outputs: [],
+        notice: {
+          title: ctx.node.title ?? ctx.node.name ?? ctx.graph.name ?? ctx.graph.id,
+          text: joinedInputText(ctx).trim(),
+        },
+      }
     }
     mkdirSync(ctx.stepDir, { recursive: true })
     const outputs: string[] = []

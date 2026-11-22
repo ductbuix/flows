@@ -186,6 +186,23 @@ edges:
   - { from: gate, to: after }
 `
 
+const nodeNotifyYaml = (id: string, target = "notify") => `id: ${id}
+goal: e2e notify output
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: build
+    kind: command
+    run: 'echo build is green'
+  - id: tell
+    kind: output
+    target: ${target}${target === "notify" ? "\n    title: Build finished" : ""}
+edges:
+  - { from: start, to: build }
+  - { from: build, to: tell }
+`
+
 const nodeAssetYaml = (id: string) => `id: ${id}
 goal: e2e asset node
 nodes:
@@ -403,6 +420,16 @@ export function createE2eHome(): string {
     const dir = join(home, "workflows", id)
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeApprovalYaml(id))
+  }
+  // Output notify workflows for node-notify.spec.ts (BL-100).
+  for (const [id, target] of [
+    ["node-notify-light", "notify"],
+    ["node-notify-dark", "notify"],
+    ["node-notify-sheet", "folder"],
+  ] as const) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeNotifyYaml(id, target))
   }
   // Asset workflows for node-asset.spec.ts (BL-082); each test owns one.
   for (const id of ["node-asset-light", "node-asset-dark"]) {

@@ -39,6 +39,8 @@ export type ExecResult = {
   outputs: string[]
   branch?: string
   answer?: Record<string, unknown>
+  /** An in-app notice the tick posts before the step settles (Output notify, BL-100). */
+  notice?: { title: string; text: string }
   /** The step fails with this reason instead of settling (Judge: `unclear`). */
   failed?: "unclear" | "answer"
   /** The answer did not match: run one more attempt that fixes it. */

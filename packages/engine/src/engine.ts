@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs"
 import type {
   CliTrustValue,
   EngineEvent,
+  NoticeList,
   RunSummary,
   TrustDecision,
   Workflow,
@@ -110,6 +111,14 @@ export class Engine {
 
   homeRealpath(): string {
     return resolveAppHomeRealpath(this.home)
+  }
+
+  listNotices(): NoticeList {
+    return this.log.listNotices()
+  }
+
+  markNoticesRead(ids?: number[]): void {
+    this.log.markNoticesRead(ids)
   }
 
   getCliTrust(): CliTrustValue | null {

@@ -1,7 +1,18 @@
 import { mkdirSync } from "node:fs"
 import { dirname } from "node:path"
 import { DatabaseSync } from "node:sqlite"
-import { engineEventSchema, type EngineEvent } from "@workspace/shared"
+import {
+  engineEventSchema,
+  type EngineEvent,
+  type NoticeList,
+} from "@workspace/shared"
+import {
+  ensureNoticesTable,
+  listNotices,
+  markNoticesRead,
+  postNotice,
+  type NewNotice,
+} from "./notices.ts"
 import {
   clearCliTrust,
   ensureSettingsTable,
@@ -44,6 +55,20 @@ export class EventLog {
       CREATE INDEX IF NOT EXISTS events_run_id ON events (run_id);
     `)
     ensureSettingsTable(this.db)
+    ensureNoticesTable(this.db)
+  }
+
+  /** Posts a notice once per key; a repeat of the same step adds nothing (BL-100). */
+  postNotice(n: NewNotice): void {
+    postNotice(this.db, n)
+  }
+
+  listNotices(limit?: number): NoticeList {
+    return listNotices(this.db, limit)
+  }
+
+  markNoticesRead(ids?: number[]): void {
+    markNoticesRead(this.db, ids)
   }
 
   getCliTrust(): CliTrustValue | null {

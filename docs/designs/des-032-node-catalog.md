@@ -177,10 +177,10 @@ OpenBot's condition node works that way in its main mode
     on that connection; a `read-only` connection fails the start. The
     step waits under "Approve each publish", fails with `conflict` or
     `rejected`, and writes `result.json` to its step folder (BL-084).
-  - `notify`: an in-app notice with `title` and the input text. flows
-    has no in-app notice today (no notification code on `develop`), so
-    this target needs a small notice store and a bell; it is its own
-    later backlog.
+  - `notify`: an in-app notice with `title` (optional; falls back to
+    the node name, then the workflow name) and the input text. It goes
+    to the notice store and shows on the sidebar bell (BL-100,
+    DES-016).
 - Run: no process; publish runs in the background and uses the
   existing publish events, with the node id as `taskId`.
 - UI: a target Select on the node, then that target's fields.
