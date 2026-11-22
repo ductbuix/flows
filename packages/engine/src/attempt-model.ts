@@ -1,9 +1,8 @@
 import {
-  isAgentTask,
   resolveModelEffort,
+  type AgentSpec,
   type Effort,
   type ModelSource,
-  type Task,
   type Workflow,
 } from "@workspace/shared"
 import { getCliAdapter } from "./cli-adapters.ts"
@@ -19,10 +18,9 @@ export type AttemptModelFields = {
  * flags were omitted (DES-023).
  */
 export function resolveAttemptModelFields(
-  task: Task,
+  task: AgentSpec,
   graph: Pick<Workflow, "agent">
-): AttemptModelFields | undefined {
-  if (!isAgentTask(task)) return undefined
+): AttemptModelFields {
   const resolved = resolveModelEffort({
     task,
     workflowAgent: graph.agent,

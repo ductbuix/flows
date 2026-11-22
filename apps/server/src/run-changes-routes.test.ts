@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
@@ -8,7 +8,7 @@ import {
   fakeConnector,
   registerConnector,
 } from "@workspace/engine"
-import { runChangesResponseSchema } from "@workspace/shared"
+import { parseNodeWorkflowYaml, runChangesResponseSchema } from "@workspace/shared"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
 
@@ -47,17 +47,27 @@ describe("GET /runs/:runId/changes/:connectionId", () => {
       join(wf, "workflow.yaml"),
       `
 id: chg
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - id: lib
+    kind: asset
+    access: propose
+    resources:
+      - { connection: demo, entity: item, id: x }
   - id: a
     kind: command
-    uses:
-      - { connection: demo, access: propose }
     run: "printf changed > \\"$RESOURCE_DEMO/item/x/data.txt\\""
+edges:
+  - { from: t, to: a }
+  - { from: lib, to: a }
 `
     )
 
-    const handle = await engine.startRun({ workflowDir: wf, runId: "r1" })
-    await handle.wait()
+    const parsed = parseNodeWorkflowYaml(
+      readFileSync(join(wf, "workflow.yaml"), "utf8")
+    ).workflow!
+    const pins = await engine.pinNodeRun({ graph: parsed, runId: "r1" })
+    await engine.startNodeRun({ graph: parsed, runId: "r1", pins }).wait()
 
     const res = await app.request("/api/runs/r1/changes/demo")
     expect(res.status).toBe(200)

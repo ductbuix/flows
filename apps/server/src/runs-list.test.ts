@@ -11,6 +11,7 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { settle } from "./test-utils.ts"
 
 const homes: string[] = []
 
@@ -74,10 +75,13 @@ describe("GET /api/runs", () => {
       "alpha",
       `
 id: alpha
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: a
     kind: command
-    run: "printf a > \\"$TASK_OUT/out.txt\\""
+    run: "printf a > \\"$NODE_OUT/out.txt\\""
+edges:
+  - { from: t, to: a }
 `
     )
     writeWorkflow(
@@ -85,17 +89,20 @@ tasks:
       "beta",
       `
 id: beta
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: a
     kind: command
-    run: "printf b > \\"$TASK_OUT/out.txt\\""
+    run: "printf b > \\"$NODE_OUT/out.txt\\""
+edges:
+  - { from: t, to: a }
 `
     )
 
     const alphaId = await startRun(app, "alpha")
-    await engine.resumeRun(alphaId)!.wait()
+    await settle(engine, alphaId)
     const betaId = await startRun(app, "beta")
-    await engine.resumeRun(betaId)!.wait()
+    await settle(engine, betaId)
 
     const allRes = await app.request("/api/runs")
     expect(allRes.status).toBe(200)
@@ -129,14 +136,17 @@ tasks:
       "del",
       `
 id: del
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: a
     kind: command
-    run: "printf x > \\"$TASK_OUT/out.txt\\""
+    run: "printf x > \\"$NODE_OUT/out.txt\\""
+edges:
+  - { from: t, to: a }
 `
     )
     const runId = await startRun(app, "del")
-    await engine.resumeRun(runId)!.wait()
+    await settle(engine, runId)
 
     const delRes = await app.request(`/api/runs/${runId}`, {
       method: "DELETE",
@@ -161,17 +171,16 @@ tasks:
       "gate",
       `
 id: gate
-tasks:
-  - id: hold
-    kind: command
-    run: "printf ok > \\"$TASK_OUT/out.txt\\""
-    approval: true
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: hold, kind: approval, question: Ship it? }
+edges:
+  - { from: t, to: hold }
 `
     )
     const runId = await startRun(app, "gate")
-    const handle = engine.resumeRun(runId)!
     await waitFor(
-      () => handle.state().tasks.hold?.status === "awaiting_approval"
+      () => engine.fold(runId)?.tasks.hold?.status === "awaiting_approval"
     )
 
     const list = runSummarySchema
@@ -179,11 +188,11 @@ tasks:
       .parse(await (await app.request("/api/runs")).json())
     const row = list.find((r) => r.id === runId)
     expect(row?.status).toBe("running")
-    expect(row?.needsYou).toEqual([{ taskId: "hold" }])
-    expect(row?.taskCounts).toEqual({ done: 0, total: 1 })
+    expect(row?.needsYou).toEqual([{ taskId: "hold", question: "Ship it?" }])
+    expect(row?.taskCounts).toEqual({ done: 1, total: 2 })
 
     engine.approveTask(runId, "hold")
-    await handle.wait()
+    await settle(engine, runId)
     engine.close()
   }, 20_000)
 
@@ -194,18 +203,21 @@ tasks:
       "boom",
       `
 id: boom
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: ok
     kind: command
-    run: "printf ok > \\"$TASK_OUT/out.txt\\""
+    run: "printf ok > \\"$NODE_OUT/out.txt\\""
   - id: fail
     kind: command
     run: "exit 1"
-    needs: [ok]
+edges:
+  - { from: t, to: ok }
+  - { from: ok, to: fail }
 `
     )
     const runId = await startRun(app, "boom")
-    const state = await engine.resumeRun(runId)!.wait()
+    const state = await settle(engine, runId)
     expect(state.status).toBe("failed")
 
     const list = runSummarySchema

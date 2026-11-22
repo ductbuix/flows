@@ -2,14 +2,13 @@ import { join } from "node:path"
 import type {
   Connection,
   EngineEvent,
-  NodeWorkflow,
   ResourcePin,
   WorkItemLink,
   Workflow,
 } from "@workspace/shared"
-import { collectWorkflowUses, readConnection } from "./connections.ts"
+import { readConnection } from "./connections.ts"
 import { currentRevision, readRevisionMeta } from "./library-paths.ts"
-import { pullEntity, resolveScopeEntity } from "./library.ts"
+import { pullEntity } from "./library.ts"
 import { libraryEntityDir } from "./paths.ts"
 
 export type PullTarget = {
@@ -23,44 +22,13 @@ function pinKey(connection: string, kind: string, entityId: string): string {
   return `${connection}\0${kind}\0${entityId}`
 }
 
-/** Scope entities from uses plus explicit work item links (BL-043 / BL-046). */
-export function collectPullTargets(
-  home: string,
-  workflow: Workflow,
-  links: WorkItemLink[]
-): PullTarget[] {
-  const byKey = new Map<string, PullTarget>()
-  for (const entry of collectWorkflowUses(workflow)) {
-    const conn = readConnection(home, entry.connection)
-    if (!conn) throw new Error(`unknown connection ${entry.connection}`)
-    const scope = resolveScopeEntity(conn)
-    const key = pinKey(conn.id, scope.kind, scope.entityId)
-    if (!byKey.has(key)) {
-      byKey.set(key, { connection: conn, ...scope })
-    }
-  }
-  for (const link of links) {
-    const key = pinKey(link.connection, link.kind, link.entityId)
-    if (byKey.has(key)) continue
-    const conn = readConnection(home, link.connection)
-    if (!conn) throw new Error(`unknown connection ${link.connection}`)
-    byKey.set(key, {
-      connection: conn,
-      kind: link.kind,
-      entityId: link.entityId,
-      title: conn.name,
-    })
-  }
-  return [...byKey.values()]
-}
-
 /**
  * Node runs (BL-082): every resource of every Asset node, plus the work
  * item's links. Without an Asset node nothing is pinned.
  */
 export function collectNodePullTargets(
   home: string,
-  graph: NodeWorkflow,
+  graph: Workflow,
   links: WorkItemLink[]
 ): PullTarget[] {
   const assets = graph.nodes.filter((n) => n.kind === "asset")

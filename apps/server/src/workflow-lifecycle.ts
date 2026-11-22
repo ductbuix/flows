@@ -13,7 +13,6 @@ import {
   workflowIdSchema,
   type WorkflowSummary,
 } from "@workspace/shared"
-import { nodesEnabled } from "./node-workflow-files.ts"
 
 export type LifecycleResult =
   | { ok: true }
@@ -24,22 +23,13 @@ export type LifecycleResult =
 
 function starterYaml(id: string, goal: string, name?: string): string {
   const label = name ? `name: ${JSON.stringify(name)}\n` : ""
-  if (nodesEnabled()) {
-    return `id: ${id}
+  return `id: ${id}
 ${label}goal: ${goal}
 nodes:
   - id: start
     kind: trigger
     type: manual
 edges: []
-`
-  }
-  return `id: ${id}
-${label}goal: ${goal}
-tasks:
-  - id: start
-    kind: command
-    run: "printf start > \\"$TASK_OUT/out.txt\\""
 `
 }
 

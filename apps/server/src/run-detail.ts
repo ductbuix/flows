@@ -5,10 +5,9 @@ import { runTimestamps, toRunDetail } from "./run-mapper.ts"
 import { buildRunPins } from "./run-pins.ts"
 
 /** One row per pass of each node, in graph order (BL-087). */
-function stepsOf(state: RunState): RunStep[] | undefined {
-  if (!state.nodeGraph || !state.steps) return undefined
+function stepsOf(state: RunState): RunStep[] {
   const rows: RunStep[] = []
-  for (const node of state.nodeGraph.nodes) {
+  for (const node of state.graph.nodes) {
     for (const step of state.steps.steps[node.id] ?? []) {
       rows.push({
         nodeId: node.id,
@@ -48,10 +47,9 @@ export function buildRunDetail(
         : ts.finishedAt,
     lastSeq,
   })
-  const steps = stepsOf(state)
   return {
     ...detail,
-    ...(steps ? { steps } : {}),
+    steps: stepsOf(state),
     pins: buildRunPins(engine, state.workflowId, runId, state.graph),
     effects: effectsFromEvents(events),
   }

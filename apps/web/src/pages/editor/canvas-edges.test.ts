@@ -1,9 +1,9 @@
-import { nodeWorkflowSchema } from "@workspace/shared"
+import { workflowSchema } from "@workspace/shared"
 import { describe, expect, it } from "vitest"
 import { canvasEdges } from "./canvas-edges"
 import { placeNodes } from "./node-canvas-layout"
 
-const workflow = nodeWorkflowSchema.parse({
+const workflow = workflowSchema.parse({
   id: "w",
   nodes: [
     { id: "t", kind: "trigger", type: "manual" },

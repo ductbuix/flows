@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
 import { assertNodeTemplatesValid } from "./answers.ts"
@@ -64,7 +64,7 @@ function setup(opts: { stubborn?: boolean } = {}) {
   return { home, wf, log: new EventLog(appDbPath(home)) }
 }
 
-const graph = nodeWorkflowSchema.parse({
+const graph = workflowSchema.parse({
   id: "wf",
   nodes: [
     { id: "t", kind: "trigger", type: "manual" },
@@ -136,7 +136,7 @@ describe("answers end to end through Agent, Judge and Approval", () => {
   it("fills the rule and the question", async () => {
     const { home, wf, log } = setup()
     // Declare an answer the stub agent really writes.
-    const g = nodeWorkflowSchema.parse({
+    const g = workflowSchema.parse({
       ...graph,
       nodes: graph.nodes.map((n) =>
         n.id === "a"
@@ -199,7 +199,7 @@ describe("template check at start", () => {
   it("rejects a name two upstream nodes declare in a prompt file", () => {
     const { home, wf, log } = setup()
     log.close()
-    const g = nodeWorkflowSchema.parse({
+    const g = workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },

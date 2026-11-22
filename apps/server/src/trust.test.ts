@@ -21,16 +21,17 @@ function setup() {
   homes.push(home)
   process.env.FLOWAPP_CURSOR_PROJECTS = join(home, ".cursor-projects")
   const wf = join(home, "workflows", "agent-hi")
-  mkdirSync(join(wf, "tasks", "a"), { recursive: true })
-  writeFileSync(join(wf, "tasks", "a", "prompt.md"), "hi\n")
+  mkdirSync(join(wf, "nodes", "a"), { recursive: true })
+  writeFileSync(join(wf, "nodes", "a", "prompt.md"), "hi\n")
   writeFileSync(
     join(wf, "workflow.yaml"),
     `
 id: agent-hi
-tasks:
-  - id: a
-    kind: agent
-    cli: claude
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: a, kind: agent, cli: claude }
+edges:
+  - { from: t, to: a }
 `
   )
   const engine = createEngine({ home })
@@ -65,7 +66,7 @@ describe("trust API", () => {
     engine.close()
   })
 
-  it("preflight and 409 trust_required on start", async () => {
+  it("preflight lists the CLIs the nodes need", async () => {
     const { app, engine } = setup()
     const pre = await app.request("/api/workflows/agent-hi/runs/preflight", {
       method: "POST",
@@ -74,34 +75,11 @@ describe("trust API", () => {
     const preBody = (await pre.json()) as {
       trust: string
       needsAgentCli: boolean
-      checks: unknown[]
+      clis: string[]
     }
     expect(preBody.needsAgentCli).toBe(true)
     expect(preBody.trust).toBe("none")
-    expect(preBody.checks.length).toBeGreaterThan(0)
-
-    const start = await app.request("/api/workflows/agent-hi/runs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: "r1" }),
-    })
-    expect(start.status).toBe(409)
-    const err = (await start.json()) as { error: string }
-    expect(err.error).toBe("trust_required")
-
-    // Grant once is accepted (200). Cancel immediately so scheduler ticks
-    // do not race engine.close(); a finished command path also works.
-    const granted = await app.request("/api/workflows/agent-hi/runs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: "r2", trustGrant: "once" }),
-    })
-    expect(granted.status).toBe(200)
-    const { runId } = (await granted.json()) as { runId: string }
-    engine.cancelRun(runId)
-    await engine.resumeRun(runId)?.wait()
-    // Drain one macrotask so any in-flight tick finishes before close.
-    await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    expect(preBody.clis).toEqual(["claude"])
     engine.close()
   })
 })

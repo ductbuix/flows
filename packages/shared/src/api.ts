@@ -7,9 +7,8 @@ import {
   taskStatusSchema,
 } from "./events.ts"
 import { effortSchema } from "./model-effort.ts"
-import { nodeWorkflowSchema } from "./nodes/index.ts"
+import { workflowSchema } from "./nodes/index.ts"
 import { layoutFileSchema } from "./nodes/layout.ts"
-import { workflowSchema } from "./workflow.ts"
 
 export const workflowSummarySchema = z.object({
   id: z.string().min(1),
@@ -67,10 +66,6 @@ export const attemptViewSchema = z.object({
   effort: effortSchema.optional(),
   /** Where model/effort came from (DES-023). */
   modelSource: z.enum(["task", "workflow", "cli"]).optional(),
-  /** First port of the leased block (DES-026). */
-  portBase: z.number().int().positive().optional(),
-  /** Size of the leased port block (DES-026). */
-  portCount: z.number().int().positive().optional(),
 })
 
 export type AttemptView = z.infer<typeof attemptViewSchema>
@@ -78,16 +73,6 @@ export type AttemptView = z.infer<typeof attemptViewSchema>
 export const taskViewSchema = z.object({
   id: z.string().min(1),
   status: taskStatusSchema,
-  spawned: z.boolean(),
-  spawnedBy: z.string().optional(),
-  failReason: z.enum(["rejected", "conflict"]).optional(),
-  skipReason: z.enum(["when", "upstream_skip", "branch"]).optional(),
-  /** Why a ready task has not launched yet (e.g. serial lock, BL-048). */
-  waitingReason: z.string().min(1).optional(),
-  /** Agent review verdict under trust-agent-review (DES-026 / BL-052). */
-  reviewVerdict: z.enum(["approve", "escalate"]).optional(),
-  /** Reason for the agent review verdict (DES-026 / BL-052). */
-  reviewReason: z.string().min(1).optional(),
   attempts: z.array(attemptViewSchema),
 })
 
@@ -144,7 +129,7 @@ export type RunStep = z.infer<typeof runStepSchema>
 
 /** Frozen canvas of a node run: graph, layout and node text (BL-087). */
 export const runCanvasSchema = z.object({
-  workflow: nodeWorkflowSchema,
+  workflow: workflowSchema,
   layout: layoutFileSchema,
   /** Frozen node text files by path, e.g. `nodes/plan/prompt.md`. */
   texts: z.record(z.string(), z.string()),
@@ -247,6 +232,7 @@ export const yamlDiagnosticSchema = z.object({
 
 export type YamlDiagnosticDto = z.infer<typeof yamlDiagnosticSchema>
 
+/** Workflow detail: `workflow` is the parsed node workflow. */
 export const workflowDetailSchema = z.object({
   id: z.string().min(1),
   yaml: z.string(),
@@ -257,21 +243,10 @@ export const workflowDetailSchema = z.object({
 
 export type WorkflowDetail = z.infer<typeof workflowDetailSchema>
 
-/** Workflow detail under FLOWS_NODES: `workflow` is the node workflow. */
-export const nodeWorkflowDetailSchema = z.object({
-  id: z.string().min(1),
-  yaml: z.string(),
-  hash: z.string().min(1),
-  workflow: nodeWorkflowSchema.nullable(),
-  errors: z.array(yamlDiagnosticSchema),
-})
-
-export type NodeWorkflowDetail = z.infer<typeof nodeWorkflowDetailSchema>
-
 export const putWorkflowBodySchema = z.object({
   yaml: z.string(),
   baseHash: z.string().min(1),
-  /** Node id renames in this save (FLOWS_NODES only); moves the node folder. */
+  /** Node id renames in this save ; moves the node folder. */
   renames: z
     .array(z.object({ from: z.string().min(1), to: z.string().min(1) }))
     .optional(),

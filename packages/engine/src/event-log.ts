@@ -15,6 +15,16 @@ export type StoredEvent = {
   event: EngineEvent
 }
 
+/**
+ * Rows written by the task engine (old event types, a task graph) no longer
+ * parse. They are skipped, so such a run does not fold and the log still
+ * opens (DES-034, Old runs).
+ */
+function parseStored(payload: string): EngineEvent | null {
+  const parsed = engineEventSchema.safeParse(JSON.parse(payload))
+  return parsed.success ? parsed.data : null
+}
+
 export class EventLog {
   private readonly db: DatabaseSync
   private readonly listeners = new Set<(stored: StoredEvent) => void>()
@@ -87,10 +97,12 @@ export class EventLog {
         `SELECT seq, payload FROM events WHERE run_id = ? ORDER BY seq ASC`
       )
       .all(runId) as Array<{ seq: number | bigint; payload: string }>
-    return rows.map((row) => ({
-      seq: Number(row.seq),
-      event: engineEventSchema.parse(JSON.parse(row.payload)),
-    }))
+    const out: StoredEvent[] = []
+    for (const row of rows) {
+      const event = parseStored(row.payload)
+      if (event) out.push({ seq: Number(row.seq), event })
+    }
+    return out
   }
 
   /** Distinct run ids in log order of first appearance. */
@@ -130,8 +142,7 @@ export class EventLog {
           changed = true
         }
         if (!changed) continue
-        const parsed = engineEventSchema.parse(event)
-        update.run(JSON.stringify(parsed), Number(row.seq))
+        update.run(JSON.stringify(event), Number(row.seq))
       }
       this.db.exec("COMMIT")
     } catch (error) {

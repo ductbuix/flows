@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   layoutFileSchema,
-  nodeWorkflowDetailSchema,
+  workflowDetailSchema,
   parseNodeWorkflowYaml,
   removeNode as yamlRemoveNode,
   setNodeKey,
   workflowFileConflictSchema,
   workflowFileDetailSchema,
-  type NodeWorkflow,
-  type NodeWorkflowDetail,
+  type Workflow,
+  type WorkflowDetail,
 } from "@workspace/shared"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
@@ -27,7 +27,7 @@ const SAVE_DELAY_MS = 400
 
 export type NodeEditorState = {
   loading: boolean
-  detail: NodeWorkflowDetail | null
+  detail: WorkflowDetail | null
   saved: Record<string, Pos>
   /** Unsaved workflow text; differs from `detail.yaml` while dirty. */
   draft: string
@@ -90,7 +90,7 @@ export function useNodeEditor(workflowId: string) {
         toast.error("Could not load workflow")
         return
       }
-      const detail = nodeWorkflowDetailSchema.parse(await wf.json())
+      const detail = workflowDetailSchema.parse(await wf.json())
       const layout = lay.ok ? layoutFileSchema.parse(await lay.json()) : null
       if (!alive) return
       requested.current.clear()
@@ -143,7 +143,7 @@ export function useNodeEditor(workflowId: string) {
     () => (state.draft ? parseNodeWorkflowYaml(state.draft) : null),
     [state.draft]
   )
-  const workflow: NodeWorkflow | null = parsed?.workflow ?? null
+  const workflow: Workflow | null = parsed?.workflow ?? null
 
   const textPaths = useMemo(
     () =>
@@ -295,7 +295,7 @@ export function useNodeEditor(workflowId: string) {
         toast.error("Could not save the workflow")
         return
       }
-      detail = nodeWorkflowDetailSchema.parse(await res.json())
+      detail = workflowDetailSchema.parse(await res.json())
     }
     // Node files go after the YAML, which creates the files of new nodes.
     const written: NodeEditorState["base"] = {}

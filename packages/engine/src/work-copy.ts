@@ -14,7 +14,6 @@ import type {
   ChangeSet,
   EngineEvent,
   ResourcesJson,
-  Task,
 } from "@workspace/shared"
 import { readConnection } from "./connections.ts"
 import { getConnector } from "./connectors/registry.ts"
@@ -94,19 +93,6 @@ function resolvePinSource(
   } catch {
     return readlinkSync(link)
   }
-}
-
-/**
- * Create work copies for every propose connection on the task. Later
- * propose tasks on the same connection reuse the existing tree.
- */
-export function ensureWorkCopies(runRoot: string, task: Task): void {
-  ensureWorkCopiesFor(
-    runRoot,
-    (task.uses ?? [])
-      .filter((u) => u.access === "propose")
-      .map((u) => u.connection)
-  )
 }
 
 /** Work copies for the named connections; a copy that exists is kept (BL-084). */

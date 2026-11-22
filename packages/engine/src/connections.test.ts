@@ -100,12 +100,12 @@ describe("connections store", () => {
       join(wf, "workflow.yaml"),
       `
 id: demo
-tasks:
-  - id: a
-    kind: command
-    run: echo
-    uses:
-      - { connection: rally-payments, access: read }
+nodes:
+  - id: lib
+    kind: asset
+    resources:
+      - { connection: rally-payments, entity: page, id: "1" }
+edges: []
 `
     )
     expect(workflowsUsingConnection(home, "rally-payments")).toEqual(["demo"])

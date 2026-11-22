@@ -5,7 +5,7 @@ import { resolve } from "node:path"
 import {
   resolveModelEffort,
   type AgentJudge,
-  type AgentTask,
+  type AgentSpec,
   type ResolvedModelEffort,
   type WorkflowAgent,
 } from "@workspace/shared"
@@ -18,7 +18,7 @@ export { judgePrompt } from "./agent-prompt.ts"
 export type JudgeResolveOpts = {
   /** Replaces the exit-code prompt (Judge node, DES-032). */
   prompt?: string
-  parentTask?: AgentTask
+  parentTask?: AgentSpec
   workflowAgent?: WorkflowAgent
 }
 
@@ -65,7 +65,7 @@ export type RunJudgeOptions = {
   attemptRoot: string
   /** Seconds; defaults to 900 (DES-019). */
   timeoutSeconds?: number
-  parentTask?: AgentTask
+  parentTask?: AgentSpec
   workflowAgent?: WorkflowAgent
 }
 
@@ -124,32 +124,6 @@ export function runAgentJudgeDetailed(
       else finish({ ok: false, reason: "fail" })
     })
   })
-}
-
-/**
- * Spawn the judge CLI with cwd at the attempt root. Exit 0 → pass.
- * Missing instructions, spawn failure, or timeout → fail.
- */
-export function runAgentJudge(options: RunJudgeOptions): Promise<boolean> {
-  return runAgentJudgeDetailed(options).then((o) => o.ok)
-}
-
-/** Cache key so a run tick does not re-spawn the same judge. */
-export function judgeCacheKey(
-  judge: AgentJudge,
-  instructionsAbsPath: string,
-  workflowRoot: string,
-  attemptRoot: string,
-  resolved: ResolvedModelEffort
-): string {
-  return [
-    judge.cli,
-    resolved.model ?? "",
-    resolved.effort ?? "",
-    instructionsAbsPath,
-    workflowRoot,
-    attemptRoot,
-  ].join("\0")
 }
 
 /**

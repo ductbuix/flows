@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createEngine } from "./engine.ts"
-import { foldEvents } from "./fold.ts"
+import { workflowSchema } from "@workspace/shared"
+import { foldEvents } from "./nodes/run-state.ts"
 import { summarizeRun } from "./run-summary.ts"
 
 const homes: string[] = []
@@ -20,51 +21,77 @@ function tempHome(): string {
   return home
 }
 
-function writeWorkflow(home: string, id: string, yaml: string): string {
-  const workflowDir = join(home, "workflows", id)
-  mkdirSync(workflowDir, { recursive: true })
-  writeFileSync(join(workflowDir, "workflow.yaml"), yaml)
-  return workflowDir
-}
+const graph = workflowSchema.parse({
+  id: "ok",
+  nodes: [
+    { id: "t", kind: "trigger", type: "manual" },
+    { id: "a", kind: "command", run: "echo ok" },
+    { id: "o", kind: "output", target: "folder" },
+  ],
+  edges: [
+    { from: "t", to: "a" },
+    { from: "a", to: "o" },
+  ],
+})
 
 describe("summarizeRun", () => {
-  it("lists needsYou and firstFailedTaskId from task state", () => {
+  it("lists needsYou and firstFailedTaskId from step state", () => {
+    const wf = workflowSchema.parse({
+      id: "w1",
+      nodes: [
+        { id: "a", kind: "approval", question: "Go?" },
+        { id: "b", kind: "command", run: "echo b" },
+        { id: "c", kind: "command", run: "echo c" },
+      ],
+      edges: [],
+    })
+    const at = (n: number) => `2026-01-01T00:00:0${n}.000Z`
     const state = foldEvents([
       {
         type: "run_started",
         runId: "r1",
         workflowId: "w1",
-        graph: {
-          id: "w1",
-          tasks: [
-            { id: "a", kind: "command", run: "echo a", needs: [] },
-            { id: "b", kind: "command", run: "echo b", needs: [] },
-            { id: "c", kind: "command", run: "echo c", needs: [] },
-          ],
-        },
-        at: "2026-01-01T00:00:00.000Z",
+        graph: wf,
+        at: at(0),
         itemKey: "key1",
       },
+      { type: "step_started", runId: "r1", nodeId: "a", pass: 1, at: at(1) },
       {
         type: "approval_requested",
         runId: "r1",
         taskId: "a",
-        at: "2026-01-01T00:00:01.000Z",
+        nodeId: "a",
+        pass: 1,
+        question: "Go?",
+        at: at(1),
       },
+      { type: "step_started", runId: "r1", nodeId: "b", pass: 1, at: at(2) },
       {
         type: "attempt_started",
         runId: "r1",
         taskId: "b",
+        nodeId: "b",
+        pass: 1,
         attempt: 1,
-        at: "2026-01-01T00:00:02.000Z",
+        at: at(2),
       },
       {
         type: "attempt_finished",
         runId: "r1",
         taskId: "b",
+        nodeId: "b",
+        pass: 1,
         attempt: 1,
         exitCode: 1,
-        at: "2026-01-01T00:00:03.000Z",
+        at: at(3),
+      },
+      {
+        type: "step_failed",
+        runId: "r1",
+        nodeId: "b",
+        pass: 1,
+        reason: "exit",
+        at: at(3),
       },
     ])
     expect(state).not.toBeNull()
@@ -74,7 +101,7 @@ describe("summarizeRun", () => {
       workflowId: "w1",
       workflowName: "w1",
       status: "running",
-      needsYou: [{ taskId: "a" }],
+      needsYou: [{ taskId: "a", question: "Go?" }],
       taskCounts: { done: 1, total: 3 },
       firstFailedTaskId: "b",
       itemKey: "key1",
@@ -87,19 +114,8 @@ describe("summarizeRun", () => {
 describe("Engine run summary cache", () => {
   it("second listRunSummaries call folds nothing", async () => {
     const home = tempHome()
-    const workflowDir = writeWorkflow(
-      home,
-      "ok",
-      `
-id: ok
-tasks:
-  - id: a
-    kind: command
-    run: "printf ok > \\"$TASK_OUT/out.txt\\""
-`
-    )
     const engine = createEngine({ home })
-    const handle = await engine.startRun({ workflowDir, runId: "r-cache" })
+    const handle = engine.startNodeRun({ graph, runId: "r-cache" })
     await handle.wait()
 
     const spy = vi.spyOn(engine, "fold")
@@ -110,7 +126,7 @@ tasks:
     expect(first[0]).toMatchObject({
       id: "r-cache",
       status: "succeeded",
-      taskCounts: { done: 1, total: 1 },
+      taskCounts: { done: 3, total: 3 },
     })
     spy.mockRestore()
     engine.close()
@@ -118,19 +134,8 @@ tasks:
 
   it("rebuilds summaries after resume on a new engine", async () => {
     const home = tempHome()
-    const workflowDir = writeWorkflow(
-      home,
-      "ok",
-      `
-id: ok
-tasks:
-  - id: a
-    kind: command
-    run: "printf ok > \\"$TASK_OUT/out.txt\\""
-`
-    )
     const engine = createEngine({ home })
-    await (await engine.startRun({ workflowDir, runId: "r-resume" })).wait()
+    await engine.startNodeRun({ graph, runId: "r-resume" }).wait()
     engine.close()
 
     const again = createEngine({ home })

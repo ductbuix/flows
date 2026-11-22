@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import {
-  isPublishTask,
   runChangesResponseSchema,
   type ChangeSet,
   type RunDetail,
@@ -26,6 +25,17 @@ type Props = {
   task: TaskView
 }
 
+/** The connection a publish Output node sends to, if the task is one. */
+export function publishConnectionOf(
+  run: RunDetail,
+  taskId: string
+): string | undefined {
+  const node = run.graph.nodes.find((n) => n.id === taskId)
+  return node?.kind === "output" && node.target === "publish"
+    ? node.connection
+    : undefined
+}
+
 function destructiveOps(changeSet: ChangeSet | null): string[] {
   if (!changeSet) return []
   return changeSet.ops
@@ -48,8 +58,7 @@ function opsDiff(changeSet: ChangeSet | null): string {
 
 /** Waiting publish evidence: preview, diff, Cloud badge (DES-025 J9). */
 export function ChangesToPublish({ run, task }: Props) {
-  const spec = run.graph.tasks.find((t) => t.id === task.id)
-  const connection = spec && isPublishTask(spec) ? spec.connection : undefined
+  const connection = publishConnectionOf(run, task.id)
   const [previewMd, setPreviewMd] = useState<string | null>(null)
   const [changeSet, setChangeSet] = useState<ChangeSet | null>(null)
   const [error, setError] = useState<string | null>(null)

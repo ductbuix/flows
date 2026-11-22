@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { nodeWorkflowSchema } from "./index.ts"
+import { workflowSchema } from "./index.ts"
 import {
   addEdge,
   addNode,
@@ -25,7 +25,7 @@ edges:
   - { from: a, to: b } # main
 `
 
-const valid = (t: string) => nodeWorkflowSchema.parse(parse(t))
+const valid = (t: string) => workflowSchema.parse(parse(t))
 
 describe("node yaml edit helpers", () => {
   it("adds a node and an edge, keeping comments", () => {

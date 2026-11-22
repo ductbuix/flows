@@ -38,18 +38,6 @@ export function runDir(workflowRoot: string, runId: string): string {
   return join(workflowRoot, "runs", runId)
 }
 
-export function taskDir(runRoot: string, taskId: string): string {
-  return join(runRoot, "tasks", taskId)
-}
-
-export function attemptDir(
-  runRoot: string,
-  taskId: string,
-  attempt: number
-): string {
-  return join(taskDir(runRoot, taskId), `attempt-${attempt}`)
-}
-
 export function connectionsDir(home: string): string {
   return join(home, "connections")
 }

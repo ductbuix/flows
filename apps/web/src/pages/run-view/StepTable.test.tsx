@@ -16,7 +16,7 @@ const step = (
 /** A Judge loop: draft and check ran three times, the last verdict Yes. */
 const run = {
   graph: {
-    tasks: [
+    nodes: [
       { id: "draft", name: "Draft" },
       { id: "check" },
       { id: "done" },

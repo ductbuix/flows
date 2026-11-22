@@ -1,4 +1,4 @@
-import type { NodeWorkflow } from "@workspace/shared"
+import type { Workflow } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import {
   Table,
@@ -11,7 +11,7 @@ import {
 import { PageSection } from "@/components/page"
 import { mono } from "@/components/data/mono"
 
-type Node = NodeWorkflow["nodes"][number]
+type Node = Workflow["nodes"][number]
 
 /** Agent CLI, or the Command line, in one short cell. */
 function detail(node: Node): string | null {
@@ -22,12 +22,12 @@ function detail(node: Node): string | null {
   return null
 }
 
-function feedsLabel(workflow: NodeWorkflow, id: string): string {
+function feedsLabel(workflow: Workflow, id: string): string {
   const from = workflow.edges.filter((e) => e.to === id).map((e) => e.from)
   return from.length === 0 ? "—" : [...new Set(from)].join(", ")
 }
 
-type Props = { workflow: NodeWorkflow }
+type Props = { workflow: Workflow }
 
 /** Overview Tasks section for a node workflow: one row per node (BL-104). */
 export function OverviewNodesSection({ workflow }: Props) {

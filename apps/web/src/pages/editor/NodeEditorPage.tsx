@@ -12,7 +12,7 @@ import { ReactFlowProvider } from "@xyflow/react"
 import { NodeEditorSurface } from "./NodeEditorSurface"
 import { useNodeEditor } from "./useNodeEditor"
 
-/** Editor canvas for node workflows, behind FLOWS_NODES (BL-077). */
+/** Editor canvas for node workflows. */
 export function NodeEditorPage({ workflowId }: { workflowId: string }) {
   const editor = useNodeEditor(workflowId)
   const workflow = editor.workflow

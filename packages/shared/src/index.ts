@@ -70,45 +70,20 @@ export {
 } from "./library.ts"
 export { healthSchema, type Health } from "./health.ts"
 export {
-  commandTaskSchema,
-  agentTaskSchema,
-  publishTaskSchema,
-  taskSchema,
   agentJudgeSchema,
-  conditionSchema,
-  whenSchema,
-  needSchema,
-  needObjectSchema,
-  needTaskId,
-  loneAgentJudge,
-  isAgentTask,
-  isCommandTask,
-  isPublishTask,
-  taskSpawnDepth,
   retrySchema,
-  repeatSchema,
+  timeoutSecondsSchema,
   workflowLimitsSchema,
   workflowInputDeclSchema,
-  workflowSchema,
   appConfigSchema,
   DEFAULT_LIBRARY_MAX_BYTES,
+  workflowNameSchema,
   type AgentJudge,
-  type Condition,
-  type When,
-  type Need,
-  type NeedObject,
   type RetryPolicy,
-  type RepeatPolicy,
-  type CommandTask,
-  type AgentTask,
-  type PublishTask,
-  type Task,
-  type Workflow,
   type WorkflowLimits,
   type WorkflowInputDecl,
   type WorkflowInputType,
   type AppConfig,
-  workflowNameSchema,
 } from "./workflow.ts"
 export {
   effortSchema,
@@ -125,6 +100,7 @@ export {
   type CliModelEntry,
   type CliModelCatalog,
   type ModelSource,
+  type AgentSpec,
   type ResolvedModelEffort,
 } from "./model-effort.ts"
 export {
@@ -139,31 +115,7 @@ export {
   type InputsJson,
   type RunInputFileDetail,
 } from "./run-inputs.ts"
-export {
-  GENERATED_TASK_ID_RE,
-  isSafeTaskId,
-  newTaskId,
-  taskPromptPath,
-  judgePromptPath,
-  upstreamEnvName,
-  type JudgeSlot,
-} from "./task-ids.ts"
-export {
-  taskLabel,
-  dependentsOf,
-  collectMentionHits,
-  removedTaskIds,
-  type TaskLabel,
-  type MentionHit,
-} from "./task-remove.ts"
-export {
-  countAgentJudges,
-  collectRawWorkflowIssues,
-  collectWorkflowIssues,
-  proposeConnectionsForPublish,
-  spawnIdRejectedMessage,
-  spawnInstructionsRejectedMessage,
-} from "./workflow-validate.ts"
+export { isSafeTaskId, upstreamEnvName } from "./task-ids.ts"
 export {
   taskStatusSchema,
   runStatusSchema,
@@ -175,19 +127,11 @@ export {
   attemptFinishedEventSchema,
   attemptInterruptedEventSchema,
   approvalRequestedEventSchema,
-  taskApprovedEventSchema,
-  taskRejectedEventSchema,
-  taskSucceededEventSchema,
-  taskFailedEventSchema,
-  taskSkippedEventSchema,
-  tasksSpawnedEventSchema,
   cancelRequestedEventSchema,
-  taskCancelledEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,
   runFailedEventSchema,
   runDeletedEventSchema,
-  taskRetryRequestedEventSchema,
   libraryPulledEventSchema,
   workCopyChangedEventSchema,
   publishStartedEventSchema,
@@ -214,6 +158,7 @@ export {
   type AttemptKind,
   type AttemptKindInfo,
   type AttemptLike,
+  type RetrySpec,
 } from "./attempt-kind.ts"
 export {
   workflowSummarySchema,
@@ -233,7 +178,6 @@ export {
   okResponseSchema,
   apiErrorSchema,
   yamlDiagnosticSchema,
-  workflowDetailSchema,
   putWorkflowBodySchema,
   workflowConflictSchema,
   wsClientMessageSchema,
@@ -254,13 +198,12 @@ export {
   type OkResponse,
   type ApiError,
   type YamlDiagnosticDto,
-  type WorkflowDetail,
-  nodeWorkflowDetailSchema,
+  workflowDetailSchema,
   runStepSchema,
   type RunStep,
   runCanvasSchema,
   type RunCanvas,
-  type NodeWorkflowDetail,
+  type WorkflowDetail,
   type PutWorkflowBody,
   type WorkflowConflict,
   type WsClientMessage,
@@ -325,7 +268,6 @@ export {
   workflowFileDetailSchema,
   putWorkflowFileBodySchema,
   workflowFileConflictSchema,
-  taskInLiveRunErrorSchema,
   type CreateWorkflowBody,
   type RenameWorkflowBody,
   type RenameWorkflowResponse,
@@ -338,7 +280,6 @@ export {
   type WorkflowFileDetail,
   type PutWorkflowFileBody,
   type WorkflowFileConflict,
-  type TaskInLiveRunError,
 } from "./api-lifecycle.ts"
 export {
   workItemIdSchema,
@@ -371,35 +312,11 @@ export {
   type WorkItemAttachmentList,
 } from "./work-item.ts"
 export {
-  parseWorkflowYaml,
-  stripSpawnMeta,
-  taskIndex,
-  tasksSeq,
-  taskMap,
-  type YamlDiagnostic,
-  type ParsedWorkflowYaml,
-} from "./workflow-yaml.ts"
-export {
-  roundTripYaml,
-  addTask,
-  removeTask,
-  renameTask,
-  setTaskNeeds,
-  setRetryMax,
-  setApproval,
-  setTaskField,
-  setWorkflowField,
-  upsertTask,
-} from "./workflow-yaml-edit.ts"
-export { taskWithKind, switchTaskKind } from "./workflow-yaml-kind.ts"
-export { replaceMemoryRef } from "./workflow-yaml-memory.ts"
-export { applyWorkflowDiff } from "./workflow-yaml-diff.ts"
-export {
-  nodeWorkflowSchema,
+  workflowSchema,
   nodeSchema,
   edgeSchema,
   PORT_TABLE,
-  type NodeWorkflow,
+  type Workflow,
   type WorkflowNode,
   type WorkflowEdge,
 } from "./nodes/index.ts"
@@ -410,6 +327,8 @@ export {
   setNodeKey,
   addEdge,
   removeEdge,
+  setWorkflowField,
+  replaceMemoryRef,
 } from "./nodes/yaml-edit.ts"
 export {
   parseNodeWorkflowYaml,

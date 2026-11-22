@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { nodeWorkflowSchema } from "./index.ts"
+import { workflowSchema } from "./index.ts"
 import {
   answerText,
   fillTemplate,
@@ -133,7 +133,7 @@ describe("answers in the workflow schema", () => {
     edges,
   })
   const issues = (v: unknown) => {
-    const r = nodeWorkflowSchema.safeParse(v)
+    const r = workflowSchema.safeParse(v)
     return r.success ? [] : r.error.issues.map((i) => i.message)
   }
   it("accepts answers on an LLM node and fills the approval question", () => {

@@ -83,7 +83,7 @@ export type MemoryConflict = z.infer<typeof memoryConflictSchema>
 /**
  * Workflow-relative text path (DES-018). Relative only; no `..`, absolute,
  * backslashes, `workflow.yaml`, anything under `runs/` or `.cache/`
- * (DES-026), or `tasks/.trash/` (DES-022).
+ * (DES-026), or `nodes/.trash/` (DES-022).
  */
 export function isAllowedWorkflowFilePath(rel: string): boolean {
   if (!rel || rel.startsWith("/") || rel.includes("\\")) return false
@@ -92,18 +92,9 @@ export function isAllowedWorkflowFilePath(rel: string): boolean {
   if (rel === "workflow.yaml") return false
   if (parts[0] === "runs") return false
   if (parts[0] === ".cache") return false
-  if (parts[0] === "tasks" && parts[1] === ".trash") return false
+  if (parts[0] === "nodes" && parts[1] === ".trash") return false
   return true
 }
-
-/** PUT conflict when a removed task is still in a live or queued run (DES-022). */
-export const taskInLiveRunErrorSchema = z.object({
-  error: z.literal("task_in_live_run"),
-  taskIds: z.array(z.string().min(1)).min(1),
-  runIds: z.array(z.string().min(1)).min(1),
-})
-
-export type TaskInLiveRunError = z.infer<typeof taskInLiveRunErrorSchema>
 
 export const workflowFilePathSchema = z
   .string()

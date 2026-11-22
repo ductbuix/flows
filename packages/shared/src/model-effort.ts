@@ -54,6 +54,15 @@ export type CliModelCatalog = z.infer<typeof cliModelCatalogSchema>
 
 export type ModelSource = "task" | "workflow" | "cli"
 
+/** The agent settings a CLI launch reads from an Agent or LLM node. */
+export type AgentSpec = {
+  cli: "claude" | "cursor"
+  model?: string
+  effort?: Effort
+  /** Workflow-relative memory/*.md paths copied to input/memory/. */
+  memory?: string[]
+}
+
 export type ResolvedModelEffort = {
   model?: string
   effort?: Effort

@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
 import { runNodes } from "./drive.ts"
@@ -61,7 +61,7 @@ function setup() {
 }
 
 const graph = (check: object) =>
-  nodeWorkflowSchema.parse({
+  workflowSchema.parse({
     id: "wf",
     // One CLI slot: the LLM step takes it, the Judge must not need one.
     limits: { agents: 1 },
@@ -157,7 +157,7 @@ describe("judge check settings", () => {
     edges: [{ from: "t", to: "l" }, { from: "l", to: "j" }],
   })
   const messages = (judge: object) => {
-    const r = nodeWorkflowSchema.safeParse(nodes(judge))
+    const r = workflowSchema.safeParse(nodes(judge))
     return r.success ? [] : r.error.issues.map((i) => i.message)
   }
 

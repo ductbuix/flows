@@ -11,7 +11,8 @@ describe("toTaskViews model fields", () => {
       sandboxed: true,
       graph: {
         id: "w1",
-        tasks: [{ id: "a", kind: "agent", cli: "claude", needs: [] }],
+        nodes: [{ id: "a", kind: "agent", cli: "claude" }],
+        edges: [],
       },
       tasks: {
         a: {

@@ -37,8 +37,8 @@ function attemptTitle(a: AttemptView): string {
 }
 
 export function TaskDetailAttempts({ run, task }: Props) {
-  const graphTask = run.graph.tasks.find((t) => t.id === task.id)
-  const retryMax = graphTask?.retry?.max
+  const node = run.graph.nodes.find((n) => n.id === task.id)
+  const retryMax = node && "retry" in node ? node.retry?.max : undefined
   const failed = task.attempts.filter(
     (a) => a.reason || (a.exitCode !== undefined && a.exitCode !== 0)
   )

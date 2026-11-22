@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { execFileSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { afterEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import { getCliAdapter } from "../cli-adapters.ts"
 import { EventLog } from "../event-log.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
@@ -48,7 +48,7 @@ function setup(cli: "claude" | "agent", opts: { system?: boolean } = {}) {
 }
 
 const graph = (cli: "claude" | "cursor", extra: object = {}) =>
-  nodeWorkflowSchema.parse({
+  workflowSchema.parse({
     id: "wf",
     nodes: [
       { id: "t", kind: "trigger", type: "manual" },

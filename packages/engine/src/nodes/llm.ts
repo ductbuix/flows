@@ -4,7 +4,7 @@ import {
   answerText,
   parseAnswerText,
   resolveModelEffort,
-  type AgentTask,
+  type AgentSpec,
 } from "@workspace/shared"
 import { resolveAttemptModelFields } from "../attempt-model.ts"
 import { getCliAdapter } from "../cli-adapters.ts"
@@ -47,10 +47,7 @@ export const llmExecutor = defineExecutor({
     if (node.kind !== "llm") throw new Error("not an llm node")
     if (!existsSync(ctx.frozenPath("prompt.md"))) throw new Error("missing_prompt")
     const decls = nodeAnswers(ctx)
-    const task: AgentTask = {
-      id: node.id,
-      needs: [],
-      kind: "agent",
+    const task: AgentSpec = {
       cli: node.cli,
       ...(node.model !== undefined ? { model: node.model } : {}),
       ...(node.effort !== undefined ? { effort: node.effort } : {}),

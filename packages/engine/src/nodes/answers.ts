@@ -7,7 +7,7 @@ import {
   templateProblems,
   type AnswerDecl,
   type AnswerParse,
-  type NodeWorkflow,
+  type Workflow,
   type TemplateText,
 } from "@workspace/shared"
 import { workflowDir } from "../paths.ts"
@@ -127,7 +127,7 @@ const FILL_FILES: Record<string, string[]> = {
 }
 
 /** Every text of the graph that may use `{{name}}`. */
-function templateTexts(home: string, graph: NodeWorkflow): TemplateText[] {
+function templateTexts(home: string, graph: Workflow): TemplateText[] {
   const root = join(workflowDir(home, graph.id), "nodes")
   const out: TemplateText[] = []
   for (const n of graph.nodes) {
@@ -143,7 +143,7 @@ function templateTexts(home: string, graph: NodeWorkflow): TemplateText[] {
 }
 
 /** Fails a start when a template name is ambiguous (DES-032). */
-export function assertNodeTemplatesValid(home: string, graph: NodeWorkflow): void {
+export function assertNodeTemplatesValid(home: string, graph: Workflow): void {
   const problems = templateProblems(
     graph.nodes,
     graph.edges,

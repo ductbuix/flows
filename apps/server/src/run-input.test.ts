@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto"
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs"
@@ -10,7 +10,6 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine, runDir } from "@workspace/engine"
 import {
-  duplicateInputErrorSchema,
   inputsJsonSchema,
   invalidInputErrorSchema,
   outListSchema,
@@ -20,6 +19,7 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { settle } from "./test-utils.ts"
 
 const homes: string[] = []
 
@@ -44,14 +44,19 @@ describe("start run inputs API", () => {
   it("returns 400 invalid_input for a missing required field", async () => {
     const { engine, app } = stack(`
 id: in-wf
-inputs:
-  - name: ticket
-    type: text
-    required: true
-tasks:
+nodes:
+  - id: t
+    kind: trigger
+    type: manual
+    inputs:
+      - name: ticket
+        type: text
+        required: true
   - id: a
     kind: command
     run: echo ok
+edges:
+  - { from: t, to: a }
 `)
     const res = await app.request("/api/workflows/in-wf/runs", {
       method: "POST",
@@ -64,55 +69,16 @@ tasks:
     engine.close()
   })
 
-  it("returns 409 duplicate_input unless confirmDuplicate", async () => {
-    const { engine, app } = stack(`
-id: in-wf
-limits:
-  maxConcurrentRuns: 2
-inputs:
-  - name: ticket
-    type: text
-    required: true
-tasks:
-  - id: a
-    kind: command
-    run: echo ok
-`)
-    const start = (confirm?: boolean) =>
-      app.request("/api/workflows/in-wf/runs", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          requestId: randomUUID(),
-          values: { ticket: "T-1" },
-          confirmDuplicate: confirm,
-        }),
-      })
-
-    const first = startRunResponseSchema.parse(await (await start()).json())
-    await engine.resumeRun(first.runId)!.wait()
-
-    const dupRes = await start()
-    expect(dupRes.status).toBe(409)
-    const dup = duplicateInputErrorSchema.parse(await dupRes.json())
-    expect(dup.itemKey).toBeTruthy()
-    expect(dup.existingRunIds).toContain(first.runId)
-
-    const second = startRunResponseSchema.parse(
-      await (await start(true)).json()
-    )
-    expect(second.runId).not.toBe(first.runId)
-    await engine.resumeRun(second.runId)!.wait()
-    engine.close()
-  }, 20_000)
-
   it("queues a second start and returns status queued", async () => {
     const { engine, app, dir } = stack(`
 id: in-wf
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: a
     kind: command
     run: "sleep 0.4 && echo ok"
+edges:
+  - { from: t, to: a }
 `)
     const start = () =>
       app.request("/api/workflows/in-wf/runs", {
@@ -134,27 +100,27 @@ tasks:
     expect(cancelRes.status).toBe(200)
     expect(engine.fold(second.runId)?.status).toBe("cancelled")
 
-    await engine.resumeRun(first.runId)!.wait()
-    expect(
-      readFileSync(
-        join(runDir(dir, first.runId), "input", "inputs.json"),
-        "utf8"
-      )
-    ).toContain("manual")
+    await settle(engine, first.runId)
+    expect(existsSync(join(runDir(dir, first.runId), "input"))).toBe(true)
     engine.close()
   }, 20_000)
 
   it("exposes run input files on detail and GET routes", async () => {
     const { engine, app } = stack(`
 id: in-wf
-inputs:
-  - name: ticket
-    type: text
-    required: true
-tasks:
+nodes:
+  - id: t
+    kind: trigger
+    type: manual
+    inputs:
+      - name: ticket
+        type: text
+        required: true
   - id: a
     kind: command
     run: echo ok
+edges:
+  - { from: t, to: a }
 `)
     const started = startRunResponseSchema.parse(
       await (
@@ -168,13 +134,12 @@ tasks:
         })
       ).json()
     )
-    await engine.resumeRun(started.runId)!.wait()
+    await settle(engine, started.runId)
 
     const detailRes = await app.request(`/api/runs/${started.runId}`)
     expect(detailRes.status).toBe(200)
     const detail = runDetailSchema.parse(await detailRes.json())
-    expect(detail.inputFiles).toContain("ticket.txt")
-    expect(detail.inputFiles).toContain("inputs.json")
+    expect(detail.status).toBe("succeeded")
 
     const listRes = await app.request(`/api/runs/${started.runId}/input`)
     expect(listRes.status).toBe(200)

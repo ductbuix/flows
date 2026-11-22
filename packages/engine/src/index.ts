@@ -3,21 +3,7 @@ export {
   Engine,
   type CreateEngineOptions,
   type RunHandle,
-  type StartRunOptions,
 } from "./engine.ts"
-export {
-  foldEvents,
-  readyTaskIds,
-  approvedAwaitingIds,
-  openAttempts,
-  hasOpenAttempts,
-  isOpenAttempt,
-  isUnfinishedTask,
-  isLiveRunStatus,
-  type RunState,
-  type TaskState,
-  type AttemptState,
-} from "./fold.ts"
 export type { ManualFilePart, ManualItem } from "./source-manual.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
 export {
@@ -28,8 +14,6 @@ export {
   workItemsRoot,
   workItemDir,
   runDir,
-  taskDir,
-  attemptDir,
   connectionsDir,
   connectionDir,
   secretsRoot,
@@ -66,7 +50,6 @@ export {
 } from "./library.ts"
 export {
   materializeNodeRunResources,
-  materializeRunResources,
   pullNow,
 } from "./library-run.ts"
 export { listLibrary } from "./library-list.ts"
@@ -95,7 +78,6 @@ export {
   updateConnection,
   deleteConnection,
   workflowsUsingConnection,
-  collectWorkflowUses,
   type ConnectionStoreError,
   type ConnectionStoreResult,
 } from "./connections.ts"
@@ -161,7 +143,6 @@ export {
   type AttachmentDeleteResult,
 } from "./workitem-files.ts"
 export { runInputDir } from "./run-input.ts"
-export { loadWorkflowFile, assertValidGraph } from "./workflow.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"
 export {
   sanitizeCursorProjectPath,
@@ -174,21 +155,8 @@ export {
   resolveCursorProjectsDir,
 } from "./cursor-trust.ts"
 export {
-  workflowNeedsAgentCli,
-  workflowAgentClis,
-  workflowHasTrustAgentReview,
-  runNeedsAgentCli,
-} from "./workflow-agents.ts"
-export {
   runPublishAgentReview,
-  proposeGoalsMarkdown,
 } from "./publish-review.ts"
-export { runPreflightChecks, hasWarning } from "./preflight.ts"
-export {
-  checkPathInsideHome,
-  isInsideRealpath,
-  tryRealpath,
-} from "./path-checks.ts"
 export {
   getCliAdapter,
   cliAdapters,
@@ -212,15 +180,6 @@ export type { CliTrustValue } from "@workspace/shared"
 export { manualItemKey, workItemItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"
 export {
-  DEFAULT_PORT_COUNT,
-  PORT_RANGE_START,
-  portLeaseKey,
-  portLeases,
-  type PortBlock,
-} from "./port-lease.ts"
-export { serialLocks, type SerialHolder } from "./serial-lock.ts"
-export {
-  ensureWorkCopies,
   copyPinnedEntity,
   workConnectionDir,
   workEntityDir,
@@ -233,12 +192,7 @@ export {
   publishChangesDir,
   workPublishBaseDir,
 } from "./work-copy.ts"
-export {
-  assertPublishTasksValid,
-  runPublishTask,
-  resumeInFlightPublishes,
-  hasOpenPublish,
-} from "./publish.ts"
+export { hasOpenPublish } from "./publish.ts"
 export {
   workflowCacheEnv,
   WORKFLOW_CACHE_ENV_TEMPLATES,

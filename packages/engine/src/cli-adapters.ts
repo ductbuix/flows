@@ -2,7 +2,7 @@ import { execFile } from "node:child_process"
 import { promisify } from "node:util"
 import type {
   AgentJudge,
-  AgentTask,
+  AgentSpec,
   CliModelCatalog,
   ResolvedModelEffort,
 } from "@workspace/shared"
@@ -30,12 +30,12 @@ import {
 
 const execFileAsync = promisify(execFile)
 
-export type CliKind = AgentTask["cli"]
+export type CliKind = AgentSpec["cli"]
 
 export type CliAdapter = {
   id: CliKind
   buildAgentCommand: (
-    task: AgentTask,
+    task: AgentSpec,
     instructionsAbsPath: string,
     paths: AgentLaunchPaths,
     resolved: ResolvedModelEffort
@@ -66,10 +66,8 @@ export type CliAdapter = {
 
 const claudeAdapter: CliAdapter = {
   id: "claude",
-  buildAgentCommand(task, instructionsAbsPath, paths, resolved) {
-    const prompt = shellSingleQuote(
-      agentPrompt(instructionsAbsPath, task.spawn === true)
-    )
+  buildAgentCommand(_task, instructionsAbsPath, paths, resolved) {
+    const prompt = shellSingleQuote(agentPrompt(instructionsAbsPath))
     const wf = shellSingleQuote(paths.workflowRoot)
     const flags = flagsToShell(this.composeFlags(resolved))
     return `claude --print --permission-mode dontAsk${flags} --add-dir ${wf} -- ${prompt}`
@@ -105,10 +103,8 @@ const claudeAdapter: CliAdapter = {
 
 const cursorAdapter: CliAdapter = {
   id: "cursor",
-  buildAgentCommand(task, instructionsAbsPath, paths, resolved) {
-    const prompt = shellSingleQuote(
-      agentPrompt(instructionsAbsPath, task.spawn === true)
-    )
+  buildAgentCommand(_task, instructionsAbsPath, paths, resolved) {
+    const prompt = shellSingleQuote(agentPrompt(instructionsAbsPath))
     const wf = shellSingleQuote(paths.workflowRoot)
     const attempt = shellSingleQuote(paths.attemptRoot)
     const flags = flagsToShell(this.composeFlags(resolved))

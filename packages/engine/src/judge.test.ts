@@ -5,10 +5,8 @@ import { afterEach, describe, expect, it } from "vitest"
 import { shellSingleQuote } from "./agent-prompt.ts"
 import {
   buildJudgeShellCommand,
-  judgeCacheKey,
   judgePrompt,
-  resolveJudgeModelEffort,
-  runAgentJudge,
+  runAgentJudgeDetailed,
 } from "./judge.ts"
 
 const dirs: string[] = []
@@ -64,25 +62,12 @@ describe("judge adapters", () => {
       "/wf/j.md",
       {
         parentTask: {
-          id: "t",
-          kind: "agent",
           cli: "cursor",
           effort: "high",
-          needs: [],
         },
       }
     )
     expect(cursor).toContain(`--model ${shellSingleQuote("auto-high")}`)
-  })
-
-  it("includes resolved model and effort in the cache key", () => {
-    const a = resolveJudgeModelEffort({ cli: "claude", model: "opus" })
-    const b = resolveJudgeModelEffort({ cli: "claude", model: "haiku" })
-    const keyA = judgeCacheKey({ cli: "claude" }, "/j.md", "/wf", "/a", a)
-    const keyB = judgeCacheKey({ cli: "claude" }, "/j.md", "/wf", "/a", b)
-    expect(keyA).not.toBe(keyB)
-    expect(keyA).toContain("opus")
-    expect(keyB).toContain("haiku")
   })
 
   it("passes when the stub CLI exits 0", async () => {
@@ -93,13 +78,13 @@ describe("judge adapters", () => {
     const path = join(wf, "judge.md")
     writeFileSync(path, "pass\n")
     await expect(
-      runAgentJudge({
+      runAgentJudgeDetailed({
         judge: { cli: "claude" },
         instructionsAbsPath: path,
         workflowRoot: wf,
         attemptRoot: attempt,
       })
-    ).resolves.toBe(true)
+    ).resolves.toMatchObject({ ok: true })
   })
 
   it("fails when the stub CLI exits non-zero", async () => {
@@ -110,13 +95,13 @@ describe("judge adapters", () => {
     const path = join(wf, "judge.md")
     writeFileSync(path, "fail\n")
     await expect(
-      runAgentJudge({
+      runAgentJudgeDetailed({
         judge: { cli: "cursor" },
         instructionsAbsPath: path,
         workflowRoot: wf,
         attemptRoot: attempt,
       })
-    ).resolves.toBe(false)
+    ).resolves.toMatchObject({ ok: false })
   })
 
   it("fails when the judge exceeds its timeout", async () => {
@@ -132,14 +117,14 @@ describe("judge adapters", () => {
     writeFileSync(path, "pass\n")
     const start = Date.now()
     await expect(
-      runAgentJudge({
+      runAgentJudgeDetailed({
         judge: { cli: "claude" },
         instructionsAbsPath: path,
         workflowRoot: wf,
         attemptRoot: attempt,
         timeoutSeconds: 1,
       })
-    ).resolves.toBe(false)
+    ).resolves.toMatchObject({ ok: false })
     expect(Date.now() - start).toBeLessThan(4000)
   })
 })

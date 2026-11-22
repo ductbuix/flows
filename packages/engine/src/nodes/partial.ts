@@ -1,9 +1,9 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import {
-  nodeWorkflowSchema,
+  workflowSchema,
   type EngineEvent,
-  type NodeWorkflow,
+  type Workflow,
 } from "@workspace/shared"
 import type { EventLog } from "../event-log.ts"
 import { runDir, workflowDir } from "../paths.ts"
@@ -24,7 +24,7 @@ const now = () => new Date().toISOString()
 type Base = {
   runId: string
   root: string
-  graph: NodeWorkflow
+  graph: Workflow
   steps: ReturnType<typeof foldSteps>
   /** A Run step run holds only some nodes: no base for Run from here. */
   stepRun: boolean
@@ -43,7 +43,7 @@ function loadBase(
   return {
     runId,
     root: runDir(workflowDir(home, workflowId), runId),
-    graph: nodeWorkflowSchema.parse(started.graph) as NodeWorkflow,
+    graph: workflowSchema.parse(started.graph) as Workflow,
     steps: foldSteps(events),
     stepRun: started.only !== undefined,
   }
@@ -73,7 +73,7 @@ function dirSnapshot(dir: string, rel = "", out: Record<string, string> = {}) {
 }
 
 /** Every node reachable from `id` over any edge, `id` included. */
-function downstreamOf(graph: NodeWorkflow, id: string): Set<string> {
+function downstreamOf(graph: Workflow, id: string): Set<string> {
   const seen = new Set([id])
   const queue = [id]
   while (queue.length > 0) {
@@ -89,14 +89,14 @@ function downstreamOf(graph: NodeWorkflow, id: string): Set<string> {
 }
 
 /** The graph apart from its nodes and edges: shared defaults and limits. */
-function shell(graph: NodeWorkflow): string {
-  const { nodes: _n, edges: _e, ...rest } = graph as NodeWorkflow & Record<string, unknown>
+function shell(graph: Workflow): string {
+  const { nodes: _n, edges: _e, ...rest } = graph as Workflow & Record<string, unknown>
   return canon(rest)
 }
 
 /** Whether a node's settings, files and incoming edges match the base run. */
 function unchanged(
-  graph: NodeWorkflow,
+  graph: Workflow,
   runRoot: string,
   base: Base,
   nodeId: string
@@ -104,7 +104,7 @@ function unchanged(
   const mine = graph.nodes.find((n) => n.id === nodeId)
   const theirs = base.graph.nodes.find((n) => n.id === nodeId)
   if (!mine || !theirs || canon(mine) !== canon(theirs)) return false
-  const into = (g: NodeWorkflow) =>
+  const into = (g: Workflow) =>
     canon(g.edges.filter((e) => e.to === nodeId))
   if (into(graph) !== into(base.graph)) return false
   const frozen = (root: string) =>
@@ -153,7 +153,7 @@ function seedStep(
 
 /** Why a partial run cannot start, or undefined. */
 export function partialRefusal(
-  graph: NodeWorkflow,
+  graph: Workflow,
   partial: Pick<PartialRun, "only" | "from">
 ): string | undefined {
   const target = partial.only ?? partial.from
@@ -169,7 +169,7 @@ export function partialRefusal(
 
 /** The latest done step of each node `only` reads, from the newest run with one. */
 function onlySeeds(
-  graph: NodeWorkflow,
+  graph: Workflow,
   only: string,
   bases: readonly Base[]
 ): { base: Base; step: StepState }[] {
@@ -190,7 +190,7 @@ export function assertPartialReady(options: {
   log: EventLog
   home: string
   workflowId: string
-  graph: NodeWorkflow
+  graph: Workflow
   partial: PartialRun
 }): void {
   const { log, home, workflowId, graph, partial } = options
@@ -218,7 +218,7 @@ export function seedPartialRun(options: {
   home: string
   workflowId: string
   runId: string
-  graph: NodeWorkflow
+  graph: Workflow
   partial: PartialRun
 }): void {
   const { log, home, workflowId, runId, graph, partial } = options

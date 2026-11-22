@@ -1,6 +1,6 @@
 import { existsSync, rmSync } from "node:fs"
 import type { EngineEvent } from "@workspace/shared"
-import type { RunState } from "./fold.ts"
+import type { RunState } from "./nodes/run-state.ts"
 import { removeWorkCopies } from "./work-copy.ts"
 
 function now(): string {

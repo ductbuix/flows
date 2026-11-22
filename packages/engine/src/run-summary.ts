@@ -1,9 +1,5 @@
-import {
-  isPublishTask,
-  type RunSummary,
-  type RunStatus,
-} from "@workspace/shared"
-import type { RunState } from "./fold.ts"
+import type { RunSummary, RunStatus } from "@workspace/shared"
+import type { RunState } from "./nodes/run-state.ts"
 
 const DONE = new Set(["succeeded", "failed", "skipped", "cancelled"])
 
@@ -11,12 +7,12 @@ const DONE = new Set(["succeeded", "failed", "skipped", "cancelled"])
 export function summarizeRun(state: RunState): RunSummary | null {
   if (state.deleted) return null
 
-  const tasks = state.graph.tasks
+  const nodes = state.graph.nodes
   const needsYou: RunSummary["needsYou"] = []
   let done = 0
   let firstFailedTaskId: string | undefined
 
-  for (const spec of tasks) {
+  for (const spec of nodes) {
     const task = state.tasks[spec.id]
     const status = task?.status ?? "pending"
     if (DONE.has(status)) done += 1
@@ -25,7 +21,9 @@ export function summarizeRun(state: RunState): RunSummary | null {
       needsYou.push({
         taskId: spec.id,
         ...(question !== undefined ? { question } : {}),
-        ...(isPublishTask(spec) ? { connectionId: spec.connection } : {}),
+        ...(spec.kind === "output" && spec.target === "publish" && spec.connection
+          ? { connectionId: spec.connection }
+          : {}),
       })
     }
     if (status === "failed" && firstFailedTaskId === undefined) {
@@ -40,7 +38,7 @@ export function summarizeRun(state: RunState): RunSummary | null {
     workflowName: state.graph.id,
     status: state.status,
     needsYou,
-    taskCounts: { done, total: tasks.length },
+    taskCounts: { done, total: nodes.length },
     ...(firstFailedTaskId !== undefined ? { firstFailedTaskId } : {}),
     ...(state.itemKey !== undefined ? { itemKey: state.itemKey } : {}),
     ...(state.workItemId !== undefined ? { workItemId: state.workItemId } : {}),
