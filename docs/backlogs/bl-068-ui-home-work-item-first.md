@@ -2,7 +2,7 @@
 id: BL-068
 title: "Home: work item first"
 type: backlog
-status: todo
+status: blocked
 summary: First launch starts from a work item; Home in two columns of 66px Items with readable labels and relative times.
 tags: [ui, web, ux, work-items]
 related: [DES-028, DES-025]
@@ -12,6 +12,8 @@ depends: [BL-059, BL-064]
 ---
 
 # Home: work item first
+
+Retired on 2026-11-22 before the node workflow build. The status is `blocked` because the docs schema has no retired status; this file stays as history.
 
 Design: [DES-028](../designs/des-028-ui-renovation-screens.md) (Home).
 Fixes #01, #02.

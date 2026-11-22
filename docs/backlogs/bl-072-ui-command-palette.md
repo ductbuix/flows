@@ -2,7 +2,7 @@
 id: BL-072
 title: "Command palette (later)"
 type: backlog
-status: todo
+status: blocked
 summary: CommandDialog on ⌘K to go to any page, workflow, work item or run, and to start common actions. Later phase.
 tags: [ui, web, dx]
 related: [DES-027, DES-030]
@@ -12,6 +12,8 @@ depends: [BL-068, BL-069, BL-070, BL-071]
 ---
 
 # Command palette (later)
+
+Retired on 2026-11-22 before the node workflow build. The status is `blocked` because the docs schema has no retired status; this file stays as history.
 
 Design: [DES-027](../designs/des-027-ui-renovation.md) (Decisions:
 Order), [DES-030](../designs/des-030-ui-renovation-journeys-dx.md)

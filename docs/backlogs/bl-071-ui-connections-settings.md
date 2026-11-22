@@ -2,7 +2,7 @@
 id: BL-071
 title: "Connections, Library, Connection page and Settings"
 type: backlog
-status: todo
+status: blocked
 summary: Header actions at 32px, Library rows that never wrap, Card grids on the Connection page and Settings, CLI trust in Settings.
 tags: [ui, web, connections, settings]
 related: [DES-029]
@@ -12,6 +12,8 @@ depends: [BL-058, BL-059]
 ---
 
 # Connections, Library, Connection page and Settings
+
+Retired on 2026-11-22 before the node workflow build. The status is `blocked` because the docs schema has no retired status; this file stays as history.
 
 Design: [DES-029](../designs/des-029-ui-renovation-run-screens.md)
 (Connections and Library, Connection page, Settings). Fixes #37 to #41.
