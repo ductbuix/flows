@@ -17,7 +17,11 @@ describe("connector registry", () => {
     registerConnector(fakeConnector)
     expect(getConnector("fake")).toBe(fakeConnector)
     expect(listConnectors().map((c) => c.id)).toEqual(["fake"])
-    expect(fakeConnector.describe().entityKinds).toEqual(["item"])
+    expect(fakeConnector.describe().entityKinds).toEqual([
+      "item",
+      "repo",
+      "page",
+    ])
   })
 
   it("unregisters a connector", () => {

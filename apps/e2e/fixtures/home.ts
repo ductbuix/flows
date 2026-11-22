@@ -198,7 +198,7 @@ nodes:
     access: read
   - id: read
     kind: command
-    run: 'cat "$RESOURCE_ASSET_DEMO/item/alpha/data.txt"'
+    run: 'cat "$RESOURCE_ASSET_DEMO/repo/alpha/data.txt"'
 edges:
   - { from: start, to: read }
   - { from: lib, to: read }
