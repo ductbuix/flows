@@ -5,10 +5,10 @@ type: backlog
 status: todo
 summary: workflowLabel, runLabel, RelativeTime and IdText; readable labels first everywhere, ids secondary mono with copy.
 tags: [ui, web, ux, dx]
-related: [DES-027, DES-029, DES-030]
+related: [DES-027, DES-029, DES-030, BL-073]
 updated: 2026-11-22
 priority: P0
-depends: [BL-057]
+depends: [BL-057, BL-073]
 ---
 
 # UI labels: readable names, relative times, IdText
@@ -20,8 +20,8 @@ label). Fixes S11 and the time part of S16.
 
 ## Done when
 
-- [ ] `apps/web/src/lib/labels.ts` exports `workflowLabel`
-      ("feature-spec" becomes "Feature spec"), `runLabel` (work item
+- [ ] `apps/web/src/lib/labels.ts` exports `workflowLabel` (from
+      BL-073: `name`, else "feature-spec" becomes "Feature spec"), `runLabel` (work item
       title, else "Ad hoc run"), `formatRelative` and `formatDuration`,
       with unit tests.
 - [ ] `components/data/RelativeTime` shows "just now" under 45s, "3 min

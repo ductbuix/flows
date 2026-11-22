@@ -19,6 +19,7 @@ related:
     BL-068,
     BL-069,
     BL-070,
+    BL-073,
   ]
 updated: 2026-11-22
 ---
@@ -50,7 +51,8 @@ lists of runs, connections, settings and dialogs are in
   `SidebarMenuAction showOnHover` + `DropdownMenu` (Rename, separator,
   Delete `variant="destructive"`), from dashboard-01 `NavDocuments`.
 - The header row is p-2 + 32 + p-2 = 48px, the same as the page header.
-- Workflow rows show the readable label in Geist, not mono (S11). The id
+- Workflow rows show the readable label (`name`, else the humanized id)
+  in Geist, not mono (S11). The id
   is in the row Tooltip.
 - With no workflows, the group shows one `SidebarMenuButton` "Create
   workflow" with a `Plus` icon, not an `Empty` (S8).
@@ -137,7 +139,8 @@ lists of runs, connections, settings and dialogs are in
 
 - Create workflow is on the page header (S14; today only the sidebar
   `+`). Rows alternate 37 and 38px today (S7); the `py-0` rule fixes it.
-- Name is the readable label; the id shows in a `HoverCard` with copy.
+- Name is the readable label (`name` from `workflow.yaml`, else the
+  humanized id, BL-073); the id shows in a `HoverCard` with copy.
 
 ## Workflow page (Overview, Editor, Runs)
 
@@ -233,7 +236,8 @@ Opens on node click and on create. `SheetContent side="right"`, 384px.
 
 Opens from "Workflow settings". Same Sheet and width.
 
-- `Accordion` with `multiple`, first item open: Goal and limits (Goal
+- `Accordion` with `multiple`, first item open: Name, goal and limits (Name
+  `Input`, Goal
   `Textarea`, Max concurrent runs `Input`), Inputs, Agent defaults (CLI
   `Select`, Model Selector), Memory files.
 - Inputs are `ItemGroup` rows (`Item size="xs"`): name in mono, type

@@ -22,6 +22,7 @@ related:
     BL-059,
     BL-060,
     BL-061,
+    BL-073,
   ]
 updated: 2026-11-22
 ---
@@ -244,12 +245,12 @@ Marked in each doc with a link here rather than rewritten:
    logs stay in fixed tabs and places, with no Advanced switch. This
    keeps the DES-016 row of 2026-11-21 ("No Simple/Pro mode; detail
    lives in Tabs"). DES-030 lists where each detail lives.
+2. **Workflow names** (pootato, 2026-11-22): `workflow.yaml` gets an
+   optional top-level `name` (DES-002). The UI label is `name`, else the
+   humanized folder id ("feature-spec" becomes "Feature spec"). The id
+   stays the key and shows as secondary mono text. BL-073 adds it.
 
-## Open questions
-
-1. **Workflow names.** Workflows have only an id (folder name). The plan
-   shows a humanized id ("feature-spec" becomes "Feature spec"). Is that
-   enough, or should `workflow.yaml` get an optional `name`?
+No open questions remain.
 
 ## Trade-off ledger
 
@@ -258,7 +259,7 @@ Marked in each doc with a link here rather than rewritten:
 | Default Sidebar variant, not inset      | Looks plainer than dashboard-01           | Same parts; `variant="inset"` is one prop  | pootato wants the inset card look            |
 | Modal task Sheet over the graph         | Picking another node needs Esc first      | Esc and overlay click close; focus returns | users switch tasks often (try right Sidebar) |
 | Sheet keeps 384px default width         | Long labels wrap; prompt box is narrow    | "Open in editor" opens the 576px dialog    | prompts are mostly edited in the dialog      |
-| Humanized ids as names                  | Two ids can humanize alike ("a-b", "a_b") | id shown secondary on every title          | open question 2 says add `name`              |
+| Humanized id when `name` is absent      | Two ids can humanize alike ("a-b", "a_b") | id shown secondary on every title          | users ask for a required `name`              |
 | `py-0` on control cells for 37px rows   | One layout class on a shadcn part         | Lint allows only `py-0` on `TableCell`     | shadcn ships a dense table size              |
 | Screenshot baselines per machine        | Font rendering differs across Macs        | 1% pixel tolerance, local-only app         | Flows gets CI                                |
 | One Start dialog, no inline Start cards | One extra click on a work item page       | "Start run" is always in the header        | users ask for the inline card back           |
@@ -266,6 +267,7 @@ Marked in each doc with a link here rather than rewritten:
 ## Done when
 
 Phases 19 to 23 in [DES-017](des-017-roadmap.md) are done: BL-057 to
-BL-061 (frame, sizes, names, components, guards), BL-062 to BL-064 (run
+BL-061 and BL-073 (frame, sizes, names, components, guards, workflow
+name), BL-062 to BL-064 (run
 view and Start), BL-065 to BL-067 (editor), BL-068 to BL-071 (home and
 lists), then BL-072 (command palette).

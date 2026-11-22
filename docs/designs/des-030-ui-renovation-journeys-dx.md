@@ -18,6 +18,7 @@ related:
     BL-060,
     BL-061,
     BL-072,
+    BL-073,
   ]
 updated: 2026-11-22
 ---
@@ -114,14 +115,14 @@ developer detail lives in fixed tabs and places, always one step away.
 
 ### Folders
 
-| Folder                                 | Holds                                                                      |
-| -------------------------------------- | -------------------------------------------------------------------------- |
-| `packages/ui/src/components/`          | shadcn generated files only; never edited by hand                          |
-| `apps/web/src/components/page/`        | `Page`, `PageHeader`, `PageTitle`, `PageSection`, `PageToolbar`            |
-| `apps/web/src/components/data/`        | `IdText`, `RelativeTime`, `Duration`, every status `Badge` mapping         |
-| `apps/web/src/components/ai-elements/` | AI Elements copied from shadcn examples, one file per pattern              |
-| `apps/web/src/lib/labels.ts`           | `workflowLabel`, `runLabel`, `formatRelative`, `formatDuration`            |
-| `apps/web/src/pages/<area>/`           | home, work-items, workflows, editor, runs, run-view, connections, settings |
+| Folder                                 | Holds                                                                                       |
+| -------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `packages/ui/src/components/`          | shadcn generated files only; never edited by hand                                           |
+| `apps/web/src/components/page/`        | `Page`, `PageHeader`, `PageTitle`, `PageSection`, `PageToolbar`                             |
+| `apps/web/src/components/data/`        | `IdText`, `RelativeTime`, `Duration`, every status `Badge` mapping                          |
+| `apps/web/src/components/ai-elements/` | AI Elements copied from shadcn examples, one file per pattern                               |
+| `apps/web/src/lib/labels.ts`           | `workflowLabel` (`name`, else humanized id), `runLabel`, `formatRelative`, `formatDuration` |
+| `apps/web/src/pages/<area>/`           | home, work-items, workflows, editor, runs, run-view, connections, settings                  |
 
 Each area backlog moves its own page files, so no big-bang move.
 

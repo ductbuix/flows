@@ -22,6 +22,7 @@ related:
     DES-028,
     DES-029,
     DES-030,
+    BL-073,
   ]
 updated: 2026-11-22
 ---
@@ -53,7 +54,7 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 16    | Connections and library (read) | BL-042 model, BL-043 library, BL-044 GitHub read, BL-045 pages, BL-046 editor and pins, BL-047 retention                        | tasks read pinned GitHub data; freshness and pins visible                    |
 | 17    | Gated publish                  | BL-048 change sets, BL-049 publish task, BL-050 GitHub publish, BL-051 publish UI, BL-052 agent review, BL-056 ports and caches | a draft PR is published only after approval, with a ledger                   |
 | 18    | More sources                   | BL-053 cookie store, BL-054 Confluence, BL-055 Rally                                                                            | MCP and cookie sign-ins work; tasks cannot read cookies                      |
-| 19    | Page frame and sizes           | BL-057 frame, BL-058 sizes, BL-059 labels, BL-060 kit, BL-061 guards                                                            | one frame, 32px controls, 37px rows; layout check passes                     |
+| 19    | Page frame and sizes           | BL-057 frame, BL-058 sizes, BL-059 labels, BL-060 kit, BL-061 guards, BL-073 workflow name                                      | one frame, 32px controls, 37px rows; layout check passes                     |
 | 20    | Run view, summary first        | BL-062 summary, BL-063 tasks, BL-064 Start and trust                                                                            | a failed run opens on its failed task Terminal                               |
 | 21    | Editor with a task Sheet       | BL-065 frame, BL-066 task Sheet, BL-067 workflow settings                                                                       | an agent task with prompt, model and memory in 11 clicks                     |
 | 22    | Home and lists                 | BL-068 Home, BL-069 work items, BL-070 workflows and runs, BL-071 connections and settings                                      | first launch to a started run from a work item in 7 clicks                   |
@@ -112,8 +113,9 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 - Phases 19 to 23 renovate the UI ([DES-027](des-027-ui-renovation.md))
   in pootato's order. Phase 19 comes first so every later screen lands
   on one frame, one size rule and the guards. BL-057 and BL-060 have no
-  dependency and go first; BL-061 comes last in the phase so its checks
-  cover the finished frame.
+  dependency and go first; BL-073 has none either and lands before
+  BL-059 so labels read `name`. BL-061 comes last in the phase so its
+  checks cover the finished frame.
 - Phase 20 comes before 21: watching runs matters more than authoring,
   which can fall back on YAML. BL-064 lands with the run view because
   every start point uses its dialog.

@@ -19,6 +19,7 @@ related:
     BL-064,
     BL-070,
     BL-071,
+    BL-073,
   ]
 updated: 2026-11-22
 ---
@@ -177,21 +178,21 @@ Widths per kind from the spec sheet. Footers are `DialogFooter`
 (`border-t bg-muted/50 p-4`), default-size buttons, Cancel (`outline`)
 before the primary; a destructive extra action goes left with `mr-auto`.
 
-| Dialog              | Kind   | Width | Content                                                                                 | Was (#)      |
-| ------------------- | ------ | ----- | --------------------------------------------------------------------------------------- | ------------ |
-| Create workflow     | form   | 448   | Name, folder id as mono `FieldDescription`, Goal                                        | 512 (08)     |
-| Rename workflow     | form   | 448   | `Dialog`, not AlertDialog; one sentence on what moves; live runs block it               | 384x470 (09) |
-| Delete workflow     | delete | 384   | `AlertDialog`, type the name to confirm                                                 | 384 (10)     |
-| New work item       | form   | 448   | Title, Source, Workflow `Combobox` with "Create workflow" as the last option            | 512 (04)     |
-| Start run           | form   | 448   | Work item or Workflow `Combobox`, inputs in `ScrollArea` `max-h-96`, `Attachment` files | 512 (23)     |
-| Allow agent CLI     | form   | 448   | Plain copy, `Collapsible` "Technical checks" with a `CodeBlock size="sm"`               | 512x515 (24) |
-| Add connection      | form   | 448   | Five Fields in one `FieldGroup`                                                         | 512 (38)     |
-| Edit input          | form   | 448   | Name, Type, Required `Checkbox`, Default                                                | new          |
-| Conflict, collision | form   | 448   | Keep mine, Use disk; Rename                                                             | 384 (bug)    |
-| Allow MCP server    | form   | 448   | Same layout as Allow agent CLI                                                          | 512          |
-| Edit memory file    | editor | 576   | Title plain, path mono in the description, `Textarea`; Remove left                      | 672 (16)     |
-| Edit prompt         | editor | 576   | Title "Edit prompt", task and path in description, Prompt Input; Save in footer         | 672 (17)     |
-| Delete task         | delete | 384   | `AlertDialog`                                                                           | 384 (18)     |
+| Dialog              | Kind   | Width | Content                                                                                  | Was (#)      |
+| ------------------- | ------ | ----- | ---------------------------------------------------------------------------------------- | ------------ |
+| Create workflow     | form   | 448   | Name first; folder id filled from it (mono, editable); Goal                              | 512 (08)     |
+| Rename workflow     | form   | 448   | `Dialog`, not AlertDialog; Name (label only), then folder id; live runs block an id move | 384x470 (09) |
+| Delete workflow     | delete | 384   | `AlertDialog`, type the name to confirm                                                  | 384 (10)     |
+| New work item       | form   | 448   | Title, Source, Workflow `Combobox` with "Create workflow" as the last option             | 512 (04)     |
+| Start run           | form   | 448   | Work item or Workflow `Combobox`, inputs in `ScrollArea` `max-h-96`, `Attachment` files  | 512 (23)     |
+| Allow agent CLI     | form   | 448   | Plain copy, `Collapsible` "Technical checks" with a `CodeBlock size="sm"`                | 512x515 (24) |
+| Add connection      | form   | 448   | Five Fields in one `FieldGroup`                                                          | 512 (38)     |
+| Edit input          | form   | 448   | Name, Type, Required `Checkbox`, Default                                                 | new          |
+| Conflict, collision | form   | 448   | Keep mine, Use disk; Rename                                                              | 384 (bug)    |
+| Allow MCP server    | form   | 448   | Same layout as Allow agent CLI                                                           | 512          |
+| Edit memory file    | editor | 576   | Title plain, path mono in the description, `Textarea`; Remove left                       | 672 (16)     |
+| Edit prompt         | editor | 576   | Title "Edit prompt", task and path in description, Prompt Input; Save in footer          | 672 (17)     |
+| Delete task         | delete | 384   | `AlertDialog`                                                                            | 384 (18)     |
 
 **Start run** is one dialog everywhere (work item page, workflow
 header, workflow Runs tab), replacing the Overview Start card, the Work
