@@ -8,7 +8,7 @@ import { CodeBlock } from "@workspace/ui/components/code-block"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { cn } from "@workspace/ui/lib/utils"
 
-export type NodeStatus = "running" | "waiting" | "done" | "failed" | "skipped"
+export type NodeStatus = "running" | "waiting" | "done" | "failed" | "skipped" | "cancelled"
 
 const STATUS_LABEL: Record<NodeStatus, string> = {
   running: "Running",
@@ -16,6 +16,7 @@ const STATUS_LABEL: Record<NodeStatus, string> = {
   done: "Done",
   failed: "Failed",
   skipped: "Skipped",
+  cancelled: "Cancelled",
 }
 
 export type NodeFrameProps = {

@@ -22,6 +22,7 @@ import {
 import { Hono } from "hono"
 import { z } from "zod"
 import { errorJson } from "./control-helpers.ts"
+import { nodesEnabled } from "./node-workflow-files.ts"
 
 const workflowParam = z.object({ workflowId: z.string().min(1) })
 const cliParam = z.object({ cli: z.enum(["claude", "cursor"]) })
@@ -84,6 +85,17 @@ export function trustRoutes(engine: Engine) {
         const dir = workflowDir(engine.home, workflowId)
         if (!existsSync(join(dir, "workflow.yaml"))) {
           return errorJson(c, 404, "not_found", "workflow not found")
+        }
+        // Node workflows (BL-086) have no tasks to check; the node start
+        // route does not gate on trust yet.
+        if (nodesEnabled()) {
+          const body: PreflightResponse = {
+            trust: engine.trustDecision(),
+            checks: [],
+            needsAgentCli: false,
+            clis: [],
+          }
+          return c.json(preflightResponseSchema.parse(body), 200)
         }
         try {
           const result = await engine.preflight({ workflowDir: dir })

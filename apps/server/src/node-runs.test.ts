@@ -113,6 +113,14 @@ describe("node runs behind FLOWS_NODES", () => {
     s.engine.close()
   })
 
+  it("answers preflight for a node workflow without checking tasks", async () => {
+    const s = stack()
+    const res = await post(s.app, "/workflows/nr/runs/preflight")
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ needsAgentCli: false, checks: [] })
+    s.engine.close()
+  })
+
   it("cancels a run with a live process", async () => {
     const s = stack("sleep 30")
     const { runId } = await start(s)

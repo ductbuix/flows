@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useReactFlow } from "@xyflow/react"
-import { Redo2Icon, SaveIcon, Undo2Icon } from "lucide-react"
+import { PlayIcon, Redo2Icon, SaveIcon, Undo2Icon } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@workspace/ui/components/button"
 import {
   Popover,
@@ -10,6 +11,10 @@ import {
   PopoverTrigger,
 } from "@workspace/ui/components/popover"
 import { addEdge } from "@workspace/shared"
+import { ActionButton } from "@/components/ActionButton"
+import { TrustStartGate } from "@/components/TrustStartGate"
+import { retryTask } from "@/lib/run-actions"
+import { NodeRunContext } from "@/nodes/NodeCard"
 import { nodeTextPath } from "@/nodes"
 import { AddNodeList } from "./AddNodeList"
 import { AddNodeMenu } from "./AddNodeMenu"
@@ -18,6 +23,8 @@ import { NodeSheet } from "./NodeSheet"
 import { NodeEmpty } from "./NodeEmpty"
 import { kindsForWire, type WireSide } from "./node-add"
 import { isEditorTypingTarget } from "./editor-typing"
+import { hasTrigger } from "./node-run"
+import { useNodeRun } from "./useNodeRun"
 import { nextSlot, type Pos } from "./node-canvas-layout"
 import type { useNodeEditor } from "./useNodeEditor"
 
@@ -30,6 +37,20 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
   const [drop, setDrop] = useState<Drop | null>(null)
   const [sheetId, setSheetId] = useState<string | null>(null)
   const workflow = editor.workflow
+  const nodeRun = useNodeRun()
+  const { runId, follow } = nodeRun
+  const runState = useMemo(
+    () => ({
+      views: nodeRun.views,
+      retry: (id: string) => {
+        if (!runId) return
+        void retryTask(runId, id).then((r) => {
+          if (!r.ok) toast.error(r.error)
+        })
+      },
+    }),
+    [nodeRun.views, runId]
+  )
   const latest = useRef(editor)
   latest.current = editor
 
@@ -114,6 +135,39 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
           <Redo2Icon />
         </Button>
         <AddNodeMenu onPick={addAtSlot} />
+        <TrustStartGate onStarted={(_wf, id) => follow(id)}>
+          {({ begin, pending }) => {
+            const hint = !hasTrigger(workflow.nodes)
+              ? "Add a trigger to run"
+              : editor.dirty
+                ? "Save to run"
+                : null
+            return (
+              <>
+                {hint ? (
+                  <span
+                    className="text-xs text-muted-foreground"
+                    data-testid="node-run-hint"
+                  >
+                    {hint}
+                  </span>
+                ) : null}
+                <ActionButton
+                  variant="outline"
+                  data-testid="canvas-run"
+                  pending={pending || nodeRun.live}
+                  disabled={hint !== null}
+                  onClick={() =>
+                    begin({ mode: "start", workflowId: workflow.id })
+                  }
+                >
+                  <PlayIcon data-icon="inline-start" />
+                  Run
+                </ActionButton>
+              </>
+            )
+          }}
+        </TrustStartGate>
         <Button
           type="button"
           data-testid="node-save"
@@ -131,15 +185,17 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
             onSample={() => editor.addSample(current())}
           />
         ) : (
-          <NodeCanvas
-            workflow={workflow}
-            saved={editor.saved}
-            edits={edits}
-            textOf={editor.textOf}
-            onPositions={editor.savePositions}
-            onWire={(edge) => editor.addEdgeYaml((y) => addEdge(y, edge))}
-            onDrop={setDrop}
-          />
+          <NodeRunContext.Provider value={runState}>
+            <NodeCanvas
+              workflow={workflow}
+              saved={editor.saved}
+              edits={edits}
+              textOf={editor.textOf}
+              onPositions={editor.savePositions}
+              onWire={(edge) => editor.addEdgeYaml((y) => addEdge(y, edge))}
+              onDrop={setDrop}
+            />
+          </NodeRunContext.Provider>
         )}
       </div>
       {sheetNode ? (
