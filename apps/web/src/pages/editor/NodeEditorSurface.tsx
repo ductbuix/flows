@@ -14,6 +14,7 @@ import { nodeTextPath } from "@/nodes"
 import { AddNodeList } from "./AddNodeList"
 import { AddNodeMenu } from "./AddNodeMenu"
 import { NodeCanvas } from "./NodeCanvas"
+import { NodeSheet } from "./NodeSheet"
 import { NodeEmpty } from "./NodeEmpty"
 import { kindsForWire, type WireSide } from "./node-add"
 import { isEditorTypingTarget } from "./editor-typing"
@@ -27,6 +28,7 @@ type Drop = { wire: WireSide; client: Pos; flow: Pos }
 export function NodeEditorSurface({ editor }: { editor: Editor }) {
   const rf = useReactFlow()
   const [drop, setDrop] = useState<Drop | null>(null)
+  const [sheetId, setSheetId] = useState<string | null>(null)
   const workflow = editor.workflow
   const latest = useRef(editor)
   latest.current = editor
@@ -55,12 +57,13 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
-  const { setSetting, setText, endEdit } = editor
+  const { setSetting, setText, endEdit, removeNode } = editor
   const nodes = workflow?.nodes
   const edits = useMemo(
     () => ({
       setSetting,
       endEdit,
+      openSettings: setSheetId,
       setText: (id: string, text: string) => {
         const node = nodes?.find((n) => n.id === id)
         const path = node ? nodeTextPath(node) : null
@@ -76,6 +79,8 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
     Object.fromEntries(
       rf.getNodes().map((n) => [n.id, { x: n.position.x, y: n.position.y }])
     )
+
+  const sheetNode = workflow.nodes.find((n) => n.id === sheetId)
 
   const addAtSlot = (kind: string) =>
     editor.addNode(kind, nextSlot(rf.getNodes()), current())
@@ -137,6 +142,23 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
           />
         )}
       </div>
+      {sheetNode ? (
+        <NodeSheet
+          key={sheetNode.id}
+          workflowId={workflow.id}
+          node={sheetNode}
+          onSetting={(key, value) => setSetting(sheetNode.id, key, value)}
+          onEditEnd={endEdit}
+          onDelete={() => {
+            setSheetId(null)
+            removeNode(sheetNode.id)
+          }}
+          onClose={() => {
+            endEdit()
+            setSheetId(null)
+          }}
+        />
+      ) : null}
       {drop ? (
         <Popover open onOpenChange={(open) => !open && setDrop(null)}>
           <PopoverTrigger

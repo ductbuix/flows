@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { Handle, Position } from "@xyflow/react"
-import { PlayIcon, RotateCcwIcon, type LucideIcon } from "lucide-react"
+import { PlayIcon, RotateCcwIcon, Settings2Icon, type LucideIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
@@ -31,6 +31,8 @@ export type NodeFrameProps = {
   result?: string
   onRun?: () => void
   onRetry?: () => void
+  /** Opens the node Sheet (BL-095). */
+  onSettings?: () => void
   children?: ReactNode
 }
 
@@ -46,6 +48,7 @@ export function NodeFrame({
   result,
   onRun,
   onRetry,
+  onSettings,
   children,
 }: NodeFrameProps) {
   return (
@@ -80,6 +83,19 @@ export function NodeFrame({
           <span className="text-xs tabular-nums text-muted-foreground">
             {timer}
           </span>
+        ) : null}
+        {onSettings ? (
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            className="nodrag"
+            aria-label="Node settings"
+            data-testid={`node-settings-${id}`}
+            onClick={onSettings}
+          >
+            <Settings2Icon />
+          </Button>
         ) : null}
         {onRun ? (
           <Button

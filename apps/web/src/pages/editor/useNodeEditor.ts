@@ -3,6 +3,7 @@ import {
   layoutFileSchema,
   nodeWorkflowDetailSchema,
   parseNodeWorkflowYaml,
+  removeNode as yamlRemoveNode,
   setNodeKey,
   workflowFileConflictSchema,
   workflowFileDetailSchema,
@@ -228,6 +229,13 @@ export function useNodeEditor(workflowId: string) {
     []
   )
 
+  /** Removes a node and its edges; Save trashes its folder (the PUT). */
+  const removeNode = useCallback((id: string) => {
+    setState((s) =>
+      applyChange(s, { yaml: yamlRemoveNode(s.draft, id), key: undefined })
+    )
+  }, [])
+
   /** Edits a node file; written by Save through the file PUT. */
   const setText = useCallback((path: string, content: string) => {
     setState((s) =>
@@ -340,6 +348,7 @@ export function useNodeEditor(workflowId: string) {
     addSample,
     addEdgeYaml,
     setSetting,
+    removeNode,
     setText,
     endEdit,
     undo,

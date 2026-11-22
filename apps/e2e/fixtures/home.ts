@@ -230,6 +230,27 @@ edges:
   - { from: build, to: done }
 `
 
+const nodeSheetYaml = (id: string) => `id: ${id}
+goal: e2e node sheet
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: plan
+    kind: agent
+    cli: claude
+  - id: build
+    kind: command
+    run: echo build
+  - id: done
+    kind: output
+    target: folder
+edges:
+  - { from: start, to: plan }
+  - { from: plan, to: build }
+  - { from: build, to: done }
+`
+
 /** Temp FLOWAPP_HOME for the FLOWS_NODES=1 server (node workflow fixtures). */
 export function createNodesE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-nodes-"))
@@ -250,6 +271,15 @@ export function createNodesE2eHome(): string {
       join(empty, "workflow.yaml"),
       `id: ${id}\ngoal: e2e empty node workflow\nnodes: []\nedges: []\n`
     )
+  }
+  // Node Sheet workflows for node-sheet.spec.ts (BL-095); each test owns one.
+  for (const id of ["node-sheet-light", "node-sheet-dark"]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "plan"), { recursive: true })
+    mkdirSync(join(dir, "memory"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeSheetYaml(id))
+    writeFileSync(join(dir, "nodes", "plan", "prompt.md"), "Plan it.\n")
+    writeFileSync(join(dir, "memory", "style.md"), "Be brief.\n")
   }
   return home
 }
