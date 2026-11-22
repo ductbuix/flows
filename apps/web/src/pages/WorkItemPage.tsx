@@ -32,7 +32,8 @@ import { api } from "@/lib/api"
 import { WorkItemContextSection } from "@/pages/WorkItemContextSection"
 import { WorkItemNotesSection } from "@/pages/WorkItemNotesSection"
 import { WorkItemRunsSection } from "@/pages/WorkItemRunsSection"
-import { WorkItemStartCard } from "@/pages/WorkItemStartCard"
+import { ActionButton } from "@/components/ActionButton"
+import { TrustStartGate } from "@/components/TrustStartGate"
 import { mono } from "@/components/data/mono"
 
 export function WorkItemPage() {
@@ -91,7 +92,29 @@ export function WorkItemPage() {
   ] as const
 
   return (
-    <Page crumbs={[...crumbs]} data-testid="work-item-page">
+    <TrustStartGate onStarted={(_wf, runId) => onStarted(runId)}>
+      {({ begin, pending }) => (
+    <Page
+      crumbs={[...crumbs]}
+      actions={
+        item ? (
+          <ActionButton
+            data-testid="work-item-start"
+            pending={pending}
+            onClick={() =>
+              begin({
+                mode: "start",
+                workItemId,
+                ...(item.workflowId ? { workflowId: item.workflowId } : {}),
+              })
+            }
+          >
+            Start run
+          </ActionButton>
+        ) : null
+      }
+      data-testid="work-item-page"
+    >
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
@@ -106,7 +129,7 @@ export function WorkItemPage() {
         <>
           <PageTitle
             title={item.title}
-            description="Context, runs, start a workflow and notes."
+            description="Context, runs and notes."
             badge={<WorkItemSourceBadge source={item.source} />}
           />
 
@@ -121,13 +144,6 @@ export function WorkItemPage() {
           />
 
           <WorkItemRunsSection workItemId={workItemId} />
-
-          <WorkItemStartCard
-            workItemId={workItemId}
-            initialWorkflowId={item.workflowId}
-            initialInputs={item.inputs}
-            onStarted={onStarted}
-          />
 
           <WorkItemNotesSection workItemId={workItemId} />
 
@@ -162,5 +178,7 @@ export function WorkItemPage() {
         </>
       )}
     </Page>
+      )}
+    </TrustStartGate>
   )
 }

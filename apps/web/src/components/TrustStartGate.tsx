@@ -2,9 +2,12 @@ import { useState } from "react"
 import type { PreflightResponse, TrustGrant } from "@workspace/shared"
 import { toast } from "sonner"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
-import { StartRunForm } from "@/components/StartRunForm"
+import {
+  StartRunDialog,
+  type StartDialogTarget,
+} from "@/components/StartRunDialog"
 import { TrustDialog } from "@/components/TrustDialog"
-import type { StartRunDraft, StartRunTarget } from "@/lib/load-start-run-form"
+import type { StartRunDraft } from "@/lib/load-start-run-form"
 import {
   fetchPreflight,
   planTrustStart,
@@ -14,7 +17,11 @@ import {
 } from "@/lib/trust-start"
 import { mono } from "@/components/data/mono"
 
-export type StartTarget = StartRunTarget
+export type StartTarget = StartDialogTarget
+
+function workflowOf(target: StartTarget, body: StartRunDraft): string {
+  return body.workflowId ?? target.workflowId ?? ""
+}
 
 type Props = {
   children: (opts: {
@@ -44,6 +51,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
     confirmDuplicate?: boolean
   ): StartRunOptions {
     return {
+      ...(body.workItemId ? { workItemId: body.workItemId } : {}),
       ...(grant !== undefined && { trustGrant: grant }),
       ...(Object.keys(body.values).length > 0 && { values: body.values }),
       ...(body.files.length > 0 && { files: body.files }),
@@ -60,9 +68,10 @@ export function TrustStartGate({ children, onStarted }: Props) {
     setLastGrant(grant)
     setPending(true)
     const options = runOptions(body, grant, confirmDuplicate)
+    const workflowId = workflowOf(target, body)
     const result =
       target.mode === "start"
-        ? await startRunWithGrant(target.workflowId, options)
+        ? await startRunWithGrant(workflowId, options)
         : await rerunWithGrant(target.runId, options)
     setPending(false)
 
@@ -72,7 +81,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
       setFormTarget(null)
       setPipelineTarget(null)
       setDraft(null)
-      onStarted(target.workflowId, result.data.runId)
+      onStarted(workflowId, result.data.runId)
       return
     }
 
@@ -84,6 +93,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
 
     if (result.kind === "duplicate_input") {
       setDraft(body)
+      setFormTarget(null)
       setDuplicateIds(result.detail.existingRunIds)
       return
     }
@@ -93,14 +103,12 @@ export function TrustStartGate({ children, onStarted }: Props) {
 
   async function afterFormSubmit(target: StartTarget, body: StartRunDraft) {
     setDraft(body)
-    setFormTarget(null)
     setFieldErrors(undefined)
     setPending(true)
-    const pre = await fetchPreflight(target.workflowId)
+    const pre = await fetchPreflight(workflowOf(target, body))
     if (!pre.ok) {
       setPending(false)
       toast.error(pre.error)
-      setFormTarget(target)
       return
     }
     const plan = planTrustStart(pre.data)
@@ -109,6 +117,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
       await execute(target, body, plan.grant)
       return
     }
+    setFormTarget(null)
     setTrustDialog({ target, preflight: plan.preflight })
   }
 
@@ -125,7 +134,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
     <>
       {children({ begin, pending })}
       {formOpen && formTarget && (
-        <StartRunForm
+        <StartRunDialog
           open
           onOpenChange={(open) => {
             if (!open) {
@@ -147,6 +156,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
           }}
           trust={trustDialog.preflight.trust}
           checks={trustDialog.preflight.checks}
+          clis={trustDialog.preflight.clis}
           pending={pending}
           onTrustOnce={() => void execute(trustDialog.target, draft, "once")}
           onTrustAlways={() =>

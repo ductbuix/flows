@@ -64,6 +64,7 @@ export function parseTrustRequired(body: unknown): PreflightResponse | null {
     trust: parsed.data.trust,
     checks: parsed.data.checks,
     needsAgentCli: true,
+    clis: [],
   }
 }
 

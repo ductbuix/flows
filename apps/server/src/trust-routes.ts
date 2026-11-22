@@ -91,6 +91,7 @@ export function trustRoutes(engine: Engine) {
             trust: result.trust,
             checks: result.checks,
             needsAgentCli: result.needsAgentCli,
+            clis: result.clis,
           }
           return c.json(preflightResponseSchema.parse(body), 200)
         } catch (err) {

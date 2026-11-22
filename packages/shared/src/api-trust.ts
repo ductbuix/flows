@@ -81,6 +81,8 @@ export const preflightResponseSchema = z.object({
   trust: trustDecisionSchema,
   checks: z.array(trustCheckSchema),
   needsAgentCli: z.boolean(),
+  /** Agent CLIs the run may launch, for the Allow dialog title. */
+  clis: z.array(z.enum(["claude", "cursor"])).default([]),
 })
 
 export type PreflightResponse = z.infer<typeof preflightResponseSchema>
