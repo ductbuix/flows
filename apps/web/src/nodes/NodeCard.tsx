@@ -12,12 +12,14 @@ export type NodeEdits = {
   setSetting: (id: string, key: string, value: unknown) => void
   setText: (id: string, text: string) => void
   endEdit: () => void
+  openSettings: (id: string) => void
 }
 
 const noop: NodeEdits = {
   setSetting: () => {},
   setText: () => {},
   endEdit: () => {},
+  openSettings: () => {},
 }
 
 export const NodeEditsContext = createContext<NodeEdits>(noop)
@@ -35,6 +37,7 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       icon={view.icon}
       wide={isStepKind(data.node.kind)}
       selected={selected}
+      onSettings={() => edits.openSettings(id)}
     >
       <Body
         node={data.node}
