@@ -444,5 +444,13 @@ export {
   type TemplateProblem,
   type TemplateText,
 } from "./nodes/answers.ts"
+export {
+  CHECK_OPERATORS,
+  evaluateCheck,
+  judgeCheckSchema,
+  judgeModeSchema,
+  type CheckOperator,
+  type JudgeCheck,
+} from "./nodes/judge.ts"
 export { layoutFileSchema, type LayoutFile } from "./nodes/layout.ts"
 export { findLoopEdges, loopWarnings } from "./nodes/loops.ts"

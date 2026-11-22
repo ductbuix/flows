@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join } from "node:path"
-import type { AgentJudge } from "@workspace/shared"
+import { evaluateCheck, type AgentJudge } from "@workspace/shared"
 import { judgeAnswerPrompt } from "../agent-prompt.ts"
 import { resolveAttemptModelFields } from "../attempt-model.ts"
 import { writeCursorTrustMarker } from "../cursor-trust.ts"
@@ -17,7 +17,7 @@ import {
   resolveJudgeModelEffort,
 } from "../judge.ts"
 import { filledFile } from "./answers.ts"
-import { forwardInputs } from "./forward.ts"
+import { forwardInputs, joinedInputText } from "./forward.ts"
 import { defineExecutor, type ExecContext, type ExecResult } from "./define.ts"
 import { readOptional } from "./process.ts"
 
@@ -51,13 +51,15 @@ function inputHash(ctx: ExecContext): string {
 }
 
 function judgeOf(ctx: ExecContext): {
-  node: Extract<ExecContext["node"], { kind: "judge" }>
+  node: Extract<ExecContext["node"], { kind: "judge" }> & { cli: "claude" | "cursor" }
   judge: AgentJudge
 } {
   const node = ctx.node
   if (node.kind !== "judge") throw new Error("not a judge node")
+  if (node.cli === undefined) throw new Error("missing_cli")
+  const withCli = { ...node, cli: node.cli }
   return {
-    node,
+    node: withCli,
     judge: {
       cli: node.cli,
       ...(node.model !== undefined ? { model: node.model } : {}),
@@ -90,13 +92,28 @@ function readRecorded(ctx: ExecContext): Recorded | undefined {
 }
 
 /**
- * Judge in rule mode (DES-032): the CLI reads `rule.md`, answers yes or
+ * Check mode (DES-032): tests a named answer from upstream with the
+ * operator. No process, no slot: the step settles in the tick.
+ */
+function runCheck(ctx: ExecContext): ExecResult {
+  const node = ctx.node
+  if (node.kind !== "judge" || node.check === undefined) {
+    throw new Error("missing_check")
+  }
+  const passed = evaluateCheck(node.check, ctx.answers[node.check.field])
+  const text = joinedInputText(ctx)
+  return { outputs: forwardInputs(ctx, text), branch: passed ? "yes" : "no" }
+}
+
+/**
+ * Judge (DES-032). Rule mode: the CLI reads `rule.md`, answers yes or
  * no for the input, and the first word picks the branch. Anything else
- * fails the step with reason `unclear`.
+ * fails the step with reason `unclear`. Check mode tests a named answer.
  */
 export const judgeExecutor = defineExecutor({
   kind: "judge",
   run(ctx) {
+    if (ctx.node.kind === "judge" && ctx.node.mode === "check") return runCheck(ctx)
     const { node, judge } = judgeOf(ctx)
     const frozen = ctx.frozenPath("rule.md")
     if (!existsSync(frozen)) throw new Error("missing_rule")
