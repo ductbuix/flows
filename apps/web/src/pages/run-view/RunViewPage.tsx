@@ -23,10 +23,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@workspace/ui/components/toggle-group"
 import { Page, PageTitle, PageToolbar } from "@/components/page"
 import { IdText } from "@/components/data/IdText"
 import { RelativeTime } from "@/components/data/RelativeTime"
@@ -134,6 +130,7 @@ export function RunViewPage() {
   const auto = defaultTask(run)
   const selectedTask =
     (taskId ? run.tasks.find((t) => t.id === taskId) : undefined) ?? auto
+  // Failed run opens Terminal; waiting run opens Output (the default tab).
   const effectiveTab =
     tabExplicit || taskId
       ? tab
@@ -190,21 +187,21 @@ export function RunViewPage() {
 
         <TabsContent value="tasks" className="flex min-h-0 flex-1 flex-col gap-3">
           <PageToolbar>
-            <ToggleGroup
-              value={[view]}
+            <Tabs
+              value={view}
               onValueChange={(v) => {
-                const next = v[0]
-                if (next === "list" || next === "graph") setView(next)
+                if (v === "list" || v === "graph") setView(v)
               }}
-              variant="outline"
             >
-              <ToggleGroupItem value="list" data-testid="run-view-list">
-                List
-              </ToggleGroupItem>
-              <ToggleGroupItem value="graph" data-testid="run-view-graph">
-                Graph
-              </ToggleGroupItem>
-            </ToggleGroup>
+              <TabsList>
+                <TabsTrigger value="list" data-testid="run-view-list">
+                  List
+                </TabsTrigger>
+                <TabsTrigger value="graph" data-testid="run-view-graph">
+                  Graph
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </PageToolbar>
           <ResizablePanelGroup
             orientation="horizontal"

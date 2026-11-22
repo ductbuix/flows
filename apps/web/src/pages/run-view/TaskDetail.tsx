@@ -1,11 +1,5 @@
 import type { RunDetail, TaskView } from "@workspace/shared"
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -31,7 +25,7 @@ import { TaskDetailEnvironment } from "./TaskDetailEnvironment"
 import { TaskDetailOutput } from "./TaskDetailOutput"
 import { TaskDetailSummary } from "./TaskDetailSummary"
 import { TaskDetailTerminal } from "./TaskDetailTerminal"
-import { mono } from "@/components/data/mono"
+import { TaskStatusBadge } from "./TaskStatusBadge"
 
 type Props = {
   run: RunDetail
@@ -52,12 +46,18 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
   const label = run.graph.tasks.find((t) => t.id === task.id)?.name ?? task.id
 
   return (
-    <Card className="flex h-full min-h-0 flex-col" data-testid="task-detail">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className={mono}>{label}</CardTitle>
-        <TaskActions run={run} task={task} />
-      </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col">
+    <div
+      className="flex h-full min-h-0 flex-col gap-3 pl-4"
+      data-testid="task-detail"
+    >
+      <div className="flex items-center gap-2">
+        <h2 className="font-heading text-base font-medium">{label}</h2>
+        <TaskStatusBadge status={task.status} />
+        <div className="ml-auto flex items-center gap-2">
+          {task.spawned && <PromoteButton runId={run.id} taskId={task.id} />}
+          <TaskActions run={run} task={task} />
+        </div>
+      </div>
         <Tabs
           value={tab}
           onValueChange={(v) => {
@@ -109,7 +109,6 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
                 </AlertDescription>
               </Alert>
             )}
-            {task.spawned && <PromoteButton runId={run.id} taskId={task.id} />}
             {spawnedChildren.length > 0 ? (
               <ItemGroup>
                 {spawnedChildren.map((child) => (
@@ -136,11 +135,11 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
             />
           </TabsContent>
 
-          <TabsContent value="attempts">
+          <TabsContent value="attempts" className="min-h-0 overflow-auto">
             <TaskDetailAttempts run={run} task={task} />
           </TabsContent>
 
-          <TabsContent value="environment">
+          <TabsContent value="environment" className="min-h-0 overflow-auto">
             <TaskDetailEnvironment
               run={run}
               task={task}
@@ -149,7 +148,6 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
             />
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+    </div>
   )
 }
