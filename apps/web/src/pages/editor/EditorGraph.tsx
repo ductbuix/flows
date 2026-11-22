@@ -23,6 +23,7 @@ import { Card } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
 import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { buildEditorGraph, type EditorNodeData } from "./editor-graph-layout"
+import { mono } from "@/components/data/mono"
 
 function EditorTaskNode({
   id,
@@ -39,7 +40,7 @@ function EditorTaskNode({
       )}
     >
       <Handle type="target" position={Position.Left} />
-      <div className="font-mono font-medium">{data.label}</div>
+      <div className={`${mono} font-medium`}>{data.label}</div>
       <div className="mt-1 flex flex-wrap gap-1">
         <Badge variant="outline">{data.kind}</Badge>
         {data.impact === "cloud" ? (

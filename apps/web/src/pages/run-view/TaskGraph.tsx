@@ -14,6 +14,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
 import { buildTaskGraph } from "./task-graph-layout"
+import { mono } from "@/components/data/mono"
 
 type TaskNodeData = {
   label: string
@@ -31,7 +32,7 @@ function TaskNode({ id, data, selected }: NodeProps<Node<TaskNodeData>>) {
     >
       <Handle type="target" position={Position.Left} className="opacity-0" />
       <CardContent>
-        <div className="font-mono font-medium">{data.label}</div>
+        <div className={`${mono} font-medium`}>{data.label}</div>
         <div className="mt-1 flex flex-wrap gap-1">
           <Badge variant="outline">{data.status}</Badge>
           <span className="text-muted-foreground">{data.attempts} att.</span>

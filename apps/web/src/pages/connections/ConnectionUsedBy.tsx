@@ -1,6 +1,7 @@
 import { Link } from "react-router"
 import { PageSection } from "@/components/page"
 import { runPath, workflowPath } from "@/lib/paths"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   workflows: string[]
@@ -23,7 +24,7 @@ export function ConnectionUsedBy({ workflows, runs }: Props) {
                   {i > 0 ? ", " : null}
                   <Link
                     to={workflowPath(id)}
-                    className="font-mono hover:underline"
+                    className={`${mono} hover:underline`}
                   >
                     {id}
                   </Link>
@@ -37,7 +38,7 @@ export function ConnectionUsedBy({ workflows, runs }: Props) {
             : runs.map((id, i) => (
                 <span key={id}>
                   {i > 0 ? ", " : null}
-                  <Link to={runPath(id)} className="font-mono hover:underline">
+                  <Link to={runPath(id)} className={`${mono} hover:underline`}>
                     {id}
                   </Link>
                 </span>

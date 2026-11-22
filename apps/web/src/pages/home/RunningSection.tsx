@@ -35,7 +35,6 @@ export function RunningSection({ runs }: Props) {
               <Item
                 key={run.id}
                 variant="outline"
-                size="sm"
                 data-testid={`home-running-${run.id}`}
               >
                 <ItemContent className="gap-2">

@@ -75,3 +75,11 @@ doc before it is built.
 - Every UI change gets a Playwright test in `apps/e2e`. `pnpm test:e2e`
   records video and screenshots into `apps/e2e/test-results`; attach both
   to the PR.
+- The layout check, `apps/e2e/tests/layout.spec.ts` (BL-061), visits every
+  route in light and dark at 1440x900 and compares screenshot baselines
+  in `layout.spec.ts-snapshots/`. After an intended visual change run
+  `pnpm --filter e2e exec playwright test layout.spec.ts --update-snapshots`
+  and commit the new images.
+- UI lint guards live in `apps/web/eslint-ui-guards.js` (dense sizes,
+  dialog widths, `font-mono`, frame padding, times) and are tested in
+  `apps/web/src/lib/ui-guards.test.ts`.

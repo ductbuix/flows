@@ -33,6 +33,7 @@ import { useTheme } from "@/components/theme-provider"
 import { api } from "@/lib/api"
 import { fetchTrustStatus, revokeTrust } from "@/lib/run-actions"
 import { SettingsMcpSection } from "./SettingsMcpSection"
+import { mono } from "@/components/data/mono"
 
 export function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -154,7 +155,7 @@ export function SettingsPage() {
                     data-testid={`cli-${cli.id}`}
                   >
                     <ItemContent>
-                      <ItemTitle className="font-mono">{cli.id}</ItemTitle>
+                      <ItemTitle className={mono}>{cli.id}</ItemTitle>
                       <ItemDescription>
                         {cli.installed
                           ? (cli.version ?? "installed")

@@ -8,6 +8,7 @@ import {
 } from "@workspace/ui/components/dialog"
 import { ShieldCheck } from "lucide-react"
 import { Confirmation } from "@/components/ai-elements/confirmation"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   open: boolean
@@ -39,7 +40,7 @@ export function McpTrustDialog({
           </DialogDescription>
         </DialogHeader>
         <p
-          className="rounded-lg border bg-muted/40 p-3 font-mono text-sm break-all"
+          className={`${mono} rounded-lg border bg-muted/40 p-3 text-sm break-all`}
           data-testid="mcp-trust-key"
         >
           {serverKey}

@@ -25,6 +25,7 @@ import { useCliModels } from "@/hooks/use-cli-models"
 import { PromptEditorDialog } from "./PromptEditorDialog"
 import { taskFieldErrors } from "./field-errors"
 import { api } from "@/lib/api"
+import { mono } from "@/components/data/mono"
 
 type AgentTask = Extract<Task, { kind: "agent" }>
 
@@ -117,7 +118,7 @@ export function AgentTaskFields({
           Edit prompt
         </Button>
         <FieldDescription data-testid="field-prompt-path">
-          Stored at <span className="font-mono">{promptPath}</span> in this
+          Stored at <span className={mono}>{promptPath}</span> in this
           workflow.
           {promptExists === false ? " Not created yet." : null}
         </FieldDescription>

@@ -11,6 +11,7 @@ import {
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { FieldLegend, FieldSet } from "@workspace/ui/components/field"
 import { api } from "@/lib/api"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   runId: string
@@ -71,7 +72,7 @@ export function RunInputFiles({ runId, files }: Props) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="font-mono"
+                  className={mono}
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   onClick={() => void openPreview(path)}
                 >
@@ -80,7 +81,7 @@ export function RunInputFiles({ runId, files }: Props) {
               ) : (
                 <Button
                   variant="outline"
-                  className="font-mono"
+                  className={mono}
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   render={<a href={downloadHref(runId, path)} download />}
                 >
@@ -101,7 +102,7 @@ export function RunInputFiles({ runId, files }: Props) {
         <DialogContent className="sm:max-w-xl" data-testid="run-input-preview">
           <DialogHeader>
             <DialogTitle>Input file</DialogTitle>
-            <DialogDescription className="font-mono text-xs">
+            <DialogDescription className={`${mono} text-xs`}>
               {previewPath}
             </DialogDescription>
           </DialogHeader>
@@ -113,7 +114,7 @@ export function RunInputFiles({ runId, files }: Props) {
             </Alert>
           ) : (
             <div className="max-h-96 overflow-auto rounded-lg border">
-              <pre className="p-3 font-mono text-xs whitespace-pre-wrap">
+              <pre className={`${mono} p-3 text-xs whitespace-pre-wrap`}>
                 {previewContent}
               </pre>
             </div>

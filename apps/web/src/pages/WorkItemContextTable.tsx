@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { FreshnessBadge } from "@/components/data/FreshnessBadge"
+import { mono } from "@/components/data/mono"
 
 export function linkKey(link: WorkItemLink): string {
   return `${link.connection}/${link.kind}/${link.entityId}`
@@ -51,11 +52,11 @@ export function WorkItemContextTable({
             <TableRow key={key} data-testid={`work-item-link-${link.entityId}`}>
               <TableCell>
                 <div>{titles.get(key) ?? link.entityId}</div>
-                <div className="font-mono text-xs text-muted-foreground">
+                <div className={`${mono} text-xs text-muted-foreground`}>
                   {link.kind}/{link.entityId}
                 </div>
               </TableCell>
-              <TableCell className="font-mono text-sm">
+              <TableCell className={`${mono} text-sm`}>
                 {link.connection}
               </TableCell>
               <TableCell>

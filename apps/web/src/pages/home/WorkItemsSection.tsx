@@ -36,7 +36,6 @@ export function WorkItemsSection({ items }: Props) {
             <Item
               key={item.id}
               variant="outline"
-              size="sm"
               data-testid={`home-work-item-${item.id}`}
             >
               <ItemContent>

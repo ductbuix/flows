@@ -12,6 +12,7 @@ import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { SummaryMarkdown } from "./SummaryMarkdown"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   run: RunDetail
@@ -76,7 +77,7 @@ export function UnpublishedChanges({ run }: Props) {
             data-testid={`unpublished-${diff.connection}`}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-sm">{diff.connection}</span>
+              <span className={`${mono} text-sm`}>{diff.connection}</span>
               <ImpactBadge impact="local" />
             </div>
             <SummaryMarkdown text={diff.previewMd} />

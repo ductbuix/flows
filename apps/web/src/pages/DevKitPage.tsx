@@ -48,6 +48,7 @@ import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { Page, PageSection, PageTitle } from "@/components/page"
 import { PublishPolicyBadge } from "@/components/data/PublishPolicyBadge"
 import { RunStatusBadge } from "@/components/data/RunStatusBadge"
+import { mono } from "@/components/data/mono"
 
 const RUN_STATUSES = [
   "queued",
@@ -120,9 +121,9 @@ export function DevKitPage() {
       </PageSection>
 
       <PageSection title="Task Card">
-        <Card size="sm" className="max-w-sm">
+        <Card className="max-w-sm">
           <CardHeader>
-            <CardTitle className="font-mono">build</CardTitle>
+            <CardTitle className={mono}>build</CardTitle>
             <CardDescription>Command task</CardDescription>
             <CardAction>
               <RunStatusBadge status="running" data-testid="kit-task-status" />

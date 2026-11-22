@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/dialog"
 import { PromptInput } from "@/components/ai-elements/prompt-input"
 import { api } from "@/lib/api"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   workflowId: string
@@ -102,7 +103,7 @@ export function PromptEditorDialog({
         <DialogHeader>
           <DialogTitle>Edit prompt</DialogTitle>
           <DialogDescription>
-            <span className="font-mono text-xs">{path}</span>. Saving creates
+            <span className={`${mono} text-xs`}>{path}</span>. Saving creates
             the file if it is missing.
           </DialogDescription>
         </DialogHeader>

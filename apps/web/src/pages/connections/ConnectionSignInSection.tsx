@@ -2,6 +2,7 @@ import type { Connection, ConnectionCheckResult } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { PageSection } from "@/components/page"
+import { mono } from "@/components/data/mono"
 
 type Busy = "sign-in" | "remove" | "check" | "mcp" | null
 
@@ -76,7 +77,7 @@ export function ConnectionSignInSection({
             {statusLabel(conn, signedIn, check)}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            Method: <span className="font-mono">{conn.signIn}</span>
+            Method: <span className={mono}>{conn.signIn}</span>
           </span>
         </div>
         {check ? (
@@ -89,7 +90,7 @@ export function ConnectionSignInSection({
         ) : null}
         {mcp && serverKey ? (
           <p
-            className="font-mono text-sm break-all text-muted-foreground"
+            className={`${mono} text-sm break-all text-muted-foreground`}
             data-testid="connection-mcp-key"
           >
             {serverKey}

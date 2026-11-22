@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { approveTask, rejectTask } from "@/lib/run-actions"
 import { runTaskPath, workflowPath } from "@/lib/paths"
 import { ChangesToPublish } from "./ChangesToPublish"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   run: RunDetail
@@ -124,7 +125,7 @@ export function RunLead({ run }: Props) {
           <AlertTitle>Publish conflict</AlertTitle>
           <AlertDescription>
             Task{" "}
-            <span className="font-mono" data-testid="run-failed-task">
+            <span className={mono} data-testid="run-failed-task">
               {failed.id}
             </span>{" "}
             conflicted with the remote.{" "}
@@ -145,7 +146,7 @@ export function RunLead({ run }: Props) {
         <AlertTitle>Run failed</AlertTitle>
         <AlertDescription>
           Task{" "}
-          <span className="font-mono" data-testid="run-failed-task">
+          <span className={mono} data-testid="run-failed-task">
             {failed.id}
           </span>{" "}
           failed.{" "}

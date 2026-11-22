@@ -5,6 +5,7 @@ import {
   CodeBlock,
   CodeBlockContent,
 } from "@workspace/ui/components/code-block"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   text: string
@@ -52,7 +53,7 @@ const components: Components = {
     }
     return (
       <code
-        className="rounded-md bg-muted px-1 py-0.5 font-mono text-xs"
+        className={`${mono} rounded-md bg-muted px-1 py-0.5 text-xs`}
         {...props}
       >
         {children}

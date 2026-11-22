@@ -11,6 +11,8 @@ import {
 } from "@workspace/ui/components/item"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { PageSection } from "@/components/page"
+import { mono } from "@/components/data/mono"
+import { RelativeTime } from "@/components/data/RelativeTime"
 
 type Props = {
   servers: McpTrustEntry[] | null
@@ -44,11 +46,11 @@ export function SettingsMcpSection({ servers, revokingKey, onRevoke }: Props) {
               data-testid="mcp-trust-row"
             >
               <ItemContent>
-                <ItemTitle className="font-mono break-all">
+                <ItemTitle className={`${mono} break-all`}>
                   {server.key}
                 </ItemTitle>
                 <ItemDescription>
-                  Allowed {new Date(server.trustedAt).toLocaleString()}
+                  Allowed <RelativeTime value={server.trustedAt} />
                 </ItemDescription>
               </ItemContent>
               <ItemActions>

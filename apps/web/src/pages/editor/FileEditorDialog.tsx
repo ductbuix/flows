@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { Button } from "@workspace/ui/components/button"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   open: boolean
@@ -50,14 +51,14 @@ export function FileEditorDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            <span className="font-mono text-xs">{path}</span>. {description}
+            <span className={`${mono} text-xs`}>{path}</span>. {description}
           </DialogDescription>
         </DialogHeader>
         <Textarea
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
           rows={14}
-          className="min-h-70 font-mono text-xs"
+          className={`${mono} min-h-70 text-xs`}
         />
         {error && (
           <Alert variant="destructive">

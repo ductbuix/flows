@@ -17,6 +17,7 @@ import {
 } from "@workspace/ui/components/table"
 import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { PageSection } from "@/components/page"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   run: RunDetail
@@ -57,11 +58,11 @@ export function RunEffectsTable({ run }: Props) {
                 data-testid={`run-effect-${index}`}
               >
                 <TableCell>{effect.what}</TableCell>
-                <TableCell className="font-mono">{effect.connection}</TableCell>
+                <TableCell className={mono}>{effect.connection}</TableCell>
                 <TableCell>
                   <ImpactBadge impact={effect.impact} />
                 </TableCell>
-                <TableCell className="max-w-48 truncate font-mono text-muted-foreground">
+                <TableCell className={`${mono} max-w-48 truncate text-muted-foreground`}>
                   {effect.result ?? "—"}
                 </TableCell>
                 <TableCell className="max-w-64 text-muted-foreground">

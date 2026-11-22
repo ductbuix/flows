@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { FreshnessBadge } from "@/components/data/FreshnessBadge"
+import { mono } from "@/components/data/mono"
 
 function pinnedBy(entity: LibraryEntity): string {
   const ids = new Set<string>()
@@ -72,14 +73,14 @@ export function LibraryEntityTable({
             >
               <TableCell>
                 <div>{entity.title}</div>
-                <div className="font-mono text-xs text-muted-foreground">
+                <div className={`${mono} text-xs text-muted-foreground`}>
                   {entity.kind}/{entity.entityId}
                 </div>
               </TableCell>
-              <TableCell className="font-mono text-sm">
+              <TableCell className={`${mono} text-sm`}>
                 {entity.connection}
               </TableCell>
-              <TableCell className="font-mono text-sm">
+              <TableCell className={`${mono} text-sm`}>
                 {revisionLabel(entity)}
               </TableCell>
               <TableCell>

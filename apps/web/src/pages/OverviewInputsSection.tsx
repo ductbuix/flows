@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { PageSection } from "@/components/page"
+import { mono } from "@/components/data/mono"
 
 type Props = { inputs: WorkflowInputDecl[] }
 
@@ -50,7 +51,7 @@ export function OverviewInputsSection({ inputs }: Props) {
         <TableBody>
           {inputs.map((input) => (
             <TableRow key={input.name}>
-              <TableCell className="font-mono">{input.name}</TableCell>
+              <TableCell className={mono}>{input.name}</TableCell>
               <TableCell>{input.type}</TableCell>
               <TableCell>{input.required ? "Yes" : "No"}</TableCell>
             </TableRow>

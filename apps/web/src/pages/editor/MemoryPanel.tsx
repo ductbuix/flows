@@ -21,6 +21,7 @@ import { MemoryCollisionDialog } from "./MemoryCollisionDialog"
 import { MemoryCreateBar } from "./MemoryCreateBar"
 import { MemoryEditorDialog } from "./MemoryEditorDialog"
 import { MemoryFileDialogs } from "./MemoryFileDialogs"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   workflowId: string
@@ -116,7 +117,6 @@ export function MemoryPanel({ workflowId }: Props) {
         {files.map((f) => (
           <Item
             key={f.name}
-            size="sm"
             variant="outline"
             data-testid={`memory-row-${f.name}`}
           >
@@ -125,7 +125,7 @@ export function MemoryPanel({ workflowId }: Props) {
                 <Button
                   type="button"
                   variant="link"
-                  className="h-auto p-0 font-mono"
+                  className={`${mono} h-auto p-0`}
                   onClick={() => setEditing(f.name)}
                 >
                   {f.name}

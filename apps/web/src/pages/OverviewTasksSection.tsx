@@ -11,6 +11,7 @@ import {
 } from "@workspace/ui/components/table"
 import { PageSection } from "@/components/page"
 import { taskConnectionIds } from "@/pages/overview-connections"
+import { mono } from "@/components/data/mono"
 
 function needsLabel(task: Workflow["tasks"][number]): string {
   const needs = task.needs ?? []
@@ -52,7 +53,7 @@ export function OverviewTasksSection({ workflow }: Props) {
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="font-mono text-muted-foreground">
+                <TableCell className={`${mono} text-muted-foreground`}>
                   {needsLabel(task)}
                 </TableCell>
               </TableRow>
