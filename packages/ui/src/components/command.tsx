@@ -80,8 +80,11 @@ function Command({ className, onKeyDown, ...props }: React.ComponentProps<"div">
 
 function CommandInput({
   className,
+  onValueChange,
   ...props
-}: Omit<React.ComponentProps<"input">, "value" | "onChange">) {
+}: Omit<React.ComponentProps<"input">, "value" | "onChange"> & {
+  onValueChange?: (value: string) => void
+}) {
   const { query, setQuery } = useCommand()
   return (
     <div
@@ -93,7 +96,10 @@ function CommandInput({
         data-slot="command-input"
         autoFocus
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          onValueChange?.(e.target.value)
+        }}
         className={cn(
           "w-full bg-transparent text-sm outline-hidden placeholder:text-muted-foreground",
           className

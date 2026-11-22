@@ -78,7 +78,7 @@ export const fakeConnector: Connector = {
   describe() {
     return {
       id: "fake",
-      entityKinds: ["item"],
+      entityKinds: ["item", "repo", "page"],
       scopeFields: [
         "label",
         "ambient",

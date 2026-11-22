@@ -32,14 +32,23 @@ for (const theme of ["light", "dark"] as const) {
 
     await page.getByTestId("node-settings-lib").click()
     await expect(page.getByTestId("node-sheet")).toBeVisible()
-    await expect(page.getByTestId("asset-add")).toBeDisabled()
-    await page.getByTestId("asset-connection").fill("asset-demo")
-    await page.getByTestId("asset-entity").fill("item")
-    await page.getByTestId("asset-id").fill("alpha")
-    await page.getByTestId("asset-add").click()
+    await page.getByTestId("asset-picker-open").click()
+    await expect(page.getByTestId("asset-group-asset-demo")).toBeVisible()
+    await page.getByTestId("asset-picker-search").fill("alpha")
+    await page.screenshot({ path: info.outputPath(`node-asset-picker-${theme}.png`) })
+    await page.getByTestId("asset-use-asset-demo-repo").click()
+    await page.getByTestId("asset-picker-open").click()
+    await page.getByTestId("asset-picker-search").fill("notes")
+    await page.getByTestId("asset-use-asset-demo-page").click()
     await expect(page.getByTestId("asset-resource-0")).toContainText(
-      "asset-demo / item / alpha"
+      "asset-demo / repo / alpha"
     )
+    await expect(page.getByTestId("asset-resource-1")).toContainText(
+      "asset-demo / page / notes"
+    )
+    await expect(page.getByTestId("asset-fresh-0")).toBeVisible()
+    await page.getByTestId("asset-remove-1").click()
+    await expect(page.getByTestId("asset-resource-1")).toHaveCount(0)
     await page.screenshot({ path: info.outputPath(`node-asset-sheet-${theme}.png`) })
     await page.keyboard.press("Escape")
     await expect(page.getByTestId("asset-chips")).toContainText("asset-demo/alpha")
