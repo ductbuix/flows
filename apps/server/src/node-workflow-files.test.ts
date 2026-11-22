@@ -13,6 +13,7 @@ import { createEngine } from "@workspace/engine"
 import { nodeWorkflowDetailSchema } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { nodesEnabled } from "./node-workflow-files.ts"
 
 const nodeYaml = `id: nf
 nodes:
@@ -29,7 +30,7 @@ edges:
 const homes: string[] = []
 
 afterEach(() => {
-  delete process.env.FLOWS_NODES
+  process.env.FLOWS_NODES = "0"
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
@@ -41,7 +42,7 @@ function stack(yaml = nodeYaml) {
   const dir = join(home, "workflows", "nf")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), yaml)
-  return { app, dir, engine }
+  return { app, dir, engine, home }
 }
 
 const get = async (app: ReturnType<typeof stack>["app"]) =>
@@ -177,6 +178,57 @@ tasks:
     // Task schema: a node file is not a valid task workflow.
     expect(body.workflow).toBeNull()
     expect(body.errors.length).toBeGreaterThan(0)
+    engine.close()
+  })
+
+  it("is on by default and off only with FLOWS_NODES=0 (BL-096)", () => {
+    delete process.env.FLOWS_NODES
+    expect(nodesEnabled()).toBe(true)
+    process.env.FLOWS_NODES = "0"
+    expect(nodesEnabled()).toBe(false)
+  })
+
+  it("lists node workflows and an old-format file with its error", async () => {
+    process.env.FLOWS_NODES = "1"
+    const { app, home, engine } = stack()
+    const old = join(home, "workflows", "old")
+    mkdirSync(old, { recursive: true })
+    writeFileSync(
+      join(old, "workflow.yaml"),
+      "id: old\ntasks:\n  - id: a\n    kind: command\n    run: x\n"
+    )
+    const list = (await (await app.request("/api/workflows")).json()) as {
+      id: string
+      taskCount: number
+    }[]
+    expect(list).toEqual([
+      { id: "nf", taskCount: 2 },
+      { id: "old", taskCount: 0 },
+    ])
+    const detail = (await (await app.request("/api/workflows/old")).json()) as {
+      workflow: unknown
+      errors: { message: string }[]
+    }
+    expect(detail.workflow).toBeNull()
+    expect(detail.errors[0]?.message).toContain('key "tasks"')
+    engine.close()
+  })
+
+  it("creates a node workflow with a Trigger", async () => {
+    process.env.FLOWS_NODES = "1"
+    const { app, home, engine } = stack()
+    const res = await app.request("/api/workflows", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: "fresh", goal: "g" }),
+    })
+    expect(res.status).toBe(201)
+    const yaml = readFileSync(join(home, "workflows", "fresh", "workflow.yaml"), "utf8")
+    expect(yaml).toContain("kind: trigger")
+    const detail = (await (await app.request("/api/workflows/fresh")).json()) as {
+      errors: unknown[]
+    }
+    expect(detail.errors).toEqual([])
     engine.close()
   })
 })

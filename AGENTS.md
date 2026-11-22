@@ -29,16 +29,16 @@ Schema and writing rules: `docs/README.md`.
   (grouped by work item); one Start run dialog from work item and workflow
   headers, Allow agent CLI dialog; Home Needs you (incl. publish +
   connection), expired sign-ins, Work items; Impact/Freshness/Policy on
-  `/dev/kit`; Overview (Connections + impact)/Editor (`FLOWS_NODES=1`: node
+  `/dev/kit`; Overview (Connections + impact)/Editor (node
   canvas, drag saves layout; Connections FieldSet with Propose, publish
-  node + Cloud badge)/Runs; `FLOWS_NODES` canvas (Add node, wires, empty state); run view summary Cards + Tasks (step table)/Changes/Library
+  node + Cloud badge)/Runs; canvas (Add node, wires, empty state); run view summary Cards + Tasks (step table)/Changes/Library
   pins tabs; connection policy Select.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
   `/cli/:cli/models`, connections CRUD/check/sign-in,
-  `GET/PUT /mcp-trust`, `FLOWS_NODES=1` node GET/PUT, `/layout` and node
-  runs (health reports the flag), `GET /connectors`, library
+  `GET/PUT /mcp-trust`, node GET/PUT, `/layout` and node
+  runs (on unless `FLOWS_NODES=0`; health reports it), `GET /connectors`, library
   GET/pull/clear (usage + retention), work item CRUD, run REST (list/start/
   cancel/rerun/retry/approve/reject/delete, changes), run input/files, log/
   summary/out, websocket snapshots, `runs_changed`, log chunks, file watches.
@@ -59,8 +59,8 @@ Schema and writing rules: `docs/README.md`.
   list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
   events and YAML edits that keep comments and key order (nodes too).
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/e2e`: Playwright, temp `FLOWAPP_HOME` (`layout.spec.ts` baselines;
-  `node-*.spec.ts` on a `FLOWS_NODES=1` stack).
+- `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
+  (`layout.spec.ts` baselines, `node-*.spec.ts`).
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`), backlogs (`BL-*`), generated indexes.
 

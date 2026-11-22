@@ -33,7 +33,7 @@ beforeEach(() => {
   process.env.FLOWS_NODES = "1"
 })
 afterEach(() => {
-  delete process.env.FLOWS_NODES
+  process.env.FLOWS_NODES = "0"
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
@@ -275,7 +275,7 @@ edges:
 
   it("keeps the task path with the flag off", async () => {
     const s = stack()
-    delete process.env.FLOWS_NODES
+    process.env.FLOWS_NODES = "0"
     const res = await post(s.app, "/workflows/nr/runs")
     expect(res.status).toBe(400)
     s.engine.close()

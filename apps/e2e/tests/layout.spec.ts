@@ -9,7 +9,7 @@ const CONTENT = '[class~="@container/main"]'
 const DENSE =
   "[data-slot=table-cell],[data-slot=table-head],[data-slot=item-actions]," +
   "[data-slot=input-group],[data-slot=sidebar],[data-sidebar],[data-slot=code-block]," +
-  "[data-testid=graph-canvas],[data-slot=prompt-input],[role=dialog]"
+  "[data-testid=graph-canvas],[data-testid=canvas],[data-slot=prompt-input],[role=dialog]"
 
 type Route = {
   name: string
@@ -149,7 +149,7 @@ test.describe("layout check (BL-061)", () => {
     {
       name: "workflow-editor",
       path: () => "/workflows/diamond?tab=editor",
-      ready: "graph-canvas",
+      ready: "canvas",
       dynamic: true,
     },
     {
