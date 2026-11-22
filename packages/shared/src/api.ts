@@ -8,6 +8,7 @@ import {
 } from "./events.ts"
 import { effortSchema } from "./model-effort.ts"
 import { nodeWorkflowSchema } from "./nodes/index.ts"
+import { layoutFileSchema } from "./nodes/layout.ts"
 import { workflowSchema } from "./workflow.ts"
 
 export const workflowSummarySchema = z.object({
@@ -114,6 +115,30 @@ export const runEffectSchema = z.object({
 
 export type RunEffect = z.infer<typeof runEffectSchema>
 
+/** One pass of one node in a node run (BL-087). */
+export const runStepSchema = z.object({
+  nodeId: z.string().min(1),
+  kind: z.string().min(1),
+  pass: z.number().int().positive(),
+  /** Attempts started in this pass. */
+  attempts: z.number().int().nonnegative(),
+  status: taskStatusSchema,
+  startedAt: z.string().optional(),
+  endedAt: z.string().optional(),
+})
+
+export type RunStep = z.infer<typeof runStepSchema>
+
+/** Frozen canvas of a node run: graph, layout and node text (BL-087). */
+export const runCanvasSchema = z.object({
+  workflow: nodeWorkflowSchema,
+  layout: layoutFileSchema,
+  /** Frozen node text files by path, e.g. `nodes/plan/prompt.md`. */
+  texts: z.record(z.string(), z.string()),
+})
+
+export type RunCanvas = z.infer<typeof runCanvasSchema>
+
 export const runDetailSchema = z.object({
   id: z.string().min(1),
   workflowId: z.string().min(1),
@@ -126,6 +151,8 @@ export const runDetailSchema = z.object({
   lastSeq: z.number().int().nonnegative(),
   graph: workflowSchema,
   tasks: z.array(taskViewSchema),
+  /** Node runs only: one entry per pass of each node (BL-087). */
+  steps: z.array(runStepSchema).optional(),
   taskCounts: z.object({
     total: z.number().int().nonnegative(),
     finished: z.number().int().nonnegative(),

@@ -29,6 +29,8 @@ export const NodeEditsContext = createContext<NodeEdits>(noop)
 export type NodeRunState = {
   views: Readonly<Record<string, NodeRunView>>
   retry: (id: string) => void
+  /** The run view: no Retry, no settings, the body is not editable (BL-087). */
+  readOnly?: boolean
 }
 
 export const NodeRunContext = createContext<NodeRunState>({
@@ -54,16 +56,18 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       status={live?.status}
       timer={live?.timer}
       result={live?.result}
-      onRetry={() => run.retry(id)}
-      onSettings={() => edits.openSettings(id)}
+      onRetry={run.readOnly ? undefined : () => run.retry(id)}
+      onSettings={run.readOnly ? undefined : () => edits.openSettings(id)}
     >
-      <Body
-        node={data.node}
-        text={data.text}
-        onSetting={(key, value) => edits.setSetting(id, key, value)}
-        onText={(text) => edits.setText(id, text)}
-        onEditEnd={edits.endEdit}
-      />
+      <div inert={run.readOnly}>
+        <Body
+          node={data.node}
+          text={data.text}
+          onSetting={(key, value) => edits.setSetting(id, key, value)}
+          onText={(text) => edits.setText(id, text)}
+          onEditEnd={edits.endEdit}
+        />
+      </div>
     </NodeFrame>
   )
 }

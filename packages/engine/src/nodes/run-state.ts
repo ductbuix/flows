@@ -59,6 +59,11 @@ const STATUS: Record<StepStatus, TaskStatus> = {
   cancelled: "cancelled",
 }
 
+/** Run-view status of a step (BL-087). */
+export function stepTaskStatus(status: StepStatus): TaskStatus {
+  return STATUS[status]
+}
+
 function taskOf(nodeId: string, step: StepState | undefined): TaskState {
   if (!step) return { id: nodeId, status: "pending", attempts: [] }
   const c = step.current

@@ -1,8 +1,28 @@
-import type { Engine } from "@workspace/engine"
-import type { RunDetail, RunSummary } from "@workspace/shared"
+import { stepTaskStatus, type Engine, type RunState } from "@workspace/engine"
+import type { RunDetail, RunStep, RunSummary } from "@workspace/shared"
 import { effectsFromEvents } from "./run-effects.ts"
 import { runTimestamps, toRunDetail } from "./run-mapper.ts"
 import { buildRunPins } from "./run-pins.ts"
+
+/** One row per pass of each node, in graph order (BL-087). */
+function stepsOf(state: RunState): RunStep[] | undefined {
+  if (!state.nodeGraph || !state.steps) return undefined
+  const rows: RunStep[] = []
+  for (const node of state.nodeGraph.nodes) {
+    for (const step of state.steps.steps[node.id] ?? []) {
+      rows.push({
+        nodeId: node.id,
+        kind: node.kind,
+        pass: step.pass,
+        attempts: step.attempts,
+        status: stepTaskStatus(step.status),
+        ...(step.current?.startedAt ? { startedAt: step.current.startedAt } : {}),
+        ...(step.current?.endedAt ? { endedAt: step.current.endedAt } : {}),
+      })
+    }
+  }
+  return rows
+}
 
 export function buildRunDetail(
   engine: Engine,
@@ -22,8 +42,10 @@ export function buildRunDetail(
         : ts.finishedAt,
     lastSeq,
   })
+  const steps = stepsOf(state)
   return {
     ...detail,
+    ...(steps ? { steps } : {}),
     pins: buildRunPins(engine, state.workflowId, runId, state.graph),
     effects: effectsFromEvents(events),
   }
