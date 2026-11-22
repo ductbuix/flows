@@ -1,20 +1,25 @@
 ---
 id: BL-065
-title: "Editor: full-bleed canvas, toolbar, Add task by kind, Save ⌘S"
+title: "Editor: full-bleed canvas, toolbar, Save ⌘S"
 type: backlog
 status: todo
-summary: Graph and YAML full bleed, one 32px toolbar, Add task menu by kind, publish added via the Sheet, fitView maxZoom 1, ⌘S.
+summary: Graph and YAML full bleed, one 32px toolbar, fitView maxZoom 1, ⌘S. Add node moved to BL-077 (DES-036).
 tags: [ui, web, editor]
-related: [DES-028, DES-010]
+related: [DES-028, DES-010, DES-036]
 updated: 2026-11-22
 priority: P1
 depends: [BL-057, BL-058]
 ---
 
-# Editor: full-bleed canvas, toolbar, Add task by kind, Save ⌘S
+# Editor: full-bleed canvas, toolbar, Save ⌘S
 
 Design: [DES-028](../designs/des-028-ui-renovation-screens.md) (Editor).
-Fixes S12, S13, #11, #19, #21.
+Fixes S12, S13, #11, #21.
+
+Changed by [DES-036](../designs/des-036-canvas-editor-run-view.md)
+(2026-11-22): the "Add task by kind" menu and the publish task flow
+moved to BL-077 (Add node), and node cards are sized by DES-036. This
+backlog keeps only the frame, so it can land before the node model.
 
 ## Done when
 
@@ -22,14 +27,10 @@ Fixes S12, S13, #11, #19, #21.
       bleed below a `border-t` and fill the height.
 - [ ] Toolbar (`PageToolbar`, 32px controls): Graph/YAML `Tabs`, Undo,
       Redo (`ghost` `icon` with Kbd Tooltips), Workflow settings
-      (`outline`), Add task (`outline` + menu: Agent task, Command task,
-      Publish task), Save (default, disabled when clean, Tooltip "Save
-      ⌘S").
+      (`outline`), Save (default, disabled when clean, Tooltip "Save
+      ⌘S"). BL-077 adds Add node and BL-086 adds Run.
 - [ ] ⌘S saves from the canvas, the Sheet and CodeMirror, and prevents
       the browser save dialog.
-- [ ] Publish task opens the task Sheet with the connection Select
-      first; no node is added until a connection is picked.
-- [ ] Nodes are `Card size="sm"` `w-56`; selected `ring-2 ring-ring`;
-      `fitView` uses `maxZoom: 1` and `padding: 0.2`, so a one-task
+- [ ] `fitView` uses `maxZoom: 1` and `padding: 0.2`, so a one-node
       graph renders at 100%.
 - [ ] YAML errors show as one destructive `Alert` above the canvas.

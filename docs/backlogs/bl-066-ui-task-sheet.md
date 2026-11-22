@@ -1,33 +1,28 @@
 ---
 id: BL-066
-title: "Editor: task settings in a right Sheet"
+title: "Editor: task settings in a right Sheet (superseded by BL-078)"
 type: backlog
-status: todo
-summary: Task Sheet (384px) with Name, Kind, CLI, inline Prompt Input with Model Selector, memory Combobox, connections and behavior.
+status: blocked
+summary: Superseded by BL-078; node settings move onto node cards with a node Sheet for the rest (DES-036). Do not build.
 tags: [ui, web, editor, ai-elements]
-related: [DES-028, DES-010, DES-023]
+related: [DES-028, DES-010, DES-023, DES-036]
 updated: 2026-11-22
 priority: P1
 depends: [BL-065, BL-060]
 ---
 
-# Editor: task settings in a right Sheet
+# Editor: task settings in a right Sheet (superseded by BL-078)
 
-Design: [DES-028](../designs/des-028-ui-renovation-screens.md) (Task
-Sheet). Fixes #12, #13, S5, S15 and the memory gap in J-b.
+Superseded on 2026-11-22 by
+[BL-078](bl-078-node-cards-sheet.md) and
+[DES-036](../designs/des-036-canvas-editor-run-view.md): the main
+settings (task, CLI, model) sit on the node card, and a 384px node
+Sheet holds the rest. The status is `blocked` because the docs schema
+has no superseded status; this file stays as history.
+
+The original plan was the task Sheet in
+[DES-028](../designs/des-028-ui-renovation-screens.md) (Task Sheet).
 
 ## Done when
 
-- [ ] Clicking a node or creating a task opens
-      `SheetContent side="right"` with no width class (384px); header
-      shows the task name, "Agent task · Cursor" and `IdText`.
-- [ ] Body is a `FieldGroup` with `flex-1 overflow-y-auto px-4`; Kind
-      and CLI are two-up (168px each); all controls are 32px.
-- [ ] Prompt is the Prompt Input with Model Selector in its block-end
-      addon and an "Open" button to the 576px prompt dialog.
-- [ ] Memory files is a multiple `Combobox` with chips; picking writes
-      the task `memory:` list.
-- [ ] Behavior uses `Field orientation="horizontal"` with `Switch` on
-      the right.
-- [ ] Footer has Done and Delete task (`destructive`); Esc and overlay
-      click close and return focus to the node.
+- [ ] Nothing to build; BL-078 carries the work.
