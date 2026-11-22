@@ -2,7 +2,7 @@
 id: BL-065
 title: "Editor: full-bleed canvas, toolbar, Save ⌘S"
 type: backlog
-status: todo
+status: blocked
 summary: Graph and YAML full bleed, one 32px toolbar, fitView maxZoom 1, ⌘S. Add node moved to BL-094 (DES-036).
 tags: [ui, web, editor]
 related: [DES-028, DES-010, DES-036]
@@ -12,6 +12,8 @@ depends: [BL-057, BL-058]
 ---
 
 # Editor: full-bleed canvas, toolbar, Save ⌘S
+
+Retired on 2026-11-22 before the node workflow build. The status is `blocked` because the docs schema has no retired status; this file stays as history.
 
 Design: [DES-028](../designs/des-028-ui-renovation-screens.md) (Editor).
 Fixes S12, S13, #11, #21.

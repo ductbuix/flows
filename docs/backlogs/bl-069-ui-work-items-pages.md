@@ -2,7 +2,7 @@
 id: BL-069
 title: "Work items list and work item page"
 type: backlog
-status: todo
+status: blocked
 summary: New work item in the header, search and 37px Table; work item page in a 3-column grid with Start run in the header.
 tags: [ui, web, work-items]
 related: [DES-028]
@@ -12,6 +12,8 @@ depends: [BL-064]
 ---
 
 # Work items list and work item page
+
+Retired on 2026-11-22 before the node workflow build. The status is `blocked` because the docs schema has no retired status; this file stays as history.
 
 Design: [DES-028](../designs/des-028-ui-renovation-screens.md) (Work
 items, Work item page). Fixes S5, #03, #05.

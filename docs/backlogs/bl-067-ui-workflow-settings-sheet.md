@@ -2,7 +2,7 @@
 id: BL-067
 title: "Editor: workflow settings Sheet and editor dialogs"
 type: backlog
-status: todo
+status: blocked
 summary: Workflow settings in a Sheet with Accordion sections; memory and prompt dialogs at 576px. Inputs move to the Trigger node.
 tags: [ui, web, editor]
 related: [DES-028, DES-013, DES-021, BL-073, DES-036]
@@ -12,6 +12,8 @@ depends: [BL-065, BL-060, BL-073]
 ---
 
 # Editor: workflow settings Sheet and editor dialogs
+
+Retired on 2026-11-22 before the node workflow build. The status is `blocked` because the docs schema has no retired status; this file stays as history.
 
 Design: [DES-028](../designs/des-028-ui-renovation-screens.md) (Workflow
 settings Sheet),
