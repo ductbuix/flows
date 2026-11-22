@@ -1,6 +1,8 @@
 export type EditorSnapshot = {
   yaml: string
   selectedTaskId?: string
+  /** Unsaved node file edits by workflow-relative path (node editor). */
+  files?: Record<string, string>
 }
 
 export const EDITOR_HISTORY_CAP = 50

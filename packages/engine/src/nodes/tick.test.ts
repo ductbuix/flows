@@ -9,6 +9,7 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { afterEach, describe, expect, it } from "vitest"
 import { NODE_KINDS, nodeWorkflowSchema } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
@@ -65,6 +66,20 @@ describe("registry", () => {
       if (k.process === "none") expect(have.has(k.kind)).toBe(true)
     }
     expect(have.size).toBe(EXECUTORS.length)
+  })
+
+  it("matches shared kinds, executors and web views (DES-035)", () => {
+    const dir = fileURLToPath(
+      new URL("../../../../apps/web/src/nodes/", import.meta.url)
+    )
+    // One `<kind>.tsx` per kind; capitalised files are shared parts.
+    const views = readdirSync(dir)
+      .filter((f) => /^[a-z]+\.tsx$/.test(f))
+      .map((f) => f.replace(".tsx", ""))
+      .sort()
+    const kinds = NODE_KINDS.map((k) => k.kind).sort()
+    expect(views).toEqual(kinds)
+    expect(EXECUTORS.map((e) => e.kind).sort()).toEqual(kinds)
   })
 })
 

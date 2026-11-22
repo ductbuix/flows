@@ -8,13 +8,14 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { KIND_META } from "./node-kind-ui"
+import { KIND_META, kindIcon } from "./node-kind-ui"
 
 function Block({ kind }: { kind: string }) {
   const meta = KIND_META[kind]!
+  const Icon = kindIcon(kind)
   return (
     <Card size="sm" className="w-28 flex-row items-center gap-2 px-3 py-2">
-      <meta.icon className="size-4 shrink-0" />
+      {Icon ? <Icon className="size-4 shrink-0" /> : null}
       <span className="text-sm font-medium">{meta.label}</span>
     </Card>
   )

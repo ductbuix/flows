@@ -206,12 +206,42 @@ edges:
   - { from: write, to: done }
 `
 
+const nodeCardsYaml = `id: node-cards
+goal: e2e node cards
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: rules
+    kind: prompt
+  - id: plan
+    kind: agent
+    cli: claude
+  - id: build
+    kind: command
+    run: echo build
+  - id: done
+    kind: output
+    target: folder
+edges:
+  - { from: start, to: plan }
+  - { from: rules, to: plan }
+  - { from: plan, to: build }
+  - { from: build, to: done }
+`
+
 /** Temp FLOWAPP_HOME for the FLOWS_NODES=1 server (node workflow fixtures). */
 export function createNodesE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-nodes-"))
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
+  const cards = join(home, "workflows", "node-cards")
+  mkdirSync(join(cards, "nodes", "rules"), { recursive: true })
+  mkdirSync(join(cards, "nodes", "plan"), { recursive: true })
+  writeFileSync(join(cards, "workflow.yaml"), nodeCardsYaml)
+  writeFileSync(join(cards, "nodes", "rules", "text.md"), "Be brief.\n")
+  writeFileSync(join(cards, "nodes", "plan", "prompt.md"), "Plan the work.\n")
   // Empty node workflows for node-add.spec.ts (BL-094); each test owns one.
   for (const id of ["node-empty-light", "node-empty-dark", "node-sample"]) {
     const empty = join(home, "workflows", id)
