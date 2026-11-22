@@ -17,6 +17,7 @@ import {
 } from "@workspace/ui/components/table"
 import { FreshnessBadge } from "@/components/data/FreshnessBadge"
 import { PageSection } from "@/components/page"
+import { mono } from "@/components/data/mono"
 
 type Props = { pins: RunLibraryPin[] }
 
@@ -55,11 +56,11 @@ export function RunLibraryPins({ pins }: Props) {
                 >
                   <TableCell>
                     <div>{pin.title}</div>
-                    <div className="font-mono text-xs text-muted-foreground">
+                    <div className={`${mono} text-xs text-muted-foreground`}>
                       {pin.connection}/{pin.kind}/{pin.entityId}
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className={`${mono} text-sm`}>
                     {pin.revision}
                   </TableCell>
                   <TableCell>
@@ -68,7 +69,7 @@ export function RunLibraryPins({ pins }: Props) {
                       data-testid={`run-pin-fresh-${safeId}`}
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">
+                  <TableCell className={`${mono} text-sm text-muted-foreground`}>
                     {pin.usedByTaskIds.length > 0
                       ? pin.usedByTaskIds.join(", ")
                       : "—"}

@@ -1,6 +1,7 @@
 import type { LibraryEntity } from "@workspace/shared"
 import { FreshnessBadge } from "@/components/data/FreshnessBadge"
 import { PageSection } from "@/components/page"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   entities: LibraryEntity[]
@@ -25,7 +26,7 @@ export function ConnectionLocalData({ entities }: Props) {
             >
               <span>
                 {entity.title}{" "}
-                <span className="font-mono text-xs text-muted-foreground">
+                <span className={`${mono} text-xs text-muted-foreground`}>
                   {entity.kind}/{entity.entityId}
                 </span>
               </span>

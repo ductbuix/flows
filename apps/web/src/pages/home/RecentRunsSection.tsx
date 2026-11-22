@@ -33,7 +33,6 @@ export function RecentRunsSection({ runs }: Props) {
             <Item
               key={run.id}
               variant="outline"
-              size="sm"
               data-testid={`home-recent-${run.id}`}
             >
               <ItemContent>

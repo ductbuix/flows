@@ -10,6 +10,7 @@ import {
 } from "@workspace/ui/components/table"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
 import { cn } from "@workspace/ui/lib/utils"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   run: RunDetail
@@ -47,7 +48,7 @@ export function TaskList({ run, selectedTaskId, onSelectTask }: Props) {
               onClick={() => onSelectTask(task.id)}
             >
               <TableCell className={spawnedIndent(task)}>
-                <span className="font-mono text-sm">
+                <span className={`${mono} text-sm`}>
                   {labels.get(task.id) ?? task.id}
                 </span>
                 {task.spawned && (

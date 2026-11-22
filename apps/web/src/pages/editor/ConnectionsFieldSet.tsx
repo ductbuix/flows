@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { api } from "@/lib/api"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   task: Task
@@ -81,7 +82,7 @@ export function ConnectionsFieldSet({ task, onChangeTask }: Props) {
               data-testid={`connection-use-${entry.connection}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-sm">{entry.connection}</span>
+                <span className={`${mono} text-sm`}>{entry.connection}</span>
                 <Button
                   type="button"
                   variant="ghost"

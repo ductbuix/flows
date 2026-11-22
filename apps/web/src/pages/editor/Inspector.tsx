@@ -30,6 +30,7 @@ import { InspectorWorkflowPanel } from "./InspectorWorkflowPanel"
 import { LoneAgentJudges } from "./LoneAgentJudges"
 import { PublishTaskFields } from "./PublishTaskFields"
 import { taskFieldErrors } from "./field-errors"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   workflowId: string
@@ -98,7 +99,7 @@ export function Inspector({
         <Field>
           <FieldLabel>Id</FieldLabel>
           <p
-            className="font-mono text-sm text-muted-foreground select-all"
+            className={`${mono} text-sm text-muted-foreground select-all`}
             data-testid="field-task-id"
           >
             {task.id}

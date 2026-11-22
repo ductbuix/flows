@@ -31,7 +31,7 @@ export function EnvironmentVariables({ vars, "data-testid": testId }: Props) {
   return (
     <ItemGroup data-testid={testId} className="gap-2">
       {vars.map((v) => (
-        <Item key={v.name} size="sm" variant="outline">
+        <Item key={v.name} variant="outline">
           <ItemContent>
             <ItemTitle className="font-mono">{v.name}</ItemTitle>
             <ItemDescription className="font-mono">{v.value}</ItemDescription>

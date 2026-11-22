@@ -22,6 +22,7 @@ import {
   overviewConnections,
   overviewImpacts,
 } from "@/pages/overview-connections"
+import { mono } from "@/components/data/mono"
 
 type Props = { workflow: Workflow }
 
@@ -73,7 +74,7 @@ export function OverviewConnectionsSection({ workflow }: Props) {
             <TableBody>
               {connections.map((row) => (
                 <TableRow key={row.connection}>
-                  <TableCell className="font-mono">{row.connection}</TableCell>
+                  <TableCell className={mono}>{row.connection}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
                       {row.access === "read"
@@ -83,7 +84,7 @@ export function OverviewConnectionsSection({ workflow }: Props) {
                           : "Publish"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-muted-foreground">
+                  <TableCell className={`${mono} text-muted-foreground`}>
                     {row.taskIds.join(", ")}
                   </TableCell>
                 </TableRow>

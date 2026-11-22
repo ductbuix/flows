@@ -30,7 +30,6 @@ export function ExpiredSignIns({ items }: Props) {
         <Item
           key={item.id}
           variant="outline"
-          size="sm"
           data-testid={`home-needs-you-connection-${item.id}`}
         >
           <ItemMedia variant="icon">

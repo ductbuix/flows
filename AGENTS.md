@@ -60,7 +60,7 @@ Schema and writing rules: `docs/README.md`.
   usage, `resources.json`, `config.yaml` `library.maxBytes`, events
   and YAML Document edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
-- `apps/e2e`: Playwright against a temp `FLOWAPP_HOME`.
+- `apps/e2e`: Playwright against a temp `FLOWAPP_HOME` (incl. `layout.spec.ts` baselines).
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`) and backlogs (`BL-*`) with generated indexes.
 

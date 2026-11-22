@@ -12,6 +12,7 @@ import {
   startRunWithGrant,
   type StartRunOptions,
 } from "@/lib/trust-start"
+import { mono } from "@/components/data/mono"
 
 export type StartTarget = StartRunTarget
 
@@ -164,7 +165,7 @@ export function TrustStartGate({ children, onStarted }: Props) {
           description={
             <>
               A run with the same inputs already exists:{" "}
-              <span className="font-mono text-sm">
+              <span className={`${mono} text-sm`}>
                 {duplicateIds.join(", ")}
               </span>
               .

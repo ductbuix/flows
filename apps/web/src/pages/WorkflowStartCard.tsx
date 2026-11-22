@@ -12,6 +12,7 @@ import { StartRunFormFields } from "@/components/StartRunFormFields"
 import { TrustDialog } from "@/components/TrustDialog"
 import { WorkItemSelect } from "@/components/WorkItemSelect"
 import { useOverviewStart } from "@/pages/useOverviewStart"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   workflowId: string
@@ -113,7 +114,7 @@ export function WorkflowStartCard({ workflowId, onStarted }: Props) {
           description={
             <>
               A run with the same inputs already exists:{" "}
-              <span className="font-mono text-sm">
+              <span className={`${mono} text-sm`}>
                 {start.duplicateIds.join(", ")}
               </span>
               .

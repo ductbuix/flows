@@ -32,6 +32,7 @@ import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { connectionPath } from "@/lib/paths"
 import { AddConnectionDialog } from "./AddConnectionDialog"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   addOpen: boolean
@@ -143,11 +144,11 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
                     >
                       {conn.name}
                     </Link>
-                    <div className="font-mono text-xs text-muted-foreground">
+                    <div className={`${mono} text-xs text-muted-foreground`}>
                       {conn.id}
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className={`${mono} text-sm`}>
                     {conn.connector}
                   </TableCell>
                   <TableCell
@@ -164,7 +165,7 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
                         ? "Signed in"
                         : check.message}
                   </TableCell>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className={`${mono} text-sm`}>
                     {conn.refresh}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">

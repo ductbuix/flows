@@ -55,7 +55,6 @@ export function TrustDialog({
             {checks.map((check) => (
               <Item
                 key={check.id}
-                size="sm"
                 data-testid={`trust-check-${check.id}`}
               >
                 <ItemContent className="flex-row flex-wrap items-center gap-2">

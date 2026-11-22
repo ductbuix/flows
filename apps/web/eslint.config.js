@@ -8,6 +8,7 @@ import {
   noUiSizeRadiusClassRule,
   restrictedSyntaxSelectors,
 } from "./eslint-tailwind-guard.js"
+import { uiGuardPlugin } from "./eslint-ui-guards.js"
 
 export default defineConfig([
   globalIgnores(["dist"]),
@@ -41,6 +42,27 @@ export default defineConfig([
     rules: {
       "no-restricted-syntax": ["error", ...restrictedSyntaxSelectors()],
       "tailwind-guard/no-ui-size-radius-class": "error",
+    },
+  },
+  // DES-030: dense sizes, dialog widths, mono, frame padding.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    plugins: { "ui-guard": uiGuardPlugin },
+    rules: {
+      "ui-guard/dense-size": "error",
+      "ui-guard/dialog-width": "error",
+      "ui-guard/mono": "error",
+      "ui-guard/frame-padding": "error",
+    },
+  },
+  {
+    files: ["src/pages/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.{ts,tsx}"],
+    plugins: { "ui-guard": uiGuardPlugin },
+    rules: {
+      "ui-guard/page-frame-tags": "error",
+      "ui-guard/no-time-format": "error",
     },
   },
   // Soft limit per code file (clean-code.mdc): split by responsibility.

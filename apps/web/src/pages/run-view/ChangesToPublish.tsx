@@ -19,6 +19,7 @@ import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { SummaryMarkdown } from "./SummaryMarkdown"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   run: RunDetail
@@ -83,7 +84,7 @@ export function ChangesToPublish({ run, task }: Props) {
     <PageSection title="Changes to publish">
       <div className="flex flex-col gap-3" data-testid="changes-to-publish">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-sm">{connection}</span>
+          <span className={`${mono} text-sm`}>{connection}</span>
           <ImpactBadge impact="cloud" data-testid="publish-impact" />
         </div>
         {destructive.length > 0 ? (

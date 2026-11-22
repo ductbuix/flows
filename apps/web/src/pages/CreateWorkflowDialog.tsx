@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
 import { workflowIdSchema } from "@workspace/shared"
 import { api } from "@/lib/api"
+import { mono } from "@/components/data/mono"
 
 /** "Feature Spec!" becomes "feature-spec". */
 export function slugify(name: string): string {
@@ -107,7 +108,7 @@ export function CreateWorkflowDialog({ open, onOpenChange, onCreated }: Props) {
           <Input
             id="create-id"
             data-testid="create-id-input"
-            className="font-mono"
+            className={mono}
             value={id}
             onChange={(e) => {
               setId(e.target.value)

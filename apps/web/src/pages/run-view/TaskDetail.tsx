@@ -31,6 +31,7 @@ import { TaskDetailEnvironment } from "./TaskDetailEnvironment"
 import { TaskDetailOutput } from "./TaskDetailOutput"
 import { TaskDetailSummary } from "./TaskDetailSummary"
 import { TaskDetailTerminal } from "./TaskDetailTerminal"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   run: RunDetail
@@ -53,7 +54,7 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
   return (
     <Card className="flex h-full min-h-0 flex-col" data-testid="task-detail">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="font-mono">{label}</CardTitle>
+        <CardTitle className={mono}>{label}</CardTitle>
         <TaskActions run={run} task={task} />
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col">
@@ -112,9 +113,9 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
             {spawnedChildren.length > 0 ? (
               <ItemGroup>
                 {spawnedChildren.map((child) => (
-                  <Item key={child.id} size="sm" variant="outline">
+                  <Item key={child.id} variant="outline">
                     <ItemContent className="flex-row items-center gap-2">
-                      <ItemTitle className="font-mono">{child.id}</ItemTitle>
+                      <ItemTitle className={mono}>{child.id}</ItemTitle>
                       <Badge variant="secondary">{child.status}</Badge>
                     </ItemContent>
                   </Item>

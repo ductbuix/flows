@@ -11,6 +11,7 @@ import {
 import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import { WorkItemSourceBadge } from "@/components/data/WorkItemSourceBadge"
 import { workItemPath } from "@/lib/paths"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   items: WorkItemSummary[]
@@ -54,7 +55,7 @@ export function WorkItemsTable({ items, lastRuns, onOpen }: Props) {
                   data-testid={`work-items-source-${item.id}`}
                 />
               </TableCell>
-              <TableCell className="font-mono text-sm">
+              <TableCell className={`${mono} text-sm`}>
                 {item.workflowId ?? "—"}
               </TableCell>
               <TableCell>

@@ -20,6 +20,7 @@ import { StartRunFormFields } from "@/components/StartRunFormFields"
 import { TrustDialog } from "@/components/TrustDialog"
 import { useWorkflows } from "@/lib/workflows-context"
 import { useWorkItemStart } from "@/pages/useWorkItemStart"
+import { mono } from "@/components/data/mono"
 
 type Props = {
   workItemId: string
@@ -152,7 +153,7 @@ export function WorkItemStartCard({
           description={
             <>
               A run with the same inputs already exists:{" "}
-              <span className="font-mono text-sm">
+              <span className={`${mono} text-sm`}>
                 {start.duplicateIds.join(", ")}
               </span>
               .

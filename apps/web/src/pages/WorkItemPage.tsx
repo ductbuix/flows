@@ -33,6 +33,7 @@ import { WorkItemContextSection } from "@/pages/WorkItemContextSection"
 import { WorkItemNotesSection } from "@/pages/WorkItemNotesSection"
 import { WorkItemRunsSection } from "@/pages/WorkItemRunsSection"
 import { WorkItemStartCard } from "@/pages/WorkItemStartCard"
+import { mono } from "@/components/data/mono"
 
 export function WorkItemPage() {
   const { workItemId } = useParams() as { workItemId: string }
@@ -149,9 +150,9 @@ export function WorkItemPage() {
             ) : (
               <ItemGroup data-testid="work-item-attachments">
                 {attachments.map((file) => (
-                  <Item key={file.name} variant="outline" size="sm">
+                  <Item key={file.name} variant="outline">
                     <ItemContent>
-                      <ItemTitle className="font-mono">{file.name}</ItemTitle>
+                      <ItemTitle className={mono}>{file.name}</ItemTitle>
                     </ItemContent>
                   </Item>
                 ))}
