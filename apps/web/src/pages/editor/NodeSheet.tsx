@@ -68,8 +68,9 @@ export function NodeSheet({
     inputs?: WorkflowInputDecl[]
     resources?: AssetResource[]
     access?: "read" | "propose"
-    target?: "folder" | "publish"
+    target?: "folder" | "publish" | "notify"
     connection?: string
+    title?: string
   }
   const proposeOptions =
     node.kind === "output" && graph
@@ -174,8 +175,9 @@ export function NodeSheet({
                 <Select
                   value={loose.target ?? "folder"}
                   onValueChange={(v) => {
-                    if (v !== "folder" && v !== "publish") return
+                    if (v !== "folder" && v !== "publish" && v !== "notify") return
                     onSetting("target", v)
+                    if (v !== "notify") onSetting("title", undefined)
                     onSetting(
                       "connection",
                       v === "publish" ? (proposeOptions[0] ?? undefined) : undefined
@@ -189,8 +191,28 @@ export function NodeSheet({
                   <SelectContent>
                     <SelectItem value="folder">Folder</SelectItem>
                     <SelectItem value="publish">Publish</SelectItem>
+                    <SelectItem value="notify">Notify</SelectItem>
                   </SelectContent>
                 </Select>
+              </Field>
+            ) : null}
+            {loose.target === "notify" ? (
+              <Field>
+                <FieldLabel htmlFor="output-title">Notice title</FieldLabel>
+                <Input
+                  id="output-title"
+                  data-testid="output-title"
+                  placeholder={node.name ?? "Workflow name"}
+                  value={loose.title ?? ""}
+                  maxLength={120}
+                  onChange={(e) =>
+                    onSetting("title", e.target.value.trim() ? e.target.value : undefined)
+                  }
+                  onBlur={onEditEnd}
+                />
+                <FieldDescription>
+                  Posts this title and the input text to the bell in the sidebar.
+                </FieldDescription>
               </Field>
             ) : null}
             {loose.target === "publish" ? (

@@ -2,7 +2,7 @@
 id: BL-100
 title: Output target notify and an in-app notice
 type: backlog
-status: todo
+status: done
 summary: A small in-app notice store and bell, and the Output notify target that posts a title and the input text to it.
 tags: [engine, server, web, nodes]
 related: [DES-032]
@@ -17,7 +17,7 @@ Design: [DES-032](../designs/des-032-node-catalog.md) (Output). flows has no in-
 
 ## Done when
 
-- [ ] A notice store (events or a table, decided in the PR description) with list and mark-read routes.
-- [ ] A bell in the sidebar shows unread notices.
-- [ ] Output `notify` posts `title` and its input text.
-- [ ] Test: `apps/server/src/notices.test.ts` and `apps/e2e/tests/node-notify.spec.ts`. Playwright video plus light and dark screenshots of the changed screens; BL-061 layout baselines refreshed in the same change.
+- [x] A notice store (events or a table, decided in the PR description) with list and mark-read routes.
+- [x] A bell in the sidebar shows unread notices.
+- [x] Output `notify` posts `title` and its input text.
+- [x] Test: `apps/server/src/notices.test.ts` and `apps/e2e/tests/node-notify.spec.ts`. Playwright video plus light and dark screenshots of the changed screens; BL-061 layout baselines refreshed in the same change.

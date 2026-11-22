@@ -242,6 +242,14 @@ export {
   type CliStatus,
 } from "./api-trust.ts"
 export {
+  noticeSchema,
+  noticeListSchema,
+  markNoticesReadBodySchema,
+  type Notice,
+  type NoticeList,
+  type MarkNoticesReadBody,
+} from "./api-notices.ts"
+export {
   mcpTrustEntrySchema,
   mcpTrustValueSchema,
   mcpTrustStatusSchema,

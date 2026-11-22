@@ -308,6 +308,18 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
           })
           return true
         }
+        if (result.notice) {
+          // Keyed by step, so a repeated step posts once (BL-100).
+          log.postNotice({
+            key: `${runId}:${nodeId}:${pass}`,
+            title: result.notice.title,
+            text: result.notice.text,
+            runId,
+            workflowId: graph.id,
+            nodeId,
+            at: now(),
+          })
+        }
         settle(nodeId, pass, result)
       } catch (error) {
         if (error instanceof CrashError) throw error

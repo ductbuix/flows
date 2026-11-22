@@ -174,6 +174,12 @@ function outputProblems(wf: {
   const out: { message: string; path: (string | number)[] }[] = []
   wf.nodes.forEach((n, i) => {
     if (n.kind !== "output") return
+    if (n.title !== undefined && n.target !== "notify") {
+      out.push({
+        message: "title is only for the notify target",
+        path: ["nodes", i, "title"],
+      })
+    }
     if (n.target !== "publish") {
       if (n.connection !== undefined) {
         out.push({
