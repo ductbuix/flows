@@ -1,2 +1,6 @@
 export * from "./fold-steps.ts"
 export * from "./walk.ts"
+export * from "./define.ts"
+export * from "./registry.ts"
+export * from "./step-paths.ts"
+export * from "./tick.ts"

@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { connectionIdSchema } from "./connection.ts"
 import { effortSchema } from "./model-effort.ts"
+import { nodeWorkflowSchema } from "./nodes/index.ts"
 import { taskSchema, workflowSchema } from "./workflow.ts"
 
 export const taskStatusSchema = z.enum([
@@ -33,7 +34,17 @@ export const runStartedEventSchema = z.object({
   type: z.literal("run_started"),
   ...eventBase,
   workflowId: z.string().min(1),
-  graph: workflowSchema,
+  /**
+   * Task graph, or a node graph on the node path (DES-034). The type
+   * stays the task graph until BL-096 switches; the engine reads a node
+   * graph with `nodeWorkflowSchema.parse`.
+   */
+  graph: z.union([
+    workflowSchema,
+    nodeWorkflowSchema,
+  ]) as unknown as typeof workflowSchema,
+  /** Node path: the trigger node the run started from (DES-034). */
+  trigger: z.string().min(1).optional(),
   /** Trust-once for this run so resume does not re-ask (DES-019). */
   trustGrant: z.literal("once").optional(),
   /** Input source id (DES-021). */

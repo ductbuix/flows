@@ -53,7 +53,7 @@ Schema and writing rules: `docs/README.md`.
   effort resolve and preflight, trust markers, spawn, resume,
   approval, cancel, retry, repeat, `agents` limits, run deletion,
   frozen `RUN_INPUT`, queued runs, summary cache, port leases,
-  `<workflow>/.cache`.
+  `<workflow>/.cache`; `nodes/` (node walk, executors, `tickNodes`, unwired).
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
   websocket, workflow (incl. `kind: publish`), `connection.yaml`, library list/pull/clear/
   usage, `resources.json`, `config.yaml` `library.maxBytes`, events
