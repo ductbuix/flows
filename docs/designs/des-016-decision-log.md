@@ -164,6 +164,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Controls 32px by default; small sizes only in dense rows    | one height and one radius per row                              | DES-027         |
 | 2026-11-22 | Readable names and relative times first; ids secondary      | ids stay copyable in mono; no raw UTC in labels                | DES-027, 030    |
 | 2026-11-22 | Renovation order: frame, run view, editor, home and lists   | command palette later (BL-072)                                 | DES-017, 027    |
+| 2026-11-22 | Developer details in fixed tabs; no Advanced switch         | YAML, ids, env, raw logs one step away; confirms the 11-21 row | DES-027, 030    |
 
 ## Docs and tooling
 

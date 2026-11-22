@@ -76,9 +76,8 @@ Environment tab only).
 
 ## DX for people using Flows
 
-No global switch: DES-016 (2026-11-21) replaced the Advanced switch with
-fixed places. Developer detail is always one step away (open question 1
-in DES-027).
+No Advanced switch (pootato, 2026-11-22; DES-027 resolved question 1):
+developer detail lives in fixed tabs and places, always one step away.
 
 | Detail             | Where                                                        | Reach     |
 | ------------------ | ------------------------------------------------------------ | --------- |

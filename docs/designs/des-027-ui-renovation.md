@@ -238,14 +238,16 @@ Marked in each doc with a link here rather than rewritten:
 - DES-009 and DES-010 layout of the run view and the Inspector.
 - DES-008 "Screens".
 
+## Resolved questions
+
+1. **Developer details** (pootato, 2026-11-22): YAML, ids, env and raw
+   logs stay in fixed tabs and places, with no Advanced switch. This
+   keeps the DES-016 row of 2026-11-21 ("No Simple/Pro mode; detail
+   lives in Tabs"). DES-030 lists where each detail lives.
+
 ## Open questions
 
-1. **Advanced switch.** DES-016 row 2026-11-21 "No Simple/Pro mode;
-   detail lives in Tabs" replaced the Advanced switch, and DES-030
-   follows it. The renovation brief named Advanced again. Keep no
-   switch, or bring one back that hides the YAML tab, ids, Environment
-   and raw logs?
-2. **Workflow names.** Workflows have only an id (folder name). The plan
+1. **Workflow names.** Workflows have only an id (folder name). The plan
    shows a humanized id ("feature-spec" becomes "Feature spec"). Is that
    enough, or should `workflow.yaml` get an optional `name`?
 
