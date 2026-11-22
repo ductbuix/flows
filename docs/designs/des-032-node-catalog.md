@@ -137,10 +137,17 @@ OpenBot's condition node works that way in its main mode
   word, yes or no, for the input. The first word decides: `yes` or
   `true` takes Yes, `no` or `false` takes No, anything else fails the
   node ("unclear answer").
-- Check mode: settings `check` (field, operator, value). It tests a
-  named answer from upstream with no model call. Operators as OpenBot
-  `WORKFLOW_CHECK_OPERATORS`: `=`, `!=`, `>`, `>=`, `<`, `<=`,
-  `contains`, `set`, `unset`.
+- Check mode (BL-101): `mode: check` and `check` (`field`, `operator`,
+  `value`); `cli`, `model` and `effort` are not allowed and there is no
+  `rule.md`. It tests a named answer from upstream with no model call:
+  the step settles in the tick with no process and no slot, and takes
+  Yes or No. Operators as OpenBot `WORKFLOW_CHECK_OPERATORS`: `=`,
+  `!=`, `>`, `>=`, `<`, `<=`, `contains`, `set`, `unset`. Text compares
+  ignore case; a yes or no answer reads as `yes` or `no`; `>` and its
+  kin need a number on both sides and are No otherwise; `contains` finds
+  an item in a list or a piece of text; `set` and `unset` take no value
+  and an empty text or list is unset. `field` must be declared by
+  exactly one upstream node, else validation fails.
 - Out: the input is forwarded on the taken branch; the other branch's
   path is skipped.
 - Gap: OpenBot shows the rule as the condition text on the node; the
@@ -204,4 +211,4 @@ As in OpenBot (`packages/contracts/src/ipc-workflow-answers.ts`):
   branch) fills as empty. Values read as text, `yes` or `no`, or a
   comma list. The filled prompt is written into the attempt, so the
   frozen file keeps the template.
-- A Judge in check mode tests a named answer.
+- A Judge in check mode tests a named answer (BL-101).

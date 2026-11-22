@@ -6,8 +6,8 @@ import { approvalKind } from "./approval.ts"
 import { assetKind } from "./asset.ts"
 import { commandKind } from "./command.ts"
 import type { PortType } from "./define.ts"
-import { templateProblems } from "./answers.ts"
-import { judgeKind } from "./judge.ts"
+import { templateProblems, upstreamAnswerSources } from "./answers.ts"
+import { judgeKind, judgeSettingProblems } from "./judge.ts"
 import { llmKind } from "./llm.ts"
 import { outputKind } from "./output.ts"
 import { promptKind } from "./prompt.ts"
@@ -235,6 +235,25 @@ const nodeWorkflowObjectSchema = z
         message: `${p.label}: ${p.message}`,
         path: ["nodes", at, "question"],
       })
+    })
+    wf.nodes.forEach((n, i) => {
+      if (n.kind !== "judge") return
+      for (const p of judgeSettingProblems(n)) {
+        ctx.addIssue({ code: "custom", message: p.message, path: ["nodes", i, p.key] })
+      }
+      if (n.mode === "check" && n.check) {
+        const from = upstreamAnswerSources(wf.nodes, wf.edges, n.id).get(n.check.field) ?? []
+        if (from.length !== 1) {
+          ctx.addIssue({
+            code: "custom",
+            message:
+              from.length === 0
+                ? `check field ${n.check.field}: no upstream node declares it`
+                : `check field ${n.check.field} is ambiguous: ${from.join(" and ")} both declare it`,
+            path: ["nodes", i, "check", "field"],
+          })
+        }
+      }
     })
     outputProblems(wf).forEach((p) => ctx.addIssue({ code: "custom", ...p }))
     for (const p of edgeProblems(wf.nodes, wf.edges)) {

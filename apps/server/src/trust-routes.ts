@@ -96,7 +96,8 @@ export function trustRoutes(engine: Engine) {
           const clis = [
             ...new Set(
               (parsed.workflow?.nodes ?? []).flatMap((n) =>
-                n.kind === "agent" || n.kind === "judge" || n.kind === "llm"
+                (n.kind === "agent" || n.kind === "judge" || n.kind === "llm") &&
+                n.cli !== undefined
                   ? [n.cli]
                   : []
               )
