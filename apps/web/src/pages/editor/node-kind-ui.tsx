@@ -8,6 +8,7 @@ type Meta = { label: string; hint: string }
 export const KIND_META: Record<string, Meta> = {
   trigger: { label: "Trigger", hint: "Starts a run" },
   prompt: { label: "Prompt", hint: "A fixed piece of text" },
+  asset: { label: "Asset", hint: "Library resources, read only" },
   agent: { label: "Agent", hint: "An AI agent CLI" },
   command: { label: "Command", hint: "A shell command" },
   judge: { label: "Judge", hint: "Answers yes or no and picks a branch" },

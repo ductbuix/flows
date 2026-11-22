@@ -1,6 +1,7 @@
 import { NODE_KINDS, type WorkflowNode } from "@workspace/shared"
 import { agentView } from "./agent"
 import { approvalView } from "./approval"
+import { assetView } from "./asset"
 import { commandView } from "./command"
 import type { NodeView } from "./define"
 import { judgeView } from "./judge"
@@ -15,6 +16,7 @@ export type { NodeBodyProps, NodeView } from "./define"
 export const NODE_VIEWS: readonly NodeView[] = [
   triggerView,
   promptView,
+  assetView,
   agentView,
   commandView,
   judgeView,

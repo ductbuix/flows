@@ -3,6 +3,7 @@ import { workflowAgentSchema } from "../model-effort.ts"
 import { timeoutSecondsSchema } from "../workflow.ts"
 import { agentKind } from "./agent.ts"
 import { approvalKind } from "./approval.ts"
+import { assetKind } from "./asset.ts"
 import { commandKind } from "./command.ts"
 import type { PortType } from "./define.ts"
 import { judgeKind } from "./judge.ts"
@@ -10,6 +11,7 @@ import { outputKind } from "./output.ts"
 import { promptKind } from "./prompt.ts"
 import { triggerKind } from "./trigger.ts"
 
+export { assetResourceSchema, type AssetResource } from "./asset.ts"
 export { defineNodeKind, nodeIdSchema } from "./define.ts"
 export type { NodeGroup, NodeKindDef, PortType } from "./define.ts"
 
@@ -17,6 +19,7 @@ export type { NodeGroup, NodeKindDef, PortType } from "./define.ts"
 export const NODE_KINDS = [
   triggerKind,
   promptKind,
+  assetKind,
   agentKind,
   commandKind,
   judgeKind,

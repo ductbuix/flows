@@ -2,6 +2,7 @@ import { join } from "node:path"
 import type {
   Connection,
   EngineEvent,
+  NodeWorkflow,
   ResourcePin,
   WorkItemLink,
   Workflow,
@@ -50,6 +51,33 @@ export function collectPullTargets(
       title: conn.name,
     })
   }
+  return [...byKey.values()]
+}
+
+/**
+ * Node runs (BL-082): every resource of every Asset node, plus the work
+ * item's links. Without an Asset node nothing is pinned.
+ */
+export function collectNodePullTargets(
+  home: string,
+  graph: NodeWorkflow,
+  links: WorkItemLink[]
+): PullTarget[] {
+  const assets = graph.nodes.filter((n) => n.kind === "asset")
+  if (assets.length === 0) return []
+  const byKey = new Map<string, PullTarget>()
+  const add = (connection: string, kind: string, entityId: string) => {
+    const key = pinKey(connection, kind, entityId)
+    if (byKey.has(key)) return
+    const conn = readConnection(home, connection)
+    if (!conn) throw new Error(`unknown connection ${connection}`)
+    byKey.set(key, { connection: conn, kind, entityId, title: conn.name })
+  }
+  for (const node of assets) {
+    if (node.kind !== "asset") continue
+    for (const r of node.resources) add(r.connection, r.entity, r.id)
+  }
+  for (const link of links) add(link.connection, link.kind, link.entityId)
   return [...byKey.values()]
 }
 

@@ -12,6 +12,7 @@ import {
 import { join } from "node:path"
 import {
   NODE_KINDS,
+  connectionEnvName,
   upstreamEnvName,
   type NodeWorkflow,
 } from "@workspace/shared"
@@ -138,6 +139,16 @@ function buildEnv(
   if (spec.instructions) env.NODE_INSTRUCTIONS = spec.instructions
   for (const input of ctx.inputs) {
     env[upstreamEnvName(input.nodeId)] = join(input.dir, "files")
+    // A step wired from an Asset gets RESOURCE_<ID> per connection (BL-082).
+    const from = ctx.graph.nodes.find((n) => n.id === input.nodeId)
+    if (from?.kind !== "asset") continue
+    for (const r of from.resources) {
+      env[connectionEnvName(r.connection)] = join(
+        ctx.runRoot,
+        "resources",
+        r.connection
+      )
+    }
   }
   return env
 }
