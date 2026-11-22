@@ -132,6 +132,8 @@ export const runStepSchema = z.object({
   /** Approval step: the question and the decision a person made. */
   question: z.string().optional(),
   decision: z.enum(["approved", "rejected"]).optional(),
+  /** Agent and LLM steps with named answers (BL-085). */
+  answer: z.record(z.string(), z.unknown()).optional(),
   startedAt: z.string().optional(),
   endedAt: z.string().optional(),
 })

@@ -6,6 +6,7 @@ import { approvalKind } from "./approval.ts"
 import { assetKind } from "./asset.ts"
 import { commandKind } from "./command.ts"
 import type { PortType } from "./define.ts"
+import { templateProblems } from "./answers.ts"
 import { judgeKind } from "./judge.ts"
 import { llmKind } from "./llm.ts"
 import { outputKind } from "./output.ts"
@@ -221,6 +222,19 @@ const nodeWorkflowObjectSchema = z
         })
       }
       ids.add(n.id)
+    })
+    const questions = wf.nodes.flatMap((n) =>
+      n.kind === "approval"
+        ? [{ nodeId: n.id, label: "question", text: n.question }]
+        : []
+    )
+    templateProblems(wf.nodes, wf.edges, questions).forEach((p) => {
+      const at = wf.nodes.findIndex((n) => n.id === p.nodeId)
+      ctx.addIssue({
+        code: "custom",
+        message: `${p.label}: ${p.message}`,
+        path: ["nodes", at, "question"],
+      })
     })
     outputProblems(wf).forEach((p) => ctx.addIssue({ code: "custom", ...p }))
     for (const p of edgeProblems(wf.nodes, wf.edges)) {

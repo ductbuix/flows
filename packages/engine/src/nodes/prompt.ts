@@ -1,5 +1,6 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { fillTemplate } from "@workspace/shared"
 import { defineExecutor } from "./define.ts"
 import { relOut } from "./step-paths.ts"
 
@@ -9,7 +10,7 @@ export const promptExecutor = defineExecutor({
   run(ctx) {
     rmSync(ctx.stepDir, { recursive: true, force: true })
     mkdirSync(ctx.stepDir, { recursive: true })
-    writeFileSync(join(ctx.stepDir, "text.md"), ctx.frozenFile("text.md") ?? "")
+    writeFileSync(join(ctx.stepDir, "text.md"), fillTemplate(ctx.frozenFile("text.md") ?? "", ctx.answers))
     return {
       outputs: [relOut("nodes", ctx.node.id, `pass-${ctx.pass}`, "text.md")],
     }

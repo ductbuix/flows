@@ -56,6 +56,7 @@ import { Scheduler } from "./scheduler.ts"
 import type { ManualFilePart, ManualItem } from "./source-manual.ts"
 import { assertPublishTasksValid } from "./publish.ts"
 import { appendRunStarted } from "./start-run.ts"
+import { assertNodeTemplatesValid } from "./nodes/answers.ts"
 import { startNodeRun as startNodeRunQueued } from "./nodes/tick.ts"
 import {
   LIBRARY_RETENTION_INTERVAL_MS,
@@ -319,6 +320,7 @@ export class Engine {
     workItemId?: string
   }): Promise<MaterializeResourcesResult | undefined> {
     assertNodePublishValid(this.home, input.graph)
+    assertNodeTemplatesValid(this.home, input.graph)
     if (!input.graph.nodes.some((n) => n.kind === "asset")) return undefined
     const runRoot = runDir(workflowDir(this.home, input.graph.id), input.runId)
     mkdirSync(runRoot, { recursive: true })
@@ -342,6 +344,7 @@ export class Engine {
   startNodeRun(input: StartNodeRunInput): RunHandle {
     const { graph } = input
     assertNodePublishValid(this.home, graph)
+    assertNodeTemplatesValid(this.home, graph)
     const runId = input.runId ?? randomUUID()
     const queued =
       countRunningRuns(this.listRunsForWorkflow(graph.id)) >=

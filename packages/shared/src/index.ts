@@ -423,5 +423,26 @@ export {
   assetResourceSchema,
   type AssetResource,
 } from "./nodes/index.ts"
+export {
+  ANSWER_NAME_PATTERN,
+  answerDeclSchema,
+  answersSchema,
+  answerText,
+  answerTypeHint,
+  declaredAnswers,
+  fillTemplate,
+  formatAnswerValue,
+  parseAnswer,
+  parseAnswerText,
+  resolveAnswerValues,
+  templateNames,
+  templateProblems,
+  upstreamAnswerSources,
+  type AnswerDecl,
+  type AnswerParse,
+  type AnswerValues,
+  type TemplateProblem,
+  type TemplateText,
+} from "./nodes/answers.ts"
 export { layoutFileSchema, type LayoutFile } from "./nodes/layout.ts"
 export { findLoopEdges, loopWarnings } from "./nodes/loops.ts"

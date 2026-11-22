@@ -1,6 +1,7 @@
 import { Trash2Icon } from "lucide-react"
 import {
   proposeConnectionsUpstream,
+  type AnswerDecl,
   type AssetResource,
   type NodeWorkflow,
   type WorkflowInputDecl,
@@ -30,6 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet"
+import { AnswersEditor } from "./AnswersEditor"
 import { AssetResources } from "./AssetResources"
 import { MemoryCombobox } from "./MemoryCombobox"
 import { TriggerInputs } from "./TriggerInputs"
@@ -62,6 +64,7 @@ export function NodeSheet({
     timeout?: number
     retry?: { max: number }
     memory?: string[]
+    answers?: AnswerDecl[]
     inputs?: WorkflowInputDecl[]
     resources?: AssetResource[]
     access?: "read" | "propose"
@@ -239,6 +242,18 @@ export function NodeSheet({
               </Field>
             ) : null}
           </FieldGroup>
+          {keys.has("answers") ? (
+            <>
+              <Separator />
+              <AnswersEditor
+                answers={loose.answers ?? []}
+                onChange={(v) => {
+                  onSetting("answers", v)
+                  onEditEnd()
+                }}
+              />
+            </>
+          ) : null}
           {keys.has("resources") ? (
             <>
               <Separator />

@@ -1,10 +1,22 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { AgentTask } from "@workspace/shared"
-import { resolveModelEffort } from "@workspace/shared"
+import {
+  answerText,
+  parseAnswerText,
+  resolveModelEffort,
+  type AgentTask,
+} from "@workspace/shared"
 import { resolveAttemptModelFields } from "../attempt-model.ts"
 import { getCliAdapter } from "../cli-adapters.ts"
 import { writeCursorTrustMarker } from "../cursor-trust.ts"
+import {
+  filledFile,
+  llmAnswerPrompt,
+  llmFixPrompt,
+  nodeAnswers,
+  pendingAnswerFix,
+  settleAnswer,
+} from "./answers.ts"
 import { defineExecutor } from "./define.ts"
 import { readOptional, settleProcessOutput } from "./process.ts"
 
@@ -33,8 +45,8 @@ export const llmExecutor = defineExecutor({
   run(ctx) {
     const node = ctx.node
     if (node.kind !== "llm") throw new Error("not an llm node")
-    const frozen = ctx.frozenPath("prompt.md")
-    if (!existsSync(frozen)) throw new Error("missing_prompt")
+    if (!existsSync(ctx.frozenPath("prompt.md"))) throw new Error("missing_prompt")
+    const decls = nodeAnswers(ctx)
     const task: AgentTask = {
       id: node.id,
       needs: [],
@@ -49,12 +61,21 @@ export const llmExecutor = defineExecutor({
         cli: node.cli,
         modelFields: resolveAttemptModelFields(task, ctx.graph),
         prepare({ attemptRoot, inputDir }) {
+          const fix = pendingAnswerFix(attemptRoot)
+          const prompt = [filledFile(ctx, "prompt.md") ?? ""]
+          if (decls.length > 0) prompt.push(llmAnswerPrompt(decls))
           const text = llmPromptText({
-            system: ctx.frozenFile("system.md"),
-            prompt: readFileSync(frozen, "utf8"),
+            system: filledFile(ctx, "system.md"),
+            prompt: prompt.join("\n\n"),
             input: readOptional(join(inputDir, "text.md")) ?? "",
           })
-          writeFileSync(join(inputDir, "prompt.txt"), text)
+          const asked = fix
+            ? `${text}\n${llmFixPrompt(
+                fix.error,
+                readOptional(join(fix.previous, "stdout.log")) ?? ""
+              )}`
+            : text
+          writeFileSync(join(inputDir, "prompt.txt"), asked)
           if (node.cli === "cursor") {
             writeCursorTrustMarker(attemptRoot)
           }
@@ -80,6 +101,11 @@ export const llmExecutor = defineExecutor({
   },
   finish(ctx, attemptRoot) {
     const text = (readOptional(join(attemptRoot, "stdout.log")) ?? "").trim()
-    return settleProcessOutput(ctx, attemptRoot, text)
+    const decls = nodeAnswers(ctx)
+    if (decls.length === 0) return settleProcessOutput(ctx, attemptRoot, text)
+    const found = parseAnswerText(decls, text)
+    if (!found.ok) return settleAnswer(attemptRoot, decls, found, { outputs: [] })
+    const done = settleProcessOutput(ctx, attemptRoot, answerText(decls, found.value))
+    return { ...done, answer: found.value }
   },
 })

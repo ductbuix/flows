@@ -150,7 +150,11 @@ function buildEnv(
     NODE_OUT: join(attemptRoot, "out"),
     PREV_ATTEMPT: attempt > 1 ? attemptRootOf(ctx.stepDir, attempt - 1) : "",
   }
-  if (spec.instructions) env.NODE_INSTRUCTIONS = spec.instructions
+  const instructions =
+    typeof spec.instructions === "function"
+      ? spec.instructions(attemptRoot)
+      : spec.instructions
+  if (instructions) env.NODE_INSTRUCTIONS = instructions
   for (const input of ctx.inputs) {
     env[upstreamEnvName(input.nodeId)] = join(input.dir, "files")
     // A step wired from an Asset gets RESOURCE_<ID> per connection (BL-082).
@@ -322,7 +326,7 @@ export function launchAttempt(
     mkdirSync(join(attemptRoot, "out"), { recursive: true })
     writeInputs(ctx, inputDir)
     ensureWorkCopiesFor(ctx.runRoot, proposeConnections(ctx))
-    spec.prepare?.({ attemptRoot, inputDir })
+    spec.prepare?.({ attemptRoot, inputDir, attempt })
     cmd = spec.command({ attemptRoot })
   } catch (err) {
     run.log.append({ ...started, at: now() } as never)

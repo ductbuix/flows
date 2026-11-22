@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto"
 import {
-  cpSync,
   existsSync,
   readdirSync,
   statSync,
@@ -17,6 +16,7 @@ import {
   judgeVerdict,
   resolveJudgeModelEffort,
 } from "../judge.ts"
+import { filledFile } from "./answers.ts"
 import { forwardInputs } from "./forward.ts"
 import { defineExecutor, type ExecContext, type ExecResult } from "./define.ts"
 import { readOptional } from "./process.ts"
@@ -73,7 +73,7 @@ function keyOf(ctx: ExecContext): string {
     resolved: resolveJudgeModelEffort(judge, { workflowAgent: ctx.graph.agent }),
     nodeId: ctx.node.id,
     pass: ctx.pass,
-    rule: ctx.frozenFile("rule.md") ?? "",
+    rule: filledFile(ctx, "rule.md") ?? "",
     inputHash: inputHash(ctx),
   })
 }
@@ -117,7 +117,7 @@ export const judgeExecutor = defineExecutor({
         ),
         prepare({ attemptRoot, inputDir }) {
           // The CLI runs in the attempt folder: keep the rule inside it.
-          cpSync(frozen, join(inputDir, "rule.md"))
+          writeFileSync(join(inputDir, "rule.md"), filledFile(ctx, "rule.md") ?? "")
           if (node.cli === "cursor") {
             writeCursorTrustMarker(ctx.workflowRoot)
             writeCursorTrustMarker(attemptRoot)

@@ -88,8 +88,8 @@ OpenBot's `WORKFLOW_PORTS` (`packages/contracts/src/ipc-workflows.ts`).
   joined text input in `input/text.md`, input files by path, and its
   memory. OpenBot hands work to a long-lived agent conversation
   instead; flows keeps its own model.
-- Out: `text` is the answer (or `SUMMARY.md` when no answers are
-  declared); `file` is the attempt's `out/` folder.
+- Out: `text` is the answers as `name: value` lines (or `SUMMARY.md`
+  when no answers are declared); `file` is the attempt's `out/` folder.
 - UI: CLI and model pills plus the task Textarea on the node.
 
 ## Command
@@ -121,8 +121,8 @@ OpenBot's `WORKFLOW_PORTS` (`packages/contracts/src/ipc-workflows.ts`).
 - Sandbox: writes only the attempt folder (not the whole workflow as
   Agent does); `~/.cursor` stays writable for Cursor.
 - Out: `text` only: stdout, trimmed. Input files are not shown to the
-  model, since it has no tools to read them. `answers` come with
-  BL-085.
+  model, since it has no tools to read them. With `answers`, `text` is
+  the answers as `name: value` lines instead of stdout (BL-085).
 
 ## Judge
 
@@ -183,12 +183,25 @@ OpenBot's condition node works that way in its main mode
 As in OpenBot (`packages/contracts/src/ipc-workflow-answers.ts`):
 
 - Agent and LLM nodes may declare `answers`: up to 20 fields, each with
-  a name and a type (`text`, `number`, `yes/no`, `list`, `choice` with
-  labels).
-- The step is asked to end with the answer as JSON. Agents write
-  `out/answer.json`; LLM steps print it. If it does not match, the step
-  is asked once to fix it, then fails.
-- Later nodes use `{{name}}` in prompt, rule, question and Prompt text.
-  A name resolves from the nearest upstream answer; a name that two
-  upstream nodes declare fails validation.
+  a name (letters, digits and `_`, so `{{name}}` can reach it, unique
+  on the node) and a type (`text`, `number`, `yesno`, `list` of
+  strings, `choice` with `labels`). A value must be a string, a finite
+  number, a boolean, an array of strings, or one of the labels.
+- The step is asked to end with the answer as one JSON object. Agents
+  write `out/answer.json`; LLM steps print it (a ```json block or a
+  bare object; the last one that matches wins). If it does not match,
+  the step runs one more attempt that is told what was wrong (an Agent
+  keeps its `out/` and rewrites the answer; an LLM step sees its
+  rejected reply), then fails with reason `answer`. The answer is on
+  `step_done` as `answer`, shows in the step detail, and `text` holds
+  it as `name: value` lines.
+- Later nodes use `{{name}}` in prompt, rule, question and Prompt text
+  (`system.md` too). A name resolves from the unique upstream node that
+  declares it, taking that node's latest finished answer; a name that
+  two upstream nodes declare fails validation (the YAML for a
+  question, the start of a run for node files). A name nobody declares
+  stays as written, and a value that is not there yet (a skipped
+  branch) fills as empty. Values read as text, `yes` or `no`, or a
+  comma list. The filled prompt is written into the attempt, so the
+  frozen file keeps the template.
 - A Judge in check mode tests a named answer.

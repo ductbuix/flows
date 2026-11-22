@@ -214,6 +214,30 @@ edges:
   - { from: write, to: show }
 `
 
+const nodeAnswersYaml = (id: string) => `id: ${id}
+goal: e2e named answers
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: assess
+    kind: llm
+    cli: claude
+    answers:
+      - { name: risk, type: choice, labels: [low, high] }
+      - { name: score, type: number }
+  - id: note
+    kind: llm
+    cli: claude
+  - id: show
+    kind: command
+    run: 'cat $NODE_IN/text.md'
+edges:
+  - { from: start, to: assess }
+  - { from: assess, to: note }
+  - { from: note, to: show }
+`
+
 const nodeStartYaml = (id: string) => `id: ${id}
 goal: e2e node start inputs
 nodes:
@@ -383,7 +407,8 @@ export function createE2eHome(): string {
     [
       "#!/bin/sh",
       // An LLM call (tools off) prints a line made from the first prompt line.
-      'case "$*" in *--tools*) p=$(cat); echo "Summary: $(printf %s "$p" | head -1)"; exit 0;; esac',
+      // An LLM call that asks for answers gets a fixed JSON block back (BL-085).
+      'case "$*" in *--tools*) p=$(cat); case "$p" in *"## Answer"*) printf \'```json\\n{"risk":"high","score":3}\\n```\\n\'; exit 0;; esac; echo "Summary: $(printf %s "$p" | head -1)"; exit 0;; esac',
       "n=$(sed -n 's/^until-pass \\([0-9]*\\)$/\\1/p' input/rule.md 2>/dev/null | head -1)",
       'p=$(printf %s "$PWD" | sed -n \'s/.*pass-\\([0-9]*\\)\\/attempt.*/\\1/p\')',
       'if [ -n "$n" ] && [ -n "$p" ] && [ "$p" -lt "$n" ]; then echo no; else echo yes; fi',
@@ -397,6 +422,23 @@ export function createE2eHome(): string {
     mkdirSync(join(dir, "nodes", "write"), { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeLlmYaml(id))
     writeFileSync(join(dir, "nodes", "write", "prompt.md"), "Write one line about the weather.\n")
+  }
+  // Named answers for node-answers.spec.ts (BL-085); each test owns one.
+  for (const id of [
+    "node-answers-light",
+    "node-answers-dark",
+    "node-answers-sheet-light",
+    "node-answers-sheet-dark",
+  ]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "assess"), { recursive: true })
+    mkdirSync(join(dir, "nodes", "note"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeAnswersYaml(id))
+    writeFileSync(join(dir, "nodes", "assess", "prompt.md"), "Assess the weather.\n")
+    writeFileSync(
+      join(dir, "nodes", "note", "prompt.md"),
+      "Risk is {{risk}}, score {{score}}.\n"
+    )
   }
   const llmAdd = join(home, "workflows", "node-llm-add")
   mkdirSync(llmAdd, { recursive: true })

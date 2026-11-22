@@ -1,9 +1,17 @@
-import { existsSync } from "node:fs"
+import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { AgentTask } from "@workspace/shared"
+import { answerText, parseAnswerText, type AgentTask } from "@workspace/shared"
 import { resolveAttemptModelFields } from "../attempt-model.ts"
 import { buildAgentShellCommand, copyTaskMemories } from "../agents.ts"
 import { writeCursorTrustMarker } from "../cursor-trust.ts"
+import {
+  agentAnswerPrompt,
+  agentFixPrompt,
+  filledFile,
+  nodeAnswers,
+  pendingAnswerFix,
+  settleAnswer,
+} from "./answers.ts"
 import { defineExecutor } from "./define.ts"
 import { readOptional, settleProcessOutput } from "./process.ts"
 
@@ -13,8 +21,11 @@ export const agentExecutor = defineExecutor({
   run(ctx) {
     const node = ctx.node
     if (node.kind !== "agent") throw new Error("not an agent node")
-    const instructions = ctx.frozenPath("prompt.md")
-    if (!existsSync(instructions)) throw new Error("missing_prompt")
+    if (!existsSync(ctx.frozenPath("prompt.md"))) throw new Error("missing_prompt")
+    const decls = nodeAnswers(ctx)
+    // The task text, filled and with the answer request, lives in the attempt.
+    const instructionsOf = (attemptRoot: string) =>
+      join(attemptRoot, "input", "prompt.md")
     const task: AgentTask = {
       id: node.id,
       needs: [],
@@ -28,9 +39,20 @@ export const agentExecutor = defineExecutor({
       launch: {
         agent: true,
         cli: node.cli,
-        instructions,
+        instructions: instructionsOf,
         modelFields: resolveAttemptModelFields(task, ctx.graph),
         prepare({ attemptRoot, inputDir }) {
+          const fix = pendingAnswerFix(attemptRoot)
+          const parts = [filledFile(ctx, "prompt.md") ?? ""]
+          if (decls.length > 0) parts.push(agentAnswerPrompt(decls))
+          if (fix) {
+            parts.push(agentFixPrompt(fix.error))
+            mkdirSync(join(attemptRoot, "out"), { recursive: true })
+            cpSync(join(fix.previous, "out"), join(attemptRoot, "out"), {
+              recursive: true,
+            })
+          }
+          writeFileSync(instructionsOf(attemptRoot), parts.join("\n\n"))
           copyTaskMemories(task, ctx.workflowRoot, inputDir)
           if (node.cli === "cursor") {
             writeCursorTrustMarker(ctx.workflowRoot)
@@ -41,7 +63,7 @@ export const agentExecutor = defineExecutor({
           return {
             shell: buildAgentShellCommand(
               task,
-              instructions,
+              instructionsOf(attemptRoot),
               { workflowRoot: ctx.workflowRoot, attemptRoot },
               ctx.graph.agent
             ),
@@ -53,12 +75,24 @@ export const agentExecutor = defineExecutor({
     }
   },
   finish(ctx, attemptRoot) {
+    const decls = nodeAnswers(ctx)
+    const raw = readOptional(join(attemptRoot, "out", "answer.json"))
     const text =
       readOptional(join(attemptRoot, "SUMMARY.md")) ??
       readOptional(join(attemptRoot, "stdout.log")) ??
       ""
+    if (decls.length > 0) {
+      const found = parseAnswerText(decls, raw ?? "")
+      const settled = settleAnswer(attemptRoot, decls, found, { outputs: [] })
+      if (!found.ok) return settled
+      const done = settleProcessOutput(
+        ctx,
+        attemptRoot,
+        answerText(decls, found.value)
+      )
+      return { ...done, answer: found.value }
+    }
     const result = settleProcessOutput(ctx, attemptRoot, text)
-    const raw = readOptional(join(attemptRoot, "out", "answer.json"))
     if (raw !== undefined) {
       try {
         const answer: unknown = JSON.parse(raw)
@@ -66,7 +100,7 @@ export const agentExecutor = defineExecutor({
           result.answer = answer as Record<string, unknown>
         }
       } catch {
-        /* an unreadable answer is ignored until answers are declared */
+        /* nothing is declared, so an unreadable answer is ignored */
       }
     }
     return result
