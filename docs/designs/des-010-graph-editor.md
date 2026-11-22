@@ -20,11 +20,14 @@ related:
     DES-022,
     DES-023,
     DES-028,
+    DES-031,
   ]
 updated: 2026-11-22
 ---
 
 # UI: workflow list and graph editor
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): graph rules, automatic layout with no pinning, and the Inspector; see [DES-036](des-036-canvas-editor-run-view.md).
 
 > Superseded in part by the UI renovation (draft, lands with BL-057 to BL-072): the editor layout; the Inspector becomes the task and workflow settings Sheets; see [DES-028](des-028-ui-renovation-screens.md).
 

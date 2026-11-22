@@ -5,11 +5,13 @@ type: design
 status: active
 summary: How agent CLI tasks run stateless with memories, and how they grow a run's graph, including fan-out.
 tags: [agents, spawn, memory, cli, fan-out, dynamic]
-related: [DES-002, DES-003, DES-006, DES-019, DES-020, DES-023]
-updated: 2026-11-21
+related: [DES-002, DES-003, DES-006, DES-019, DES-020, DES-023, DES-031]
+updated: 2026-11-22
 ---
 
 # Agents and runtime spawn
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): runtime spawn and fan-out are removed ([DES-034](des-034-node-engine.md)). The stateless CLI adapters, memory and model rules stay.
 
 - Headless agent CLI (Claude Code or Cursor CLI), cwd in its attempt dir,
   stateless: knows only its prompt file (DES-002, DES-020), input dir,

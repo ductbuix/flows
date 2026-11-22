@@ -6,11 +6,23 @@ status: active
 summary: System context, containers, package boundaries and dependency direction, data flow, runtime processes and failure recovery.
 tags: [direction, architecture, packages, runtime]
 related:
-  [DES-001, DES-002, DES-003, DES-005, DES-006, DES-008, DES-014, DES-019]
-updated: 2026-11-21
+  [
+    DES-001,
+    DES-002,
+    DES-003,
+    DES-005,
+    DES-006,
+    DES-008,
+    DES-014,
+    DES-019,
+    DES-031,
+  ]
+updated: 2026-11-22
 ---
 
 # Architecture
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): spawn in the data flow and failure modes is removed; the engine walks nodes ([DES-034](des-034-node-engine.md)).
 
 High-level map. Details live in the linked designs; entities are in
 [DES-001](des-001-overview.md).

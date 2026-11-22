@@ -5,11 +5,13 @@ type: design
 status: active
 summary: Condition kinds (exit, expr, agent) shared by when, until and branches; retry and repeat policies.
 tags: [engine, conditions, loops, retry]
-related: [DES-002, DES-003, DES-019, DES-020]
-updated: 2026-11-21
+related: [DES-002, DES-003, DES-019, DES-020, DES-031]
+updated: 2026-11-22
 ---
 
 # Conditions and loops
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): `when`, branch `needs`, `repeat until` and agent judges as conditions; see the Judge node in [DES-032](des-032-node-catalog.md) and loops in [DES-034](des-034-node-engine.md). Retry and timeout stay.
 
 ## Conditions
 

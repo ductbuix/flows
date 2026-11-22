@@ -20,11 +20,14 @@ related:
     BL-070,
     BL-071,
     BL-073,
+    DES-031,
   ]
 updated: 2026-11-22
 ---
 
 # UI renovation: runs, run view, connections, settings, dialogs
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the run view task table and graph tab become node steps with passes ([DES-036](des-036-canvas-editor-run-view.md)). The summary-first layout stays.
 
 Same frame, sizes and citations as
 [DES-028](des-028-ui-renovation-screens.md); rules in

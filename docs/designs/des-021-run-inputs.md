@@ -18,11 +18,14 @@ related:
     DES-019,
     BL-021,
     BL-022,
+    DES-031,
   ]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # Run inputs and reuse
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): declared `inputs:` move from the top level to the Trigger node ([DES-032](des-032-node-catalog.md)). Run input folders and queueing stay.
 
 A workflow should run many times with different inputs, for example
 one Jira ticket per run. Sources must not be tied to Jira.

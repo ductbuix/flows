@@ -5,11 +5,13 @@ type: design
 status: active
 summary: Task and run states (queued, approval gates, cancelled), append-then-act event log, resume, run deletion and limits.
 tags: [engine, lifecycle, events, resume, concurrency, approval]
-related: [DES-001, DES-004, DES-005, DES-019, DES-021]
+related: [DES-001, DES-004, DES-005, DES-019, DES-021, DES-031]
 updated: 2026-11-22
 ---
 
 # Task lifecycle, engine and concurrency
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the task lifecycle, approval gates on tasks and the event kinds; see [DES-034](des-034-node-engine.md). Append, then act, resume and limits stay.
 
 ## Task lifecycle
 

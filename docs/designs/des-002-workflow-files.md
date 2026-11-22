@@ -16,11 +16,14 @@ related:
     DES-023,
     DES-027,
     BL-073,
+    DES-031,
   ]
 updated: 2026-11-22
 ---
 
 # Folder layout and workflow file
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the workflow file, `tasks/` folders and task env names; [DES-033](des-033-workflow-file-v2.md) holds workflow.yaml v2 and the layout file.
 
 ## Folder layout
 

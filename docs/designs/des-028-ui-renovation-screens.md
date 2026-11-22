@@ -20,11 +20,14 @@ related:
     BL-069,
     BL-070,
     BL-073,
+    DES-031,
   ]
 updated: 2026-11-22
 ---
 
 # UI renovation: shell, home, work items, workflows, editor
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the Editor and Task Sheet sections; see [DES-036](des-036-canvas-editor-run-view.md) (canvas, node cards, node Sheet). Inputs move from workflow settings to the Trigger node.
 
 Each screen uses the page frame and spec sheet in
 [DES-027](des-027-ui-renovation.md); `S1` to `S16` and `#NN` cite the

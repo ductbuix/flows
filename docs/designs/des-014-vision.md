@@ -5,11 +5,13 @@ type: direction
 status: active
 summary: What Flows is and is for, goals, non-goals, success criteria and the principles that guide every design choice.
 tags: [direction, vision, goals, principles]
-related: [DES-001, DES-007, DES-015, DES-016, DES-017, DES-021]
-updated: 2026-11-21
+related: [DES-001, DES-007, DES-015, DES-016, DES-017, DES-021, DES-031]
+updated: 2026-11-22
 ---
 
 # Vision, goals and principles
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the "Saved node positions" non-goal is dropped; trigger types beyond manual stay out for now (DES-031 open question 1).
 
 The domain model and stack are in [DES-001](des-001-overview.md); this
 doc is the why and the boundaries.
@@ -51,7 +53,7 @@ accounts, no sharing, no server to host.
 | Cloud or remote execution        | one machine, SQLite log; DES-007 ledger           |
 | A `matrix` key                   | fan-out is done by spawn; DES-005, DES-007 ledger |
 | Agent limits (turns, time, cost) | not defined yet; DES-002, DES-007 ledger          |
-| Saved node positions             | layout is automatic; DES-010, DES-007 ledger      |
+| Saved node positions (dropped)   | positions are saved now; DES-031, DES-033         |
 | Connectors as run sources        | later source adapter; DES-021, DES-007 ledger     |
 
 Each non-goal has a revisit trigger in [DES-007](des-007-tradeoffs.md).

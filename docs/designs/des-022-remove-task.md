@@ -5,11 +5,24 @@ type: design
 status: active
 summary: Delete one task from the drawer or canvas, confirm, undo before save, and move its folder to tasks/.trash on save.
 tags: [editor, yaml, files, ui]
-related: [DES-002, DES-007, DES-010, DES-013, DES-020, DES-021, BL-023, BL-024]
-updated: 2026-11-21
+related:
+  [
+    DES-002,
+    DES-007,
+    DES-010,
+    DES-013,
+    DES-020,
+    DES-021,
+    BL-023,
+    BL-024,
+    DES-031,
+  ]
+updated: 2026-11-22
 ---
 
 # Remove a task in the editor
+
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): removal applies to nodes: folders move to `nodes/.trash/` ([DES-033](des-033-workflow-file-v2.md)).
 
 `removeTask` already drops a task from `workflow.yaml` and removes
 `needs` entries that pointed at it, including object needs and their

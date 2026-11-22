@@ -16,16 +16,17 @@ related:
     DES-021,
     DES-023,
     DES-025,
+    DES-031,
   ]
 updated: 2026-11-22
 ---
 
 # Work items, library and connections
 
-A workflow may use many outside systems (GitHub, Confluence, Rally,
-Jenkins, OpenSearch), and one workflow is applied to many pieces of work.
-This doc defines the model and the folders. The ad hoc work item store
-and API are built (BL-038); connections, library and publish are
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): task `uses` becomes the Asset node, and `kind: publish` becomes an Output node with target `publish` ([DES-032](des-032-node-catalog.md)). Connections, library, pins, work copies and the publish policy stay.
+
+A workflow may use many outside systems (GitHub, Confluence, Rally, Jenkins, OpenSearch), and one workflow is applied to many pieces of work.
+This doc defines the model and the folders. The ad hoc work item store and API are built (BL-038); connections, library and publish are
 BL-039 to BL-056. The UI is in [DES-025](des-025-journey-led-redesign.md).
 
 ## Concepts
