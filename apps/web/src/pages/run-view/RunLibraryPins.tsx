@@ -1,8 +1,10 @@
 import type { RunLibraryPin } from "@workspace/shared"
+import { Pin } from "lucide-react"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
@@ -22,8 +24,11 @@ export function RunLibraryPins({ pins }: Props) {
   return (
     <PageSection title="Library pins">
       {pins.length === 0 ? (
-        <Empty data-testid="run-pins-empty">
+        <Empty className="border" data-testid="run-pins-empty">
           <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Pin />
+            </EmptyMedia>
             <EmptyTitle>No pins</EmptyTitle>
             <EmptyDescription>
               This run did not pull library entities.

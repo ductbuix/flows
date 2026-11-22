@@ -110,7 +110,6 @@ export function AgentTaskFields({
         <Button
           type="button"
           variant="outline"
-          size="sm"
           className="w-full"
           data-testid="edit-prompt"
           onClick={() => setPromptOpen(true)}

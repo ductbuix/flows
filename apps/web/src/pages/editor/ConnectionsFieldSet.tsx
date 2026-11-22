@@ -84,7 +84,6 @@ export function ConnectionsFieldSet({ task, onChangeTask }: Props) {
                 <span className="font-mono text-sm">{entry.connection}</span>
                 <Button
                   type="button"
-                  size="sm"
                   variant="ghost"
                   data-testid={`connection-remove-${entry.connection}`}
                   onClick={() => removeConnection(entry.connection)}
@@ -145,7 +144,6 @@ export function ConnectionsFieldSet({ task, onChangeTask }: Props) {
           </Select>
           <Button
             type="button"
-            size="sm"
             variant="outline"
             data-testid="connection-add"
             disabled={pick === NONE}

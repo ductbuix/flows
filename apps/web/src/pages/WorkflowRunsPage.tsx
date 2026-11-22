@@ -147,7 +147,7 @@ export function WorkflowRunsPage() {
             description={RUNS_DESCRIPTION}
           />
           {runs.length === 0 ? (
-            <Empty data-testid="run-list">
+            <Empty className="border" data-testid="run-list">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Play />

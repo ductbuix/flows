@@ -1,9 +1,11 @@
+import { Plug } from "lucide-react"
 import type { Workflow } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
@@ -48,8 +50,11 @@ export function OverviewConnectionsSection({ workflow }: Props) {
           )}
         </div>
         {connections.length === 0 ? (
-          <Empty data-testid="overview-connections-empty">
+          <Empty className="border" data-testid="overview-connections-empty">
             <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Plug />
+              </EmptyMedia>
               <EmptyTitle>No connections</EmptyTitle>
               <EmptyDescription>
                 Add connections on tasks in the Editor.

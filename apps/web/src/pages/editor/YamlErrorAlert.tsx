@@ -28,7 +28,6 @@ export function YamlErrorAlert({ errors, onOpenYaml }: Props) {
         </AlertDescription>
         <AlertAction>
           <Button
-            size="sm"
             variant="outline"
             data-testid="open-yaml-tab"
             onClick={onOpenYaml}

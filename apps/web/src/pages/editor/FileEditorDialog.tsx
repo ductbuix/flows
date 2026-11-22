@@ -14,6 +14,7 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   title: string
+  path: string
   description: string
   editorTestId: string
   saveTestId: string
@@ -31,6 +32,7 @@ export function FileEditorDialog({
   open,
   onOpenChange,
   title,
+  path,
   description,
   editorTestId,
   saveTestId,
@@ -44,10 +46,12 @@ export function FileEditorDialog({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" data-testid={editorTestId}>
+      <DialogContent className="sm:max-w-xl" data-testid={editorTestId}>
         <DialogHeader>
-          <DialogTitle className="font-mono">{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            <span className="font-mono text-xs">{path}</span>. {description}
+          </DialogDescription>
         </DialogHeader>
         <Textarea
           value={content}
@@ -60,31 +64,28 @@ export function FileEditorDialog({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <DialogFooter className="gap-2 sm:justify-between">
+        <DialogFooter>
           {onRemove && removeTestId ? (
             <Button
               variant="destructive"
+              className="sm:mr-auto"
               data-testid={removeTestId}
               disabled={busy}
               onClick={onRemove}
             >
               Remove
             </Button>
-          ) : (
-            <span />
-          )}
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button
-              data-testid={saveTestId}
-              disabled={busy}
-              onClick={() => void onSave()}
-            >
-              Save
-            </Button>
-          </div>
+          ) : null}
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            data-testid={saveTestId}
+            disabled={busy}
+            onClick={() => void onSave()}
+          >
+            Save
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

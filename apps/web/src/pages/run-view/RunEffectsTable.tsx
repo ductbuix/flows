@@ -1,8 +1,10 @@
 import type { RunDetail } from "@workspace/shared"
+import { Zap } from "lucide-react"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
@@ -26,8 +28,11 @@ export function RunEffectsTable({ run }: Props) {
   return (
     <PageSection title="Effects">
       {effects.length === 0 ? (
-        <Empty data-testid="run-effects-empty">
+        <Empty className="border" data-testid="run-effects-empty">
           <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Zap />
+            </EmptyMedia>
             <EmptyTitle>No effects yet</EmptyTitle>
             <EmptyDescription>
               Pulls, local work copies and publishes show up here.

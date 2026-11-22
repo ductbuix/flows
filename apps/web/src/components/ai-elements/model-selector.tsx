@@ -63,7 +63,6 @@ export function ModelSelector({
           render={
             <Button
               type="button"
-              size="sm"
               variant="outline"
               disabled={disabled || !catalog}
               data-testid={`${idPrefix}field-model`}
@@ -131,7 +130,6 @@ export function ModelSelector({
           render={
             <Button
               type="button"
-              size="sm"
               variant="outline"
               disabled={disabled || !catalog}
               data-testid={`${idPrefix}field-effort`}

@@ -43,7 +43,7 @@ export function MemoryCollisionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" data-testid="memory-collision">
+      <DialogContent data-testid="memory-collision">
         <DialogHeader>
           <DialogTitle>{basename} already exists</DialogTitle>
           <DialogDescription>
@@ -59,16 +59,17 @@ export function MemoryCollisionDialog({
           />
         </Field>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
           <Button
             data-testid="memory-collision-overwrite"
             variant="destructive"
+            className="sm:mr-auto"
             disabled={!sameAsOriginal || !valid}
             onClick={() => onOverwrite(basename)}
           >
             Overwrite
+          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
           </Button>
           <Button
             data-testid="memory-collision-add"

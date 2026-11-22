@@ -38,7 +38,7 @@ export function TrustDialog({
   const needsGrant = trust === "none"
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="trust-dialog" className="sm:max-w-lg">
+      <DialogContent data-testid="trust-dialog" className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {needsGrant ? "Trust agent CLIs?" : "Pre-run check"}

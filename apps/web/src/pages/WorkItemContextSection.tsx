@@ -101,7 +101,7 @@ export function WorkItemContextSection({
   return (
     <PageSection title="Context">
       {item.links.length === 0 ? (
-        <Empty data-testid="work-item-context-empty">
+        <Empty className="border" data-testid="work-item-context-empty">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Link2 />
@@ -150,7 +150,6 @@ export function WorkItemContextSection({
           </Select>
           <Button
             type="button"
-            size="sm"
             variant="outline"
             data-testid="work-item-link-add"
             disabled={busy || !pick}

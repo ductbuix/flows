@@ -1,12 +1,6 @@
 import { Link, useLocation } from "react-router"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Plus } from "lucide-react"
 import type { WorkflowSummary } from "@workspace/shared"
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@workspace/ui/components/empty"
 import {
   SidebarMenu,
   SidebarMenuAction,
@@ -26,6 +20,7 @@ type Props = {
   workflows: WorkflowSummary[] | null
   onRename: (id: string) => void
   onDelete: (id: string) => void
+  onCreate: () => void
 }
 
 function WorkflowListSkeleton() {
@@ -40,23 +35,30 @@ function WorkflowListSkeleton() {
   )
 }
 
-function WorkflowListEmpty() {
+function WorkflowListEmpty({ onCreate }: { onCreate: () => void }) {
   return (
-    <Empty className="gap-2 border-0 p-2" data-testid="sidebar-workflows-empty">
-      <EmptyHeader>
-        <EmptyTitle>No workflows</EmptyTitle>
-        <EmptyDescription>Create one with the + button above.</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
+    <SidebarMenu data-testid="sidebar-workflows-empty">
+      <SidebarMenuItem>
+        <SidebarMenuButton onClick={onCreate}>
+          <Plus />
+          <span>Create workflow</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }
 
 /** Loading, empty, or workflow rows for the sidebar Workflows group. */
-export function WorkflowSidebarList({ workflows, onRename, onDelete }: Props) {
+export function WorkflowSidebarList({
+  workflows,
+  onRename,
+  onDelete,
+  onCreate,
+}: Props) {
   const location = useLocation()
 
   if (!workflows) return <WorkflowListSkeleton />
-  if (workflows.length === 0) return <WorkflowListEmpty />
+  if (workflows.length === 0) return <WorkflowListEmpty onCreate={onCreate} />
 
   return (
     <SidebarMenu data-testid="sidebar-workflow-list">

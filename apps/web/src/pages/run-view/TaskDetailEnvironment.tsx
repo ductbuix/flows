@@ -67,7 +67,6 @@ export function TaskDetailEnvironment({ run, task, attempt, attemptN }: Props) {
           if (s === "stdout" || s === "stderr") setLogStream(s)
         }}
         variant="outline"
-        size="sm"
       >
         <ToggleGroupItem value="stdout">stdout</ToggleGroupItem>
         <ToggleGroupItem value="stderr">stderr</ToggleGroupItem>

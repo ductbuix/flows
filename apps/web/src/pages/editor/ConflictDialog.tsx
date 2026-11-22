@@ -29,7 +29,7 @@ export function ConflictDialog({
 }: Props) {
   return (
     <Dialog open={open}>
-      <DialogContent data-testid="conflict-dialog" className="sm:max-w-2xl">
+      <DialogContent data-testid="conflict-dialog" className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>workflow.yaml changed on disk</DialogTitle>
           <DialogDescription>
@@ -47,23 +47,24 @@ export function ConflictDialog({
             </pre>
           </div>
         )}
-        <DialogFooter className="gap-2 sm:justify-start">
-          <Button data-testid="conflict-reload" onClick={onReload}>
-            Reload from disk
+        <DialogFooter>
+          <Button
+            data-testid="conflict-diff"
+            variant="outline"
+            className="sm:mr-auto"
+            onClick={onShowDiff}
+          >
+            {showingDiff ? "Hide diff" : "Show diff"}
           </Button>
           <Button
             data-testid="conflict-keep"
-            variant="secondary"
+            variant="outline"
             onClick={onKeep}
           >
             Keep mine
           </Button>
-          <Button
-            data-testid="conflict-diff"
-            variant="outline"
-            onClick={onShowDiff}
-          >
-            {showingDiff ? "Hide diff" : "Show diff"}
+          <Button data-testid="conflict-reload" onClick={onReload}>
+            Reload from disk
           </Button>
         </DialogFooter>
       </DialogContent>

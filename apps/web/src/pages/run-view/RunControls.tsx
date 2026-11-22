@@ -62,7 +62,6 @@ export function RunControls({ run }: Props) {
         <>
           <ButtonGroup>
             <ActionButton
-              size="sm"
               variant="destructive"
               data-testid="run-cancel"
               pending={pending === "cancel"}
@@ -74,7 +73,6 @@ export function RunControls({ run }: Props) {
             </ActionButton>
             <ButtonGroupSeparator />
             <ActionButton
-              size="sm"
               data-testid="run-rerun"
               pending={pending === "rerun" || trustPending}
               disabled={live}
@@ -95,7 +93,6 @@ export function RunControls({ run }: Props) {
               <DropdownMenuTrigger
                 render={
                   <Button
-                    size="sm"
                     variant="outline"
                     data-testid={`run-menu-${run.id}`}
                   />

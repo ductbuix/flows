@@ -66,7 +66,6 @@ export function InputsPanel({
           <FieldLegend variant="label">Inputs</FieldLegend>
           <Button
             type="button"
-            size="sm"
             variant="outline"
             data-testid="input-add"
             onClick={addInput}

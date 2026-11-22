@@ -126,7 +126,6 @@ export function SettingsPage() {
                     setTheme(next)
                 }}
                 variant="outline"
-                size="sm"
                 data-testid="theme-toggle"
               >
                 <ToggleGroupItem value="light">Light</ToggleGroupItem>

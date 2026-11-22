@@ -115,7 +115,7 @@ export function AddConnectionDialog({ open, onOpenChange, onCreated }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg" data-testid="connection-create">
+      <DialogContent className="sm:max-w-md" data-testid="connection-create">
         <DialogHeader>
           <DialogTitle>Add connection</DialogTitle>
           <DialogDescription>

@@ -12,6 +12,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog"
+import { Button } from "@workspace/ui/components/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -87,22 +96,22 @@ export function MemoryFileDialogs({
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog
+      <Dialog
         open={Boolean(pendingRename)}
         onOpenChange={(open) => {
           if (open && pendingRename) setRenameTo(pendingRename.name)
           if (!open) onClearRename()
         }}
       >
-        <AlertDialogContent size="default">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Rename {pendingRename?.name}</AlertDialogTitle>
-            <AlertDialogDescription>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename {pendingRename?.name}</DialogTitle>
+            <DialogDescription>
               {pendingRename && pendingRename.referencedBy.length > 0
                 ? `Referenced by tasks: ${pendingRename.referencedBy.join(", ")}.`
                 : "No tasks reference this file."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            </DialogDescription>
+          </DialogHeader>
           <Field>
             <FieldLabel htmlFor="memory-rename">New name</FieldLabel>
             <Input
@@ -111,29 +120,25 @@ export function MemoryFileDialogs({
               onChange={(e) => setRenameTo(e.target.value)}
             />
           </Field>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onClearRename()}>
+              Cancel
+            </Button>
             {pendingRename && pendingRename.referencedBy.length > 0 && (
-              <AlertDialogAction
-                onClick={(e) => {
-                  e.preventDefault()
-                  void confirmRename(true)
-                }}
+              <Button
+                onClick={() => void confirmRename(true)}
               >
                 Rename and update refs
-              </AlertDialogAction>
+              </Button>
             )}
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault()
-                void confirmRename(false)
-              }}
+            <Button
+              onClick={() => void confirmRename(false)}
             >
               Rename
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

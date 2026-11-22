@@ -48,11 +48,10 @@ export function WorkflowEditorPage() {
 
   const headerActions = (
     <>
-      <Button size="sm" variant="outline" onClick={editor.addCommandTask}>
+      <Button variant="outline" onClick={editor.addCommandTask}>
         Add task
       </Button>
       <Button
-        size="sm"
         variant="outline"
         data-testid="add-publish-task"
         onClick={editor.addPublishTask}
@@ -60,7 +59,6 @@ export function WorkflowEditorPage() {
         Add publish
       </Button>
       <Button
-        size="sm"
         data-testid="save-button"
         disabled={!state.dirty || state.errors.length > 0}
         onClick={() => void editor.save()}

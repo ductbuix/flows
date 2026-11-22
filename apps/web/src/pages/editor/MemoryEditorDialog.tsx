@@ -105,7 +105,8 @@ export function MemoryEditorDialog({
       <FileEditorDialog
         open={open}
         onOpenChange={onOpenChange}
-        title={fileName}
+        title="Edit memory file"
+        path={fileName}
         description="Edits apply to future launches only. Running and past attempts keep the copy they got."
         editorTestId="memory-editor"
         saveTestId="memory-save"

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Library } from "lucide-react"
 import { useNavigate } from "react-router"
 import {
   libraryListSchema,
@@ -15,6 +16,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
@@ -159,8 +161,11 @@ export function LibraryTab() {
             <Skeleton className="h-40 w-full" />
           </div>
         ) : entities.length === 0 ? (
-          <Empty data-testid="library-empty">
+          <Empty className="border" data-testid="library-empty">
             <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Library />
+              </EmptyMedia>
               <EmptyTitle>Nothing pulled yet</EmptyTitle>
               <EmptyDescription>
                 Pull from a connection to see entities and revisions here.

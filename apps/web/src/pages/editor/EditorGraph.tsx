@@ -74,7 +74,6 @@ function GraphControls() {
       <ButtonGroup data-testid="graph-controls">
         <Button
           type="button"
-          size="sm"
           variant="outline"
           aria-label="Zoom out"
           onClick={() => void zoomOut()}
@@ -84,7 +83,6 @@ function GraphControls() {
         <ButtonGroupSeparator />
         <Button
           type="button"
-          size="sm"
           variant="outline"
           aria-label="Zoom in"
           onClick={() => void zoomIn()}
@@ -94,7 +92,6 @@ function GraphControls() {
         <ButtonGroupSeparator />
         <Button
           type="button"
-          size="sm"
           variant="outline"
           aria-label="Fit view"
           onClick={() => void fitView()}
