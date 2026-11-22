@@ -7,6 +7,7 @@ import {
   taskStatusSchema,
 } from "./events.ts"
 import { effortSchema } from "./model-effort.ts"
+import { nodeWorkflowSchema } from "./nodes/index.ts"
 import { workflowSchema } from "./workflow.ts"
 
 export const workflowSummarySchema = z.object({
@@ -216,9 +217,24 @@ export const workflowDetailSchema = z.object({
 
 export type WorkflowDetail = z.infer<typeof workflowDetailSchema>
 
+/** Workflow detail under FLOWS_NODES: `workflow` is the node workflow. */
+export const nodeWorkflowDetailSchema = z.object({
+  id: z.string().min(1),
+  yaml: z.string(),
+  hash: z.string().min(1),
+  workflow: nodeWorkflowSchema.nullable(),
+  errors: z.array(yamlDiagnosticSchema),
+})
+
+export type NodeWorkflowDetail = z.infer<typeof nodeWorkflowDetailSchema>
+
 export const putWorkflowBodySchema = z.object({
   yaml: z.string(),
   baseHash: z.string().min(1),
+  /** Node id renames in this save (FLOWS_NODES only); moves the node folder. */
+  renames: z
+    .array(z.object({ from: z.string().min(1), to: z.string().min(1) }))
+    .optional(),
 })
 
 export type PutWorkflowBody = z.infer<typeof putWorkflowBodySchema>

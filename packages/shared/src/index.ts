@@ -255,6 +255,8 @@ export {
   type ApiError,
   type YamlDiagnosticDto,
   type WorkflowDetail,
+  nodeWorkflowDetailSchema,
+  type NodeWorkflowDetail,
   type PutWorkflowBody,
   type WorkflowConflict,
   type WsClientMessage,
@@ -397,3 +399,17 @@ export {
   type WorkflowNode,
   type WorkflowEdge,
 } from "./nodes/index.ts"
+export {
+  addNode,
+  removeNode,
+  renameNode,
+  setNodeKey,
+  addEdge,
+  removeEdge,
+} from "./nodes/yaml-edit.ts"
+export {
+  parseNodeWorkflowYaml,
+  type NodeYamlDiagnostic,
+  type ParsedNodeWorkflowYaml,
+} from "./nodes/parse.ts"
+export { NODE_KINDS } from "./nodes/index.ts"
