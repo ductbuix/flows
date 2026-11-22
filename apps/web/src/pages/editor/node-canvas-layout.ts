@@ -1,7 +1,7 @@
 import dagre from "@dagrejs/dagre"
 
-export const NODE_W = 240
-export const NODE_H = 96
+export const NODE_W = 288
+export const NODE_H = 200
 const GAP_X = 60
 const GAP_Y = 40
 

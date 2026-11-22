@@ -2,9 +2,7 @@ import { useEffect, useMemo } from "react"
 import type { NodeWorkflow } from "@workspace/shared"
 import {
   Background,
-  Handle,
   Panel,
-  Position,
   ReactFlow,
   useNodesState,
   useReactFlow,
@@ -12,42 +10,25 @@ import {
   type Edge,
   type FinalConnectionState,
   type Node,
-  type NodeProps,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { MinusIcon, PlusIcon, ScanIcon } from "lucide-react"
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@workspace/ui/components/button-group"
-import { Card } from "@workspace/ui/components/card"
-import { cn } from "@workspace/ui/lib/utils"
 import { toast } from "sonner"
+import {
+  NodeCard,
+  NodeEditsContext,
+  type NodeCardData,
+  type NodeEdits,
+} from "@/nodes/NodeCard"
+import { nodeTextPath } from "@/nodes"
 import { placeNodes, type Pos } from "./node-canvas-layout"
 import { wireRefusal } from "./node-add"
 import type { WireSide } from "./node-add"
-
-type CardData = { label: string; kind: string }
-
-/** Plain card per node; full kind cards come with BL-078. */
-function NodeCard({ id, data, selected }: NodeProps<Node<CardData>>) {
-  return (
-    <Card
-      size="sm"
-      data-testid={`node-${id}`}
-      className={cn("w-60 overflow-visible shadow-sm", selected && "ring-2 ring-ring")}
-    >
-      <Handle type="target" position={Position.Left} />
-      <div className="text-sm font-medium">{data.label}</div>
-      <div>
-        <Badge variant="outline">{data.kind}</Badge>
-      </div>
-      <Handle type="source" position={Position.Right} />
-    </Card>
-  )
-}
 
 const nodeTypes = { nodeCard: NodeCard }
 
@@ -81,6 +62,10 @@ type Props = {
   workflow: NodeWorkflow
   /** Positions loaded from the layout file. */
   saved: Readonly<Record<string, Pos>>
+  /** Edits of settings and node files, shown on the cards. */
+  edits: NodeEdits
+  /** Text of a node file by path (unsaved edit or disk). */
+  textOf: (path: string) => string
   /** Called on drag end with every node's position. */
   onPositions: (positions: Record<string, Pos>) => void
   /** A checked wire between two nodes. */
@@ -97,22 +82,38 @@ function pointOf(event: MouseEvent | TouchEvent): Pos {
 export function NodeCanvas({
   workflow,
   saved,
+  edits,
+  textOf,
   onPositions,
   onWire,
   onDrop,
 }: Props) {
   const { screenToFlowPosition } = useReactFlow()
-  const initial = useMemo<Node<CardData>[]>(() => {
+  const initial = useMemo<Node<NodeCardData>[]>(() => {
     const pos = placeNodes(workflow.nodes, workflow.edges, saved)
-    return workflow.nodes.map((n) => ({
-      id: n.id,
-      type: "nodeCard",
-      position: pos[n.id]!,
-      data: { label: n.name ?? n.id, kind: n.kind },
-    }))
-  }, [workflow, saved])
+    return workflow.nodes.map((n) => {
+      const path = nodeTextPath(n)
+      return {
+        id: n.id,
+        type: "nodeCard",
+        position: pos[n.id]!,
+        data: { node: n, text: path ? textOf(path) : "" },
+      }
+    })
+  }, [workflow, saved, textOf])
   const [nodes, setNodes, onNodesChange] = useNodesState(initial)
-  useEffect(() => setNodes(initial), [initial, setNodes])
+  // Edits change data only: keep where the user put and selected each node.
+  useEffect(
+    () =>
+      setNodes((prev) => {
+        const old = new Map(prev.map((n) => [n.id, n]))
+        return initial.map((n) => {
+          const was = old.get(n.id)
+          return was ? { ...was, data: n.data } : n
+        })
+      }),
+    [initial, setNodes]
+  )
 
   const edges = useMemo<Edge[]>(
     () =>
@@ -152,6 +153,7 @@ export function NodeCanvas({
 
   return (
     <div className="h-full min-h-70 w-full" data-testid="canvas">
+      <NodeEditsContext.Provider value={edits}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -179,6 +181,7 @@ export function NodeCanvas({
         <Background />
         <Controls />
       </ReactFlow>
+      </NodeEditsContext.Provider>
     </div>
   )
 }

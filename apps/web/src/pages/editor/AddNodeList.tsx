@@ -10,6 +10,7 @@ import {
   GROUP_LABEL,
   GROUP_ORDER,
   KIND_META,
+  kindIcon,
   kindsInGroup,
 } from "./node-kind-ui"
 
@@ -34,7 +35,7 @@ export function AddNodeList({ title, kinds, onPick }: Props) {
             <CommandGroup key={group} heading={GROUP_LABEL[group]}>
               {list.map((kind) => {
                 const meta = KIND_META[kind]
-                const Icon = meta?.icon
+                const Icon = kindIcon(kind)
                 return (
                   <CommandItem
                     key={kind}

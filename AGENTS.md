@@ -18,7 +18,7 @@ Schema and writing rules: `docs/README.md`.
 ## Layout
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
-  on `127.0.0.1:5173`, proxies `/api`. Pages use `components/page`, labels
+  on `127.0.0.1:5173`, proxies `/api`; node cards in `src/nodes/`. Pages use `components/page`, labels
   and ids `components/data`. Sidebar Platform (Home, Work items, Workflows,
   Runs, Connections), Workflows group, Settings;
   `/work-items` and `/work-items/:id` (Context links + Freshness, Runs,

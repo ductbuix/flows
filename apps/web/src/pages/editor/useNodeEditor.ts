@@ -3,11 +3,22 @@ import {
   layoutFileSchema,
   nodeWorkflowDetailSchema,
   parseNodeWorkflowYaml,
+  setNodeKey,
+  workflowFileConflictSchema,
+  workflowFileDetailSchema,
   type NodeWorkflow,
   type NodeWorkflowDetail,
 } from "@workspace/shared"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
+import { nodeTextPath } from "@/nodes"
+import {
+  emptyEditorHistory,
+  pushEditorSnapshot,
+  redoEditor,
+  undoEditor,
+  type EditorHistory,
+} from "./editor-history"
 import type { Pos } from "./node-canvas-layout"
 import { yamlAfterAddNode, yamlAfterSample, type WireSide } from "./node-add"
 
@@ -19,6 +30,35 @@ export type NodeEditorState = {
   saved: Record<string, Pos>
   /** Unsaved workflow text; differs from `detail.yaml` while dirty. */
   draft: string
+  /** Unsaved node file edits by workflow-relative path. */
+  files: Record<string, string>
+  /** Node files as on disk; `hash` is missing when the file did not exist. */
+  base: Record<string, { content: string; hash?: string }>
+  history: EditorHistory
+  /** Key of the typing run in progress, so it is one undo step. */
+  typing?: string
+}
+
+/** An edit to the draft: new YAML and/or node file edits. */
+type Change = {
+  yaml?: string
+  files?: Record<string, string>
+  /** Edits with the same key in a row share one undo step. */
+  key?: string
+}
+
+/** Applies a change and records the undo step. */
+function applyChange(s: NodeEditorState, c: Change): NodeEditorState {
+  const same = c.key !== undefined && c.key === s.typing
+  return {
+    ...s,
+    draft: c.yaml ?? s.draft,
+    files: c.files ?? s.files,
+    history: same
+      ? s.history
+      : pushEditorSnapshot(s.history, { yaml: s.draft, files: s.files }),
+    typing: c.key,
+  }
 }
 
 /** Loads the node workflow and its layout; saves positions debounced. */
@@ -28,8 +68,12 @@ export function useNodeEditor(workflowId: string) {
     detail: null,
     saved: {},
     draft: "",
+    files: {},
+    base: {},
+    history: emptyEditorHistory,
   })
   const dirty = useRef(false)
+  const requested = useRef(new Set<string>())
 
   useEffect(() => {
     let alive = true
@@ -41,18 +85,22 @@ export function useNodeEditor(workflowId: string) {
       ])
       if (!alive) return
       if (!wf.ok) {
-        setState({ loading: false, detail: null, saved: {}, draft: "" })
+        setState((s) => ({ ...s, loading: false }))
         toast.error("Could not load workflow")
         return
       }
       const detail = nodeWorkflowDetailSchema.parse(await wf.json())
       const layout = lay.ok ? layoutFileSchema.parse(await lay.json()) : null
       if (!alive) return
+      requested.current.clear()
       setState({
         loading: false,
         detail,
         saved: layout?.nodes ?? {},
         draft: detail.yaml,
+        files: {},
+        base: {},
+        history: emptyEditorHistory,
       })
     })()
     return () => {
@@ -95,7 +143,50 @@ export function useNodeEditor(workflowId: string) {
     [state.draft]
   )
   const workflow: NodeWorkflow | null = parsed?.workflow ?? null
-  const isDirty = !!state.detail && state.draft !== state.detail.yaml
+
+  const textPaths = useMemo(
+    () =>
+      (workflow?.nodes ?? []).flatMap((n) => {
+        const path = nodeTextPath(n)
+        return path ? [path] : []
+      }),
+    [workflow]
+  )
+
+  // Load each node text file once; a missing file reads as empty.
+  useEffect(() => {
+    for (const path of textPaths) {
+      if (requested.current.has(path)) continue
+      requested.current.add(path)
+      void (async () => {
+        const res = await api.workflows[":workflowId"].files[":path"].$get({
+          param: { workflowId, path },
+        })
+        const file = res.ok
+          ? workflowFileDetailSchema.parse(await res.json())
+          : null
+        setState((s) => ({
+          ...s,
+          base: {
+            ...s.base,
+            [path]: { content: file?.content ?? "", hash: file?.hash },
+          },
+        }))
+      })()
+    }
+  }, [textPaths, workflowId])
+
+  /** The text of a node file: the unsaved edit, else the file on disk. */
+  const textOf = useCallback(
+    (path: string) => state.files[path] ?? state.base[path]?.content ?? "",
+    [state.files, state.base]
+  )
+
+  const dirtyPaths = textPaths.filter(
+    (p) => state.files[p] !== undefined && state.files[p] !== (state.base[p]?.content ?? "")
+  )
+  const yamlDirty = !!state.detail && state.draft !== state.detail.yaml
+  const isDirty = yamlDirty || dirtyPaths.length > 0
   dirty.current = isDirty
 
   /** Adds a node at `pos` (and wires it when dropped from a wire). */
@@ -105,8 +196,7 @@ export function useNodeEditor(workflowId: string) {
         const added = yamlAfterAddNode(s.draft, kind, wire)
         pending.current = { ...current, [added.id]: pos }
         return {
-          ...s,
-          draft: added.yaml,
+          ...applyChange(s, { yaml: added.yaml }),
           saved: { ...current, [added.id]: pos },
         }
       })
@@ -114,51 +204,146 @@ export function useNodeEditor(workflowId: string) {
     []
   )
 
-  const addSample = useCallback(
-    (current: Record<string, Pos>) => {
-      setState((s) => ({
-        ...s,
-        draft: yamlAfterSample(s.draft),
-        saved: current,
-      }))
+  const addSample = useCallback((current: Record<string, Pos>) => {
+    setState((s) => ({
+      ...applyChange(s, { yaml: yamlAfterSample(s.draft) }),
+      saved: current,
+    }))
+  }, [])
+
+  const addEdgeYaml = useCallback((next: (yaml: string) => string) => {
+    setState((s) => applyChange(s, { yaml: next(s.draft) }))
+  }, [])
+
+  /** Sets a node's YAML key; `undefined` removes it. */
+  const setSetting = useCallback(
+    (id: string, key: string, value: unknown) => {
+      setState((s) =>
+        applyChange(s, {
+          yaml: setNodeKey(s.draft, id, key, value),
+          key: `set:${id}:${key}`,
+        })
+      )
     },
     []
   )
 
-  const addEdgeYaml = useCallback((next: (yaml: string) => string) => {
-    setState((s) => ({ ...s, draft: next(s.draft) }))
+  /** Edits a node file; written by Save through the file PUT. */
+  const setText = useCallback((path: string, content: string) => {
+    setState((s) =>
+      applyChange(s, {
+        files: { ...s.files, [path]: content },
+        key: `text:${path}`,
+      })
+    )
+  }, [])
+
+  const endEdit = useCallback(
+    () => setState((s) => (s.typing === undefined ? s : { ...s, typing: undefined })),
+    []
+  )
+
+  const undo = useCallback(() => {
+    setState((s) => {
+      const r = undoEditor(s.history, { yaml: s.draft, files: s.files })
+      if (!r) return s
+      return {
+        ...s,
+        draft: r.snap.yaml,
+        files: r.snap.files ?? {},
+        history: r.history,
+        typing: undefined,
+      }
+    })
+  }, [])
+
+  const redo = useCallback(() => {
+    setState((s) => {
+      const r = redoEditor(s.history, { yaml: s.draft, files: s.files })
+      if (!r) return s
+      return {
+        ...s,
+        draft: r.snap.yaml,
+        files: r.snap.files ?? {},
+        history: r.history,
+        typing: undefined,
+      }
+    })
   }, [])
 
   const save = useCallback(async () => {
     if (!state.detail || !isDirty) return
-    const res = await api.workflows[":workflowId"].$put({
-      param: { workflowId },
-      json: { yaml: state.draft, baseHash: state.detail.hash },
-    })
-    if (res.status === 409) {
-      toast.error("The workflow changed on disk. Reload to continue.")
-      return
+    let detail = state.detail
+    if (yamlDirty) {
+      const res = await api.workflows[":workflowId"].$put({
+        param: { workflowId },
+        json: { yaml: state.draft, baseHash: state.detail.hash },
+      })
+      if (res.status === 409) {
+        toast.error("The workflow changed on disk. Reload to continue.")
+        return
+      }
+      if (!res.ok) {
+        toast.error("Could not save the workflow")
+        return
+      }
+      detail = nodeWorkflowDetailSchema.parse(await res.json())
     }
-    if (!res.ok) {
-      toast.error("Could not save the workflow")
-      return
+    // Node files go after the YAML, which creates the files of new nodes.
+    const written: NodeEditorState["base"] = {}
+    for (const path of dirtyPaths) {
+      const content = state.files[path]!
+      const res = await api.workflows[":workflowId"].files[":path"].$put({
+        param: { workflowId, path },
+        json: { content, baseHash: state.base[path]?.hash },
+      })
+      if (res.status === 409) {
+        workflowFileConflictSchema.parse(await res.json())
+        toast.error(`${path} changed on disk. Reload to continue.`)
+        return
+      }
+      if (!res.ok) {
+        toast.error(`Could not save ${path}`)
+        return
+      }
+      const file = workflowFileDetailSchema.parse(await res.json())
+      written[path] = { content: file.content, hash: file.hash }
     }
-    const detail = nodeWorkflowDetailSchema.parse(await res.json())
     dirty.current = false
-    setState((s) => ({ ...s, detail, draft: detail.yaml }))
+    setState((s) => {
+      const files = { ...s.files }
+      for (const p of Object.keys(written)) {
+        if (files[p] === written[p]!.content) delete files[p]
+      }
+      return {
+        ...s,
+        detail,
+        draft: yamlDirty ? detail.yaml : s.draft,
+        files,
+        base: { ...s.base, ...written },
+      }
+    })
     await flush()
     toast.success("Saved")
-  }, [state.detail, state.draft, isDirty, workflowId, flush])
+  }, [state, isDirty, yamlDirty, dirtyPaths, workflowId, flush])
 
   return {
     ...state,
     workflow,
     errors: parsed?.errors ?? [],
     dirty: isDirty,
+    canUndo: state.history.past.length > 0,
+    canRedo: state.history.future.length > 0,
+    textOf,
     savePositions,
     addNode,
     addSample,
     addEdgeYaml,
+    setSetting,
+    setText,
+    endEdit,
+    undo,
+    redo,
     save,
   }
 }

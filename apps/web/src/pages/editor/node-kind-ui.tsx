@@ -1,30 +1,20 @@
-import {
-  BotIcon,
-  FolderOutputIcon,
-  MessageSquareTextIcon,
-  TerminalIcon,
-  ZapIcon,
-  type LucideIcon,
-} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { NODE_KINDS } from "@workspace/shared"
+import { viewOf } from "@/nodes"
 
-type Meta = { label: string; hint: string; icon: LucideIcon }
+type Meta = { label: string; hint: string }
 
 /** Words and icon per kind; which kinds exist comes from the registry. */
 export const KIND_META: Record<string, Meta> = {
-  trigger: { label: "Trigger", hint: "Starts a run", icon: ZapIcon },
-  prompt: {
-    label: "Prompt",
-    hint: "A fixed piece of text",
-    icon: MessageSquareTextIcon,
-  },
-  agent: { label: "Agent", hint: "An AI agent CLI", icon: BotIcon },
-  command: { label: "Command", hint: "A shell command", icon: TerminalIcon },
-  output: {
-    label: "Output",
-    hint: "Saves the result to a folder",
-    icon: FolderOutputIcon,
-  },
+  trigger: { label: "Trigger", hint: "Starts a run" },
+  prompt: { label: "Prompt", hint: "A fixed piece of text" },
+  agent: { label: "Agent", hint: "An AI agent CLI" },
+  command: { label: "Command", hint: "A shell command" },
+  output: { label: "Output", hint: "Saves the result to a folder" },
+}
+
+export function kindIcon(kind: string): LucideIcon | undefined {
+  return viewOf(kind)?.icon
 }
 
 export const GROUP_LABEL = {

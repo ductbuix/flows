@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useReactFlow } from "@xyflow/react"
-import { SaveIcon } from "lucide-react"
+import { Redo2Icon, SaveIcon, Undo2Icon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import {
   Popover,
@@ -10,11 +10,13 @@ import {
   PopoverTrigger,
 } from "@workspace/ui/components/popover"
 import { addEdge } from "@workspace/shared"
+import { nodeTextPath } from "@/nodes"
 import { AddNodeList } from "./AddNodeList"
 import { AddNodeMenu } from "./AddNodeMenu"
 import { NodeCanvas } from "./NodeCanvas"
 import { NodeEmpty } from "./NodeEmpty"
 import { kindsForWire, type WireSide } from "./node-add"
+import { isEditorTypingTarget } from "./editor-typing"
 import { nextSlot, type Pos } from "./node-canvas-layout"
 import type { useNodeEditor } from "./useNodeEditor"
 
@@ -26,19 +28,47 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
   const rf = useReactFlow()
   const [drop, setDrop] = useState<Drop | null>(null)
   const workflow = editor.workflow
-  const save = useRef(editor.save)
-  save.current = editor.save
+  const latest = useRef(editor)
+  latest.current = editor
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+      const meta = e.metaKey || e.ctrlKey
+      const key = e.key.toLowerCase()
+      if (meta && key === "s") {
         e.preventDefault()
-        void save.current()
+        void latest.current.save()
+        return
+      }
+      // Typing fields keep their own undo.
+      if (isEditorTypingTarget(e.target)) return
+      if (meta && key === "z") {
+        e.preventDefault()
+        if (e.shiftKey) latest.current.redo()
+        else latest.current.undo()
+      } else if (e.ctrlKey && key === "y") {
+        e.preventDefault()
+        latest.current.redo()
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [])
+
+  const { setSetting, setText, endEdit } = editor
+  const nodes = workflow?.nodes
+  const edits = useMemo(
+    () => ({
+      setSetting,
+      endEdit,
+      setText: (id: string, text: string) => {
+        const node = nodes?.find((n) => n.id === id)
+        const path = node ? nodeTextPath(node) : null
+        if (path) setText(path, text)
+      },
+    }),
+    [setSetting, setText, endEdit, nodes]
+  )
 
   if (!workflow) return null
 
@@ -56,6 +86,28 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
         className="flex shrink-0 items-center justify-end gap-2 px-6 py-2"
         data-testid="node-toolbar"
       >
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Undo"
+          data-testid="node-undo"
+          disabled={!editor.canUndo}
+          onClick={editor.undo}
+        >
+          <Undo2Icon />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Redo"
+          data-testid="node-redo"
+          disabled={!editor.canRedo}
+          onClick={editor.redo}
+        >
+          <Redo2Icon />
+        </Button>
         <AddNodeMenu onPick={addAtSlot} />
         <Button
           type="button"
@@ -77,6 +129,8 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
           <NodeCanvas
             workflow={workflow}
             saved={editor.saved}
+            edits={edits}
+            textOf={editor.textOf}
             onPositions={editor.savePositions}
             onWire={(edge) => editor.addEdgeYaml((y) => addEdge(y, edge))}
             onDrop={setDrop}
