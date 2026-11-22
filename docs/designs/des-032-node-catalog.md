@@ -106,7 +106,7 @@ OpenBot's `WORKFLOW_PORTS` (`packages/contracts/src/ipc-workflows.ts`).
 - Run: the CLI in print mode with tools turned off and a read-only
   sandbox. The prompt is built as OpenBot's `modelStepPrompt` does
   (system, prompt, then the input). The exact "no tools" flags for each
-  CLI are checked in BL-081.
+  CLI are checked in BL-083.
 - Out: `text` only.
 
 ## Judge
@@ -152,7 +152,10 @@ OpenBot's condition node works that way in its main mode
   - `publish`: `connection`; builds the change set from that
     connection's work copy and gates it by the policy (DES-026 publish
     rules move here unchanged).
-  - `notify`: an in-app notice with `title` and the input text.
+  - `notify`: an in-app notice with `title` and the input text. flows
+    has no in-app notice today (no notification code on `develop`), so
+    this target needs a small notice store and a bell; it is its own
+    later backlog.
 - Run: no process; publish uses the existing publish events.
 - UI: a target Select on the node, then that target's fields.
 

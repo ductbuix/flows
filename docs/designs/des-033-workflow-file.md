@@ -174,7 +174,9 @@ only:
 
 ## Validation
 
-- At least one Trigger. Ids unique and safe as folder names.
+- Ids unique and safe as folder names. A workflow with no Trigger
+  saves (a new workflow starts empty), but Run is disabled with the
+  reason "Add a trigger to run".
 - Every edge passes the port table; Judge edges carry a branch.
 - Up to 200 nodes and 400 edges, as OpenBot `INPUT_LIMITS`.
 - Required node files exist (pre-run check, as DES-020).

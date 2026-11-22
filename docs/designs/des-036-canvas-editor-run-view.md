@@ -114,8 +114,7 @@ Changes:
   attempt, status, duration. One row per pass; a loop shows rows
   "pass 1", "pass 2".
 - The step detail tabs stay (Summary, Terminal, Files). A Judge step
-  adds its verdict and the rule it read; an Approval step adds who
-  decided and when.
+  adds its verdict and the rule it read; an Approval step adds the decision and when it was made.
 - The graph tab uses the run's frozen layout with the same node cards,
   read-only.
 - The lead Alert or Confirmation covers waiting Approval steps.

@@ -38,7 +38,7 @@ output refs, its branch (Judge) and its answer.
 | `attempt_finished`     | changed | exit code and reason                                                                                  |
 | `attempt_interrupted`  | kept    | resume could not re-attach                                                                            |
 | `step_done`            | new     | outputs, `branch` for a Judge, `answer` when declared                                                 |
-| `step_failed`          | new     | reason: exit, timeout, unclear, answer, loop_limit, rejected                                          |
+| `step_failed`          | new     | reason: exit, timeout, unclear, answer, loop_limit                                                    |
 | `step_skipped`         | new     | no active input reached the node                                                                      |
 | `approval_requested`   | changed | for an Approval step, with the filled question                                                        |
 | `step_approved`        | new     | replaces `task_approved`                                                                              |
@@ -61,7 +61,8 @@ Removed: `tasks_spawned`, `task_succeeded`, `task_failed`,
 Each tick: fold, then `nextActions(graph, scope, latest)`:
 
 1. Find loop edges (below). The rest are forward edges.
-2. Visit nodes in forward order. A node is due when a forward input has
+2. Visit nodes in forward order. The trigger the run started from is
+   due at run start; other triggers do not run. Any other node is due when a forward input has
    a newer result than the node's latest step, or a loop edge's source
    has a newer active result (the next pass).
 3. A due node waits while any forward input is still due or open.
@@ -116,13 +117,17 @@ has no kind branches.
 
 ## Judge
 
-- Rule mode reuses `packages/engine/src/judge.ts` (command build,
-  model and effort resolution, cache key), with two changes: the
-  prompt is the yes or no question shaped like OpenBot's
-  `conditionPrompt`, and the result is the first word of stdout
-  (`conditionAnswer`), not the exit code. Unclear fails the step.
-- The cache key adds the pass and a hash of the input, so a loop
-  round never reuses an old verdict.
+- Rule mode reuses `packages/engine/src/judge.ts`
+  (`buildJudgeShellCommand`, `resolveJudgeModelEffort`,
+  `judgeCacheKey`), with two changes: the prompt (today `judgePrompt`
+  in `agent-prompt.ts`) becomes the yes or no question shaped like
+  OpenBot's `conditionPrompt`, and the result is the first word of
+  stdout (`conditionAnswer`), not the exit code that
+  `runAgentJudge` reads today. Unclear fails the step.
+- Today's judge cache is an in-memory map per run (`judgeCache` in
+  `conditions.ts`). A rule Judge is now a step, so its verdict lives
+  in `step_done` and survives a restart; the key adds the pass and a
+  hash of the input, so a loop round never reuses an old verdict.
 - Check mode evaluates in the tick with no process.
 
 ## Approval
@@ -140,9 +145,10 @@ has no kind branches.
   edge order, each under a heading with the source node name.
 - File inputs are links under `input/files/<fromNodeId>/` and stay in
   env as `UPSTREAM_<id>` (the id with `-` as `_`).
-- `NODE_IN`, `NODE_OUT`, `RUN_INPUT`, `RESOURCES_DIR`,
-  `RESOURCE_<ID>`, `WF_DIR`, `WF_INPUT`, `WF_OUTPUT`, `RUN_ID` as
-  today; `TASK_*` names become `NODE_*`.
+- `TASK_ID`, `TASK_IN`, `TASK_OUT` and `TASK_INSTRUCTIONS` become
+  `NODE_ID`, `NODE_IN`, `NODE_OUT` and `NODE_INSTRUCTIONS`.
+  `PREV_ATTEMPT`, `RUN_INPUT`, `RESOURCES_DIR`, `RESOURCE_<ID>`,
+  `WF_DIR`, `WF_INPUT`, `WF_OUTPUT` and `RUN_ID` stay as today.
 - Judge and Approval forward their inputs unchanged, so a step after
   them sees the same upstream paths.
 - `{{name}}` is filled from the nearest upstream answer before launch.
@@ -159,7 +165,8 @@ has no kind branches.
 ## Retry
 
 - `retry: { max }` retries a failed attempt in the same pass, as today
-  (`packages/engine/src/attempt-kind.ts`).
+  (`retryMax` in `packages/engine/src/loops.ts`; it moves to the
+  node path before the `repeat` logic in that file is deleted).
 - Manual retry (`step_retry_requested`) reopens a finished run and
   resets that step and what follows it.
 
@@ -180,7 +187,8 @@ has no kind branches.
 
 - Spawn: `spawn.ts`, `spawn-parse.ts`, `spawn-validate.ts`,
   `writeSpawnRejections`, `resolveSpawn`, the spawn hint in
-  `agent-prompt.ts`, the promote action, `tasks_spawned`.
+  `agent-prompt.ts`, the promote action (`PromoteButton.tsx` in the
+  run view and its server route), `tasks_spawned`.
 - Old conditions: `conditions-expr.ts`, the `exit`, `expr`, `all`,
   `any` shapes in `conditions.ts`, `needs.ts` branch rules, and the
   `repeat` logic in `loops.ts` (`decideLoop`, `evalUntil`).
