@@ -38,7 +38,7 @@ export function AssetResources({ resources, onChange }: Props) {
       <FieldLegend variant="label">Resources</FieldLegend>
       {resources.length === 0 ? (
         <FieldDescription>
-          No resources. The run pins each one when it starts, read only.
+          No resources. The run pins each one when it starts.
         </FieldDescription>
       ) : (
         <ul className="flex flex-col gap-1.5">

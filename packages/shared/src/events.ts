@@ -305,7 +305,15 @@ export const stepDoneEventSchema = z.object({
 export const stepFailedEventSchema = z.object({
   type: z.literal("step_failed"),
   ...stepBase,
-  reason: z.enum(["exit", "timeout", "unclear", "answer", "loop_limit"]),
+  reason: z.enum([
+    "exit",
+    "timeout",
+    "unclear",
+    "answer",
+    "loop_limit",
+    "conflict",
+    "rejected",
+  ]),
 })
 
 export const stepSkippedEventSchema = z.object({

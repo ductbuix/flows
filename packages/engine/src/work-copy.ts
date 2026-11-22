@@ -101,13 +101,22 @@ function resolvePinSource(
  * propose tasks on the same connection reuse the existing tree.
  */
 export function ensureWorkCopies(runRoot: string, task: Task): void {
-  const resources = readResourcesJson(runRoot)
-  if (!resources) return
-  const proposeIds = new Set(
+  ensureWorkCopiesFor(
+    runRoot,
     (task.uses ?? [])
       .filter((u) => u.access === "propose")
       .map((u) => u.connection)
   )
+}
+
+/** Work copies for the named connections; a copy that exists is kept (BL-084). */
+export function ensureWorkCopiesFor(
+  runRoot: string,
+  connectionIds: Iterable<string>
+): void {
+  const resources = readResourcesJson(runRoot)
+  if (!resources) return
+  const proposeIds = new Set(connectionIds)
   if (proposeIds.size === 0) return
 
   for (const connectionId of proposeIds) {

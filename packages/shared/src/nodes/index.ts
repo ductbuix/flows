@@ -127,6 +127,78 @@ export function edgeProblems(
   return out
 }
 
+/** Ids of every node with a path to `id`, along any port. */
+function ancestorsOf(
+  edges: readonly WorkflowEdge[],
+  id: string
+): Set<string> {
+  const seen = new Set<string>()
+  const todo = [id]
+  while (todo.length > 0) {
+    const at = todo.pop()!
+    for (const e of edges) {
+      if (e.to === at && !seen.has(e.from)) {
+        seen.add(e.from)
+        todo.push(e.from)
+      }
+    }
+  }
+  return seen
+}
+
+/** Connections an Asset with `propose` access offers upstream of a node (BL-084). */
+export function proposeConnectionsUpstream(
+  nodes: readonly WorkflowNode[],
+  edges: readonly WorkflowEdge[],
+  nodeId: string
+): string[] {
+  const up = ancestorsOf(edges, nodeId)
+  const found = new Set<string>()
+  for (const a of nodes) {
+    if (a.kind !== "asset" || a.access !== "propose" || !up.has(a.id)) continue
+    for (const r of a.resources) found.add(r.connection)
+  }
+  return [...found].sort()
+}
+
+/**
+ * Output settings that depend on the graph (BL-084): `connection` goes with
+ * `publish` only, and a publish needs an upstream Asset that lists a
+ * resource of that connection with `propose` access.
+ */
+function outputProblems(wf: {
+  nodes: readonly WorkflowNode[]
+  edges: readonly WorkflowEdge[]
+}): { message: string; path: (string | number)[] }[] {
+  const out: { message: string; path: (string | number)[] }[] = []
+  wf.nodes.forEach((n, i) => {
+    if (n.kind !== "output") return
+    if (n.target !== "publish") {
+      if (n.connection !== undefined) {
+        out.push({
+          message: "connection is only for the publish target",
+          path: ["nodes", i, "connection"],
+        })
+      }
+      return
+    }
+    if (n.connection === undefined) {
+      out.push({
+        message: "publish needs a connection",
+        path: ["nodes", i, "connection"],
+      })
+      return
+    }
+    if (!proposeConnectionsUpstream(wf.nodes, wf.edges, n.id).includes(n.connection)) {
+      out.push({
+        message: `publish to ${n.connection} needs an upstream Asset with propose access to it`,
+        path: ["nodes", i, "connection"],
+      })
+    }
+  })
+  return out
+}
+
 const nodeWorkflowObjectSchema = z
   .strictObject({
     id: z.string().min(1),
@@ -150,6 +222,7 @@ const nodeWorkflowObjectSchema = z
       }
       ids.add(n.id)
     })
+    outputProblems(wf).forEach((p) => ctx.addIssue({ code: "custom", ...p }))
     for (const p of edgeProblems(wf.nodes, wf.edges)) {
       ctx.addIssue({
         code: "custom",

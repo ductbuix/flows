@@ -13,7 +13,9 @@ export type AssetResource = z.infer<typeof assetResourceSchema>
 
 /**
  * Library resources as input (DES-032). No process: the run pins them at
- * start and the step emits the pinned folders. Read access only for now.
+ * start and the step emits the pinned folders. With `propose`, wired steps
+ * work in the run's work copy and an Output `publish` can send the changes
+ * (BL-084).
  */
 export const assetKind = defineNodeKind({
   kind: "asset",
@@ -21,6 +23,6 @@ export const assetKind = defineNodeKind({
   ports: { in: [], out: ["text", "file"] },
   settings: {
     resources: z.array(assetResourceSchema),
-    access: z.literal("read").default("read"),
+    access: z.enum(["read", "propose"]).default("read"),
   },
 })

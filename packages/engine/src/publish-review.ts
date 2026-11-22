@@ -10,7 +10,6 @@ import {
   isAgentTask,
   isCommandTask,
   type ChangeSet,
-  type PublishTask,
   type Workflow,
 } from "@workspace/shared"
 import { connectionDir } from "./paths.ts"
@@ -90,8 +89,11 @@ export async function runPublishAgentReview(options: {
   runRoot: string
   workflowRoot: string
   workflow: Workflow
-  task: PublishTask
+  /** A publish task, or a publish Output node (BL-084). */
+  task: { id: string; connection: string; timeout?: number }
   changeSet: ChangeSet
+  /** Replaces the task-graph goals file, for a node graph (BL-084). */
+  goals?: string
 }): Promise<AgentReviewResult> {
   const { home, runRoot, workflowRoot, workflow, task, changeSet } = options
   if (changeSet.ops.some((o) => o.destructive)) {
@@ -102,7 +104,7 @@ export async function runPublishAgentReview(options: {
   mkdirSync(reviewDir, { recursive: true })
   writeFileSync(
     join(reviewDir, "goals.md"),
-    proposeGoalsMarkdown(workflow, task.connection, workflowRoot)
+    options.goals ?? proposeGoalsMarkdown(workflow, task.connection, workflowRoot)
   )
   writeFileSync(join(reviewDir, "review-instructions.md"), REVIEW_INSTRUCTIONS)
 

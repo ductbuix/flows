@@ -16,7 +16,13 @@ import { runDir, workflowDir } from "../paths.ts"
 import { manualItemKey } from "../item-key.ts"
 import { manualSource, type ManualItem } from "../source-manual.ts"
 import { retryBackoffMs } from "../loops.ts"
-import { isLaunchPlan, isWaitPlan, type ExecContext, type ExecInput } from "./define.ts"
+import {
+  isLaunchPlan,
+  isPublishPlan,
+  isWaitPlan,
+  type ExecContext,
+  type ExecInput,
+} from "./define.ts"
 import { foldSteps, latestStep, type StepsState } from "./fold-steps.ts"
 import {
   launchAttempt,
@@ -24,6 +30,7 @@ import {
   attemptRootOf,
   type ProcessHost,
 } from "./process.ts"
+import { publishTargetOf, startPublishStep } from "./publish.ts"
 import { executorFor } from "./registry.ts"
 import { frozenDir, stepDir } from "./step-paths.ts"
 import { nextActions } from "./walk.ts"
@@ -231,6 +238,10 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         if (isLaunchPlan(result)) {
           return launchAttempt({ ...opts, runId }, ctx, result.launch, steps)
         }
+        if (isPublishPlan(result)) {
+          // Runs in the background; true only when a job started (BL-084).
+          return startPublishStep({ ...opts, runId }, ctx, false)
+        }
         if (isWaitPlan(result)) {
           // No slot, no process: the step waits for a person (BL-080).
           log.append({
@@ -294,6 +305,18 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
       for (const s of list) {
         if (s.status !== "running" || s.decision !== "approved") continue
         const { ctx, executor } = build(nodeId, s.pass)
+        if (publishTargetOf(graph, nodeId)) {
+          // An approved publish goes on in the background, past its gate.
+          try {
+            startPublishStep({ ...opts, runId }, ctx, true)
+          } catch (error) {
+            if (error instanceof CrashError) throw error
+            fail(nodeId, s.pass, "exit")
+            progressed = true
+            break
+          }
+          continue
+        }
         try {
           settle(nodeId, s.pass, executor.approved!(ctx))
         } catch (error) {

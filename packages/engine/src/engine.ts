@@ -47,6 +47,8 @@ import {
   requestNodeRetry,
 } from "./nodes/cancel.ts"
 import { resumeNodes, runNodes } from "./nodes/drive.ts"
+import { assertNodePublishValid } from "./nodes/publish.ts"
+import { recordUnpublishedLocalEffects } from "./work-copy.ts"
 import type { StepsState } from "./nodes/fold-steps.ts"
 import type { ProcessHost } from "./nodes/process.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
@@ -316,6 +318,7 @@ export class Engine {
     runId: string
     workItemId?: string
   }): Promise<MaterializeResourcesResult | undefined> {
+    assertNodePublishValid(this.home, input.graph)
     if (!input.graph.nodes.some((n) => n.kind === "asset")) return undefined
     const runRoot = runDir(workflowDir(this.home, input.graph.id), input.runId)
     mkdirSync(runRoot, { recursive: true })
@@ -338,6 +341,7 @@ export class Engine {
    */
   startNodeRun(input: StartNodeRunInput): RunHandle {
     const { graph } = input
+    assertNodePublishValid(this.home, graph)
     const runId = input.runId ?? randomUUID()
     const queued =
       countRunningRuns(this.listRunsForWorkflow(graph.id)) >=
@@ -361,7 +365,7 @@ export class Engine {
   }
 
   private trackNodeRun(runId: string, done: Promise<StepsState>): RunHandle {
-    const tracked = done.catch((error: unknown) => {
+    const tracked = this.recordLocalEffects(runId, done).catch((error: unknown) => {
       // A broken graph or a crash in the tick must not leave a run open.
       const state = this.fold(runId)
       if (state && state.status === "running") {
@@ -382,6 +386,24 @@ export class Engine {
     }
     tracked.then(clear, clear)
     return this.nodeHandle(runId, tracked)
+  }
+
+  /** Unpublished work copy changes at run end stay Local (DES-026, BL-084). */
+  private async recordLocalEffects(
+    runId: string,
+    done: Promise<StepsState>
+  ): Promise<StepsState> {
+    const steps = await done
+    const state = this.fold(runId)
+    if (state && !state.deleted) {
+      await recordUnpublishedLocalEffects({
+        home: this.home,
+        runRoot: runDir(workflowDir(this.home, state.workflowId), runId),
+        runId,
+        append: (event) => this.log.append(event),
+      })
+    }
+    return steps
   }
 
   private nodeHandle(runId: string, done: Promise<StepsState>): RunHandle {

@@ -13,6 +13,11 @@ export const assetView = defineNodeView({
       </p>
     ) : (
       <div className="flex flex-wrap gap-1.5" data-testid="asset-chips">
+        {node.access === "propose" ? (
+          <Badge variant="secondary" data-testid="asset-access-badge">
+            Propose
+          </Badge>
+        ) : null}
         {node.resources.map((r) => (
           <Badge
             key={`${r.connection}/${r.entity}/${r.id}`}
