@@ -105,9 +105,23 @@ OpenBot's `WORKFLOW_PORTS` (`packages/contracts/src/ipc-workflows.ts`).
   `nodes/<id>/prompt.md` and optional `nodes/<id>/system.md`.
 - Run: the CLI in print mode with tools turned off and a read-only
   sandbox. The prompt is built as OpenBot's `modelStepPrompt` does
-  (system, prompt, then the input). The exact "no tools" flags for each
-  CLI are checked in BL-083.
-- Out: `text` only.
+  (system, prompt, then the input) into `input/prompt.txt` and goes in
+  on stdin, so its size is not limited by the argument list.
+- Flags, checked against Claude Code 2.1.319 and Cursor Agent
+  2026.11.19 (BL-083):
+  - Claude: `claude --print --tools "" --permission-mode dontAsk
+    --no-session-persistence [--model m] [--effort e] < prompt.txt`.
+    `--tools ""` turns every tool off.
+  - Cursor: `agent -p --mode ask --trust [--model m] < prompt.txt`.
+    `--mode ask` is the read-only Q&A mode; there is no `--force`.
+    Cursor has no flag that removes its tools, so "no tools" rests on
+    ask mode and the sandbox (a live check asked it to create a file and
+    it refused).
+- Sandbox: writes only the attempt folder (not the whole workflow as
+  Agent does); `~/.cursor` stays writable for Cursor.
+- Out: `text` only: stdout, trimmed. Input files are not shown to the
+  model, since it has no tools to read them. `answers` come with
+  BL-085.
 
 ## Judge
 

@@ -174,6 +174,23 @@ edges:
   - { from: lib, to: read }
 `
 
+const nodeLlmYaml = (id: string) => `id: ${id}
+goal: e2e llm node
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: write
+    kind: llm
+    cli: claude
+  - id: show
+    kind: command
+    run: 'cat $NODE_IN/text.md'
+edges:
+  - { from: start, to: write }
+  - { from: write, to: show }
+`
+
 const nodeStartYaml = (id: string) => `id: ${id}
 goal: e2e node start inputs
 nodes:
@@ -325,12 +342,27 @@ export function createE2eHome(): string {
     join(bin, "claude"),
     [
       "#!/bin/sh",
+      // An LLM call (tools off) prints a line made from the first prompt line.
+      'case "$*" in *--tools*) p=$(cat); echo "Summary: $(printf %s "$p" | head -1)"; exit 0;; esac',
       "n=$(sed -n 's/^until-pass \\([0-9]*\\)$/\\1/p' input/rule.md 2>/dev/null | head -1)",
       'p=$(printf %s "$PWD" | sed -n \'s/.*pass-\\([0-9]*\\)\\/attempt.*/\\1/p\')',
       'if [ -n "$n" ] && [ -n "$p" ] && [ "$p" -lt "$n" ]; then echo no; else echo yes; fi',
       "",
     ].join("\n"),
     { mode: 0o755 }
+  )
+  // LLM workflows for node-llm.spec.ts (BL-083); each test owns one.
+  for (const id of ["node-llm-light", "node-llm-dark", "node-llm-light-view", "node-llm-dark-view"]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "write"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeLlmYaml(id))
+    writeFileSync(join(dir, "nodes", "write", "prompt.md"), "Write one line about the weather.\n")
+  }
+  const llmAdd = join(home, "workflows", "node-llm-add")
+  mkdirSync(llmAdd, { recursive: true })
+  writeFileSync(
+    join(llmAdd, "workflow.yaml"),
+    "id: node-llm-add\ngoal: e2e add an llm\nnodes: []\nedges: []\n"
   )
   const noTrigger = join(home, "workflows", "node-run-none")
   mkdirSync(noTrigger, { recursive: true })

@@ -55,6 +55,8 @@ export type SandboxSpawn =
 export type SandboxSpawnOptions = {
   /** Allow writes under ~/.cursor (agent cursor tasks; BL-018). */
   allowCursorHome?: boolean
+  /** Narrows the write root below the workflow, e.g. to one attempt (LLM node). */
+  writeRoot?: string
 }
 
 /**
@@ -69,7 +71,7 @@ export function buildSandboxSpawn(
   if (!canApplySandbox()) {
     return { sandboxed: false, command: "/bin/sh", args: ["-c", shellCommand] }
   }
-  const wfDir = sandboxWriteRoot(workflowRoot)
+  const wfDir = sandboxWriteRoot(options.writeRoot ?? workflowRoot)
   const secretsDirPath = sandboxSecretsRoot(workflowRoot)
   const baseArgs = [
     "-p",
