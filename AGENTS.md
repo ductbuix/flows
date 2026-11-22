@@ -39,7 +39,8 @@ Schema and writing rules: `docs/README.md`.
   `GET/PUT /mcp-trust`, node GET/PUT, `/layout`, `GET /connectors`, library
   GET/pull/clear (usage + retention), work item CRUD, run REST (list/start/
   cancel/rerun/retry/approve/reject/delete, changes), run input/files, log/
-  summary/out, websocket snapshots, `runs_changed`, log chunks, file watches.
+  summary/out (+ file), websocket snapshots, `runs_changed`, log chunks,
+  file watches.
 - `packages/engine`: SQLite event log + settings (`cli_trust`; rows it
   cannot parse, such as old task runs, are skipped), connectors (github
   draft PR, confluence via MCP, rally, fake), MCP trust allowlist,

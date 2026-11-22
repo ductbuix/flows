@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react"
-import { outListSchema } from "@workspace/shared"
+import { outListSchema, runInputFileDetailSchema } from "@workspace/shared"
+import { Alert, AlertDescription } from "@workspace/ui/components/alert"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import {
   Empty,
   EmptyContent,
@@ -7,6 +15,7 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { FileTree, pathsToFileTree } from "@/components/ai-elements/file-tree"
+import { mono } from "@/components/data/mono"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -21,6 +30,10 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
     null
   )
   const [selected, setSelected] = useState<string | undefined>()
+  const [previewPath, setPreviewPath] = useState<string | null>(null)
+  const [previewContent, setPreviewContent] = useState("")
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
   const loading = state === null || state.slot !== slot
 
   useEffect(() => {
@@ -43,6 +56,31 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
     }
   }, [runId, taskId, attemptN, slot])
 
+  async function openPreview(path: string) {
+    setSelected(path)
+    setPreviewPath(path)
+    setPreviewContent("")
+    setPreviewError(null)
+    setPreviewLoading(true)
+    const res = await api.runs[":runId"].tasks[":taskId"].attempts[":n"].out[
+      ":path"
+    ].$get({
+      param: {
+        runId,
+        taskId,
+        n: String(attemptN),
+        path,
+      },
+    })
+    setPreviewLoading(false)
+    if (!res.ok) {
+      setPreviewError("Could not load file.")
+      return
+    }
+    const detail = runInputFileDetailSchema.parse(await res.json())
+    setPreviewContent(detail.content)
+  }
+
   if (loading) {
     return <p className="text-sm text-muted-foreground">Loading output…</p>
   }
@@ -58,11 +96,44 @@ export function TaskDetailOutput({ runId, taskId, attemptN }: Props) {
   }
 
   return (
-    <FileTree
-      roots={pathsToFileTree(state!.files)}
-      selected={selected}
-      onSelect={setSelected}
-      data-testid="out-file-tree"
-    />
+    <>
+      <FileTree
+        roots={pathsToFileTree(state!.files)}
+        selected={selected}
+        onSelect={(path) => void openPreview(path)}
+        data-testid="out-file-tree"
+      />
+      <Dialog
+        open={previewPath !== null}
+        onOpenChange={(open) => {
+          if (!open) setPreviewPath(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-xl" data-testid="out-file-preview">
+          <DialogHeader>
+            <DialogTitle>Output file</DialogTitle>
+            <DialogDescription className={`${mono} text-xs`}>
+              {previewPath}
+            </DialogDescription>
+          </DialogHeader>
+          {previewLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : previewError ? (
+            <Alert variant="destructive">
+              <AlertDescription>{previewError}</AlertDescription>
+            </Alert>
+          ) : (
+            <div className="max-h-96 overflow-auto rounded-lg border">
+              <pre
+                className={`${mono} p-3 text-xs whitespace-pre-wrap`}
+                data-testid="out-file-preview-content"
+              >
+                {previewContent}
+              </pre>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

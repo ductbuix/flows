@@ -221,7 +221,11 @@ edges:
   - { from: lib, to: read }
 `
 
-const nodePublishYaml = (id: string, access = "propose", target = "publish") => `id: ${id}
+const nodePublishYaml = (
+  id: string,
+  access = "propose",
+  target = "publish"
+) => `id: ${id}
 goal: e2e output publish
 nodes:
   - id: start
@@ -312,7 +316,10 @@ export function createE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-nodes-"))
   const diamond = join(home, "workflows", "diamond")
   mkdirSync(diamond, { recursive: true })
-  writeFileSync(join(diamond, "workflow.yaml"), nodeRunYaml("diamond", "echo diamond"))
+  writeFileSync(
+    join(diamond, "workflow.yaml"),
+    nodeRunYaml("diamond", "echo diamond")
+  )
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
@@ -350,6 +357,16 @@ export function createE2eHome(): string {
       mkdirSync(dir, { recursive: true })
       writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, run))
     }
+  }
+  // Out-file preview for node-out-preview.spec.ts.
+  {
+    const id = "node-out-preview"
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      nodeRunYaml(id, 'printf "hello out\\n" > "$NODE_OUT/text.md"')
+    )
   }
   // Partial runs for node-run-step.spec.ts (BL-102); each test owns one.
   for (const id of ["node-step-light", "node-step-dark"]) {
@@ -391,11 +408,19 @@ export function createE2eHome(): string {
     )
   }
   // Judge workflows for node-judge.spec.ts (BL-079); each test owns one.
-  for (const id of ["node-judge-light", "node-judge-dark", "node-judge-light-view", "node-judge-dark-view"]) {
+  for (const id of [
+    "node-judge-light",
+    "node-judge-dark",
+    "node-judge-light-view",
+    "node-judge-dark-view",
+  ]) {
     const dir = join(home, "workflows", id)
     mkdirSync(join(dir, "nodes", "check"), { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeJudgeYaml(id))
-    writeFileSync(join(dir, "nodes", "check", "rule.md"), "Is the request reasonable?\n")
+    writeFileSync(
+      join(dir, "nodes", "check", "rule.md"),
+      "Is the request reasonable?\n"
+    )
   }
   const judgeAdd = join(home, "workflows", "node-judge-add")
   mkdirSync(judgeAdd, { recursive: true })
@@ -404,11 +429,19 @@ export function createE2eHome(): string {
     "id: node-judge-add\ngoal: e2e add a judge\nnodes: []\nedges: []\n"
   )
   // Judge check mode for node-judge-check.spec.ts (BL-101); each test owns one.
-  for (const id of ["node-judge-check-light", "node-judge-check-dark", "node-judge-check-light-view", "node-judge-check-dark-view"]) {
+  for (const id of [
+    "node-judge-check-light",
+    "node-judge-check-dark",
+    "node-judge-check-light-view",
+    "node-judge-check-dark-view",
+  ]) {
     const dir = join(home, "workflows", id)
     mkdirSync(join(dir, "nodes", "assess"), { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeJudgeCheckYaml(id))
-    writeFileSync(join(dir, "nodes", "assess", "prompt.md"), "Assess the weather.\n")
+    writeFileSync(
+      join(dir, "nodes", "assess", "prompt.md"),
+      "Assess the weather.\n"
+    )
   }
   // Approval workflows for node-approval.spec.ts (BL-080); each test owns one.
   for (const id of [
@@ -486,18 +519,26 @@ export function createE2eHome(): string {
       // An LLM call that asks for answers gets a fixed JSON block back (BL-085).
       'case "$*" in *--tools*) p=$(cat); case "$p" in *"## Answer"*) printf \'```json\\n{"risk":"high","score":3}\\n```\\n\'; exit 0;; esac; echo "Summary: $(printf %s "$p" | head -1)"; exit 0;; esac',
       "n=$(sed -n 's/^until-pass \\([0-9]*\\)$/\\1/p' input/rule.md 2>/dev/null | head -1)",
-      'p=$(printf %s "$PWD" | sed -n \'s/.*pass-\\([0-9]*\\)\\/attempt.*/\\1/p\')',
+      "p=$(printf %s \"$PWD\" | sed -n 's/.*pass-\\([0-9]*\\)\\/attempt.*/\\1/p')",
       'if [ -n "$n" ] && [ -n "$p" ] && [ "$p" -lt "$n" ]; then echo no; else echo yes; fi',
       "",
     ].join("\n"),
     { mode: 0o755 }
   )
   // LLM workflows for node-llm.spec.ts (BL-083); each test owns one.
-  for (const id of ["node-llm-light", "node-llm-dark", "node-llm-light-view", "node-llm-dark-view"]) {
+  for (const id of [
+    "node-llm-light",
+    "node-llm-dark",
+    "node-llm-light-view",
+    "node-llm-dark-view",
+  ]) {
     const dir = join(home, "workflows", id)
     mkdirSync(join(dir, "nodes", "write"), { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeLlmYaml(id))
-    writeFileSync(join(dir, "nodes", "write", "prompt.md"), "Write one line about the weather.\n")
+    writeFileSync(
+      join(dir, "nodes", "write", "prompt.md"),
+      "Write one line about the weather.\n"
+    )
   }
   // Named answers for node-answers.spec.ts (BL-085); each test owns one.
   for (const id of [
@@ -510,7 +551,10 @@ export function createE2eHome(): string {
     mkdirSync(join(dir, "nodes", "assess"), { recursive: true })
     mkdirSync(join(dir, "nodes", "note"), { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeAnswersYaml(id))
-    writeFileSync(join(dir, "nodes", "assess", "prompt.md"), "Assess the weather.\n")
+    writeFileSync(
+      join(dir, "nodes", "assess", "prompt.md"),
+      "Assess the weather.\n"
+    )
     writeFileSync(
       join(dir, "nodes", "note", "prompt.md"),
       "Risk is {{risk}}, score {{score}}.\n"

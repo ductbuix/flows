@@ -13,7 +13,9 @@ import {
   healthSchema,
   logChunkSchema,
   okResponseSchema,
+  outListSchema,
   runDetailSchema,
+  runInputFileDetailSchema,
   runSummarySchema,
   startRunResponseSchema,
   summaryResponseSchema,
@@ -150,6 +152,51 @@ describe("run API", () => {
     const summary = summaryResponseSchema.parse(await sumRes.json())
     expect(summary.missing).toBe(false)
     expect(summary.text).toContain("# Title")
+    engine.close()
+  }, 30_000)
+
+  it("lists and reads out/ files for a finished attempt", async () => {
+    const { engine, app, home } = testStack()
+
+    const startRes = await app.request("/api/workflows/api-diamond/runs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ requestId: randomUUID() }),
+    })
+    const { runId } = startRunResponseSchema.parse(await startRes.json())
+    await settle(engine, runId)
+
+    // Seed out/ on task a (always attempted). Avoid depending on downstream
+    // tasks when the host sandbox blocks nested sandbox-exec.
+    const outDir = join(
+      runDir(workflowDir(home, "api-diamond"), runId),
+      "nodes",
+      "a",
+      "pass-1",
+      "attempt-1",
+      "out"
+    )
+    mkdirSync(outDir, { recursive: true })
+    writeFileSync(join(outDir, "letter.txt"), "hello out\n")
+
+    const listRes = await app.request(
+      `/api/runs/${runId}/tasks/a/attempts/1/out`
+    )
+    expect(listRes.status).toBe(200)
+    const listed = outListSchema.parse(await listRes.json())
+    expect(listed.files.some((f) => f.path === "letter.txt")).toBe(true)
+
+    const fileRes = await app.request(
+      `/api/runs/${runId}/tasks/a/attempts/1/out/letter.txt`
+    )
+    expect(fileRes.status).toBe(200)
+    const file = runInputFileDetailSchema.parse(await fileRes.json())
+    expect(file).toEqual({ path: "letter.txt", content: "hello out\n" })
+
+    const escape = await app.request(
+      `/api/runs/${runId}/tasks/a/attempts/1/out/../SUMMARY.md`
+    )
+    expect(escape.status).toBe(404)
     engine.close()
   }, 30_000)
 
