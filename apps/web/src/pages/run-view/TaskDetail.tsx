@@ -18,7 +18,6 @@ import {
   ItemTitle,
 } from "@workspace/ui/components/item"
 import type { RunTaskTab } from "@/lib/paths"
-import { PromoteButton } from "./PromoteButton"
 import { TaskActions } from "./TaskActions"
 import { TaskDetailAnswer } from "./TaskDetailAnswer"
 import { TaskDetailAttempts } from "./TaskDetailAttempts"
@@ -56,7 +55,6 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
         <h2 className="font-heading text-base font-medium">{label}</h2>
         <TaskStatusBadge status={task.status} />
         <div className="ml-auto flex items-center gap-2">
-          {task.spawned && <PromoteButton runId={run.id} taskId={task.id} />}
           <TaskActions run={run} task={task} />
         </div>
       </div>
