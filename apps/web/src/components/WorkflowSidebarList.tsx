@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router"
+import { workflowLabel } from "@/lib/labels"
 import { MoreHorizontal, Plus } from "lucide-react"
 import type { WorkflowSummary } from "@workspace/shared"
 import {
@@ -71,7 +72,7 @@ export function WorkflowSidebarList({
               render={<Link to={workflowPath(wf.id)} />}
               data-testid={`sidebar-workflow-${wf.id}`}
             >
-              <span className="font-mono">{wf.id}</span>
+              <span>{workflowLabel(wf)}</span>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger

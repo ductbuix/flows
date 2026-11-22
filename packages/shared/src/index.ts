@@ -108,6 +108,7 @@ export {
   type WorkflowInputDecl,
   type WorkflowInputType,
   type AppConfig,
+  workflowNameSchema,
 } from "./workflow.ts"
 export {
   effortSchema,

@@ -36,6 +36,44 @@ function stack() {
 }
 
 describe("workflow lifecycle API", () => {
+  it("creates with a name, lists it, and keeps it on rename", async () => {
+    const { home, app } = stack()
+    const post = (path: string, body: unknown) =>
+      app.request(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      })
+
+    const res = await post("/api/workflows", {
+      id: "feature-spec",
+      name: "Feature spec",
+      goal: "g",
+    })
+    expect(res.status).toBe(201)
+    expect(workflowSummarySchema.parse(await res.json()).name).toBe(
+      "Feature spec"
+    )
+    const list = workflowSummarySchema
+      .array()
+      .parse(await (await app.request("/api/workflows")).json())
+    expect(list.find((w) => w.id === "feature-spec")?.name).toBe("Feature spec")
+
+    expect(
+      (await post("/api/workflows/feature-spec/rename", { newId: "spec" }))
+        .status
+    ).toBe(200)
+    const yaml = readFileSync(
+      join(home, "workflows", "spec", "workflow.yaml"),
+      "utf8"
+    )
+    expect(yaml).toContain('name: "Feature spec"')
+    expect(yaml).toContain("id: spec")
+
+    const bare = await post("/api/workflows", { id: "bare", goal: "g" })
+    expect(workflowSummarySchema.parse(await bare.json()).name).toBeUndefined()
+  })
+
   it("creates, renames and deletes a workflow", async () => {
     const { home, engine, app } = stack()
 

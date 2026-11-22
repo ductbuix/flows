@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { ImpactBadge } from "@/components/ImpactBadge"
+import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { PageSection } from "@/components/page"
 import {
   overviewConnections,

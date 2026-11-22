@@ -10,6 +10,7 @@ import {
 import type { WorkflowSummary } from "@workspace/shared"
 import { workflowSummarySchema } from "@workspace/shared"
 import { api } from "@/lib/api"
+import { workflowLabel } from "@/lib/labels"
 
 type WorkflowsContextValue = {
   workflows: WorkflowSummary[] | null
@@ -61,4 +62,14 @@ export function useWorkflows() {
   if (!ctx)
     throw new Error("useWorkflows must be used within WorkflowsProvider")
   return ctx
+}
+
+/** Display label for a workflow id; `override` wins (unsaved editor name). */
+export function useWorkflowLabel(workflowId: string, override?: string) {
+  const { workflows } = useWorkflows()
+  const summary = workflows?.find((wf) => wf.id === workflowId)
+  return workflowLabel({
+    id: workflowId,
+    name: override?.trim() || summary?.name,
+  })
 }

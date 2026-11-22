@@ -27,7 +27,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { Page, PageSection, PageTitle } from "@/components/page"
-import { WorkItemSourceBadge } from "@/components/WorkItemSourceBadge"
+import { WorkItemSourceBadge } from "@/components/data/WorkItemSourceBadge"
 import { api } from "@/lib/api"
 import { WorkItemContextSection } from "@/pages/WorkItemContextSection"
 import { WorkItemNotesSection } from "@/pages/WorkItemNotesSection"
@@ -132,7 +132,10 @@ export function WorkItemPage() {
 
           <PageSection title="Attachments">
             {!attachments || attachments.length === 0 ? (
-              <Empty className="border" data-testid="work-item-attachments-empty">
+              <Empty
+                className="border"
+                data-testid="work-item-attachments-empty"
+              >
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <Paperclip />

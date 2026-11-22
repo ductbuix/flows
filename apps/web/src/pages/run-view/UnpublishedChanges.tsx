@@ -8,7 +8,7 @@ import {
   CodeBlock,
   CodeBlockContent,
 } from "@workspace/ui/components/code-block"
-import { ImpactBadge } from "@/components/ImpactBadge"
+import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { SummaryMarkdown } from "./SummaryMarkdown"

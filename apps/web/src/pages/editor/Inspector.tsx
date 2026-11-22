@@ -36,6 +36,7 @@ type Props = {
   workflow: Workflow
   selectedTaskId?: string
   errors: YamlDiagnosticDto[]
+  onChangeName: (name: string) => void
   onChangeGoal: (goal: string) => void
   onChangeTask: (taskId: string, patch: Partial<Task>) => void
   onChangeInputs: (inputs: WorkflowInputDecl[] | undefined) => void
@@ -49,6 +50,7 @@ export function Inspector({
   workflow,
   selectedTaskId,
   errors,
+  onChangeName,
   onChangeGoal,
   onChangeTask,
   onChangeInputs,
@@ -64,6 +66,7 @@ export function Inspector({
       <InspectorWorkflowPanel
         workflowId={workflowId}
         workflow={workflow}
+        onChangeName={onChangeName}
         onChangeGoal={onChangeGoal}
         onChangeInputs={onChangeInputs}
         onChangeLimits={onChangeLimits}

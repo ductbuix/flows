@@ -84,6 +84,11 @@ export function yamlAfterGoal(yaml: string, goal: string): string {
   return setWorkflowField(yaml, "goal", goal)
 }
 
+export function yamlAfterName(yaml: string, name: string): string {
+  const trimmed = name.trim()
+  return setWorkflowField(yaml, "name", trimmed ? name : undefined)
+}
+
 export function yamlAfterInputs(
   yaml: string,
   inputs: WorkflowInputDecl[] | undefined

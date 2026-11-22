@@ -1,5 +1,5 @@
 import type { LibraryEntity } from "@workspace/shared"
-import { FreshnessBadge } from "@/components/FreshnessBadge"
+import { FreshnessBadge } from "@/components/data/FreshnessBadge"
 import { PageSection } from "@/components/page"
 
 type Props = {

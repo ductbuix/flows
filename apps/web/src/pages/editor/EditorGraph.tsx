@@ -21,7 +21,7 @@ import {
 } from "@workspace/ui/components/button-group"
 import { Card } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
-import { ImpactBadge } from "@/components/ImpactBadge"
+import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { buildEditorGraph, type EditorNodeData } from "./editor-graph-layout"
 
 function EditorTaskNode({

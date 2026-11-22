@@ -16,6 +16,7 @@ export function listWorkflowSummaries(engine: Engine): WorkflowSummary[] {
       const wf = engine.loadWorkflow(dir)
       summaries.push({
         id: wf.id,
+        ...(wf.name ? { name: wf.name } : {}),
         goal: wf.goal,
         taskCount: wf.tasks.length,
       })

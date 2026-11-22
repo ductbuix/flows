@@ -24,7 +24,11 @@ import {
   renameMemoryFile,
   writeMemoryFile,
 } from "./memory-files.ts"
-import { createWorkflow, deleteWorkflow, renameWorkflow } from "./workflow-lifecycle.ts"
+import {
+  createWorkflow,
+  deleteWorkflow,
+  renameWorkflow,
+} from "./workflow-lifecycle.ts"
 import type { WsHub } from "./ws-hub.ts"
 
 const idParam = z.object({ workflowId: z.string().min(1) })
@@ -37,7 +41,7 @@ export function lifecycleRoutes(engine: Engine, hub: WsHub) {
   return new Hono()
     .post("/workflows", zValidator("json", createWorkflowBodySchema), (c) => {
       const body = c.req.valid("json")
-      const result = createWorkflow(engine, body.id, body.goal)
+      const result = createWorkflow(engine, body.id, body.goal, body.name)
       if (result.ok === false) {
         const status =
           result.kind === "exists" ? 409 : result.kind === "invalid" ? 400 : 400
@@ -79,29 +83,18 @@ export function lifecycleRoutes(engine: Engine, hub: WsHub) {
       const result = deleteWorkflow(engine, workflowId)
       if (result.ok === false) {
         const status =
-          result.kind === "not_found"
-            ? 404
-            : result.kind === "live"
-              ? 409
-              : 400
+          result.kind === "not_found" ? 404 : result.kind === "live" ? 409 : 400
         return c.json({ message: result.kind }, status)
       }
       hub.files.unwatch(workflowId)
       return c.body(null, 204)
     })
-    .get(
-      "/workflows/:workflowId/memory",
-      zValidator("param", idParam),
-      (c) => {
-        const { workflowId } = c.req.valid("param")
-        const files = listMemoryFiles(engine, workflowId)
-        if (files === null) return c.json({ message: "workflow not found" }, 404)
-        return c.json(
-          memoryListSchema.parse({ files }) satisfies MemoryList,
-          200
-        )
-      }
-    )
+    .get("/workflows/:workflowId/memory", zValidator("param", idParam), (c) => {
+      const { workflowId } = c.req.valid("param")
+      const files = listMemoryFiles(engine, workflowId)
+      if (files === null) return c.json({ message: "workflow not found" }, 404)
+      return c.json(memoryListSchema.parse({ files }) satisfies MemoryList, 200)
+    })
     .get(
       "/workflows/:workflowId/memory/:file",
       zValidator("param", memoryParam),
@@ -150,7 +143,9 @@ export function lifecycleRoutes(engine: Engine, hub: WsHub) {
         )
         hub.files.watch(workflowId)
         return c.json(
-          memoryFileDetailSchema.parse(result.detail) satisfies MemoryFileDetail,
+          memoryFileDetailSchema.parse(
+            result.detail
+          ) satisfies MemoryFileDetail,
           200
         )
       }
@@ -192,7 +187,9 @@ export function lifecycleRoutes(engine: Engine, hub: WsHub) {
           return c.json({ message: result.kind }, status)
         }
         return c.json(
-          memoryFileDetailSchema.parse(result.detail) satisfies MemoryFileDetail,
+          memoryFileDetailSchema.parse(
+            result.detail
+          ) satisfies MemoryFileDetail,
           200
         )
       }

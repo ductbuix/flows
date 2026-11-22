@@ -1,4 +1,7 @@
 import { lazy, Suspense, useCallback } from "react"
+import { useWorkItemTitles } from "@/hooks/use-work-item-titles"
+import { runLabel } from "@/lib/labels"
+import { useWorkflowLabel } from "@/lib/workflows-context"
 import { useParams } from "react-router"
 import {
   ResizableHandle,
@@ -35,15 +38,20 @@ export function RunViewPage() {
   const { view, taskId, tab, setView, setTaskId, setTab } = useSearchView()
   const { run, loading, error, setRun } = useRunFetch(runId)
   const workflowId = run?.workflowId
+  const workflowLabel = useWorkflowLabel(workflowId ?? "")
+  const titles = useWorkItemTitles()
+  const thisRunLabel = runLabel({
+    workItemTitle: run?.workItemId ? titles.get(run.workItemId) : undefined,
+  })
 
   const crumbs = workflowId
     ? ([
         { label: "Workflows", to: "/workflows" },
-        { label: workflowId, to: workflowPath(workflowId) },
+        { label: workflowLabel, to: workflowPath(workflowId) },
         { label: "Runs", to: workflowPath(workflowId, "runs") },
-        { label: runId },
+        { label: thisRunLabel },
       ] as const)
-    : ([{ label: "Workflows", to: "/workflows" }, { label: runId }] as const)
+    : ([{ label: "Workflows", to: "/workflows" }, { label: "Run" }] as const)
 
   const onSnapshot = useCallback(
     (next: Parameters<typeof setRun>[0]) => {

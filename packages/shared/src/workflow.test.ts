@@ -3,6 +3,21 @@ import { parseWorkflowYaml } from "./workflow-yaml.ts"
 import { loneAgentJudge, workflowSchema } from "./workflow.ts"
 
 describe("workflowSchema", () => {
+  const base = { id: "x", tasks: [{ id: "a", kind: "command", run: "true" }] }
+
+  it("name is optional, trimmed, non-empty and at most 80 chars", () => {
+    expect(workflowSchema.parse(base).name).toBeUndefined()
+    expect(workflowSchema.parse({ ...base, name: "  Spec  " }).name).toBe(
+      "Spec"
+    )
+    expect(workflowSchema.safeParse({ ...base, name: "  " }).success).toBe(
+      false
+    )
+    expect(
+      workflowSchema.safeParse({ ...base, name: "a".repeat(81) }).success
+    ).toBe(false)
+  })
+
   it("accepts a diamond of command tasks", () => {
     const workflow = workflowSchema.parse({
       id: "diamond",

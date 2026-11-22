@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
-import { WorkItemSourceBadge } from "@/components/WorkItemSourceBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
+import { WorkItemSourceBadge } from "@/components/data/WorkItemSourceBadge"
 import { workItemPath } from "@/lib/paths"
 
 type Props = {

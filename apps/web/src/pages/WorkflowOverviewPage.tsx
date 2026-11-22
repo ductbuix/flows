@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useWorkflowLabel } from "@/lib/workflows-context"
 import { useNavigate, useParams } from "react-router"
 import { workflowDetailSchema, type Workflow } from "@workspace/shared"
 import {
@@ -50,9 +51,10 @@ export function WorkflowOverviewPage() {
     }
   }, [workflowId])
 
+  const workflowLabel = useWorkflowLabel(workflowId)
   const crumbs = [
     { label: "Workflows", to: "/workflows" },
-    { label: workflowId },
+    { label: workflowLabel },
   ] as const
 
   return (

@@ -10,7 +10,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import type { RunBodyView } from "./useSearchView"
 import type { WsConnectionState } from "./useRunSocket"
 import { RunControls } from "./RunControls"
