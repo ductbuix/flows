@@ -71,24 +71,31 @@ export type LaunchPlan = { launch: LaunchSpec }
 /** The step waits for a person: the tick appends `approval_requested` (BL-080). */
 export type WaitPlan = { wait: { question: string } }
 
+/** The step sends the work copy through a connection, on its own clock (BL-084). */
+export type PublishPlan = { publish: { connection: string } }
+
 export type NodeExecutor = {
   kind: string
   /** A no-process kind settles at once; a process kind returns a plan. */
-  run(ctx: ExecContext): ExecResult | LaunchPlan | WaitPlan
+  run(ctx: ExecContext): ExecResult | LaunchPlan | WaitPlan | PublishPlan
   /** Process kinds: reads a finished attempt into the step output. */
   finish?(ctx: ExecContext, attemptRoot: string): ExecResult
   /** Waiting kinds: settles the step once a person approved it. */
   approved?(ctx: ExecContext): ExecResult
 }
 
-export function isLaunchPlan(
-  r: ExecResult | LaunchPlan | WaitPlan
-): r is LaunchPlan {
+type Plans = ExecResult | LaunchPlan | WaitPlan | PublishPlan
+
+export function isLaunchPlan(r: Plans): r is LaunchPlan {
   return "launch" in r
 }
 
-export function isWaitPlan(r: ExecResult | LaunchPlan | WaitPlan): r is WaitPlan {
+export function isWaitPlan(r: Plans): r is WaitPlan {
   return "wait" in r
+}
+
+export function isPublishPlan(r: Plans): r is PublishPlan {
+  return "publish" in r
 }
 
 /** Registers how a kind runs (DES-035). Runs must be safe to repeat. */

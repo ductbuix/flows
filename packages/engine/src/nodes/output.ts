@@ -12,10 +12,17 @@ function listFiles(root: string, dir = root, out: string[] = []): string[] {
   return out
 }
 
-/** Folder target: copies each input's step files to the run `output/`. */
+/**
+ * Folder target: copies each input's step files to the run `output/`.
+ * Publish target: asks the tick to send the work copy (`nodes/publish.ts`).
+ */
 export const outputExecutor = defineExecutor({
   kind: "output",
   run(ctx) {
+    if (ctx.node.kind === "output" && ctx.node.target === "publish") {
+      if (!ctx.node.connection) throw new Error("publish needs a connection")
+      return { publish: { connection: ctx.node.connection } }
+    }
     mkdirSync(ctx.stepDir, { recursive: true })
     const outputs: string[] = []
     for (const input of ctx.inputs) {

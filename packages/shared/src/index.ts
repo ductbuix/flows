@@ -419,6 +419,7 @@ export {
 export {
   NODE_KINDS,
   DEFAULT_LOOP_PASSES,
+  proposeConnectionsUpstream,
   assetResourceSchema,
   type AssetResource,
 } from "./nodes/index.ts"

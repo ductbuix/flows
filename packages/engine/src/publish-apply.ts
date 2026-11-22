@@ -81,9 +81,12 @@ export async function gatePublish(
   return true
 }
 
+/** The part of a task a publish call needs; a publish Output node has the same. */
+export type PublishTarget = { id: string; connection: string }
+
 export async function callPublish(
-  host: PublishHost,
-  task: PublishTask,
+  host: Pick<PublishHost, "home" | "runRoot">,
+  task: PublishTarget,
   changeSet: ChangeSet
 ): Promise<ConnectorPublishResult> {
   const conn = readConnection(host.home, task.connection)
@@ -95,14 +98,22 @@ export async function callPublish(
   })
 }
 
+/**
+ * `resultDir` is where `result.json` goes; a task publish uses its attempt
+ * `out/`, an Output step passes its own step folder (BL-084).
+ */
 export function appendPublishFinished(
-  host: PublishHost,
-  task: PublishTask,
-  outcome: ConnectorPublishResult
+  host: Pick<PublishHost, "runId" | "runRoot" | "append">,
+  task: PublishTarget,
+  outcome: ConnectorPublishResult,
+  resultDir?: string
 ): void {
   if (outcome.status === "applied") {
-    prepareAttemptDirs(host.runRoot, task.id, 1)
-    const out = join(attemptDir(host.runRoot, task.id, 1), "out")
+    let out = resultDir
+    if (out === undefined) {
+      prepareAttemptDirs(host.runRoot, task.id, 1)
+      out = join(attemptDir(host.runRoot, task.id, 1), "out")
+    }
     mkdirSync(out, { recursive: true })
     writeFileSync(
       join(out, "result.json"),

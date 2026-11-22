@@ -72,7 +72,8 @@ OpenBot's `WORKFLOW_PORTS` (`packages/contracts/src/ipc-workflows.ts`).
   (DES-026 pinning is unchanged). The step emits the pinned folders on
   `file` and a short index (title, source, revision) on `text`.
 - A step wired from an Asset gets `RESOURCE_<ID>` paths as today; with
-  `propose` it works in the run's work copy.
+  `propose` the path is the run's work copy (`work/<connection>`), made
+  before the step starts and shared by later steps (BL-084).
 - UI: a picker grouped by connection, with search, and chips for the
   chosen resources; freshness shows as in the Library page.
 
@@ -165,12 +166,16 @@ OpenBot's condition node works that way in its main mode
     workflow `output/` when `latest: true`).
   - `publish`: `connection`; builds the change set from that
     connection's work copy and gates it by the policy (DES-026 publish
-    rules move here unchanged).
+    rules move here unchanged). Needs an upstream Asset with `propose`
+    on that connection; a `read-only` connection fails the start. The
+    step waits under "Approve each publish", fails with `conflict` or
+    `rejected`, and writes `result.json` to its step folder (BL-084).
   - `notify`: an in-app notice with `title` and the input text. flows
     has no in-app notice today (no notification code on `develop`), so
     this target needs a small notice store and a bell; it is its own
     later backlog.
-- Run: no process; publish uses the existing publish events.
+- Run: no process; publish runs in the background and uses the
+  existing publish events, with the node id as `taskId`.
 - UI: a target Select on the node, then that target's fields.
 
 ## Named answers and templates

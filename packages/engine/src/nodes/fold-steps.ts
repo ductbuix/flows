@@ -16,6 +16,8 @@ export type StepFailReason =
   | "unclear"
   | "answer"
   | "loop_limit"
+  | "conflict"
+  | "rejected"
 
 /** The latest attempt of a step (DES-034, Retry and Crash recovery). */
 export type AttemptInfo = {

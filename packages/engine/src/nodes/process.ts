@@ -21,6 +21,7 @@ import { resolveFinishReason } from "../failure-reason.ts"
 import { isPidAlive, killProcessGroup, waitForPid } from "../pid.ts"
 import { spawnWrapped, waitForExit } from "../runner.ts"
 import { workflowCacheEnv } from "../task-cache-env.ts"
+import { ensureWorkCopiesFor } from "../work-copy.ts"
 import { remainingTimeoutMs, resolveAttemptTimeout } from "../timeout.ts"
 import type { ExecContext, ExecResult, LaunchSpec } from "./define.ts"
 import type { StepState, StepsState } from "./fold-steps.ts"
@@ -92,6 +93,17 @@ function openCounts(graph: NodeWorkflow, steps: StepsState) {
   return { all, agents }
 }
 
+/** Connections of the proposing Assets wired into this step (BL-084). */
+function proposeConnections(ctx: ExecContext): Set<string> {
+  const ids = new Set<string>()
+  for (const input of ctx.inputs) {
+    const from = ctx.graph.nodes.find((n) => n.id === input.nodeId)
+    if (from?.kind !== "asset" || from.access !== "propose") continue
+    for (const r of from.resources) ids.add(r.connection)
+  }
+  return ids
+}
+
 /** `input/text.md` and `input/files/<fromNodeId>/` links (DES-034). */
 function writeInputs(ctx: ExecContext, inputDir: string): void {
   mkdirSync(inputDir, { recursive: true })
@@ -142,12 +154,13 @@ function buildEnv(
   for (const input of ctx.inputs) {
     env[upstreamEnvName(input.nodeId)] = join(input.dir, "files")
     // A step wired from an Asset gets RESOURCE_<ID> per connection (BL-082).
+    // With `propose` the path is the run's work copy (BL-084).
     const from = ctx.graph.nodes.find((n) => n.id === input.nodeId)
     if (from?.kind !== "asset") continue
     for (const r of from.resources) {
       env[connectionEnvName(r.connection)] = join(
         ctx.runRoot,
-        "resources",
+        from.access === "propose" ? "work" : "resources",
         r.connection
       )
     }
@@ -308,6 +321,7 @@ export function launchAttempt(
     rmSync(attemptRoot, { recursive: true, force: true })
     mkdirSync(join(attemptRoot, "out"), { recursive: true })
     writeInputs(ctx, inputDir)
+    ensureWorkCopiesFor(ctx.runRoot, proposeConnections(ctx))
     spec.prepare?.({ attemptRoot, inputDir })
     cmd = spec.command({ attemptRoot })
   } catch (err) {

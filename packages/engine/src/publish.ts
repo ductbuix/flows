@@ -40,7 +40,7 @@ export function assertPublishTasksValid(
   }
 }
 
-function readStoredChangeSet(
+export function readStoredChangeSet(
   runRoot: string,
   taskId: string
 ): ChangeSet | null {

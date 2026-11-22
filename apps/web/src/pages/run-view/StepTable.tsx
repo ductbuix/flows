@@ -84,7 +84,8 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
                       ? branchLabel(step.decision)
                       : step.failReason === "loop_limit"
                         ? "Loop limit"
-                        : step.kind === "judge" && step.failReason
+                        : (step.kind === "judge" || step.kind === "output") &&
+                            step.failReason
                           ? step.failReason
                           : "-"}
                 </TableCell>

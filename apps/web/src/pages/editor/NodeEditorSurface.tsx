@@ -224,6 +224,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
         <NodeSheet
           key={sheetNode.id}
           workflowId={workflow.id}
+          graph={workflow}
           node={sheetNode}
           onSetting={(key, value) => setSetting(sheetNode.id, key, value)}
           onEditEnd={endEdit}

@@ -8,8 +8,13 @@ export const outputView = defineNodeView({
   Body: ({ node }) => (
     <div className="flex flex-wrap items-center gap-1.5">
       <Badge variant="outline" data-testid="output-target">
-        {node.target === "folder" ? "Folder" : node.target}
+        {node.target === "publish" ? "Publish" : "Folder"}
       </Badge>
+      {node.target === "publish" && node.connection ? (
+        <Badge variant="secondary" data-testid="output-connection">
+          {node.connection}
+        </Badge>
+      ) : null}
       {node.latest ? (
         <span className="text-xs text-muted-foreground">keeps latest</span>
       ) : null}

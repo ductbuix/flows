@@ -1,5 +1,11 @@
 import { Trash2Icon } from "lucide-react"
-import type { AssetResource, WorkflowInputDecl, WorkflowNode } from "@workspace/shared"
+import {
+  proposeConnectionsUpstream,
+  type AssetResource,
+  type NodeWorkflow,
+  type WorkflowInputDecl,
+  type WorkflowNode,
+} from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import {
   Field,
@@ -8,6 +14,13 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 import { Separator } from "@workspace/ui/components/separator"
 import {
   Sheet,
@@ -25,6 +38,8 @@ import { parsePositiveInt, settingKeys } from "./node-sheet"
 
 type Props = {
   workflowId: string
+  /** The whole graph: a publish Output lists the connections upstream. */
+  graph?: NodeWorkflow
   node: WorkflowNode
   onSetting: (key: string, value: unknown) => void
   onEditEnd: () => void
@@ -35,6 +50,7 @@ type Props = {
 /** The 384px node Sheet: settings that do not fit on the card (DES-036). */
 export function NodeSheet({
   workflowId,
+  graph,
   node,
   onSetting,
   onEditEnd,
@@ -48,7 +64,14 @@ export function NodeSheet({
     memory?: string[]
     inputs?: WorkflowInputDecl[]
     resources?: AssetResource[]
+    access?: "read" | "propose"
+    target?: "folder" | "publish"
+    connection?: string
   }
+  const proposeOptions =
+    node.kind === "output" && graph
+      ? proposeConnectionsUpstream(graph.nodes, graph.edges, node.id)
+      : []
   const number = (key: "timeout" | "retry", raw: string) => {
     const n = parsePositiveInt(raw)
     if (n === null) return
@@ -115,6 +138,91 @@ export function NodeSheet({
                   onChange={(e) => number("retry", e.target.value)}
                   onBlur={onEditEnd}
                 />
+              </Field>
+            ) : null}
+            {keys.has("access") ? (
+              <Field>
+                <FieldLabel>Access</FieldLabel>
+                <Select
+                  value={loose.access ?? "read"}
+                  onValueChange={(v) => {
+                    if (v) {
+                      onSetting("access", v)
+                      onEditEnd()
+                    }
+                  }}
+                >
+                  <SelectTrigger data-testid="asset-access">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="read">Read</SelectItem>
+                    <SelectItem value="propose">Propose</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldDescription>
+                  Propose gives wired steps a work copy; an Output can publish it.
+                </FieldDescription>
+              </Field>
+            ) : null}
+            {keys.has("target") ? (
+              <Field>
+                <FieldLabel>Target</FieldLabel>
+                <Select
+                  value={loose.target ?? "folder"}
+                  onValueChange={(v) => {
+                    if (v !== "folder" && v !== "publish") return
+                    onSetting("target", v)
+                    onSetting(
+                      "connection",
+                      v === "publish" ? (proposeOptions[0] ?? undefined) : undefined
+                    )
+                    onEditEnd()
+                  }}
+                >
+                  <SelectTrigger data-testid="output-target-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="folder">Folder</SelectItem>
+                    <SelectItem value="publish">Publish</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            ) : null}
+            {loose.target === "publish" ? (
+              <Field>
+                <FieldLabel>Connection</FieldLabel>
+                <Select
+                  value={loose.connection ?? ""}
+                  onValueChange={(v) => {
+                    if (v) {
+                      onSetting("connection", v)
+                      onEditEnd()
+                    }
+                  }}
+                >
+                  <SelectTrigger data-testid="output-connection-select">
+                    <SelectValue placeholder="Pick a connection" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {proposeOptions.length === 0 ? (
+                      <SelectItem value={loose.connection ?? "none"} disabled>
+                        No propose Asset upstream
+                      </SelectItem>
+                    ) : (
+                      proposeOptions.map((id) => (
+                        <SelectItem key={id} value={id}>
+                          {id}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <FieldDescription>
+                  Only connections of an upstream Asset with propose access. The
+                  connection&apos;s policy decides who approves.
+                </FieldDescription>
               </Field>
             ) : null}
             {keys.has("memory") ? (

@@ -8,13 +8,13 @@ type Meta = { label: string; hint: string }
 export const KIND_META: Record<string, Meta> = {
   trigger: { label: "Trigger", hint: "Starts a run" },
   prompt: { label: "Prompt", hint: "A fixed piece of text" },
-  asset: { label: "Asset", hint: "Library resources, read only" },
+  asset: { label: "Asset", hint: "Library resources, read or propose" },
   agent: { label: "Agent", hint: "An AI agent CLI" },
   command: { label: "Command", hint: "A shell command" },
   llm: { label: "LLM", hint: "One model call, no tools" },
   judge: { label: "Judge", hint: "Answers yes or no and picks a branch" },
   approval: { label: "Approval", hint: "Waits for a person to approve" },
-  output: { label: "Output", hint: "Saves the result to a folder" },
+  output: { label: "Output", hint: "Saves to a folder or publishes changes" },
 }
 
 export function kindIcon(kind: string): LucideIcon | undefined {
