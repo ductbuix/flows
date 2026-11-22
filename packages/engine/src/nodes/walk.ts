@@ -1,5 +1,10 @@
-import { PORT_TABLE, type WorkflowEdge } from "@workspace/shared"
-import { latestStep, type StepsState } from "./fold-steps.ts"
+import {
+  DEFAULT_LOOP_PASSES,
+  PORT_TABLE,
+  findLoopEdges,
+  type WorkflowEdge,
+} from "@workspace/shared"
+import { latestStep, type StepState, type StepsState } from "./fold-steps.ts"
 
 /** The part of a node workflow the walk reads. */
 export type WalkGraph = {
@@ -8,12 +13,18 @@ export type WalkGraph = {
 }
 
 /** What a run covers. `trigger` is the trigger the run started from. */
-export type WalkScope = { trigger: string }
+export type WalkScope = {
+  trigger: string
+  /** Passes a node may run before it fails with `loop_limit`; default 5. */
+  loopPasses?: number
+}
 
 export type WalkAction =
   /** `inputs`: source node ids of the active edges, in edge file order. */
   | { type: "run"; nodeId: string; pass: number; inputs: string[] }
   | { type: "skip"; nodeId: string; pass: number }
+  /** Pass `loopPasses + 1` is not started: the node fails (DES-034, Loops). */
+  | { type: "fail"; nodeId: string; pass: number; reason: "loop_limit" }
 
 type Eff =
   | { s: "none" } // inert: never due in this run
@@ -21,50 +32,55 @@ type Eff =
   | { s: "done"; branch?: string }
   | { s: "ended" } // failed, cancelled or skipped: no active output
 
-/** Forward order: topological, ties by node order. Throws on a cycle. */
+/**
+ * Forward order: topological over the forward edges (loop edges removed),
+ * ties by node order in the file.
+ */
 export function forwardOrder(graph: WalkGraph): string[] {
   const ids = graph.nodes.map((n) => n.id)
   const known = new Set(ids)
+  const loops = findLoopEdges(graph.nodes, graph.edges)
   const indegree = new Map(ids.map((id) => [id, 0]))
-  for (const e of graph.edges) {
+  graph.edges.forEach((e, i) => {
     if (!known.has(e.from) || !known.has(e.to)) {
       throw new Error(`edge ${e.from} -> ${e.to} names an unknown node`)
     }
-    indegree.set(e.to, indegree.get(e.to)! + 1)
-  }
+    if (!loops.has(i)) indegree.set(e.to, indegree.get(e.to)! + 1)
+  })
   const order: string[] = []
   const placed = new Set<string>()
   while (order.length < ids.length) {
     const next = ids.find((id) => !placed.has(id) && indegree.get(id) === 0)
-    if (next === undefined) {
-      const left = ids.filter((id) => !placed.has(id))
-      throw new Error(
-        `workflow has a cycle through ${left.join(", ")}; loops are not supported yet`
-      )
-    }
+    if (next === undefined) throw new Error("loop edges left a cycle")
     placed.add(next)
     order.push(next)
-    for (const e of graph.edges) {
-      if (e.from === next) indegree.set(e.to, indegree.get(e.to)! - 1)
-    }
+    graph.edges.forEach((e, i) => {
+      if (e.from === next && !loops.has(i)) {
+        indegree.set(e.to, indegree.get(e.to)! - 1)
+      }
+    })
   }
   return order
 }
 
-function stepEff(steps: StepsState, nodeId: string): Eff | undefined {
-  const step = latestStep(steps, nodeId)
-  // A pending step was reset by a manual retry: due again, as if new.
-  if (!step || step.status === "pending") return undefined
-  if (step.status === "done") return { s: "done", branch: step.branch }
-  if (step.status === "failed" || step.status === "skipped") return { s: "ended" }
-  if (step.status === "cancelled") return { s: "ended" }
-  return { s: "open" }
+function terminalEff(step: StepState): Eff {
+  return step.status === "done" ? { s: "done", branch: step.branch } : { s: "ended" }
+}
+
+/** A done step whose branch the edge takes. */
+function feeds(e: WorkflowEdge, step: StepState | undefined): step is StepState {
+  return (
+    step?.status === "done" &&
+    (e.branch === undefined || e.branch === step.branch)
+  )
 }
 
 /**
- * Pure walk (DES-034): the actions due now for a forward graph.
- * Nodes with no in port (trigger, prompt) start the run; only the
- * trigger named in `scope` runs. Skips flow on within the same call.
+ * Pure walk (DES-034): the actions due now. Nodes with no in port
+ * (trigger, prompt) start the run; only the trigger named in `scope`
+ * runs. Skips flow on within the same call. A finished node runs again
+ * (the next pass) when an active input, forward or loop, has a newer
+ * result than its latest step.
  */
 export function nextActions(
   graph: WalkGraph,
@@ -72,30 +88,53 @@ export function nextActions(
   steps: StepsState
 ): WalkAction[] {
   const order = forwardOrder(graph)
+  const loops = findLoopEdges(graph.nodes, graph.edges)
+  const limit = scope.loopPasses ?? DEFAULT_LOOP_PASSES
   const kindOf = new Map(graph.nodes.map((n) => [n.id, n.kind]))
   const eff = new Map<string, Eff>()
   const actions: WalkAction[] = []
 
   for (const id of order) {
-    const existing = stepEff(steps, id)
-    if (existing) {
-      eff.set(id, existing)
-      continue
-    }
+    const latest = latestStep(steps, id)
     const kind = kindOf.get(id)!
     const isSource = (PORT_TABLE[kind]?.in.length ?? 0) === 0
+    const incoming = graph.edges
+      .map((e, i) => ({ e, loop: loops.has(i) }))
+      .filter((x) => x.e.to === id)
+    const forward = incoming.filter((x) => !x.loop).map((x) => x.e)
+
+    // A pending step was reset by a manual retry: due again, as if new.
+    let pass = latest ? latest.pass : 1
+    if (latest && latest.status !== "pending") {
+      if (latest.status === "running" || latest.status === "waiting") {
+        eff.set(id, { s: "open" })
+        continue
+      }
+      const stale = forward.some((e) => eff.get(e.from)?.s === "open")
+      // A self edge feeds the node's own finished pass back to it.
+      const newer = incoming.some(({ e }) => {
+        const src = latestStep(steps, e.from)
+        return feeds(e, src) && (e.from === id || src.seq > latest.seq)
+      })
+      if (stale || !newer || isSource) {
+        eff.set(id, stale && !isSource ? { s: "open" } : terminalEff(latest))
+        continue
+      }
+      // A skipped pass is replaced; a finished one is followed by the next.
+      pass = latest.status === "skipped" ? latest.pass : latest.pass + 1
+    }
+
     if (isSource) {
       if (kind === "trigger" && id !== scope.trigger) {
         eff.set(id, { s: "none" })
       } else {
-        actions.push({ type: "run", nodeId: id, pass: 1, inputs: [] })
+        actions.push({ type: "run", nodeId: id, pass, inputs: [] })
         eff.set(id, { s: "open" })
       }
       continue
     }
 
-    const incoming = graph.edges.filter((e) => e.to === id)
-    const states = incoming.map((e) => eff.get(e.from) ?? { s: "none" })
+    const states = forward.map((e) => eff.get(e.from) ?? { s: "none" })
     if (states.some((st) => st.s === "open")) {
       eff.set(id, { s: "open" }) // join waits; so does what follows
       continue
@@ -104,21 +143,25 @@ export function nextActions(
       eff.set(id, { s: "none" })
       continue
     }
-    const active = incoming.filter((e) => {
+    const active = incoming.filter(({ e, loop }) => {
+      if (loop) return feeds(e, latestStep(steps, e.from))
       const st = eff.get(e.from)
       return (
         st?.s === "done" && (e.branch === undefined || e.branch === st.branch)
       )
     })
     if (active.length === 0) {
-      actions.push({ type: "skip", nodeId: id, pass: 1 })
+      actions.push({ type: "skip", nodeId: id, pass })
+      eff.set(id, { s: "ended" })
+    } else if (pass > limit) {
+      actions.push({ type: "fail", nodeId: id, pass, reason: "loop_limit" })
       eff.set(id, { s: "ended" })
     } else {
       actions.push({
         type: "run",
         nodeId: id,
-        pass: 1,
-        inputs: active.map((e) => e.from),
+        pass,
+        inputs: active.map((x) => x.e.from),
       })
       eff.set(id, { s: "open" })
     }

@@ -98,6 +98,47 @@ edges:
   - { from: check, to: rejected, branch: no }
 `
 
+/** Judge loop: draft, check, and No goes back to draft (BL-081). */
+const nodeLoopYaml = (id: string, limits = "") => `id: ${id}
+goal: e2e loop
+${limits}nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: draft
+    kind: command
+    run: 'echo drafted'
+  - id: check
+    kind: judge
+    cli: claude
+  - id: ship
+    kind: command
+    run: 'echo shipped'
+edges:
+  - { from: start, to: draft }
+  - { from: draft, to: check }
+  - { from: check, to: draft, branch: no }
+  - { from: check, to: ship, branch: yes }
+`
+
+const nodeLoopWarnYaml = `id: node-loop-warn
+goal: e2e loop with no judge
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: one
+    kind: command
+    run: 'echo one'
+  - id: two
+    kind: command
+    run: 'echo two'
+edges:
+  - { from: start, to: one }
+  - { from: one, to: two }
+  - { from: two, to: one }
+`
+
 const nodeApprovalYaml = (id: string) => `id: ${id}
 goal: e2e approval node
 nodes:
@@ -232,10 +273,41 @@ export function createE2eHome(): string {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeApprovalYaml(id))
   }
-  // A `claude` on PATH that answers yes, so Judge runs need no real CLI.
+  // Loop workflows for node-loop.spec.ts (BL-081); each test owns one. The
+  // rule `until-pass 3` makes the stub Judge say No until the third pass.
+  for (const [id, limits, until] of [
+    ["node-loop-light", "", 3],
+    ["node-loop-dark", "", 3],
+    ["node-loop-view-light", "", 3],
+    ["node-loop-view-dark", "", 3],
+    ["node-loop-limit", "limits: { loopPasses: 2 }\n", 99],
+  ] as const) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "check"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeLoopYaml(id, limits))
+    writeFileSync(
+      join(dir, "nodes", "check", "rule.md"),
+      `until-pass ${until}\nIs the draft good?\n`
+    )
+  }
+  const loopWarn = join(home, "workflows", "node-loop-warn")
+  mkdirSync(loopWarn, { recursive: true })
+  writeFileSync(join(loopWarn, "workflow.yaml"), nodeLoopWarnYaml)
+  // A `claude` on PATH that answers yes, so Judge runs need no real CLI. A
+  // rule that starts `until-pass N` answers No while the step is before pass N.
   const bin = join(home, "bin")
   mkdirSync(bin, { recursive: true })
-  writeFileSync(join(bin, "claude"), "#!/bin/sh\necho yes\n", { mode: 0o755 })
+  writeFileSync(
+    join(bin, "claude"),
+    [
+      "#!/bin/sh",
+      "n=$(sed -n 's/^until-pass \\([0-9]*\\)$/\\1/p' input/rule.md 2>/dev/null | head -1)",
+      'p=$(printf %s "$PWD" | sed -n \'s/.*pass-\\([0-9]*\\)\\/attempt.*/\\1/p\')',
+      'if [ -n "$n" ] && [ -n "$p" ] && [ "$p" -lt "$n" ]; then echo no; else echo yes; fi',
+      "",
+    ].join("\n"),
+    { mode: 0o755 }
+  )
   const noTrigger = join(home, "workflows", "node-run-none")
   mkdirSync(noTrigger, { recursive: true })
   writeFileSync(

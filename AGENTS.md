@@ -30,7 +30,7 @@ Schema and writing rules: `docs/README.md`.
   headers, Allow agent CLI dialog; Home Needs you (incl. publish +
   connection), expired sign-ins, Work items; Impact/Freshness/Policy on
   `/dev/kit`; Overview (Connections + impact)/Editor (node
-  canvas, drag saves layout; Connections FieldSet with Propose, publish
+  canvas, drag saves layout, loop edges curved; Connections FieldSet with Propose, publish
   node + Cloud badge)/Runs; canvas (Add node, wires, empty state); run view summary Cards + Tasks (step table)/Changes/Library
   pins tabs; connection policy Select.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
@@ -52,12 +52,12 @@ Schema and writing rules: `docs/README.md`.
   incl. trust-agent-review, Cloud effects), model/effort resolve and
   preflight, trust markers, spawn, resume, approval, cancel, retry,
   repeat, `agents` limits, run deletion, frozen `RUN_INPUT`, queued runs,
-  summary cache, port leases, `<workflow>/.cache`; `nodes/` (walk,
+  summary cache, port leases, `<workflow>/.cache`; `nodes/` (walk, loops,
   executors (judge, approval), `tickNodes`, cancel, retry; `startNodeRun`).
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
   websocket, workflow (incl. `kind: publish`), `connection.yaml`, library
   list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
-  events and YAML edits that keep comments and key order (nodes too).
+  events, `findLoopEdges`, YAML edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
   (`layout.spec.ts` baselines, `node-*.spec.ts`).

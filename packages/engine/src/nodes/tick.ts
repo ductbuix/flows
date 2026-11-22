@@ -208,7 +208,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     const fail = (
       nodeId: string,
       pass: number,
-      reason: "exit" | "timeout" | "unclear"
+      reason: "exit" | "timeout" | "unclear" | "loop_limit"
     ) => {
       log.append({
         type: "step_failed",
@@ -350,10 +350,22 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
 
     const actions = nextActions(
       graph,
-      { trigger: trigger ?? "" },
+      { trigger: trigger ?? "", loopPasses: graph.limits?.loopPasses },
       steps
     )
     for (const a of actions) {
+      if (a.type === "fail") {
+        log.append({
+          type: "step_started",
+          runId,
+          at: now(),
+          nodeId: a.nodeId,
+          pass: a.pass,
+        })
+        fail(a.nodeId, a.pass, a.reason)
+        progressed = true
+        continue
+      }
       if (a.type === "skip") {
         log.append({
           type: "step_skipped",

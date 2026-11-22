@@ -6,6 +6,7 @@ import {
   formatElapsed,
   isLive,
   nodeStatus,
+  passesOf,
   trackTimes,
   verdictsOf,
   type NodeRunView,
@@ -91,6 +92,7 @@ export function useNodeRun() {
 
   const views: Record<string, NodeRunView> = {}
   const verdicts = verdictsOf(run?.steps)
+  const passes = passesOf(run?.steps)
   for (const t of run?.tasks ?? []) {
     const status = nodeStatus(t.status)
     if (!status) continue
@@ -102,6 +104,7 @@ export function useNodeRun() {
         : {}),
       ...(results[t.id] ? { result: results[t.id] } : {}),
       ...(verdicts[t.id] ? { verdict: verdicts[t.id] } : {}),
+      ...(passes[t.id] ? { pass: passes[t.id] } : {}),
     }
   }
   return { runId, run, live, views, follow }

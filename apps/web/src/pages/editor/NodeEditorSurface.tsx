@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useReactFlow } from "@xyflow/react"
 import { PlayIcon, Redo2Icon, SaveIcon, Undo2Icon } from "lucide-react"
 import { toast } from "sonner"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import {
   Popover,
@@ -10,7 +15,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@workspace/ui/components/popover"
-import { addEdge } from "@workspace/shared"
+import { addEdge, loopWarnings } from "@workspace/shared"
 import { ActionButton } from "@/components/ActionButton"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { retryTask } from "@/lib/run-actions"
@@ -105,6 +110,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
       rf.getNodes().map((n) => [n.id, { x: n.position.x, y: n.position.y }])
     )
 
+  const warnings = loopWarnings(workflow.nodes, workflow.edges)
   const sheetNode = workflow.nodes.find((n) => n.id === sheetId)
 
   const addAtSlot = (kind: string) =>
@@ -182,6 +188,18 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
           Save
         </Button>
       </div>
+      {warnings.length > 0 ? (
+        <div className="shrink-0 px-6 pb-2">
+          <Alert data-testid="loop-warnings">
+            <AlertTitle>Loop without a Judge</AlertTitle>
+            <AlertDescription>
+              {warnings.map((w) => (
+                <p key={w.index}>{w.message}</p>
+              ))}
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : null}
       <div data-bleed className="min-h-0 flex-1 border-t">
         {workflow.nodes.length === 0 ? (
           <NodeEmpty

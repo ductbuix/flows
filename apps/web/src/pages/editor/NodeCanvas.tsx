@@ -26,8 +26,9 @@ import {
   type NodeEdits,
 } from "@/nodes/NodeCard"
 import { nodeTextPath } from "@/nodes"
-import { branchLabel } from "@/nodes/NodeFrame"
+import { edgeTypes } from "@/nodes/LoopEdge"
 import { placeNodes, type Pos } from "./node-canvas-layout"
+import { canvasEdges } from "./canvas-edges"
 import { wireRefusal } from "./node-add"
 import type { WireSide } from "./node-add"
 
@@ -116,17 +117,7 @@ export function NodeCanvas({
     [initial, setNodes]
   )
 
-  const edges = useMemo<Edge[]>(
-    () =>
-      workflow.edges.map((e, i) => ({
-        id: `edge-${i}-${e.from}-${e.to}`,
-        source: e.from,
-        target: e.to,
-        sourceHandle: e.branch,
-        label: e.branch ? branchLabel(e.branch) : undefined,
-      })),
-    [workflow.edges]
-  )
+  const edges = useMemo<Edge[]>(() => canvasEdges(workflow), [workflow])
 
   const onConnect = (c: Connection) => {
     const edge = {
@@ -165,6 +156,7 @@ export function NodeCanvas({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}

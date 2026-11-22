@@ -1,6 +1,13 @@
 import type { RunDetail } from "@workspace/shared"
 import { describe, expect, it } from "vitest"
-import { formatElapsed, hasTrigger, nodeStatus, trackTimes } from "./node-run"
+import {
+  formatElapsed,
+  hasTrigger,
+  nodeStatus,
+  passesOf,
+  trackTimes,
+  verdictsOf,
+} from "./node-run"
 
 const run = (...tasks: [string, string][]) =>
   ({
@@ -32,5 +39,23 @@ describe("node run view", () => {
     expect(t.c).toEqual({ start: 100, end: 250 })
     t = trackTimes(t, run(["c", "running"]), 400)
     expect(t.c).toEqual({ start: 400 })
+  })
+})
+
+describe("passes of a looping node", () => {
+  const steps = [
+    { nodeId: "a", pass: 1, branch: "no" },
+    { nodeId: "a", pass: 2, branch: "no" },
+    { nodeId: "a", pass: 3, branch: "yes" },
+    { nodeId: "b", pass: 1 },
+  ] as unknown as RunDetail["steps"]
+
+  it("reports the latest pass, only from the second", () => {
+    expect(passesOf(steps)).toEqual({ a: 3 })
+    expect(passesOf(undefined)).toEqual({})
+  })
+
+  it("keeps the verdict of the latest pass", () => {
+    expect(verdictsOf(steps)).toEqual({ a: "yes" })
   })
 })

@@ -1,4 +1,5 @@
 import dagre from "@dagrejs/dagre"
+import { findLoopEdges } from "@workspace/shared"
 
 export const NODE_W = 288
 export const NODE_H = 200
@@ -18,9 +19,12 @@ function overlaps(a: Pos, b: Pos): boolean {
  */
 export function placeNodes(
   nodes: readonly { id: string }[],
-  edges: readonly { from: string; to: string }[],
+  allEdges: readonly { from: string; to: string }[],
   saved: Readonly<Record<string, Pos>>
 ): Record<string, Pos> {
+  // Loop edges point back: they must not pull a node left of its inputs.
+  const loops = findLoopEdges(nodes, allEdges)
+  const edges = allEdges.filter((_, i) => !loops.has(i))
   const g = new dagre.graphlib.Graph()
   g.setDefaultEdgeLabel(() => ({}))
   g.setGraph({ rankdir: "LR", nodesep: GAP_Y, ranksep: GAP_X })

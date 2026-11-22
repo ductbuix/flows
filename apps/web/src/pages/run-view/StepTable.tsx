@@ -82,9 +82,11 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
                     ? branchLabel(step.branch)
                     : step.decision
                       ? branchLabel(step.decision)
-                      : step.kind === "judge" && step.failReason
-                      ? step.failReason
-                      : "-"}
+                      : step.failReason === "loop_limit"
+                        ? "Loop limit"
+                        : step.kind === "judge" && step.failReason
+                          ? step.failReason
+                          : "-"}
                 </TableCell>
                 <TableCell className="tabular-nums">
                   {step.startedAt

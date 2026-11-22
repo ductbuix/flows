@@ -416,5 +416,6 @@ export {
   type NodeYamlDiagnostic,
   type ParsedNodeWorkflowYaml,
 } from "./nodes/parse.ts"
-export { NODE_KINDS } from "./nodes/index.ts"
+export { NODE_KINDS, DEFAULT_LOOP_PASSES } from "./nodes/index.ts"
 export { layoutFileSchema, type LayoutFile } from "./nodes/layout.ts"
+export { findLoopEdges, loopWarnings } from "./nodes/loops.ts"
