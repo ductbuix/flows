@@ -208,3 +208,4 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-21 | Keep code clean, refactor proactively, bounded  | cleaner code without churn; refactors in own commits     | `clean-code.mdc` |
 | 2026-11-22 | Walk starts every no-in-port node (Prompt), one trigger | a Prompt has no input and must feed its edges | BL-075 |
 | 2026-11-22 | PUT body takes optional `renames` for node folder moves; only required node files are created | a full YAML cannot show a rename; optional files such as `system.md` stay absent until used | BL-076 |
+| 2026-11-22 | Layout PUT replaces the whole file; unknown ids are dropped against `workflow.yaml`; a missing or unreadable file reads as empty; writes go through a temp file and rename | the editor owns positions, so no hash check; a bad sidecar must never block the editor | BL-092 |

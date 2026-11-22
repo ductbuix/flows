@@ -52,6 +52,7 @@ import { runInputRoutes } from "./run-input-routes.ts"
 import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
+import { layoutRoutes } from "./layout-routes.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
 import { WsHub } from "./ws-hub.ts"
 
@@ -92,6 +93,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", mcpTrustRoutes(engine))
     .route("/", connectionRoutes(engine))
     .route("/", libraryRoutes(engine))
+    .route("/", layoutRoutes(engine))
     .route("/", workItemRoutes(engine))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
