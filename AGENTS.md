@@ -31,7 +31,7 @@ Schema and writing rules: `docs/README.md`.
   connection), expired sign-ins, Work items; Impact/Freshness/Policy on
   `/dev/kit`; Overview (Connections + impact)/Editor (node
   canvas, drag saves layout, loop edges curved; Connections FieldSet with Propose, publish
-  node + Cloud badge)/Runs; canvas (Add node, Run step + menu, wires, empty state); run view summary Cards + Tasks (step table)/Changes/Library
+  node + Cloud badge)/Runs; canvas (Add node, Run step + menu, run history Card, wires); run view summary Cards + Tasks (step table)/Changes/Library
   pins tabs; connection policy Select.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
