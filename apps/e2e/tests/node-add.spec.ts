@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test"
 
-// Runs against the FLOWS_NODES=1 stack (project "nodes", DES-037 Rollout).
+// Node workflows on the default stack (BL-096).
 test.use({ viewport: { width: 1440, height: 900 } })
 
 const open = async (page: Page, id: string, theme: "light" | "dark") => {

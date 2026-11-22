@@ -28,9 +28,7 @@ test("feature tour", async ({ page }) => {
   await page.goto("/workflows/diamond")
   await beat(page, 2500)
   await page.goto("/workflows/diamond?tab=editor")
-  await expect(page.getByTestId("graph-canvas")).toBeVisible()
-  await beat(page)
-  await page.getByTestId("editor-tab-yaml").click()
+  await expect(page.getByTestId("canvas")).toBeVisible()
   await beat(page, 2000)
 
   await page.goto("/connections")

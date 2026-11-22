@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test"
 
-// Runs against the FLOWS_NODES=1 stack (project "nodes", DES-037 Rollout).
+// Node workflows on the default stack (BL-096).
 test.use({ viewport: { width: 1440, height: 900 } })
 
-const API = `http://127.0.0.1:${process.env.PW_NODES_API_PORT ?? "8788"}`
+const API = `http://127.0.0.1:${process.env.PW_API_PORT ?? "8787"}`
 
 for (const theme of ["light", "dark"] as const) {
   test(`a finished node run shows step rows and the failed step (${theme})`, async ({

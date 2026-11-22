@@ -19,7 +19,7 @@ edges:
 `
 const homes: string[] = []
 afterEach(() => {
-  delete process.env.FLOWS_NODES
+  process.env.FLOWS_NODES = "0"
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 

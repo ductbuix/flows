@@ -88,7 +88,7 @@ export function WorkflowsPage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search workflows"
             data-testid="workflows-search"
-            className="max-w-sm"
+            className="max-w-sm shrink-0"
           />
           {filtered!.length === 0 ? (
             <Empty className="border" data-testid="workflows-empty">

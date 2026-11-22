@@ -19,9 +19,9 @@ import { hashContent } from "./hash.ts"
 import { orphanTaskFolderIds, trashStamp, uniqueTrashDir } from "./task-trash.ts"
 import { workflowYamlPath } from "./workflow-files.ts"
 
-/** `FLOWS_NODES=1` selects the node schema (DES-037 Rollout); read per call. */
+/** Node path is on unless `FLOWS_NODES=0` (DES-037 Rollout, BL-096); read per call. */
 export function nodesEnabled(): boolean {
-  return process.env.FLOWS_NODES === "1"
+  return process.env.FLOWS_NODES !== "0"
 }
 
 function detailOf(workflowId: string, yaml: string): NodeWorkflowDetail {

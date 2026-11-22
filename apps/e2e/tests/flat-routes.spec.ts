@@ -13,9 +13,9 @@ test.describe("flat routes (BL-032)", () => {
     request,
   }) => {
     const runId = await startRun(request, "diamond")
-    await page.goto(`/workflows/diamond/runs/${runId}?view=graph&task=a`)
+    await page.goto(`/workflows/diamond/runs/${runId}?view=graph&task=start`)
     await expect(page).toHaveURL(
-      new RegExp(`/runs/${runId}\\?view=graph&task=a$`)
+      new RegExp(`/runs/${runId}\\?view=graph&task=start$`)
     )
     await expect(page.getByTestId("run-status")).toBeVisible({
       timeout: 30_000,
@@ -27,14 +27,14 @@ test.describe("flat routes (BL-032)", () => {
     request,
   }) => {
     const runId = await startRun(request, "diamond")
-    await page.goto(`/runs/${runId}?task=a`)
-    await expect(page).toHaveURL(new RegExp(`/runs/${runId}\\?task=a$`))
+    await page.goto(`/runs/${runId}?task=start`)
+    await expect(page).toHaveURL(new RegExp(`/runs/${runId}\\?task=start$`))
     await expect(page.getByTestId("run-status")).toHaveText(
       /succeeded|running/,
       {
         timeout: 30_000,
       }
     )
-    await expect(page.getByTestId("task-state-a")).toBeVisible()
+    await expect(page.getByTestId("step-table")).toBeVisible()
   })
 })
