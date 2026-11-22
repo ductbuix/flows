@@ -1,3 +1,4 @@
+import { fillTemplate } from "@workspace/shared"
 import { defineExecutor } from "./define.ts"
 import { forwardInputs, joinedInputText } from "./forward.ts"
 
@@ -10,7 +11,7 @@ export const approvalExecutor = defineExecutor({
   kind: "approval",
   run(ctx) {
     if (ctx.node.kind !== "approval") throw new Error("not an approval node")
-    return { wait: { question: ctx.node.question } }
+    return { wait: { question: fillTemplate(ctx.node.question, ctx.answers) } }
   },
   approved(ctx) {
     return { outputs: forwardInputs(ctx, joinedInputText(ctx)) }

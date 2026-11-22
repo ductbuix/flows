@@ -115,7 +115,7 @@ describe("agent and command executors", () => {
     expect(env).toContain(`NODE_IN=`)
     expect(env).toContain(`${dir}/out`)
     expect(read(home, "r1", `${dir}/out/instructions.txt`)).toMatch(
-      /nodes\/plan\/frozen\/prompt\.md$/
+      /nodes\/plan\/pass-1\/attempt-1\/input\/prompt\.md$/
     )
     // The agent's SUMMARY.md is the step text and out/ the step files.
     expect(read(home, "r1", "nodes/plan/pass-1/text.md")).toBe(

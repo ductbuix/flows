@@ -1,6 +1,8 @@
 import {
   NODE_KINDS,
+  answerDeclSchema,
   workflowInputDeclSchema,
+  type AnswerDecl,
   type WorkflowInputDecl,
 } from "@workspace/shared"
 
@@ -36,6 +38,28 @@ export function inputProblem(
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input"
   if (others.some((o) => o.name === row.name)) {
     return `duplicate input name ${row.name}`
+  }
+  return null
+}
+
+/** First free `answerN` name. */
+export function nextAnswerName(existing: readonly AnswerDecl[]): string {
+  const used = new Set(existing.map((d) => d.name))
+  for (let n = 1; n < 100; n++) {
+    if (!used.has(`answer${n}`)) return `answer${n}`
+  }
+  return `answer${Date.now()}`
+}
+
+/** Why an answer row cannot be saved, or null. `others` are the other rows. */
+export function answerProblem(
+  row: AnswerDecl,
+  others: readonly AnswerDecl[]
+): string | null {
+  const parsed = answerDeclSchema.safeParse(row)
+  if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid answer"
+  if (others.some((o) => o.name === row.name)) {
+    return `duplicate answer name ${row.name}`
   }
   return null
 }

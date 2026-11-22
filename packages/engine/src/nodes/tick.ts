@@ -8,6 +8,7 @@ import {
 import { join } from "node:path"
 import {
   nodeWorkflowSchema,
+  resolveAnswerValues,
   type EngineEvent,
   type NodeWorkflow,
 } from "@workspace/shared"
@@ -188,6 +189,15 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         runRoot,
         stepDir: stepDir(runRoot, nodeId, pass),
         workflowRoot: workflowDir(home, graph.id),
+        answers: resolveAnswerValues(
+          graph.nodes,
+          graph.edges,
+          nodeId,
+          (id) => {
+            const s = latestStep(steps, id)
+            return s?.status === "done" ? s.answer : undefined
+          }
+        ),
         inputs: activeInputs(graph, steps, runRoot, nodeId),
         frozenFile: (name) => {
           const p = join(frozenDir(runRoot, nodeId), name)
@@ -218,7 +228,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     const fail = (
       nodeId: string,
       pass: number,
-      reason: "exit" | "timeout" | "unclear" | "loop_limit"
+      reason: "exit" | "timeout" | "unclear" | "answer" | "loop_limit"
     ) => {
       log.append({
         type: "step_failed",
@@ -276,6 +286,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
             ctx,
             attemptRootOf(ctx.stepDir, c.attempt)
           )
+          if (result.fix) return run(nodeId, pass)
           if (result.failed) fail(nodeId, pass, result.failed)
           else settle(nodeId, pass, result)
         } catch (error) {

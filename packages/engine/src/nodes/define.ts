@@ -21,6 +21,8 @@ export type ExecContext = {
   runRoot: string
   /** Absolute step folder: `nodes/<nodeId>/pass-<p>` under the run. */
   stepDir: string
+  /** Upstream named answers by name, for `{{name}}` (DES-032). */
+  answers: Record<string, unknown>
   /** Active inputs in edge file order. */
   inputs: ExecInput[]
   /** Absolute workflow folder, the sandbox write root. */
@@ -38,7 +40,9 @@ export type ExecResult = {
   branch?: string
   answer?: Record<string, unknown>
   /** The step fails with this reason instead of settling (Judge: `unclear`). */
-  failed?: "unclear"
+  failed?: "unclear" | "answer"
+  /** The answer did not match: run one more attempt that fixes it. */
+  fix?: true
 }
 
 /**
@@ -52,10 +56,10 @@ export type LaunchSpec = {
   cli?: "claude" | "cursor"
   /** Resolved model and effort for `attempt_launched`. */
   modelFields?: { model?: string; effort?: Effort; modelSource: ModelSource }
-  /** Absolute path exported as `NODE_INSTRUCTIONS`. */
-  instructions?: string
+  /** Absolute path exported as `NODE_INSTRUCTIONS`; may depend on the attempt. */
+  instructions?: string | ((attemptRoot: string) => string)
   /** Runs before `attempt_started`; throw to fail the attempt. */
-  prepare?(a: { attemptRoot: string; inputDir: string }): void
+  prepare?(a: { attemptRoot: string; inputDir: string; attempt: number }): void
   /** Shell command, working directory and sandbox needs of one attempt. */
   command(a: { attemptRoot: string }): {
     shell: string

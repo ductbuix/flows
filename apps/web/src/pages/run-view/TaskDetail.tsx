@@ -20,6 +20,7 @@ import {
 import type { RunTaskTab } from "@/lib/paths"
 import { PromoteButton } from "./PromoteButton"
 import { TaskActions } from "./TaskActions"
+import { TaskDetailAnswer } from "./TaskDetailAnswer"
 import { TaskDetailAttempts } from "./TaskDetailAttempts"
 import { TaskDetailEnvironment } from "./TaskDetailEnvironment"
 import { TaskDetailOutput } from "./TaskDetailOutput"
@@ -43,6 +44,7 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
   const attemptN = latestAttempt(task)
   const attempt = task.attempts.at(-1)
   const spawnedChildren = run.tasks.filter((t) => t.spawnedBy === task.id)
+  const step = run.steps?.filter((s) => s.nodeId === task.id).at(-1)
   const label = run.graph.tasks.find((t) => t.id === task.id)?.name ?? task.id
 
   return (
@@ -91,6 +93,7 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
             value="output"
             className="flex min-h-0 flex-1 flex-col gap-4"
           >
+            <TaskDetailAnswer step={step} />
             <TaskDetailSummary
               runId={run.id}
               taskId={task.id}
