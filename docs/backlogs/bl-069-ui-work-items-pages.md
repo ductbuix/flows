@@ -26,5 +26,3 @@ items, Work item page). Fixes S5, #03, #05.
 - [ ] Context adds entities with one `Combobox` in the section toolbar.
 - [ ] Notes Save is a default button at the right of the `CardFooter`.
 - [ ] Header has Start run (primary) and a More menu.
-- [ ] Evidence: light and dark screenshots at
-      1440x900 of both pages, attached to the PR.

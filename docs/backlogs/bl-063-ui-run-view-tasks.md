@@ -34,6 +34,3 @@ view: Tasks tab, Auto-select, Task detail, SUMMARY.md). Fixes S10, S14,
 - [ ] SUMMARY.md maps h1 to `font-heading text-xl font-medium`, h2 to
       `font-heading text-base font-medium`, tables to shadcn `Table`,
       code to `CodeBlock size="sm"`.
-- [ ] Evidence: light and dark screenshots at
-      1440x900 of a failed run opening on Terminal, retry, and a
-      SUMMARY.md with a table, attached to the PR.

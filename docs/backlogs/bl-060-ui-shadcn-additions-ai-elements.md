@@ -31,5 +31,3 @@ realigned to the registry).
 - [ ] `environment-variables.tsx` moves to `components/data/`.
 - [ ] `/dev/kit` shows each new part and each AI Element in light and
       dark.
-- [ ] Evidence: light and dark screenshots at
-      1440x900 of `/dev/kit`, attached to the PR.

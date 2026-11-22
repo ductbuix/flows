@@ -2,7 +2,7 @@
 id: BL-073
 title: "Workflow display name: optional name in workflow.yaml"
 type: backlog
-status: doing
+status: done
 summary: Optional top-level name in workflow.yaml, returned by the API, editable in the editor, kept on YAML round-trip; id is the fallback.
 tags: [ui, web, server, shared, yaml]
 related: [DES-002, DES-027, DES-028, DES-029, DES-030, DES-013]
@@ -44,7 +44,3 @@ spec").
 - [x] Create workflow asks for Name first and fills the folder id from
       it (lowercase, dashes), still editable, shown in mono.
 - [x] DES-002 shows `name` in the workflow file example.
-- [ ] Evidence: light and dark screenshots at
-      1440x900 of creating a named workflow, editing its name in the
-      editor, and the sidebar and Workflows table showing it, attached to
-      the PR.

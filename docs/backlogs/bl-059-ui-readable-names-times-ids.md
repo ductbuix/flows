@@ -2,7 +2,7 @@
 id: BL-059
 title: "UI labels: readable names, relative times, IdText"
 type: backlog
-status: doing
+status: done
 summary: workflowLabel, runLabel, RelativeTime and IdText; readable labels first everywhere, ids secondary mono with copy.
 tags: [ui, web, ux, dx]
 related: [DES-027, DES-029, DES-030, BL-073]
@@ -36,6 +36,3 @@ label). Fixes S11 and the time part of S16.
       raw UUID or ISO timestamp is a primary label on Home, Runs, Run
       view or Library.
 - [x] Status Badge mappings move to `components/data/`.
-- [ ] Evidence: light and dark screenshots at
-      1440x900 of Home, Runs, a run view and the Library tab, attached
-      to the PR.

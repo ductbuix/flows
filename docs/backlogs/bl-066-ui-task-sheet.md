@@ -31,6 +31,3 @@ Sheet). Fixes #12, #13, S5, S15 and the memory gap in J-b.
       the right.
 - [ ] Footer has Done and Delete task (`destructive`); Esc and overlay
       click close and return focus to the node.
-- [ ] Evidence: light and dark screenshots at
-      1440x900 of adding an agent task end to end (journey R2 in
-      DES-030), attached to the PR.
