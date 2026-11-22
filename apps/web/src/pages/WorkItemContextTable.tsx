@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { FreshnessBadge } from "@/components/FreshnessBadge"
+import { FreshnessBadge } from "@/components/data/FreshnessBadge"
 
 export function linkKey(link: WorkItemLink): string {
   return `${link.connection}/${link.kind}/${link.entityId}`

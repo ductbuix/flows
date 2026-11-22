@@ -125,17 +125,11 @@ export function MemoryFileDialogs({
               Cancel
             </Button>
             {pendingRename && pendingRename.referencedBy.length > 0 && (
-              <Button
-                onClick={() => void confirmRename(true)}
-              >
+              <Button onClick={() => void confirmRename(true)}>
                 Rename and update refs
               </Button>
             )}
-            <Button
-              onClick={() => void confirmRename(false)}
-            >
-              Rename
-            </Button>
+            <Button onClick={() => void confirmRename(false)}>Rename</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

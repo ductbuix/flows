@@ -1,4 +1,7 @@
 import { Link, useNavigate } from "react-router"
+import { IdText } from "@/components/data/IdText"
+import { RelativeTime } from "@/components/data/RelativeTime"
+import { useLabels } from "@/hooks/use-labels"
 import { Play } from "lucide-react"
 import {
   Empty,
@@ -21,7 +24,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import { PageSection } from "@/components/page"
 import { useRunsList } from "@/hooks/use-runs-list"
 import { runPath } from "@/lib/paths"
@@ -34,6 +37,7 @@ type Props = {
 export function WorkItemRunsSection({ workItemId }: Props) {
   const navigate = useNavigate()
   const { runs, error } = useRunsList({ workItemId })
+  const { workflowLabelFor } = useLabels()
 
   return (
     <PageSection title="Runs">
@@ -64,7 +68,6 @@ export function WorkItemRunsSection({ workItemId }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>Run</TableHead>
-              <TableHead>Workflow</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Started</TableHead>
             </TableRow>
@@ -78,16 +81,16 @@ export function WorkItemRunsSection({ workItemId }: Props) {
                 onClick={() => void navigate(runPath(run.id))}
               >
                 <TableCell>
-                  <Link
-                    to={runPath(run.id)}
-                    className="font-mono text-sm hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {run.id}
-                  </Link>
-                </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {run.workflowName}
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={runPath(run.id)}
+                      className="text-sm font-medium hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {workflowLabelFor(run.workflowId)}
+                    </Link>
+                    <IdText id={run.id} />
+                  </div>
                 </TableCell>
                 <TableCell>
                   <RunStatusBadge
@@ -96,7 +99,7 @@ export function WorkItemRunsSection({ workItemId }: Props) {
                   />
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {run.startedAt}
+                  <RelativeTime value={run.startedAt} />
                 </TableCell>
               </TableRow>
             ))}

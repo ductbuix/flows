@@ -119,8 +119,8 @@ export function AddConnectionDialog({ open, onOpenChange, onCreated }: Props) {
         <DialogHeader>
           <DialogTitle>Add connection</DialogTitle>
           <DialogDescription>
-            Connect an outside system. Sign-in stays on this machine; tasks
-            only see pulled data.
+            Connect an outside system. Sign-in stays on this machine; tasks only
+            see pulled data.
           </DialogDescription>
         </DialogHeader>
         <AddConnectionFields

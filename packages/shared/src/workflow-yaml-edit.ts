@@ -148,10 +148,25 @@ export function setTaskField(
 
 export function setWorkflowField(
   text: string,
-  field: "goal" | "limits" | "id" | "inputs" | "agent",
+  field: "goal" | "limits" | "id" | "inputs" | "agent" | "name",
   value: unknown
 ): string {
   const doc = parse(text)
+  if (
+    field === "name" &&
+    value !== undefined &&
+    value !== null &&
+    isMap(doc.contents) &&
+    !doc.has("name")
+  ) {
+    // A new name sits right after id so the file reads top-down.
+    const map = doc.contents
+    const at = map.items.findIndex(
+      (p) => String((p.key as Scalar).value) === "id"
+    )
+    map.items.splice(at + 1, 0, doc.createPair("name", value))
+    return emit(doc)
+  }
   if (value === undefined || value === null) doc.deleteIn([field])
   else doc.setIn([field], value)
   return emit(doc)

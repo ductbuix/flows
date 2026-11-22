@@ -14,9 +14,9 @@ test.describe("home needs you (BL-035)", () => {
 
     const confirmation = page.getByTestId(`home-needs-you-${runId}-hold`)
     await expect(confirmation).toBeVisible({ timeout: 15_000 })
-    await expect(confirmation).toContainText("gate")
+    await expect(confirmation).toContainText("Gate")
     await expect(confirmation).toContainText("hold")
-    await expect(confirmation).toContainText(runId)
+    await expect(confirmation).toContainText("Ad hoc run")
 
     await page.screenshot({
       path: "test-results/home-needs-you-light.png",

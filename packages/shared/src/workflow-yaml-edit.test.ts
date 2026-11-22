@@ -125,6 +125,22 @@ tasks:
     ])
   })
 
+  it("setWorkflowField name goes after id, keeps comments, and clears", () => {
+    const named = setWorkflowField(fixture, "name", "Research")
+    expect(named).toContain("# header: research workflow")
+    expect(named).toContain("# inline on goal")
+    expect(named.indexOf("name: Research")).toBe(
+      named.indexOf("id: research") + "id: research\n".length
+    )
+    const renamed = setWorkflowField(named, "name", "Deep research")
+    expect(renamed).toContain("name: Deep research")
+    expect(renamed.match(/^name:/gm)).toHaveLength(1)
+    const cleared = setWorkflowField(renamed, "name", undefined)
+    expect(cleared).not.toContain("name: Deep research")
+    expect(cleared).toContain("# header: research workflow")
+    expect(cleared).toContain("id: research\ngoal:")
+  })
+
   it("setWorkflowField inputs and maxConcurrentRuns keep comments", () => {
     let text = fixture
     text = setWorkflowField(text, "inputs", [

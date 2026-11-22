@@ -9,11 +9,11 @@ import {
 import { Confirmation } from "@/components/ai-elements/confirmation"
 import { Plan } from "@/components/ai-elements/plan"
 import { Task } from "@/components/ai-elements/task"
-import { FreshnessBadge } from "@/components/FreshnessBadge"
-import { ImpactBadge } from "@/components/ImpactBadge"
+import { FreshnessBadge } from "@/components/data/FreshnessBadge"
+import { ImpactBadge } from "@/components/data/ImpactBadge"
 import { Page, PageSection, PageTitle } from "@/components/page"
-import { PublishPolicyBadge } from "@/components/PublishPolicyBadge"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { PublishPolicyBadge } from "@/components/data/PublishPolicyBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 
 const RUN_STATUSES = [
   "queued",

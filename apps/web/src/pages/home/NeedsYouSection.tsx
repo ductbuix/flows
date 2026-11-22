@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useLabels } from "@/hooks/use-labels"
 import { ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
@@ -14,6 +15,7 @@ type Props = {
 }
 
 export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
+  const { workflowLabelFor, runLabelFor } = useLabels()
   const [rejectTarget, setRejectTarget] = useState<NeedsYouItem | null>(null)
   const [pendingKey, setPendingKey] = useState<string | null>(null)
 
@@ -53,13 +55,13 @@ export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
               icon={<ShieldCheck />}
               title={
                 publish
-                  ? `${item.run.workflowName} · publish ${item.taskId}`
-                  : `${item.run.workflowName} · ${item.taskId}`
+                  ? `${workflowLabelFor(item.run.workflowId)} · publish ${item.taskId}`
+                  : `${workflowLabelFor(item.run.workflowId)} · ${item.taskId}`
               }
               description={
                 publish
-                  ? `Connection ${item.connectionId} · Run ${item.run.id}`
-                  : `Run ${item.run.id}`
+                  ? `Connection ${item.connectionId} · ${runLabelFor(item.run)}`
+                  : runLabelFor(item.run)
               }
               approveLabel={publish ? "Publish" : "Approve"}
               denyLabel={publish ? "Discard" : "Reject"}

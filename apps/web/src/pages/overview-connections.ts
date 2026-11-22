@@ -1,5 +1,5 @@
 import type { TaskUsesEntry, Workflow } from "@workspace/shared"
-import type { Impact } from "@/components/ImpactBadge"
+import type { Impact } from "@/components/data/ImpactBadge"
 
 export type OverviewConnection = {
   connection: string

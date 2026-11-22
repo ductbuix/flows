@@ -1,4 +1,6 @@
 import { Link } from "react-router"
+import { RelativeTime } from "@/components/data/RelativeTime"
+import { useLabels } from "@/hooks/use-labels"
 import type { RunSummary } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -9,7 +11,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@workspace/ui/components/item"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import { PageSection } from "@/components/page"
 import { runPath } from "@/lib/paths"
 
@@ -18,6 +20,7 @@ type Props = {
 }
 
 export function RecentRunsSection({ runs }: Props) {
+  const { workflowLabelFor, runLabelFor } = useLabels()
   return (
     <PageSection title="Recent runs">
       {runs.length === 0 ? (
@@ -37,18 +40,18 @@ export function RecentRunsSection({ runs }: Props) {
                 <ItemTitle>
                   <Button
                     variant="link"
-                    className="h-auto p-0 font-mono"
+                    className="h-auto p-0"
                     render={<Link to={runPath(run.id)} />}
                   >
-                    {run.id}
+                    {runLabelFor(run)}
                   </Button>
                   <span className="text-muted-foreground">
                     {" "}
-                    · {run.workflowName}
+                    · {workflowLabelFor(run.workflowId)}
                   </span>
                 </ItemTitle>
                 <ItemDescription>
-                  {run.finishedAt ?? run.startedAt}
+                  <RelativeTime value={run.finishedAt ?? run.startedAt} />
                 </ItemDescription>
               </ItemContent>
               <ItemActions>

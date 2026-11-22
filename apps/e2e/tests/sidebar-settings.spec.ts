@@ -31,6 +31,8 @@ test.describe("sidebar shell and settings", () => {
     expect(box).toBeTruthy()
     expect(box!.width).toBeGreaterThan(384)
 
+    await page.getByTestId("create-name-input").fill("Named e2e")
+
     await page.getByTestId("create-id-input").fill(id)
     await page.getByTestId("create-goal-input").fill("sidebar e2e")
     await page.getByTestId("create-submit").click()

@@ -20,9 +20,10 @@ export type LifecycleResult =
       kind: "not_found" | "conflict" | "exists" | "live" | "invalid"
     }
 
-function starterYaml(id: string, goal: string): string {
+function starterYaml(id: string, goal: string, name?: string): string {
+  const label = name ? `name: ${JSON.stringify(name)}\n` : ""
   return `id: ${id}
-goal: ${goal}
+${label}goal: ${goal}
 tasks:
   - id: start
     kind: command
@@ -33,7 +34,8 @@ tasks:
 export function createWorkflow(
   engine: Engine,
   id: string,
-  goal: string
+  goal: string,
+  name?: string
 ): LifecycleResult & { summary?: WorkflowSummary } {
   const parsed = workflowIdSchema.safeParse(id)
   if (!parsed.success) return { ok: false, kind: "invalid" }
@@ -43,8 +45,11 @@ export function createWorkflow(
   mkdirSync(join(dir, "memory"), { recursive: true })
   mkdirSync(join(dir, "input"), { recursive: true })
   mkdirSync(join(dir, "output"), { recursive: true })
-  writeFileSync(join(dir, "workflow.yaml"), starterYaml(id, goal), "utf8")
-  return { ok: true, summary: { id, goal, taskCount: 1 } }
+  writeFileSync(join(dir, "workflow.yaml"), starterYaml(id, goal, name), "utf8")
+  return {
+    ok: true,
+    summary: { id, ...(name ? { name } : {}), goal, taskCount: 1 },
+  }
 }
 
 export function renameWorkflow(

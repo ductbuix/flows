@@ -70,13 +70,9 @@ export function buildManualValuesSchema(decls: WorkflowInputDecl[]) {
   const shape: Record<string, z.ZodType<string | undefined>> = {}
   for (const decl of decls) {
     if (decl.type === "file") continue
-    let field: z.ZodType<string | undefined> = z.string()
-    if (decl.required) {
-      field = z.string().refine((v) => v.trim().length > 0, "required")
-    } else {
-      field = z.string().optional()
-    }
-    shape[decl.name] = field
+    shape[decl.name] = decl.required
+      ? z.string().refine((v) => v.trim().length > 0, "required")
+      : z.string().optional()
   }
   return z.object(shape).passthrough()
 }

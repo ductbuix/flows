@@ -43,10 +43,7 @@ export function MemoryCreateBar({
           e.target.value = ""
         }}
       />
-      <Button
-        variant="outline"
-        onClick={() => pickRef.current?.click()}
-      >
+      <Button variant="outline" onClick={() => pickRef.current?.click()}>
         Import .md
       </Button>
     </div>

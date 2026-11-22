@@ -1,4 +1,7 @@
 import { Fragment } from "react"
+import { IdText } from "@/components/data/IdText"
+import { RelativeTime } from "@/components/data/RelativeTime"
+import { useLabels } from "@/hooks/use-labels"
 import { Link, useNavigate } from "react-router"
 import {
   Table,
@@ -8,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import type { RunItemGroup } from "@/lib/group-runs-by-item"
 import { runPath } from "@/lib/paths"
 
@@ -18,6 +21,7 @@ type Props = {
 
 export function RunsGroupedTable({ groups }: Props) {
   const navigate = useNavigate()
+  const { workflowLabelFor, runLabelFor } = useLabels()
   return (
     <Table data-testid="runs-table">
       <TableHeader>
@@ -45,16 +49,19 @@ export function RunsGroupedTable({ groups }: Props) {
                 onClick={() => void navigate(runPath(run.id))}
               >
                 <TableCell>
-                  <Link
-                    to={runPath(run.id)}
-                    className="font-mono text-sm hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {run.id}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={runPath(run.id)}
+                      className="text-sm font-medium hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {runLabelFor(run)}
+                    </Link>
+                    <IdText id={run.id} />
+                  </div>
                 </TableCell>
-                <TableCell className="font-mono text-sm">
-                  {run.workflowName}
+                <TableCell className="text-sm">
+                  {workflowLabelFor(run.workflowId)}
                 </TableCell>
                 <TableCell>
                   <RunStatusBadge
@@ -64,7 +71,7 @@ export function RunsGroupedTable({ groups }: Props) {
                   />
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {run.startedAt}
+                  <RelativeTime value={run.startedAt} />
                 </TableCell>
                 <TableCell>
                   {run.taskCounts.done}/{run.taskCounts.total}

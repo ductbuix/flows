@@ -184,8 +184,12 @@ const workflowInputsSchema = z
     }
   })
 
+/** Optional display label; the folder id stays the stable key (BL-073). */
+export const workflowNameSchema = z.string().trim().min(1).max(80)
+
 export const workflowSchema = z.object({
   id: z.string().min(1),
+  name: workflowNameSchema.optional(),
   goal: z.string().optional(),
   limits: workflowLimitsSchema.optional(),
   /** Declared start-run form fields (DES-021). */

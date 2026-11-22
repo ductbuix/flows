@@ -49,9 +49,7 @@ export function useWorkflowSocket(
 
     return () => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(
-          JSON.stringify({ type: "unsubscribe_workflow", workflowId })
-        )
+        ws.send(JSON.stringify({ type: "unsubscribe_workflow", workflowId }))
       }
       ws.close()
     }

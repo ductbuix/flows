@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useWorkflowLabel } from "@/lib/workflows-context"
 import { useParams } from "react-router"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -31,14 +32,16 @@ export function WorkflowEditorPage() {
   const { pendingDelete, requestDelete, clearPendingDelete } =
     usePendingTaskDelete(workflowId, state.workflow)
 
+  const workflowLabel = useWorkflowLabel(workflowId, state.workflow?.name)
   const crumbs = [
     { label: "Workflows", to: "/workflows" },
-    { label: workflowId },
+    { label: workflowLabel },
   ] as const
 
   const heading = (
     <WorkflowHeading
       workflowId={workflowId}
+      name={state.workflow?.name}
       tab="editor"
       description={
         state.workflow?.goal?.trim() || "Edit the graph, tasks and YAML."
@@ -140,6 +143,7 @@ export function WorkflowEditorPage() {
               workflow={state.workflow}
               selectedTaskId={state.selectedTaskId}
               errors={state.errors}
+              onChangeName={editor.changeName}
               onChangeGoal={editor.changeGoal}
               onChangeTask={editor.changeTask}
               onChangeInputs={editor.changeInputs}

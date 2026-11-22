@@ -21,6 +21,7 @@ import {
   yamlAfterAgent,
   yamlAfterConnect,
   yamlAfterGoal,
+  yamlAfterName,
   yamlAfterInputs,
   yamlAfterLimits,
   yamlAfterRemoveTask,
@@ -100,6 +101,7 @@ export function useEditorMutations({
       const next = yamlAfterConnect(yaml, workflow, source, target)
       if (next) withYaml(next)
     },
+    changeName: (name: string) => withYaml(yamlAfterName(yaml, name)),
     changeGoal: (goal: string) => withYaml(yamlAfterGoal(yaml, goal)),
     changeInputs: (inputs: WorkflowInputDecl[] | undefined) =>
       withYaml(yamlAfterInputs(yaml, inputs)),

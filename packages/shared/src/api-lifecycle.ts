@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { workflowNameSchema } from "./workflow.ts"
 
 /** Workflow dir name / id: lowercase letters, digits and dashes (DES-013). */
 export const workflowIdSchema = z
@@ -8,6 +9,7 @@ export const workflowIdSchema = z
 
 export const createWorkflowBodySchema = z.object({
   id: workflowIdSchema,
+  name: workflowNameSchema.optional(),
   goal: z.string().min(1),
 })
 

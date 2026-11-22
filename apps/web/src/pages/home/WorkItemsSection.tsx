@@ -1,4 +1,6 @@
 import { Link } from "react-router"
+import { RelativeTime } from "@/components/data/RelativeTime"
+import { useLabels } from "@/hooks/use-labels"
 import { Button } from "@workspace/ui/components/button"
 import {
   Item,
@@ -8,7 +10,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@workspace/ui/components/item"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import { PageSection } from "@/components/page"
 import { workItemPath } from "@/lib/paths"
 import type { HomeWorkItem } from "./home-work-items"
@@ -18,6 +20,7 @@ type Props = {
 }
 
 export function WorkItemsSection({ items }: Props) {
+  const { workflowLabelFor } = useLabels()
   return (
     <PageSection title="Work items">
       {items.length === 0 ? (
@@ -47,11 +50,11 @@ export function WorkItemsSection({ items }: Props) {
                   </Button>
                   <span className="text-muted-foreground">
                     {" "}
-                    · {run.workflowName}
+                    · {workflowLabelFor(run.workflowId)}
                   </span>
                 </ItemTitle>
                 <ItemDescription>
-                  {run.finishedAt ?? run.startedAt}
+                  <RelativeTime value={run.finishedAt ?? run.startedAt} />
                 </ItemDescription>
               </ItemContent>
               <ItemActions>

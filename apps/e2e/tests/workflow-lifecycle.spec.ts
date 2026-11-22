@@ -13,6 +13,7 @@ test.describe("workflow lifecycle", () => {
     await page.goto("/")
     await page.getByTestId("workflow-create-open").click()
     await expect(page.getByTestId("workflow-create")).toBeVisible()
+    await page.getByTestId("create-name-input").fill("Named e2e")
     await page.getByTestId("create-id-input").fill(id)
     await page.getByTestId("create-goal-input").fill("lifecycle e2e")
     await page.getByTestId("create-submit").click()

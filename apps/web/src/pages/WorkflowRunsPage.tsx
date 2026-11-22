@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
+import { IdText } from "@/components/data/IdText"
+import { RelativeTime } from "@/components/data/RelativeTime"
+import { useLabels } from "@/hooks/use-labels"
+import { useWorkflowLabel } from "@/lib/workflows-context"
 import { Link, useNavigate, useParams } from "react-router"
 import { Play } from "lucide-react"
 import type { RunSummary } from "@workspace/shared"
@@ -33,7 +37,7 @@ import { deleteRun } from "@/lib/run-actions"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ActionButton } from "@/components/ActionButton"
 import { Page } from "@/components/page"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { RunRowMenu } from "@/pages/RunRowMenu"
 import { WorkflowHeading } from "@/pages/WorkflowHeading"
@@ -48,9 +52,11 @@ export function WorkflowRunsPage() {
   const [deleteTarget, setDeleteTarget] = useState<RunSummary | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const workflowLabel = useWorkflowLabel(workflowId)
+  const { runLabelFor } = useLabels()
   const crumbs = [
     { label: "Workflows", to: "/workflows" },
-    { label: workflowId },
+    { label: workflowLabel },
   ] as const
 
   const reload = useCallback(async () => {
@@ -180,13 +186,16 @@ export function WorkflowRunsPage() {
                 {runs.map((run) => (
                   <TableRow key={run.id} data-testid={`run-row-${run.id}`}>
                     <TableCell>
-                      <Button
-                        variant="link"
-                        className="h-auto p-0 font-mono"
-                        render={<Link to={runPath(run.id)} />}
-                      >
-                        {run.id}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="link"
+                          className="h-auto p-0"
+                          render={<Link to={runPath(run.id)} />}
+                        >
+                          {runLabelFor(run)}
+                        </Button>
+                        <IdText id={run.id} />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <RunStatusBadge
@@ -195,7 +204,7 @@ export function WorkflowRunsPage() {
                       />
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {run.startedAt}
+                      <RelativeTime value={run.startedAt} />
                     </TableCell>
                     <TableCell>
                       {run.taskCounts.done}/{run.taskCounts.total}

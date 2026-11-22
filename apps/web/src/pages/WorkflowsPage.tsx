@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react"
+import { RelativeTime } from "@/components/data/RelativeTime"
+import { IdText } from "@/components/data/IdText"
+import { workflowLabel } from "@/lib/labels"
 import { Link, useNavigate } from "react-router"
 import { FolderOpen } from "lucide-react"
 import type { RunSummary } from "@workspace/shared"
@@ -25,7 +28,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { Page, PageTitle } from "@/components/page"
-import { RunStatusBadge } from "@/components/RunStatusBadge"
+import { RunStatusBadge } from "@/components/data/RunStatusBadge"
 import { useRunsList } from "@/hooks/use-runs-list"
 import { workflowPath } from "@/lib/paths"
 import { useWorkflows } from "@/lib/workflows-context"
@@ -53,6 +56,7 @@ export function WorkflowsPage() {
     return workflows.filter(
       (wf) =>
         wf.id.toLowerCase().includes(q) ||
+        workflowLabel(wf).toLowerCase().includes(q) ||
         (wf.goal?.toLowerCase().includes(q) ?? false)
     )
   }, [workflows, search])
@@ -125,13 +129,16 @@ export function WorkflowsPage() {
                       onClick={() => void navigate(workflowPath(wf.id))}
                     >
                       <TableCell>
-                        <Link
-                          to={workflowPath(wf.id)}
-                          className="font-mono text-sm hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {wf.id}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={workflowPath(wf.id)}
+                            className="text-sm font-medium hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {workflowLabel(wf)}
+                          </Link>
+                          <IdText id={wf.id} copy={false} />
+                        </div>
                       </TableCell>
                       <TableCell>{wf.taskCount}</TableCell>
                       <TableCell>
@@ -148,7 +155,7 @@ export function WorkflowsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {last?.startedAt ?? "—"}
+                        {last ? <RelativeTime value={last.startedAt} /> : "—"}
                       </TableCell>
                     </TableRow>
                   )

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { FreshnessBadge } from "@/components/FreshnessBadge"
+import { FreshnessBadge } from "@/components/data/FreshnessBadge"
 
 function pinnedBy(entity: LibraryEntity): string {
   const ids = new Set<string>()
