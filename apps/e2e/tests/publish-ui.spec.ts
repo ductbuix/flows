@@ -162,6 +162,7 @@ tasks:
     await screenshotThemes(page, "publish-waiting")
 
     await page.getByTestId("task-approve").click()
+    await page.getByTestId("run-tab-changes").click()
     await expect(page.getByTestId("run-effects")).toBeVisible({
       timeout: 45_000,
     })

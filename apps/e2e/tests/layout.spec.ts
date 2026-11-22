@@ -182,7 +182,11 @@ test.describe("layout check (BL-061)", () => {
 
         // Lists depend on what other specs created, so dynamic routes
         // compare only the title block; the rest is covered by the checks.
-        const mask = [page.locator("time"), page.getByTestId("id-text")]
+        const mask = [
+          page.locator("time"),
+          page.getByTestId("id-text"),
+          page.getByTestId("run-took"),
+        ]
         await expect(page).toHaveScreenshot(`${route.name}-${theme}.png`, {
           maxDiffPixelRatio: 0.01,
           mask,

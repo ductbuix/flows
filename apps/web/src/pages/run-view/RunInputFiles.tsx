@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
-import { FieldLegend, FieldSet } from "@workspace/ui/components/field"
 import { api } from "@/lib/api"
 import { mono } from "@/components/data/mono"
 
@@ -60,18 +59,18 @@ export function RunInputFiles({ runId, files }: Props) {
   }
 
   return (
-    <FieldSet data-testid="run-inputs" className="gap-2">
-      <FieldLegend variant="label">Run input</FieldLegend>
+    <div data-testid="run-inputs">
       {files.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No input files.</p>
+        <p className="text-sm text-muted-foreground">None</p>
       ) : (
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-1">
           {files.map((path) => (
             <li key={path}>
               {isTextPreview(path) ? (
                 <Button
                   type="button"
                   variant="outline"
+                  
                   className={mono}
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   onClick={() => void openPreview(path)}
@@ -81,6 +80,7 @@ export function RunInputFiles({ runId, files }: Props) {
               ) : (
                 <Button
                   variant="outline"
+                  
                   className={mono}
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   render={<a href={downloadHref(runId, path)} download />}
@@ -121,6 +121,6 @@ export function RunInputFiles({ runId, files }: Props) {
           )}
         </DialogContent>
       </Dialog>
-    </FieldSet>
+    </div>
   )
 }

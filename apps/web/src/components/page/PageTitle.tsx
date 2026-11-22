@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 
 type Props = {
   title: string
-  description: string
+  description: ReactNode
   badge?: ReactNode
 }
 
@@ -14,7 +14,9 @@ export function PageTitle({ title, description, badge }: Props) {
         <h1 className="font-heading text-xl font-medium">{title}</h1>
         {badge}
       </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <div className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+        {description}
+      </div>
     </div>
   )
 }

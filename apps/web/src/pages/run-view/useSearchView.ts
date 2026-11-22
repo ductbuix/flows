@@ -10,7 +10,9 @@ export function useSearchView() {
   const view: RunBodyView =
     searchParams.get("view") === "graph" ? "graph" : "list"
   const taskId = searchParams.get("task") ?? undefined
-  const tab: RunTaskTab = parseRunTaskTab(searchParams.get("tab")) ?? "output"
+  const explicitTab = parseRunTaskTab(searchParams.get("tab"))
+  const tab: RunTaskTab = explicitTab ?? "output"
+  const tabExplicit = explicitTab !== undefined && explicitTab !== null
 
   const setView = useCallback(
     (next: RunBodyView) => {
@@ -58,7 +60,7 @@ export function useSearchView() {
   )
 
   return useMemo(
-    () => ({ view, taskId, tab, setView, setTaskId, setTab }),
-    [view, taskId, tab, setView, setTaskId, setTab]
+    () => ({ view, taskId, tab, tabExplicit, setView, setTaskId, setTab }),
+    [view, taskId, tab, tabExplicit, setView, setTaskId, setTab]
   )
 }
