@@ -57,6 +57,8 @@ export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
   /** Wait for a free slot under `maxConcurrentRuns`: append only (DES-021). */
   queued?: boolean
   workItemId?: string
+  /** Pins made before the start; their pull events follow `run_started` (BL-082). */
+  pins?: { pulledEvents: EngineEvent[] }
   crashAt?: NodeRunOptions["crashAt"]
 }
 
@@ -115,6 +117,7 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
     ...(opts.queued ? { queued: true } : {}),
     ...(opts.workItemId !== undefined ? { workItemId: opts.workItemId } : {}),
   })
+  for (const pulled of opts.pins?.pulledEvents ?? []) log.append(pulled)
   if (opts.queued) return foldSteps(log.listByRun(runId).map((x) => x.event))
   return tickNodes(opts)
 }

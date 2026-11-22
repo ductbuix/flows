@@ -2,6 +2,7 @@ import type {
   EngineEvent,
   LibraryPullResult,
   ResourcePin,
+  NodeWorkflow,
   ResourcesJson,
   WorkItemLink,
   Workflow,
@@ -14,7 +15,12 @@ import {
   readResourcesJson,
   resolveScopeEntity,
 } from "./library.ts"
-import { collectPullTargets, pullOneTarget } from "./library-run-targets.ts"
+import {
+  collectNodePullTargets,
+  collectPullTargets,
+  pullOneTarget,
+  type PullTarget,
+} from "./library-run-targets.ts"
 
 export type MaterializeResourcesOptions = {
   home: string
@@ -40,16 +46,33 @@ export type MaterializeResourcesResult = {
 export async function materializeRunResources(
   options: MaterializeResourcesOptions
 ): Promise<MaterializeResourcesResult> {
-  const {
-    home,
-    workflow,
-    runRoot,
-    runId,
-    workItemLinks = [],
-    pinFromRunRoot,
-    refreshPins,
-  } = options
+  const { home, workflow, workItemLinks = [] } = options
   const targets = collectPullTargets(home, workflow, workItemLinks)
+  return pinTargets({ ...options, targets })
+}
+
+/** Pins the Asset resources of a node run, with the work item's links (BL-082). */
+export async function materializeNodeRunResources(options: {
+  home: string
+  graph: NodeWorkflow
+  runRoot: string
+  runId: string
+  workItemLinks?: WorkItemLink[]
+}): Promise<MaterializeResourcesResult> {
+  const targets = collectNodePullTargets(
+    options.home,
+    options.graph,
+    options.workItemLinks ?? []
+  )
+  return pinTargets({ ...options, targets })
+}
+
+async function pinTargets(
+  options: Omit<MaterializeResourcesOptions, "workflow"> & {
+    targets: PullTarget[]
+  }
+): Promise<MaterializeResourcesResult> {
+  const { home, runRoot, runId, targets, pinFromRunRoot, refreshPins } = options
   if (targets.length === 0) {
     const empty: ResourcesJson = { v: 1, pins: [], warnings: [] }
     linkRunResources(home, runRoot, empty)

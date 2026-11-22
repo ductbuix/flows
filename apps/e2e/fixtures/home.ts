@@ -156,6 +156,24 @@ edges:
   - { from: gate, to: after }
 `
 
+const nodeAssetYaml = (id: string) => `id: ${id}
+goal: e2e asset node
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: lib
+    kind: asset
+    resources: []
+    access: read
+  - id: read
+    kind: command
+    run: 'cat "$RESOURCE_ASSET_DEMO/item/alpha/data.txt"'
+edges:
+  - { from: start, to: read }
+  - { from: lib, to: read }
+`
+
 const nodeStartYaml = (id: string) => `id: ${id}
 goal: e2e node start inputs
 nodes:
@@ -272,6 +290,12 @@ export function createE2eHome(): string {
     const dir = join(home, "workflows", id)
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeApprovalYaml(id))
+  }
+  // Asset workflows for node-asset.spec.ts (BL-082); each test owns one.
+  for (const id of ["node-asset-light", "node-asset-dark"]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeAssetYaml(id))
   }
   // Loop workflows for node-loop.spec.ts (BL-081); each test owns one. The
   // rule `until-pass 3` makes the stub Judge say No until the third pass.

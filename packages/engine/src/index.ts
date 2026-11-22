@@ -64,7 +64,11 @@ export {
   type ScopeEntity,
   type PullEntityResult,
 } from "./library.ts"
-export { materializeRunResources, pullNow } from "./library-run.ts"
+export {
+  materializeNodeRunResources,
+  materializeRunResources,
+  pullNow,
+} from "./library-run.ts"
 export { listLibrary } from "./library-list.ts"
 export { isFresh, currentRevision, readRevisionMeta } from "./library-paths.ts"
 export {

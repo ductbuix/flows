@@ -25,6 +25,8 @@ export function defaultNode(
   switch (kind) {
     case "trigger":
       return { id, kind, type: "manual" }
+    case "asset":
+      return { id, kind, resources: [], access: "read" }
     case "agent":
       return { id, kind, cli: "claude" }
     case "judge":

@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator"
+import { randomUUID } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import {
@@ -77,14 +78,14 @@ function triggerInputs(graph: NodeWorkflow): WorkflowInputDecl[] {
  * Node run start (BL-093): the graph is read from `workflow.yaml`, frozen
  * by the engine. `values.text` is the run input text (`input/text.md`).
  */
-function startNodeRoute(
+async function startNodeRoute(
   c: Context,
   engine: Engine,
   dir: string,
   workflowId: string,
   body: StartRunBody,
   files: ManualFilePart[]
-): Response {
+): Promise<Response> {
   const parsed = parseNodeWorkflowYaml(
     readFileSync(join(dir, "workflow.yaml"), "utf8")
   )
@@ -103,8 +104,17 @@ function startNodeRoute(
   if (linked instanceof Response) return linked
   const withInputs = decls.length > 0 || files.length > 0
   try {
+    // Asset resources are pulled and pinned before the run starts (BL-082).
+    const runId = randomUUID()
+    const pins = await engine.pinNodeRun({
+      graph: parsed.workflow,
+      runId,
+      workItemId: linked.workItemId,
+    })
     const handle = engine.startNodeRun({
       graph: parsed.workflow,
+      runId,
+      pins,
       // Without declared inputs the whole start text is `input/text.md`.
       inputText: decls.length === 0 ? body.values?.text : undefined,
       ...(withInputs

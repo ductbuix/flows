@@ -1,5 +1,5 @@
 import { Trash2Icon } from "lucide-react"
-import type { WorkflowInputDecl, WorkflowNode } from "@workspace/shared"
+import type { AssetResource, WorkflowInputDecl, WorkflowNode } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import {
   Field,
@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet"
+import { AssetResources } from "./AssetResources"
 import { MemoryCombobox } from "./MemoryCombobox"
 import { TriggerInputs } from "./TriggerInputs"
 import { kindLabel } from "./node-kind-ui"
@@ -46,6 +47,7 @@ export function NodeSheet({
     retry?: { max: number }
     memory?: string[]
     inputs?: WorkflowInputDecl[]
+    resources?: AssetResource[]
   }
   const number = (key: "timeout" | "retry", raw: string) => {
     const n = parsePositiveInt(raw)
@@ -129,6 +131,18 @@ export function NodeSheet({
               </Field>
             ) : null}
           </FieldGroup>
+          {keys.has("resources") ? (
+            <>
+              <Separator />
+              <AssetResources
+                resources={loose.resources ?? []}
+                onChange={(v) => {
+                  onSetting("resources", v)
+                  onEditEnd()
+                }}
+              />
+            </>
+          ) : null}
           {keys.has("inputs") ? (
             <>
               <Separator />

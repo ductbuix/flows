@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto"
+import { mkdirSync } from "node:fs"
 import type {
   NodeWorkflow,
   CliTrustValue,
@@ -12,6 +13,11 @@ import type {
 import { collectWorkflowIssues } from "@workspace/shared"
 import { cancelQueuedRun } from "./cancel-queued.ts"
 import { loadAppConfig } from "./config.ts"
+import {
+  materializeNodeRunResources,
+  type MaterializeResourcesResult,
+} from "./library-run.ts"
+import { readWorkItem } from "./workitems.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
 import {
   prepareTrustMarker,
@@ -84,6 +90,8 @@ export type StartNodeRunInput = {
   /** Declared Trigger inputs and uploads, frozen under `input/` (BL-104). */
   inputs?: ManualItem
   workItemId?: string
+  /** Pins from `pinNodeRun`, appended as `library_pulled` after `run_started` (BL-082). */
+  pins?: MaterializeResourcesResult
 }
 
 export type RunHandle = {
@@ -299,6 +307,32 @@ export class Engine {
   }
 
   /**
+   * Pulls and pins the Asset resources of a node run, with the work item's
+   * links, before it starts (BL-082). Undefined when the graph has no
+   * Asset node. Pass the result and `runId` to `startNodeRun`.
+   */
+  async pinNodeRun(input: {
+    graph: NodeWorkflow
+    runId: string
+    workItemId?: string
+  }): Promise<MaterializeResourcesResult | undefined> {
+    if (!input.graph.nodes.some((n) => n.kind === "asset")) return undefined
+    const runRoot = runDir(workflowDir(this.home, input.graph.id), input.runId)
+    mkdirSync(runRoot, { recursive: true })
+    const links =
+      input.workItemId !== undefined
+        ? (readWorkItem(this.home, input.workItemId)?.item.links ?? [])
+        : []
+    return materializeNodeRunResources({
+      home: this.home,
+      graph: input.graph,
+      runRoot,
+      runId: input.runId,
+      workItemLinks: links,
+    })
+  }
+
+  /**
    * Starts a node run: freezes the graph, then drives it, or queues it
    * under `maxConcurrentRuns` (BL-093). Resolves `wait()` when it ends.
    */
@@ -317,6 +351,7 @@ export class Engine {
       inputText: input.inputText,
       inputs: input.inputs,
       workItemId: input.workItemId,
+      pins: input.pins,
     }
     if (queued) {
       startNodeRunQueued({ ...opts, queued: true })
