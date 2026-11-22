@@ -25,6 +25,7 @@ import {
 import { executorFor } from "./registry.ts"
 import { frozenDir, stepDir } from "./step-paths.ts"
 import { nextActions } from "./walk.ts"
+import { cancelRequested, finishNodeCancel } from "./cancel.ts"
 
 export type NodeRunOptions = {
   log: EventLog
@@ -49,6 +50,9 @@ export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
   trigger?: string
   /** Run input text, frozen as `input/text.md`. */
   inputText?: string
+  /** Wait for a free slot under `maxConcurrentRuns`: append only (DES-021). */
+  queued?: boolean
+  workItemId?: string
   crashAt?: NodeRunOptions["crashAt"]
 }
 
@@ -81,6 +85,9 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
     }
   }
 
+  const layout = join(wfRoot, "workflow.layout.json")
+  if (existsSync(layout)) cpSync(layout, join(runRoot, "layout.json"))
+
   const trigger =
     opts.trigger ?? graph.nodes.find((n) => n.kind === "trigger")?.id
   log.append({
@@ -89,8 +96,12 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
     at: now(),
     workflowId: graph.id,
     graph: graph as never,
+    source: "manual",
     ...(trigger ? { trigger } : {}),
+    ...(opts.queued ? { queued: true } : {}),
+    ...(opts.workItemId !== undefined ? { workItemId: opts.workItemId } : {}),
   })
+  if (opts.queued) return foldSteps(log.listByRun(runId).map((x) => x.event))
   return tickNodes(opts)
 }
 
@@ -137,6 +148,10 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     const runRoot = runDir(workflowDir(home, graph.id), runId)
     const steps = foldSteps(events)
     if (steps.ended) return steps
+    if (cancelRequested(events)) {
+      finishNodeCancel(log, runId)
+      return foldSteps(log.listByRun(runId).map((s) => s.event))
+    }
 
     const build = (nodeId: string, pass: number) => {
       const node = graph.nodes.find((n) => n.id === nodeId)!
@@ -262,7 +277,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         const kind = graph.nodes.find((n) => n.id === nodeId)?.kind
         if (
           s.status === "running" &&
-          s.attempts === 0 &&
+          !s.current &&
           kind &&
           executorFor(kind)
         ) {

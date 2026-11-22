@@ -6,6 +6,7 @@ import {
 } from "@workspace/shared"
 import type { RunState, TaskState } from "./fold.ts"
 import { applyTaskRetryRequested } from "./fold-retry.ts"
+import { isNodeGraph, taskGraphOfNodes } from "./nodes/run-state.ts"
 
 const TERMINAL_TASK: ReadonlySet<string> = new Set([
   "succeeded",
@@ -55,13 +56,16 @@ export function applyEvent(
   event: EngineEvent
 ): RunState | null {
   switch (event.type) {
-    case "run_started":
+    case "run_started": {
+      const graph = isNodeGraph(event.graph)
+        ? taskGraphOfNodes(event.graph as never)
+        : event.graph
       return {
         runId: event.runId,
         workflowId: event.workflowId,
         status: event.queued === true ? "queued" : "running",
-        graph: event.graph,
-        tasks: emptyTasks(event.graph),
+        graph,
+        tasks: emptyTasks(graph),
         // Optimistic until an unrestricted attempt_launched (DES-006).
         sandboxed: true,
         trustGrant: event.trustGrant,
@@ -72,6 +76,7 @@ export function applyEvent(
         inputHash: event.inputHash,
         inputFiles: event.files,
       }
+    }
     case "run_activated": {
       if (!state) return state
       if (state.status === "queued") state.status = "running"
@@ -257,13 +262,20 @@ export function applyEvent(
       return state
     }
     // Node path (DES-034): folded by nodes/fold-steps.ts until BL-096.
+    case "step_retry_requested": {
+      // A manual retry reopens a settled run (DES-034, Retry).
+      if (state && (state.status === "failed" || state.status === "succeeded")) {
+        state.status = "running"
+        state.finishedAt = undefined
+      }
+      return state
+    }
     case "step_started":
     case "step_done":
     case "step_failed":
     case "step_skipped":
     case "step_approved":
     case "step_rejected":
-    case "step_retry_requested":
     case "step_cancelled":
       return state
     case "agent_review_finished": {

@@ -53,7 +53,8 @@ export function forwardOrder(graph: WalkGraph): string[] {
 
 function stepEff(steps: StepsState, nodeId: string): Eff | undefined {
   const step = latestStep(steps, nodeId)
-  if (!step) return undefined
+  // A pending step was reset by a manual retry: due again, as if new.
+  if (!step || step.status === "pending") return undefined
   if (step.status === "done") return { s: "done", branch: step.branch }
   if (step.status === "failed" || step.status === "skipped") return { s: "ended" }
   if (step.status === "cancelled") return { s: "ended" }

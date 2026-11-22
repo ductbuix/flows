@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import type {
+  NodeWorkflow,
   CliTrustValue,
   EngineEvent,
   RunSummary,
@@ -28,12 +29,20 @@ import {
   workflowDir,
 } from "./paths.ts"
 import { runPreflightChecks, type PreflightInput } from "./preflight.ts"
-import { freeRunSlots, nextQueuedRun } from "./run-queue.ts"
+import {
+  countRunningRuns,
+  freeRunSlots,
+  nextQueuedRun,
+} from "./run-queue.ts"
+import { cancelNodeRun, requestNodeRetry } from "./nodes/cancel.ts"
+import { resumeNodes, runNodes } from "./nodes/drive.ts"
+import type { StepsState } from "./nodes/fold-steps.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
 import { Scheduler } from "./scheduler.ts"
 import type { ManualFilePart } from "./source-manual.ts"
 import { assertPublishTasksValid } from "./publish.ts"
 import { appendRunStarted } from "./start-run.ts"
+import { startNodeRun as startNodeRunQueued } from "./nodes/tick.ts"
 import {
   LIBRARY_RETENTION_INTERVAL_MS,
   sweepLibrary,
@@ -59,6 +68,16 @@ export type StartRunOptions = {
   workItemId?: string
 }
 
+/** Start a node run (DES-034). The caller parses and validates the graph. */
+export type StartNodeRunInput = {
+  graph: NodeWorkflow
+  runId?: string
+  trigger?: string
+  /** Frozen as `input/text.md`. */
+  inputText?: string
+  workItemId?: string
+}
+
 export type RunHandle = {
   runId: string
   status: "queued" | "running"
@@ -72,6 +91,8 @@ export class Engine {
   private readonly globalLimits: WorkflowLimits | undefined
   private readonly schedulers = new Map<string, Scheduler>()
   private readonly summaryCache: RunSummaryCache
+  /** Live node-run drivers by run id (DES-034). */
+  private readonly nodeRuns = new Map<string, Promise<StepsState>>()
   private retentionTimer: ReturnType<typeof setInterval> | undefined
 
   constructor(options: CreateEngineOptions = {}) {
@@ -267,6 +288,71 @@ export class Engine {
     return this.handleFor(started.runId, scheduler, "running")
   }
 
+  /**
+   * Starts a node run: freezes the graph, then drives it, or queues it
+   * under `maxConcurrentRuns` (BL-093). Resolves `wait()` when it ends.
+   */
+  startNodeRun(input: StartNodeRunInput): RunHandle {
+    const { graph } = input
+    const runId = input.runId ?? randomUUID()
+    const queued =
+      countRunningRuns(this.listRunsForWorkflow(graph.id)) >=
+      (graph.limits?.maxConcurrentRuns ?? 1)
+    const opts = {
+      log: this.log,
+      home: this.home,
+      runId,
+      graph,
+      trigger: input.trigger,
+      inputText: input.inputText,
+      workItemId: input.workItemId,
+    }
+    if (queued) {
+      startNodeRunQueued({ ...opts, queued: true })
+      return this.queuedHandle(runId)
+    }
+    return this.trackNodeRun(runId, runNodes(opts))
+  }
+
+  private trackNodeRun(runId: string, done: Promise<StepsState>): RunHandle {
+    const tracked = done.catch((error: unknown) => {
+      // A broken graph or a crash in the tick must not leave a run open.
+      const state = this.fold(runId)
+      if (state && state.status === "running") {
+        this.log.append({
+          type: "run_failed",
+          runId,
+          at: new Date().toISOString(),
+        })
+      }
+      throw error
+    })
+    this.nodeRuns.set(runId, tracked)
+    const clear = () => {
+      if (this.nodeRuns.get(runId) === tracked) this.nodeRuns.delete(runId)
+    }
+    tracked.then(clear, clear)
+    return this.nodeHandle(runId, tracked)
+  }
+
+  private nodeHandle(runId: string, done: Promise<StepsState>): RunHandle {
+    return {
+      runId,
+      status: "running",
+      state: () => this.mustFold(runId),
+      wait: async () => {
+        await done
+        return this.mustFold(runId)
+      },
+    }
+  }
+
+  private mustFold(runId: string): RunState {
+    const state = this.fold(runId)
+    if (!state) throw new Error(`unknown run ${runId}`)
+    return state
+  }
+
   approveTask(runId: string, taskId: string): void {
     this.requireScheduler(runId).approve(taskId)
   }
@@ -279,7 +365,15 @@ export class Engine {
     const state = this.fold(runId)
     if (!state || state.deleted) throw new Error(`unknown run ${runId}`)
     if (state.status === "queued") {
-      cancelQueuedRun(state, (event) => this.log.append(event))
+      if (state.nodeGraph) cancelNodeRun(this.log, runId)
+      else cancelQueuedRun(state, (event) => this.log.append(event))
+      return
+    }
+    if (state.nodeGraph) {
+      if (state.status !== "running") {
+        throw new Error(`run ${runId} is not live`)
+      }
+      cancelNodeRun(this.log, runId)
       return
     }
     this.requireScheduler(runId).cancel()
@@ -288,6 +382,12 @@ export class Engine {
   retryTask(runId: string, taskId: string): RunHandle {
     const state = this.fold(runId)
     if (!state) throw new Error(`unknown run ${runId}`)
+    if (state.nodeGraph) {
+      if (state.deleted) throw new Error(`run ${runId} is deleted`)
+      requestNodeRetry(this.log, runId, taskId, state.nodeGraph.edges)
+      this.nodeRuns.delete(runId)
+      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId)))
+    }
     requestManualRetry(runId, taskId, state, (event) => this.log.append(event))
     this.schedulers.delete(runId)
     const workflowRoot = workflowDir(this.home, state.workflowId)
@@ -313,6 +413,7 @@ export class Engine {
     const root = runDir(workflowDir(this.home, state.workflowId), runId)
     deleteRunFiles(root, (event) => this.log.append(event), state)
     this.schedulers.delete(runId)
+    this.nodeRuns.delete(runId)
   }
 
   resumeAll(): RunHandle[] {
@@ -338,6 +439,11 @@ export class Engine {
 
     const state = this.fold(runId)
     if (!state || state.deleted || state.status !== "running") return null
+    if (state.nodeGraph) {
+      const live = this.nodeRuns.get(runId)
+      if (live) return this.nodeHandle(runId, live)
+      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId)))
+    }
 
     const workflowRoot = workflowDir(this.home, state.workflowId)
     const runRoot = runDir(workflowRoot, runId)
@@ -382,19 +488,36 @@ export class Engine {
     this.log.close()
   }
 
+  private nodeOpts(runId: string) {
+    return { log: this.log, home: this.home, runId }
+  }
+
   private activateQueuedForWorkflow(workflowId: string): void {
     const workflowRoot = workflowDir(this.home, workflowId)
-    let graph: Workflow
-    try {
-      graph = this.loadWorkflow(workflowRoot)
-    } catch {
-      return
-    }
+    let graph: Workflow | undefined
     for (;;) {
       const runs = this.listRunsForWorkflow(workflowId)
-      if (freeRunSlots(graph, runs) <= 0) return
       const next = nextQueuedRun(runs)
       if (!next) return
+      if (next.nodeGraph) {
+        const cap = next.nodeGraph.limits?.maxConcurrentRuns ?? 1
+        if (countRunningRuns(runs) >= cap) return
+        this.log.append({
+          type: "run_activated",
+          runId: next.runId,
+          at: new Date().toISOString(),
+        })
+        this.trackNodeRun(next.runId, resumeNodes(this.nodeOpts(next.runId)))
+        continue
+      }
+      if (!graph) {
+        try {
+          graph = this.loadWorkflow(workflowRoot)
+        } catch {
+          return
+        }
+      }
+      if (freeRunSlots(graph, runs) <= 0) return
       this.activateRun(next, workflowRoot)
     }
   }

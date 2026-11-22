@@ -1,5 +1,6 @@
 import type {
   Effort,
+  NodeWorkflow,
   EngineEvent,
   ModelSource,
   RunStatus,
@@ -7,6 +8,8 @@ import type {
   Workflow,
 } from "@workspace/shared"
 import { applyEvent } from "./fold-apply.ts"
+import type { StepsState } from "./nodes/fold-steps.ts"
+import { applyNodeSteps } from "./nodes/run-state.ts"
 import { needsStructurallyReady } from "./needs.ts"
 
 export type AttemptState = {
@@ -75,6 +78,9 @@ export type RunState = {
   inputFiles?: string[]
   cancelRequested?: boolean
   deleted?: boolean
+  /** Node run (DES-034): the frozen node graph and its step fold. */
+  nodeGraph?: NodeWorkflow
+  steps?: StepsState
 }
 
 /** Live for rename/delete blocking: queued or running (DES-021). */
@@ -88,6 +94,7 @@ export function foldEvents(events: EngineEvent[]): RunState | null {
   for (const event of events) {
     state = applyEvent(state, event)
   }
+  if (state) applyNodeSteps(state, events)
   return state
 }
 
