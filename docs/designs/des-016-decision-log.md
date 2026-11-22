@@ -196,6 +196,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Node positions saved in `workflow.layout.json`                                      | as OpenBot saves positions; YAML diffs stay clean; reverses the 11-21 dagre row | DES-033         |
 | 2026-11-22 | Canvas first: settings and results on nodes, Sheet for the rest                     | OpenBot's clarity; amends the 11-22 task Sheet row                              | DES-036         |
 | 2026-11-22 | Add node menu in Inputs, Steps and Flow with search                                 | as OpenBot; dragging a wire to empty canvas adds a node                         | DES-036         |
+| 2026-11-22 | Node registry lands in `packages/shared/src/nodes/` (BL-074) | one kinds list drives schema, port table and edge checks; `workflowSchema` untouched | DES-035 |
 
 ## Docs and tooling
 

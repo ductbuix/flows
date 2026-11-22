@@ -1,0 +1,117 @@
+import { describe, expect, it } from "vitest"
+import { NODE_KINDS, PORT_TABLE, nodeWorkflowSchema } from "./index.ts"
+
+const sample = {
+  id: "story-fix",
+  name: "Fix a story",
+  goal: "Draft a fix",
+  limits: { concurrency: 3, agents: 2, maxConcurrentRuns: 1, loopPasses: 5 },
+  timeout: 900,
+  agent: { cursor: { model: "gpt-5", effort: "high" } },
+  nodes: [
+    {
+      id: "node-1a2b3c4d",
+      kind: "trigger",
+      name: "Start",
+      type: "manual",
+      inputs: [{ name: "story", type: "markdown", required: true }],
+    },
+    { id: "node-3c4d5e6f", kind: "prompt", name: "House rules" },
+    {
+      id: "node-4d5e6f70",
+      kind: "agent",
+      name: "Draft fix",
+      cli: "cursor",
+      memory: ["memory/style.md"],
+      answers: [{ name: "risk", type: "choice", labels: ["low", "high"] }],
+      retry: { max: 1 },
+    },
+    { id: "node-5a", kind: "command", run: "pnpm test" },
+    { id: "node-8192a3b4", kind: "output", name: "Notes", target: "folder" },
+  ],
+  edges: [
+    { from: "node-1a2b3c4d", to: "node-4d5e6f70" },
+    { from: "node-3c4d5e6f", to: "node-4d5e6f70" },
+    { from: "node-4d5e6f70", to: "node-5a", port: "file" },
+    { from: "node-5a", to: "node-4d5e6f70" }, // cycle is allowed
+    { from: "node-4d5e6f70", to: "node-8192a3b4", port: "file" },
+  ],
+}
+
+const withEdges = (edges: object[]) => ({ ...sample, edges })
+const messages = (v: unknown) => {
+  const r = nodeWorkflowSchema.safeParse(v)
+  return r.success ? [] : r.error.issues.map((i) => i.message)
+}
+
+describe("node workflow schema", () => {
+  it("parses the sample and defaults loopPasses", () => {
+    const r = nodeWorkflowSchema.parse(sample)
+    expect(r.nodes).toHaveLength(5)
+    const { limits: _l, ...rest } = sample
+    expect(nodeWorkflowSchema.parse(rest).limits).toBeUndefined()
+    expect(
+      nodeWorkflowSchema.parse({ ...rest, limits: { agents: 1 } }).limits
+        ?.loopPasses
+    ).toBe(5)
+  })
+
+  it("has one port table row per kind", () => {
+    expect(Object.keys(PORT_TABLE)).toEqual(NODE_KINDS.map((k) => k.kind))
+  })
+
+  it("rejects strict-setting typos and unknown kinds", () => {
+    const bad = (n: object) => ({ ...sample, nodes: [n] , edges: [] })
+    expect(
+      messages(bad({ id: "a", kind: "agent", cli: "claude", mdoel: "x" }))
+    ).not.toEqual([])
+    expect(messages(bad({ id: "a", kind: "judge" }))).not.toEqual([])
+    expect(
+      messages(bad({ id: "a", kind: "output", target: "publish" }))
+    ).not.toEqual([])
+  })
+
+  it("rejects bad edges", () => {
+    const m = (e: object[]) => messages(withEdges(e)).join("|")
+    expect(m([{ from: "node-1a2b3c4d", to: "nope" }])).toContain("unknown node")
+    expect(m([{ from: "node-3c4d5e6f", to: "node-5a", port: "file" }])).toContain(
+      "no out port file"
+    )
+    expect(m([{ from: "node-4d5e6f70", to: "node-1a2b3c4d" }])).toContain(
+      "no in port text"
+    )
+    expect(m([{ from: "node-8192a3b4", to: "node-5a" }])).toContain(
+      "no out port"
+    )
+    expect(
+      m([{ from: "node-4d5e6f70", to: "node-5a", branch: "yes" }])
+    ).toContain("branch is not allowed")
+    expect(
+      m([
+        { from: "node-4d5e6f70", to: "node-5a" },
+        { from: "node-4d5e6f70", to: "node-5a" },
+      ])
+    ).toContain("duplicate edge")
+  })
+
+  it("rejects duplicate node ids", () => {
+    expect(
+      messages({ ...sample, nodes: [sample.nodes[1], sample.nodes[1]], edges: [] })
+        .join("|")
+    ).toContain("duplicate node id")
+  })
+
+  it.each(["tasks", "needs", "when", "repeat", "approval", "spawn", "uses"])(
+    "rejects old key %s",
+    (key) => {
+      const msgs = messages({ ...sample, [key]: [] })
+      expect(msgs).toHaveLength(1)
+      expect(msgs[0]).toContain(`"${key}"`)
+    }
+  )
+
+  it("names the first old key when several are present", () => {
+    const msgs = messages({ ...sample, uses: [], tasks: [] })
+    expect(msgs[0]).toContain('"tasks"')
+  })
+})
