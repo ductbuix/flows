@@ -70,7 +70,6 @@ export function RunHeader({ run, view, onViewChange, wsState, stale }: Props) {
             if (next === "list" || next === "graph") onViewChange(next)
           }}
           variant="outline"
-          size="sm"
         >
           <ToggleGroupItem value="list" data-testid="run-view-list">
             List

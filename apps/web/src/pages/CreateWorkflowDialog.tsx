@@ -64,7 +64,7 @@ export function CreateWorkflowDialog({ open, onOpenChange, onCreated }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg" data-testid="workflow-create">
+      <DialogContent className="sm:max-w-md" data-testid="workflow-create">
         <DialogHeader>
           <DialogTitle>Create workflow</DialogTitle>
           <DialogDescription>

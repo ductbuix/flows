@@ -33,7 +33,6 @@ export function InputDeclRow({ index, row, onPatch, onRemove }: Props) {
           <FieldDescription>#{index + 1}</FieldDescription>
           <Button
             type="button"
-            size="sm"
             variant="destructive"
             data-testid={`input-remove-${index}`}
             onClick={onRemove}

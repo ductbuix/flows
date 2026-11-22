@@ -24,7 +24,6 @@ function FileTreeNode({ node, selected, onSelect }: NodeProps) {
           render={
             <Button
               variant="ghost"
-              size="sm"
               className="w-full justify-start font-normal aria-expanded:bg-transparent aria-expanded:hover:bg-muted dark:aria-expanded:hover:bg-muted/50"
             />
           }
@@ -52,7 +51,6 @@ function FileTreeNode({ node, selected, onSelect }: NodeProps) {
   return (
     <Button
       variant="ghost"
-      size="sm"
       className={`w-full justify-start font-normal ${
         selected === node.path ? "bg-accent text-accent-foreground" : ""
       }`}

@@ -1,8 +1,10 @@
 import type { WorkflowInputDecl } from "@workspace/shared"
+import { SlidersHorizontal } from "lucide-react"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
@@ -21,8 +23,11 @@ export function OverviewInputsSection({ inputs }: Props) {
   if (inputs.length === 0) {
     return (
       <PageSection title="Inputs">
-        <Empty data-testid="overview-inputs-empty">
+        <Empty className="border" data-testid="overview-inputs-empty">
           <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <SlidersHorizontal />
+            </EmptyMedia>
             <EmptyTitle>No inputs</EmptyTitle>
             <EmptyDescription>
               This workflow has no declared start-run inputs.

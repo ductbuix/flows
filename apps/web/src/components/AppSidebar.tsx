@@ -68,6 +68,7 @@ export function AppSidebar() {
             </SidebarGroupAction>
             <SidebarGroupContent>
               <WorkflowSidebarList
+                onCreate={() => setCreateOpen(true)}
                 workflows={workflows}
                 onRename={setRenameId}
                 onDelete={(id) => void openDelete(id)}

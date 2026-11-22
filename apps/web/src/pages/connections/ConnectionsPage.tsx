@@ -20,7 +20,6 @@ export function ConnectionsPage() {
       actions={
         tab === "connections" ? (
           <Button
-            size="sm"
             data-testid="connections-add"
             onClick={() => setAddOpen(true)}
           >

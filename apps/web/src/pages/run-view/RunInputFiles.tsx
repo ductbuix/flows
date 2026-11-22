@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
@@ -70,7 +71,6 @@ export function RunInputFiles({ runId, files }: Props) {
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   className="font-mono"
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   onClick={() => void openPreview(path)}
@@ -80,7 +80,6 @@ export function RunInputFiles({ runId, files }: Props) {
               ) : (
                 <Button
                   variant="outline"
-                  size="sm"
                   className="font-mono"
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   render={<a href={downloadHref(runId, path)} download />}
@@ -99,11 +98,12 @@ export function RunInputFiles({ runId, files }: Props) {
           if (!open) setPreviewPath(null)
         }}
       >
-        <DialogContent className="sm:max-w-2xl" data-testid="run-input-preview">
+        <DialogContent className="sm:max-w-xl" data-testid="run-input-preview">
           <DialogHeader>
-            <DialogTitle className="font-mono text-sm">
+            <DialogTitle>Input file</DialogTitle>
+            <DialogDescription className="font-mono text-xs">
               {previewPath}
-            </DialogTitle>
+            </DialogDescription>
           </DialogHeader>
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>

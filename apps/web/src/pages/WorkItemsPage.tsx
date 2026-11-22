@@ -116,7 +116,7 @@ export function WorkItemsPage() {
             className="max-w-sm"
           />
           {filtered!.length === 0 ? (
-            <Empty data-testid="work-items-empty">
+            <Empty className="border" data-testid="work-items-empty">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Briefcase />

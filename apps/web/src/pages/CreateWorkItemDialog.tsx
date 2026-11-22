@@ -84,7 +84,7 @@ export function CreateWorkItemDialog({ open, onOpenChange, onCreated }: Props) {
         onOpenChange(next)
       }}
     >
-      <DialogContent className="sm:max-w-lg" data-testid="work-item-create">
+      <DialogContent className="sm:max-w-md" data-testid="work-item-create">
         <DialogHeader>
           <DialogTitle>New work item</DialogTitle>
           <DialogDescription>

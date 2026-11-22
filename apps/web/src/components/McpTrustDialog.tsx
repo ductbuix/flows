@@ -29,7 +29,7 @@ export function McpTrustDialog({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="mcp-trust-dialog" className="sm:max-w-lg">
+      <DialogContent data-testid="mcp-trust-dialog">
         <DialogHeader>
           <DialogTitle>Allow MCP server?</DialogTitle>
           <DialogDescription>

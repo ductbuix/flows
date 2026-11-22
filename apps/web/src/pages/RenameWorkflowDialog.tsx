@@ -1,14 +1,13 @@
 import { useState } from "react"
+import { Button } from "@workspace/ui/components/button"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
@@ -63,20 +62,20 @@ export function RenameWorkflowDialog({
   }
 
   return (
-    <AlertDialog
+    <Dialog
       open={open}
       onOpenChange={(next) => {
         if (next) setNewId(workflowId)
         onOpenChange(next)
       }}
     >
-      <AlertDialogContent data-testid="workflow-rename" size="default">
-        <AlertDialogHeader>
-          <AlertDialogTitle>Rename workflow</AlertDialogTitle>
-          <AlertDialogDescription>
+      <DialogContent data-testid="workflow-rename" className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Rename workflow</DialogTitle>
+          <DialogDescription>
             Renaming changes the directory name and the id in workflow.yaml.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          </DialogDescription>
+        </DialogHeader>
         <ul className="list-inside list-disc space-y-1 text-left text-sm text-muted-foreground">
           <li>
             The dir moves from workflows/{workflowId}/ to workflows/
@@ -108,20 +107,19 @@ export function RenameWorkflowDialog({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
             data-testid="rename-submit"
             disabled={busy}
-            onClick={(e) => {
-              e.preventDefault()
-              void submit()
-            }}
+            onClick={() => void submit()}
           >
             Rename
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

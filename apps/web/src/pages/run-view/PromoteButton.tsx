@@ -10,7 +10,6 @@ type Props = {
 export function PromoteButton({ runId, taskId }: Props) {
   return (
     <Button
-      size="sm"
       data-testid={`promote-${taskId}`}
       onClick={() => {
         void (async () => {

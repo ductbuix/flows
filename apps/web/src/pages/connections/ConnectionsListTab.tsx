@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Plug } from "lucide-react"
 import { Link, useNavigate } from "react-router"
 import {
   connectionsListSchema,
@@ -15,6 +16,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
@@ -101,8 +103,11 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
           <Skeleton className="h-40 w-full" />
         </div>
       ) : rows.length === 0 ? (
-        <Empty data-testid="connections-empty">
+        <Empty className="border" data-testid="connections-empty">
           <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Plug />
+            </EmptyMedia>
             <EmptyTitle>No connections yet</EmptyTitle>
             <EmptyDescription>
               Add a connection to pull data into the Library.

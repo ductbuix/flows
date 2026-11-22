@@ -178,7 +178,6 @@ export function Inspector({
         <ActionButton
           type="button"
           variant="destructive"
-          size="sm"
           data-testid="delete-task"
           disabled={workflow.tasks.length <= 1}
           disabledReason="A workflow needs at least one task"

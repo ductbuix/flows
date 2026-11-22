@@ -26,7 +26,6 @@ export function MemoryCreateBar({
         onChange={(e) => onNewNameChange(e.target.value)}
       />
       <Button
-        size="sm"
         data-testid="memory-create"
         disabled={!newName.trim()}
         onClick={onCreate}
@@ -45,7 +44,6 @@ export function MemoryCreateBar({
         }}
       />
       <Button
-        size="sm"
         variant="outline"
         onClick={() => pickRef.current?.click()}
       >

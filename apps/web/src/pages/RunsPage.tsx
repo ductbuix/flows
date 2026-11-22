@@ -109,7 +109,7 @@ export function RunsPage() {
             </Select>
           </div>
           {runs.length === 0 ? (
-            <Empty data-testid="runs-empty">
+            <Empty className="border" data-testid="runs-empty">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Play />

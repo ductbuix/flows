@@ -87,7 +87,7 @@ export function WorkflowsPage() {
             className="max-w-sm"
           />
           {filtered!.length === 0 ? (
-            <Empty data-testid="workflows-empty">
+            <Empty className="border" data-testid="workflows-empty">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <FolderOpen />

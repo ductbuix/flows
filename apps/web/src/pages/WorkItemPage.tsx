@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
+import { Paperclip } from "lucide-react"
 import type { WorkItem, WorkItemAttachment } from "@workspace/shared"
 import {
   workItemAttachmentListSchema,
@@ -14,6 +15,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import {
@@ -130,8 +132,11 @@ export function WorkItemPage() {
 
           <PageSection title="Attachments">
             {!attachments || attachments.length === 0 ? (
-              <Empty data-testid="work-item-attachments-empty">
+              <Empty className="border" data-testid="work-item-attachments-empty">
                 <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Paperclip />
+                  </EmptyMedia>
                   <EmptyTitle>No attachments</EmptyTitle>
                   <EmptyDescription>
                     Files attached to this work item will list here.

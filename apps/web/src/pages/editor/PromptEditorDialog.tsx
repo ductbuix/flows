@@ -98,12 +98,12 @@ export function PromptEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" data-testid="prompt-editor">
+      <DialogContent className="sm:max-w-xl" data-testid="prompt-editor">
         <DialogHeader>
-          <DialogTitle className="font-mono">{path}</DialogTitle>
+          <DialogTitle>Edit prompt</DialogTitle>
           <DialogDescription>
-            Prompt for this agent task. Saving creates the file if it is
-            missing.
+            <span className="font-mono text-xs">{path}</span>. Saving creates
+            the file if it is missing.
           </DialogDescription>
         </DialogHeader>
         <PromptInput

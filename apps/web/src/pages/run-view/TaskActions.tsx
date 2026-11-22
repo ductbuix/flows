@@ -32,7 +32,6 @@ export function TaskActions({ run, task }: Props) {
 
   return (
     <ActionButton
-      size="sm"
       data-testid="task-retry"
       pending={pending}
       disabled={!retryOk}
