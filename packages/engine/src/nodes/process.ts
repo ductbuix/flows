@@ -68,7 +68,9 @@ function readStderr(attemptRoot: string): string {
 
 function cliOf(graph: NodeWorkflow, nodeId: string): "claude" | "cursor" | undefined {
   const node = graph.nodes.find((n) => n.id === nodeId)
-  return node?.kind === "agent" || node?.kind === "judge" ? node.cli : undefined
+  return node?.kind === "agent" || node?.kind === "judge" || node?.kind === "llm"
+    ? node.cli
+    : undefined
 }
 
 function isCliKind(graph: NodeWorkflow, nodeId: string): boolean {
@@ -339,7 +341,8 @@ export function launchAttempt(
       attemptRoot,
       join(attemptRoot, "exit.code"),
       ctx.workflowRoot,
-      cmd.allowCursorHome === true
+      cmd.allowCursorHome === true,
+      cmd.writeAttemptOnly === true ? attemptRoot : undefined
     )
     child = launched.child
     sandboxed = launched.sandboxed

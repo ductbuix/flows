@@ -7,6 +7,7 @@ import { assetKind } from "./asset.ts"
 import { commandKind } from "./command.ts"
 import type { PortType } from "./define.ts"
 import { judgeKind } from "./judge.ts"
+import { llmKind } from "./llm.ts"
 import { outputKind } from "./output.ts"
 import { promptKind } from "./prompt.ts"
 import { triggerKind } from "./trigger.ts"
@@ -22,6 +23,7 @@ export const NODE_KINDS = [
   assetKind,
   agentKind,
   commandKind,
+  llmKind,
   judgeKind,
   approvalKind,
   outputKind,

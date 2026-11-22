@@ -29,6 +29,7 @@ export function defaultNode(
       return { id, kind, resources: [], access: "read" }
     case "agent":
       return { id, kind, cli: "claude" }
+    case "llm":
     case "judge":
       return { id, kind, cli: "claude" }
     case "command":

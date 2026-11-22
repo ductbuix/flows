@@ -47,6 +47,11 @@ export type CliAdapter = {
     /** Replaces the exit-code prompt, e.g. for a Judge node (DES-032). */
     prompt?: string
   ) => string
+  /** One model call with no tools; the prompt comes from a file on stdin (DES-032). */
+  buildLlmCommand: (
+    promptAbsPath: string,
+    resolved: ResolvedModelEffort
+  ) => string
   prepareTrust: (homePath: string, workflowDir?: string) => void
   cleanupTrust: (homePath: string, workflowDir?: string) => void
   failurePatterns: readonly string[]
@@ -73,6 +78,10 @@ const claudeAdapter: CliAdapter = {
     const prompt = shellSingleQuote(text ?? judgePrompt(instructionsAbsPath))
     const flags = flagsToShell(this.composeFlags(resolved))
     return `claude --print --permission-mode dontAsk${flags} -- ${prompt}`
+  },
+  buildLlmCommand(promptAbsPath, resolved) {
+    const flags = flagsToShell(this.composeFlags(resolved))
+    return `claude --print --tools "" --permission-mode dontAsk --no-session-persistence${flags} < ${shellSingleQuote(promptAbsPath)}`
   },
   prepareTrust() {},
   cleanupTrust() {},
@@ -109,6 +118,10 @@ const cursorAdapter: CliAdapter = {
     const prompt = shellSingleQuote(text ?? judgePrompt(instructionsAbsPath))
     const flags = flagsToShell(this.composeFlags(resolved))
     return `agent -p --force --trust${flags} -- ${prompt}`
+  },
+  buildLlmCommand(promptAbsPath, resolved) {
+    const flags = flagsToShell(this.composeFlags(resolved))
+    return `agent -p --mode ask --trust${flags} < ${shellSingleQuote(promptAbsPath)}`
   },
   prepareTrust(homePath, workflowDir) {
     // Home first; workflow-dir fallback after BL-018 live check showed

@@ -5,6 +5,7 @@ import { assetView } from "./asset"
 import { commandView } from "./command"
 import type { NodeView } from "./define"
 import { judgeView } from "./judge"
+import { llmView } from "./llm"
 import { outputView } from "./output"
 import { promptView } from "./prompt"
 import { triggerView } from "./trigger"
@@ -19,6 +20,7 @@ export const NODE_VIEWS: readonly NodeView[] = [
   assetView,
   agentView,
   commandView,
+  llmView,
   judgeView,
   approvalView,
   outputView,

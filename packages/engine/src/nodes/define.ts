@@ -61,6 +61,8 @@ export type LaunchSpec = {
     shell: string
     cwd: "attempt" | "workflow"
     allowCursorHome?: boolean
+    /** Sandbox writes only the attempt folder, not the whole workflow. */
+    writeAttemptOnly?: boolean
   }
 }
 

@@ -11,6 +11,7 @@ export const KIND_META: Record<string, Meta> = {
   asset: { label: "Asset", hint: "Library resources, read only" },
   agent: { label: "Agent", hint: "An AI agent CLI" },
   command: { label: "Command", hint: "A shell command" },
+  llm: { label: "LLM", hint: "One model call, no tools" },
   judge: { label: "Judge", hint: "Answers yes or no and picks a branch" },
   approval: { label: "Approval", hint: "Waits for a person to approve" },
   output: { label: "Output", hint: "Saves the result to a folder" },

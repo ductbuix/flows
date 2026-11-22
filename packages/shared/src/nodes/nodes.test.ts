@@ -147,3 +147,35 @@ describe("judge kind", () => {
     expect(JSON.stringify(bad.error?.issues)).toContain("needs branch yes or no")
   })
 })
+
+describe("llm kind", () => {
+  it("has text out only and a required prompt with an optional system file", () => {
+    expect(PORT_TABLE.llm).toMatchObject({ in: ["text", "file"], out: ["text"] })
+    expect(NODE_KINDS.find((k) => k.kind === "llm")?.files).toEqual([
+      { path: "prompt.md", required: true },
+      { path: "system.md", required: false },
+    ])
+  })
+
+  it("needs a cli and refuses a file out port", () => {
+    const wf = (edge: object) => ({
+      id: "wf",
+      nodes: [
+        { id: "l", kind: "llm", cli: "cursor", model: "auto", effort: "low" },
+        { id: "o", kind: "output", target: "folder" },
+      ],
+      edges: [edge],
+    })
+    expect(nodeWorkflowSchema.safeParse(wf({ from: "l", to: "o" })).success).toBe(true)
+    expect(
+      nodeWorkflowSchema.safeParse(wf({ from: "l", to: "o", port: "file" })).success
+    ).toBe(false)
+    expect(
+      nodeWorkflowSchema.safeParse({
+        id: "wf",
+        nodes: [{ id: "l", kind: "llm" }],
+        edges: [],
+      }).success
+    ).toBe(false)
+  })
+})

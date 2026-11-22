@@ -129,7 +129,8 @@ export function spawnWrapped(
   attemptRoot: string,
   codePath: string,
   workflowRoot: string,
-  allowCursorHome = false
+  allowCursorHome = false,
+  writeRoot?: string
 ): LaunchResult {
   const stdoutFd = openSync(join(attemptRoot, "stdout.log"), "a")
   const stderrFd = openSync(join(attemptRoot, "stderr.log"), "a")
@@ -138,6 +139,7 @@ export function spawnWrapped(
     const wrapped = wrapCommandWithExitCode(shellCommand, codePath)
     const sandboxedSpawn = buildSandboxSpawn(wrapped, workflowRoot, {
       allowCursorHome,
+      ...(writeRoot !== undefined ? { writeRoot } : {}),
     })
     const child = spawn(sandboxedSpawn.command, sandboxedSpawn.args, {
       cwd,

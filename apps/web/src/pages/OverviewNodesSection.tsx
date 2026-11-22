@@ -15,7 +15,9 @@ type Node = NodeWorkflow["nodes"][number]
 
 /** Agent CLI, or the Command line, in one short cell. */
 function detail(node: Node): string | null {
-  if (node.kind === "agent" || node.kind === "judge") return node.cli
+  if (node.kind === "agent" || node.kind === "judge" || node.kind === "llm") {
+    return node.cli
+  }
   if (node.kind === "command") return node.run
   return null
 }
