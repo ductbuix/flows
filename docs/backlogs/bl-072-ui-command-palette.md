@@ -26,7 +26,3 @@ every other renovation item as a dependency.
       Pages, Workflows, Work items, Recent runs, Actions (New work item,
       Start run, Create workflow), each with readable labels.
 - [ ] Shortcuts show with `CommandShortcut`; Settings lists ⌘K.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
-      1440x900 of opening and using the palette, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

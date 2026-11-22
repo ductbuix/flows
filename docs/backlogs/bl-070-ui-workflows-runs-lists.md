@@ -28,8 +28,3 @@ Runs tab and Runs page). Fixes S7, S14, #06, #07, #22, #25.
 - [ ] Runs group rows and run rows are 37px; the workflow Runs tab rows
       are 37px (was 45px).
 - [ ] The Run column shows the readable run label with `IdText`.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
-      1440x900 of Workflows, Overview, workflow Runs and Runs, attached
-      to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

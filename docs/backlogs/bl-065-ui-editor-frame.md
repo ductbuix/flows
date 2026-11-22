@@ -33,8 +33,3 @@ Fixes S12, S13, #11, #19, #21.
       `fitView` uses `maxZoom: 1` and `padding: 0.2`, so a one-task
       graph renders at 100%.
 - [ ] YAML errors show as one destructive `Alert` above the canvas.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
-      1440x900 of the editor on a 1-task and a 5-task workflow, ⌘S, and
-      Add publish, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

@@ -31,7 +31,3 @@ realigned to the registry).
 - [ ] `environment-variables.tsx` moves to `components/data/`.
 - [ ] `/dev/kit` shows each new part and each AI Element in light and
       dark.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
-      1440x900 of `/dev/kit`, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

@@ -169,6 +169,8 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Developer details in fixed tabs; no Advanced switch         | YAML, ids, env, raw logs one step away; confirms the 11-21 row | DES-027, 030    |
 | 2026-11-22 | Optional `name` in workflow.yaml as the display label       | readable names without renaming folders; id stays the key      | DES-002, 027    |
 | 2026-11-22 | No `name` falls back to the humanized folder id             | old workflows read well with no file change                    | DES-027, BL-073 |
+| 2026-11-22 | Create asks for Name; the folder id is its slug, editable   | people type a name, not a folder; id stays the stable key      | DES-027, BL-073 |
+| 2026-11-22 | Run label is the work item title, else "Ad hoc run"         | runs have no name of their own; UUID stays in IdText           | DES-029, BL-059 |
 
 ## Docs and tooling
 

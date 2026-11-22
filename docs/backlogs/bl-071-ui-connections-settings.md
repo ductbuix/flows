@@ -26,8 +26,3 @@ Design: [DES-029](../designs/des-029-ui-renovation-run-screens.md)
       each) with actions in `CardFooter`.
 - [ ] Settings has Appearance, Agent CLIs (Allow or Revoke per CLI),
       Allowed MCP servers and Keyboard shortcuts.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
-      1440x900 of Connections, Library, a connection and Settings,
-      attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.
