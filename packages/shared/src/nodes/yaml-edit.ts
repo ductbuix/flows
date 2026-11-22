@@ -37,7 +37,10 @@ function edgeMatches(
 export function addNode(text: string, node: Record<string, unknown>): string {
   const doc = parse(text)
   if (!seqOf(doc, "nodes")) doc.set("nodes", doc.createNode([]))
-  seqOf(doc, "nodes")!.add(doc.createNode(node))
+  const seq = seqOf(doc, "nodes")!
+  // An empty `nodes: []` grows into a block list, one node per line.
+  if (seq.items.length === 0) seq.flow = false
+  seq.add(doc.createNode(node))
   return doc.toString()
 }
 
@@ -101,6 +104,7 @@ export function addEdge(text: string, edge: WorkflowEdge): string {
   const doc = parse(text)
   if (!seqOf(doc, "edges")) doc.set("edges", doc.createNode([]))
   const seq = seqOf(doc, "edges")!
+  if (seq.items.length === 0) seq.flow = false
   if (seq.items.some((e) => edgeMatches(e, edge))) return text
   const item = doc.createNode(edge)
   if (isMap(item)) item.flow = true

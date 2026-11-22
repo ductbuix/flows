@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { NODE_H, NODE_W, placeNodes } from "./node-canvas-layout"
+import { NODE_H, NODE_W, nextSlot, placeNodes } from "./node-canvas-layout"
 
 const nodes = [{ id: "a" }, { id: "b" }, { id: "c" }]
 const edges = [
@@ -37,5 +37,25 @@ describe("placeNodes", () => {
       { a: { x: 0, y: 0 } }
     )
     expect(pos.c!.x).toBeGreaterThan(pos.b!.x)
+  })
+})
+
+describe("nextSlot", () => {
+  it("starts at the origin, then goes right of the selection", () => {
+    expect(nextSlot([])).toEqual({ x: 0, y: 0 })
+    const slot = nextSlot([
+      { position: { x: 0, y: 0 }, selected: true },
+      { position: { x: 900, y: 600 } },
+    ])
+    expect(slot.x).toBe(NODE_W + 60)
+    expect(slot.y).toBe(0)
+  })
+
+  it("moves down past a node in the way", () => {
+    const slot = nextSlot([
+      { position: { x: 0, y: 0 }, selected: true },
+      { position: { x: NODE_W + 60, y: 0 } },
+    ])
+    expect(slot.y).toBeGreaterThan(0)
   })
 })
