@@ -251,6 +251,19 @@ edges:
   - { from: build, to: done }
 `
 
+const nodeRunYaml = (id: string, run: string, trigger = true) => `id: ${id}
+goal: e2e node run
+nodes:
+${trigger ? "  - id: start\n    kind: trigger\n    type: manual\n" : ""}  - id: build
+    kind: command
+    run: ${JSON.stringify(run)}
+  - id: done
+    kind: output
+    target: folder
+edges:
+${trigger ? "  - { from: start, to: build }\n" : ""}  - { from: build, to: done }
+`
+
 /** Temp FLOWAPP_HOME for the FLOWS_NODES=1 server (node workflow fixtures). */
 export function createNodesE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-nodes-"))
@@ -281,5 +294,22 @@ export function createNodesE2eHome(): string {
     writeFileSync(join(dir, "nodes", "plan", "prompt.md"), "Plan it.\n")
     writeFileSync(join(dir, "memory", "style.md"), "Be brief.\n")
   }
+  // Node run workflows for node-run.spec.ts (BL-086); each test owns one.
+  for (const theme of ["light", "dark"]) {
+    for (const [id, run] of [
+      [`node-run-ok-${theme}`, "echo built"],
+      [`node-run-fail-${theme}`, "echo broken >&2; exit 1"],
+    ] as const) {
+      const dir = join(home, "workflows", id)
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, run))
+    }
+  }
+  const noTrigger = join(home, "workflows", "node-run-none")
+  mkdirSync(noTrigger, { recursive: true })
+  writeFileSync(
+    join(noTrigger, "workflow.yaml"),
+    nodeRunYaml("node-run-none", "echo built", false)
+  )
   return home
 }
