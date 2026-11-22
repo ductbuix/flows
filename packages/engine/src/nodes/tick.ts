@@ -13,8 +13,15 @@ import {
 } from "@workspace/shared"
 import type { EventLog } from "../event-log.ts"
 import { runDir, workflowDir } from "../paths.ts"
-import type { ExecContext, ExecInput } from "./define.ts"
+import { retryBackoffMs } from "../loops.ts"
+import { isLaunchPlan, type ExecContext, type ExecInput } from "./define.ts"
 import { foldSteps, latestStep, type StepsState } from "./fold-steps.ts"
+import {
+  launchAttempt,
+  reattachAttempts,
+  attemptRootOf,
+  type ProcessHost,
+} from "./process.ts"
 import { executorFor } from "./registry.ts"
 import { frozenDir, stepDir } from "./step-paths.ts"
 import { nextActions } from "./walk.ts"
@@ -24,7 +31,16 @@ export type NodeRunOptions = {
   home: string
   runId: string
   /** Test hook: throw to simulate a crash at a point (DES-034). */
-  crashAt?: (point: "after_step_started" | "after_act", nodeId: string) => void
+  crashAt?: (
+    point:
+      | "after_step_started"
+      | "after_act"
+      | "after_attempt_started"
+      | "after_attempt_launched",
+    nodeId: string
+  ) => void
+  /** Needed by agent and command steps; see `runNodes` (drive.ts). */
+  process?: ProcessHost
 }
 
 export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
@@ -122,7 +138,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     const steps = foldSteps(events)
     if (steps.ended) return steps
 
-    const act = (nodeId: string, pass: number) => {
+    const build = (nodeId: string, pass: number) => {
       const node = graph.nodes.find((n) => n.id === nodeId)!
       const executor = executorFor(node.kind)
       if (!executor) throw new Error(`no executor for kind ${node.kind}`)
@@ -132,41 +148,115 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         pass,
         runRoot,
         stepDir: stepDir(runRoot, nodeId, pass),
+        workflowRoot: workflowDir(home, graph.id),
         inputs: activeInputs(graph, steps, runRoot, nodeId),
         frozenFile: (name) => {
           const p = join(frozenDir(runRoot, nodeId), name)
           return existsSync(p) ? readFileSync(p, "utf8") : undefined
         },
+        frozenPath: (name) => join(frozenDir(runRoot, nodeId), name),
       }
+      return { ctx, executor }
+    }
+
+    const settle = (
+      nodeId: string,
+      pass: number,
+      result: { outputs: string[]; branch?: string; answer?: Record<string, unknown> }
+    ) => {
+      opts.crashAt?.("after_act", nodeId)
+      log.append({
+        type: "step_done",
+        runId,
+        at: now(),
+        nodeId,
+        pass,
+        outputs: result.outputs,
+        ...(result.branch ? { branch: result.branch } : {}),
+        ...(result.answer ? { answer: result.answer } : {}),
+      })
+    }
+    const fail = (
+      nodeId: string,
+      pass: number,
+      reason: "exit" | "timeout"
+    ) => {
+      log.append({
+        type: "step_failed",
+        runId,
+        at: now(),
+        nodeId,
+        pass,
+        reason,
+      })
+    }
+
+    /** Runs a due step: settles at once, or starts an attempt. False when held back by a limit. */
+    const run = (nodeId: string, pass: number): boolean => {
+      const { ctx, executor } = build(nodeId, pass)
       try {
         const result = executor.run(ctx)
-        opts.crashAt?.("after_act", nodeId)
-        log.append({
-          type: "step_done",
-          runId,
-          at: now(),
-          nodeId,
-          pass,
-          outputs: result.outputs,
-          ...(result.branch ? { branch: result.branch } : {}),
-          ...(result.answer ? { answer: result.answer } : {}),
-        })
+        if (isLaunchPlan(result)) {
+          return launchAttempt({ ...opts, runId }, ctx, result.launch, steps)
+        }
+        settle(nodeId, pass, result)
       } catch (error) {
         if (error instanceof CrashError) throw error
-        log.append({
-          type: "step_failed",
-          runId,
-          at: now(),
-          nodeId,
-          pass,
-          reason: "exit",
-        })
+        fail(nodeId, pass, "exit")
       }
+      return true
+    }
+
+    /** A process step whose attempt closed: done, retry or failed. */
+    const settleAttempt = (nodeId: string, pass: number): boolean => {
+      const step = steps.steps[nodeId]?.find((x) => x.pass === pass)
+      const c = step?.current
+      if (!step || !c) return false
+      const node = graph.nodes.find((n) => n.id === nodeId)!
+      if (!c.interrupted && c.exitCode === 0) {
+        const { ctx, executor } = build(nodeId, pass)
+        try {
+          settle(
+            nodeId,
+            pass,
+            executor.finish!(ctx, attemptRootOf(ctx.stepDir, c.attempt))
+          )
+        } catch (error) {
+          if (error instanceof CrashError) throw error
+          fail(nodeId, pass, "exit")
+        }
+        return true
+      }
+      const max = (node as { retry?: { max: number } }).retry?.max
+      if (max !== undefined && step.attempts < max) {
+        const wait = retryBackoffMs() * 2 ** (step.attempts - 1)
+        const due = Date.parse(c.endedAt ?? now()) + wait
+        if (Date.now() < due) {
+          opts.process?.later(due - Date.now())
+          return false
+        }
+        return run(nodeId, pass)
+      }
+      fail(nodeId, pass, c.reason === "timeout" ? "timeout" : "exit")
+      return true
     }
 
     let progressed = false
 
-    // Crash recovery: started, no attempt, no end.
+    // Re-attach to attempts left open by a restart (DES-034).
+    if (opts.process) {
+      const before = events.length
+      reattachAttempts(
+        { ...opts, runId },
+        graph,
+        steps,
+        (nodeId, pass) => stepDir(runRoot, nodeId, pass)
+      )
+      if (log.listByRun(runId).length !== before) continue
+    }
+
+    // Crash recovery: started, no attempt, no end. A step that waits on
+    // a limit stays in this state and does not count as progress.
     for (const [nodeId, list] of Object.entries(steps.steps)) {
       for (const s of list) {
         const kind = graph.nodes.find((n) => n.id === nodeId)?.kind
@@ -176,10 +266,23 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
           kind &&
           executorFor(kind)
         ) {
-          act(nodeId, s.pass)
-          progressed = true
+          if (run(nodeId, s.pass)) progressed = true
+          if (progressed) break
         }
       }
+      if (progressed) break
+    }
+    if (progressed) continue
+
+    // A closed attempt settles its step, or retries it.
+    for (const [nodeId, list] of Object.entries(steps.steps)) {
+      for (const s of list) {
+        if (s.status === "running" && s.current && !s.current.open) {
+          if (settleAttempt(nodeId, s.pass)) progressed = true
+          if (progressed) break
+        }
+      }
+      if (progressed) break
     }
     if (progressed) continue
 
@@ -208,7 +311,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         pass: a.pass,
       })
       opts.crashAt?.("after_step_started", a.nodeId)
-      act(a.nodeId, a.pass)
+      run(a.nodeId, a.pass)
       progressed = true
       break // inputs for later actions are read from a fresh fold
     }
