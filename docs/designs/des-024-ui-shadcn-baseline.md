@@ -19,11 +19,14 @@ related:
     BL-028,
     BL-029,
     BL-030,
+    DES-027,
   ]
 updated: 2026-11-22
 ---
 
 # UI on the shadcn baseline
+
+> Superseded in part by the UI renovation (draft, lands with BL-057 to BL-072): control sizes that keep `sm` buttons next to 32px inputs; see the spec sheet in [DES-027](des-027-ui-renovation.md).
 
 The app already runs on shadcn `base-nova` (Base UI, neutral,
 lucide) with 28 components in `packages/ui/src/components`. This

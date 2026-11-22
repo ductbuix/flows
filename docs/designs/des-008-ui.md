@@ -5,14 +5,15 @@ type: ui
 status: active
 summary: UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence.
 tags: [ui, web, shadcn, ai-elements, testing]
-related: [DES-001, DES-009, DES-010, DES-024]
-updated: 2026-11-21
+related: [DES-001, DES-009, DES-010, DES-024, DES-027, DES-030]
+updated: 2026-11-22
 ---
 
 # UI instructions
 
-## System
+> Superseded in part by the UI renovation (draft, lands with BL-057 to BL-072): "Screens"; see [DES-027](des-027-ui-renovation.md). Evidence also needs the layout check in [DES-030](des-030-ui-renovation-journeys-dx.md).
 
+## System
 
 - shadcn initialised with preset `b1HvWXNDFK`, Vite template, monorepo
   layout. Style `base-nova` on Base UI (not Radix), base color `neutral`,

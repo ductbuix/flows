@@ -5,7 +5,18 @@ type: design
 status: active
 summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
 tags: [storage, yaml, workflow, files]
-related: [DES-001, DES-004, DES-005, DES-020, DES-021, DES-022, DES-023]
+related:
+  [
+    DES-001,
+    DES-004,
+    DES-005,
+    DES-020,
+    DES-021,
+    DES-022,
+    DES-023,
+    DES-027,
+    BL-073,
+  ]
 updated: 2026-11-22
 ---
 
@@ -41,6 +52,7 @@ A dir is the compacted context of its object. Each task writes its own
 
 ```yaml
 id: research-report
+name: Research report # optional display name (DES-027)
 goal: Produce a sourced report on input/topic.md
 limits:
   {
@@ -99,7 +111,10 @@ tasks:
 ```
 
 The visual editor and `workflow.yaml` stay in sync; the file is the source
-of truth. New task ids are generated as `task-` plus eight hex
+of truth. The top-level `id` is the folder name and the stable key; the
+optional `name` (1 to 80 characters) is only the display label, and the
+UI falls back to the humanized id when it is absent
+([DES-027](des-027-ui-renovation.md), BL-073). New task ids are generated as `task-` plus eight hex
 characters, and `name` is the display label
 ([DES-020](des-020-fixed-prompt-files.md)). Legacy ids such as `plan`
 still parse. Conditions, `when`, `retry`, `repeat` and branch edges:
