@@ -58,6 +58,9 @@ export const attemptStartedEventSchema = z.object({
   type: z.literal("attempt_started"),
   ...eventBase,
   taskId: z.string().min(1),
+  /** Node path (DES-034). */
+  nodeId: z.string().min(1).optional(),
+  pass: z.number().int().positive().optional(),
   attempt: z.number().int().positive(),
 })
 
@@ -87,6 +90,9 @@ export const attemptFinishedEventSchema = z.object({
   type: z.literal("attempt_finished"),
   ...eventBase,
   taskId: z.string().min(1),
+  /** Node path (DES-034). */
+  nodeId: z.string().min(1).optional(),
+  pass: z.number().int().positive().optional(),
   attempt: z.number().int().positive(),
   exitCode: z.number().int(),
   /** timeout, mapped CLI stderr, or omitted (DES-019). */
@@ -98,6 +104,9 @@ export const attemptInterruptedEventSchema = z.object({
   type: z.literal("attempt_interrupted"),
   ...eventBase,
   taskId: z.string().min(1),
+  /** Node path (DES-034). */
+  nodeId: z.string().min(1).optional(),
+  pass: z.number().int().positive().optional(),
   attempt: z.number().int().positive(),
 })
 
@@ -253,6 +262,57 @@ export const agentReviewFinishedEventSchema = z.object({
   reason: z.string().min(1),
 })
 
+const stepBase = {
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+}
+
+/** Node path (DES-034): one pass of one node. */
+export const stepStartedEventSchema = z.object({
+  type: z.literal("step_started"),
+  ...stepBase,
+})
+
+export const stepDoneEventSchema = z.object({
+  type: z.literal("step_done"),
+  ...stepBase,
+  outputs: z.array(z.string().min(1)).optional(),
+  branch: z.string().min(1).optional(),
+  answer: z.record(z.string(), z.unknown()).optional(),
+})
+
+export const stepFailedEventSchema = z.object({
+  type: z.literal("step_failed"),
+  ...stepBase,
+  reason: z.enum(["exit", "timeout", "unclear", "answer", "loop_limit"]),
+})
+
+export const stepSkippedEventSchema = z.object({
+  type: z.literal("step_skipped"),
+  ...stepBase,
+})
+
+export const stepApprovedEventSchema = z.object({
+  type: z.literal("step_approved"),
+  ...stepBase,
+})
+
+export const stepRejectedEventSchema = z.object({
+  type: z.literal("step_rejected"),
+  ...stepBase,
+})
+
+export const stepRetryRequestedEventSchema = z.object({
+  type: z.literal("step_retry_requested"),
+  ...stepBase,
+})
+
+export const stepCancelledEventSchema = z.object({
+  type: z.literal("step_cancelled"),
+  ...stepBase,
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   runActivatedEventSchema,
@@ -279,6 +339,14 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   publishStartedEventSchema,
   publishFinishedEventSchema,
   agentReviewFinishedEventSchema,
+  stepStartedEventSchema,
+  stepDoneEventSchema,
+  stepFailedEventSchema,
+  stepSkippedEventSchema,
+  stepApprovedEventSchema,
+  stepRejectedEventSchema,
+  stepRetryRequestedEventSchema,
+  stepCancelledEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>
