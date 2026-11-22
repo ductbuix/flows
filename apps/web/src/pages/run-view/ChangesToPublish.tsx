@@ -16,7 +16,7 @@ import {
   CodeBlockContent,
 } from "@workspace/ui/components/code-block"
 import { ImpactBadge } from "@/components/ImpactBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { SummaryMarkdown } from "./SummaryMarkdown"
 
@@ -80,7 +80,7 @@ export function ChangesToPublish({ run, task }: Props) {
   const destructive = destructiveOps(changeSet)
 
   return (
-    <Section title="Changes to publish">
+    <PageSection title="Changes to publish">
       <div className="flex flex-col gap-3" data-testid="changes-to-publish">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-sm">{connection}</span>
@@ -114,6 +114,6 @@ export function ChangesToPublish({ run, task }: Props) {
           </>
         )}
       </div>
-    </Section>
+    </PageSection>
   )
 }

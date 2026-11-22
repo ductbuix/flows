@@ -9,7 +9,7 @@ import {
   CodeBlockContent,
 } from "@workspace/ui/components/code-block"
 import { ImpactBadge } from "@/components/ImpactBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { SummaryMarkdown } from "./SummaryMarkdown"
 
@@ -67,7 +67,7 @@ export function UnpublishedChanges({ run }: Props) {
   if (diffs.length === 0) return null
 
   return (
-    <Section title="Unpublished local changes">
+    <PageSection title="Unpublished local changes">
       <div className="flex flex-col gap-4" data-testid="unpublished-changes">
         {diffs.map((diff) => (
           <div
@@ -93,6 +93,6 @@ export function UnpublishedChanges({ run }: Props) {
           </div>
         ))}
       </div>
-    </Section>
+    </PageSection>
   )
 }

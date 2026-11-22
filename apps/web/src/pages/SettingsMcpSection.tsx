@@ -10,7 +10,7 @@ import {
   ItemTitle,
 } from "@workspace/ui/components/item"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 type Props = {
   servers: McpTrustEntry[] | null
@@ -21,7 +21,7 @@ type Props = {
 /** Allowed MCP servers list and revoke (DES-026 / BL-054). */
 export function SettingsMcpSection({ servers, revokingKey, onRevoke }: Props) {
   return (
-    <Section title="Allowed MCP servers">
+    <PageSection title="Allowed MCP servers">
       <FieldDescription>
         Local MCP servers (command or URL) run only after you allow them. Revoke
         here to require allow again.
@@ -66,6 +66,6 @@ export function SettingsMcpSection({ servers, revokingKey, onRevoke }: Props) {
           ))}
         </ItemGroup>
       )}
-    </Section>
+    </PageSection>
   )
 }

@@ -24,8 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
+import { Page, PageTitle } from "@/components/page"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
 import { useRunsList } from "@/hooks/use-runs-list"
 import { workflowPath } from "@/lib/paths"
@@ -63,108 +62,102 @@ export function WorkflowsPage() {
   const loading = !error && (!workflows || !runs)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[{ label: "Workflows" }]} />
-      <div
-        className="flex flex-1 flex-col gap-6 overflow-auto p-6"
-        data-testid="workflows-page"
-      >
-        <PageTitle
-          title="Workflows"
-          description="Search workflows and open one to edit or start a run."
-        />
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : loading ? (
-          <div className="space-y-3" data-testid="workflows-loading">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : (
-          <>
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search workflows"
-              data-testid="workflows-search"
-              className="max-w-sm"
-            />
-            {filtered!.length === 0 ? (
-              <Empty data-testid="workflows-empty">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <FolderOpen />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                    {workflows!.length === 0
-                      ? "No workflows yet"
-                      : "No matching workflows"}
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    {workflows!.length === 0
-                      ? "Create one from the sidebar plus action."
-                      : "Try a different search."}
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <Table data-testid="workflows-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Tasks</TableHead>
-                    <TableHead>Last run</TableHead>
-                    <TableHead>Last run time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered!.map((wf) => {
-                    const last = lastRuns.get(wf.id)
-                    return (
-                      <TableRow
-                        key={wf.id}
-                        className="cursor-pointer"
-                        data-testid={`workflows-row-${wf.id}`}
-                        onClick={() => void navigate(workflowPath(wf.id))}
-                      >
-                        <TableCell>
-                          <Link
-                            to={workflowPath(wf.id)}
-                            className="font-mono text-sm hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {wf.id}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{wf.taskCount}</TableCell>
-                        <TableCell>
-                          {last ? (
-                            <RunStatusBadge
-                              status={last.status}
-                              needsYou={last.needsYou.length > 0}
-                              data-testid={`workflows-last-status-${wf.id}`}
-                            />
-                          ) : (
-                            <span className="text-sm text-muted-foreground">
-                              —
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {last?.startedAt ?? "—"}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+    <Page crumbs={[{ label: "Workflows" }]} data-testid="workflows-page">
+      <PageTitle
+        title="Workflows"
+        description="Search workflows and open one to edit or start a run."
+      />
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : loading ? (
+        <div className="space-y-3" data-testid="workflows-loading">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : (
+        <>
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search workflows"
+            data-testid="workflows-search"
+            className="max-w-sm"
+          />
+          {filtered!.length === 0 ? (
+            <Empty data-testid="workflows-empty">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FolderOpen />
+                </EmptyMedia>
+                <EmptyTitle>
+                  {workflows!.length === 0
+                    ? "No workflows yet"
+                    : "No matching workflows"}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {workflows!.length === 0
+                    ? "Create one from the sidebar plus action."
+                    : "Try a different search."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table data-testid="workflows-table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Tasks</TableHead>
+                  <TableHead>Last run</TableHead>
+                  <TableHead>Last run time</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered!.map((wf) => {
+                  const last = lastRuns.get(wf.id)
+                  return (
+                    <TableRow
+                      key={wf.id}
+                      className="cursor-pointer"
+                      data-testid={`workflows-row-${wf.id}`}
+                      onClick={() => void navigate(workflowPath(wf.id))}
+                    >
+                      <TableCell>
+                        <Link
+                          to={workflowPath(wf.id)}
+                          className="font-mono text-sm hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {wf.id}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{wf.taskCount}</TableCell>
+                      <TableCell>
+                        {last ? (
+                          <RunStatusBadge
+                            status={last.status}
+                            needsYou={last.needsYou.length > 0}
+                            data-testid={`workflows-last-status-${wf.id}`}
+                          />
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {last?.startedAt ?? "—"}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </>
+      )}
+    </Page>
   )
 }

@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { ImpactBadge } from "@/components/ImpactBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import {
   overviewConnections,
   overviewImpacts,
@@ -28,7 +28,7 @@ export function OverviewConnectionsSection({ workflow }: Props) {
   const impacts = overviewImpacts(workflow)
 
   return (
-    <Section title="Connections">
+    <PageSection title="Connections">
       <div className="flex flex-col gap-3">
         <div
           className="flex flex-wrap items-center gap-2"
@@ -87,6 +87,6 @@ export function OverviewConnectionsSection({ workflow }: Props) {
           </Table>
         )}
       </div>
-    </Section>
+    </PageSection>
   )
 }

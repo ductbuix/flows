@@ -12,8 +12,8 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { PageHeader } from "@/components/PageHeader"
-import { WorkflowDetailTabs } from "@/pages/WorkflowDetailTabs"
+import { Page } from "@/components/page"
+import { WorkflowHeading } from "@/pages/WorkflowHeading"
 import { ConflictDialog } from "./ConflictDialog"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { EditorMainPane, type EditorPane } from "./EditorMainPane"
@@ -35,6 +35,16 @@ export function WorkflowEditorPage() {
     { label: "Workflows", to: "/workflows" },
     { label: workflowId },
   ] as const
+
+  const heading = (
+    <WorkflowHeading
+      workflowId={workflowId}
+      tab="editor"
+      description={
+        state.workflow?.goal?.trim() || "Edit the graph, tasks and YAML."
+      }
+    />
+  )
 
   const headerActions = (
     <>
@@ -70,40 +80,35 @@ export function WorkflowEditorPage() {
 
   if (state.loading) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
-        <div className="space-y-2 p-4">
-          <WorkflowDetailTabs workflowId={workflowId} tab="editor" />
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-120 w-full" />
-        </div>
-      </div>
+      <Page crumbs={[...crumbs]} actions={headerActions}>
+        {heading}
+        <Skeleton className="h-120 w-full" />
+      </Page>
     )
   }
 
   if (!state.workflow && state.errors.length === 0 && !state.yaml) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} actions={headerActions} />
-        <div className="space-y-4 p-4">
-          <WorkflowDetailTabs workflowId={workflowId} tab="editor" />
-          <Alert variant="destructive">
-            <AlertTitle>Not found</AlertTitle>
-            <AlertDescription>
-              Workflow {workflowId} was not found.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
+      <Page crumbs={[...crumbs]} actions={headerActions}>
+        {heading}
+        <Alert variant="destructive">
+          <AlertTitle>Not found</AlertTitle>
+          <AlertDescription>
+            Workflow {workflowId} was not found.
+          </AlertDescription>
+        </Alert>
+      </Page>
     )
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" data-testid="workflow-editor">
-      <PageHeader crumbs={[...crumbs]} actions={headerActions} />
-      <div className="shrink-0 px-4 pt-4">
-        <WorkflowDetailTabs workflowId={workflowId} tab="editor" />
-      </div>
+    <Page
+      crumbs={[...crumbs]}
+      actions={headerActions}
+      fill
+      data-testid="workflow-editor"
+    >
+      {heading}
       {pane === "graph" ? (
         <YamlErrorAlert
           errors={state.errors}
@@ -111,7 +116,11 @@ export function WorkflowEditorPage() {
         />
       ) : null}
 
-      <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
+      <ResizablePanelGroup
+        orientation="horizontal"
+        data-bleed
+        className="min-h-0 flex-1"
+      >
         <ResizablePanel defaultSize="58%" minSize="30%">
           <EditorMainPane
             pane={pane}
@@ -171,6 +180,6 @@ export function WorkflowEditorPage() {
         onKeep={editor.keepConflict}
         onShowDiff={() => editor.setShowDiff(!state.showDiff)}
       />
-    </div>
+    </Page>
   )
 }

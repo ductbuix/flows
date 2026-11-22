@@ -5,7 +5,7 @@ import type {
   RefreshRule,
 } from "@workspace/shared"
 import { McpTrustDialog } from "@/components/McpTrustDialog"
-import { PageTitle } from "@/components/PageTitle"
+import { PageTitle } from "@/components/page"
 import { PublishPolicyBadge } from "@/components/PublishPolicyBadge"
 import { ConnectionLocalData } from "./ConnectionLocalData"
 import { ConnectionPolicyField } from "./ConnectionPolicyField"

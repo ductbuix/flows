@@ -24,9 +24,7 @@ import {
 } from "@workspace/ui/components/item"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
-import { Section } from "@/components/Section"
+import { Page, PageSection, PageTitle } from "@/components/page"
 import { WorkItemSourceBadge } from "@/components/WorkItemSourceBadge"
 import { api } from "@/lib/api"
 import { WorkItemContextSection } from "@/pages/WorkItemContextSection"
@@ -90,73 +88,70 @@ export function WorkItemPage() {
   ] as const
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" data-testid="work-item-page">
-      <PageHeader crumbs={[...crumbs]} />
-      <div className="flex flex-1 flex-col gap-6 overflow-auto p-6">
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : loading || !item || !hash ? (
-          <div className="space-y-3" data-testid="work-item-loading">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : (
-          <>
-            <PageTitle
-              title={item.title}
-              description="Context, runs, start a workflow and notes."
-              badge={<WorkItemSourceBadge source={item.source} />}
-            />
+    <Page crumbs={[...crumbs]} data-testid="work-item-page">
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : loading || !item || !hash ? (
+        <div className="space-y-3" data-testid="work-item-loading">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : (
+        <>
+          <PageTitle
+            title={item.title}
+            description="Context, runs, start a workflow and notes."
+            badge={<WorkItemSourceBadge source={item.source} />}
+          />
 
-            <WorkItemContextSection
-              workItemId={workItemId}
-              item={item}
-              hash={hash}
-              onUpdated={(next, nextHash) => {
-                setItem(next)
-                setHash(nextHash)
-              }}
-            />
+          <WorkItemContextSection
+            workItemId={workItemId}
+            item={item}
+            hash={hash}
+            onUpdated={(next, nextHash) => {
+              setItem(next)
+              setHash(nextHash)
+            }}
+          />
 
-            <WorkItemRunsSection workItemId={workItemId} />
+          <WorkItemRunsSection workItemId={workItemId} />
 
-            <WorkItemStartCard
-              workItemId={workItemId}
-              initialWorkflowId={item.workflowId}
-              initialInputs={item.inputs}
-              onStarted={onStarted}
-            />
+          <WorkItemStartCard
+            workItemId={workItemId}
+            initialWorkflowId={item.workflowId}
+            initialInputs={item.inputs}
+            onStarted={onStarted}
+          />
 
-            <WorkItemNotesSection workItemId={workItemId} />
+          <WorkItemNotesSection workItemId={workItemId} />
 
-            <Section title="Attachments">
-              {!attachments || attachments.length === 0 ? (
-                <Empty data-testid="work-item-attachments-empty">
-                  <EmptyHeader>
-                    <EmptyTitle>No attachments</EmptyTitle>
-                    <EmptyDescription>
-                      Files attached to this work item will list here.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              ) : (
-                <ItemGroup data-testid="work-item-attachments">
-                  {attachments.map((file) => (
-                    <Item key={file.name} variant="outline" size="sm">
-                      <ItemContent>
-                        <ItemTitle className="font-mono">{file.name}</ItemTitle>
-                      </ItemContent>
-                    </Item>
-                  ))}
-                </ItemGroup>
-              )}
-            </Section>
-          </>
-        )}
-      </div>
-    </div>
+          <PageSection title="Attachments">
+            {!attachments || attachments.length === 0 ? (
+              <Empty data-testid="work-item-attachments-empty">
+                <EmptyHeader>
+                  <EmptyTitle>No attachments</EmptyTitle>
+                  <EmptyDescription>
+                    Files attached to this work item will list here.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            ) : (
+              <ItemGroup data-testid="work-item-attachments">
+                {attachments.map((file) => (
+                  <Item key={file.name} variant="outline" size="sm">
+                    <ItemContent>
+                      <ItemTitle className="font-mono">{file.name}</ItemTitle>
+                    </ItemContent>
+                  </Item>
+                ))}
+              </ItemGroup>
+            )}
+          </PageSection>
+        </>
+      )}
+    </Page>
   )
 }

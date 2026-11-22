@@ -2,7 +2,7 @@
 id: BL-057
 title: "UI frame: one page template from dashboard-01"
 type: backlog
-status: todo
+status: doing
 summary: Page, PageHeader, PageTitle, PageSection and PageToolbar from dashboard-01; every page uses them with a title and 24px rhythm.
 tags: [ui, web, layout, shadcn]
 related: [DES-027, DES-028, DES-029]
@@ -18,26 +18,26 @@ sheet: Frame and type). Fixes S1 to S4.
 
 ## Done when
 
-- [ ] `apps/web/src/components/page/` holds `Page`, `PageHeader`,
+- [x] `apps/web/src/components/page/` holds `Page`, `PageHeader`,
       `PageTitle`, `PageSection` and `PageToolbar`; the old
       `PageHeader`, `PageTitle` and `Section` are removed.
-- [ ] Header is 48px (`--header-height: calc(var(--spacing) * 12)`),
+- [x] Header is 48px (`--header-height: calc(var(--spacing) * 12)`),
       inner `px-4 lg:px-6`, `SidebarTrigger className="-ml-1"`, vertical
       `Separator className="mx-2 h-4 data-vertical:self-auto"`, actions
       in `ml-auto flex items-center gap-2`.
-- [ ] Content is
+- [x] Content is
       `@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6`,
       each section `px-4 lg:px-6`; full-bleed regions carry `data-bleed`
       and no `px`.
-- [ ] All 13 routes use the template: at 1440x900 every h1 starts at
+- [x] All 13 routes use the template: at 1440x900 every h1 starts at
       x280, content top padding is 24px and section gaps are 24px.
-- [ ] Every page has an h1 (`font-heading text-xl font-medium`),
+- [x] Every page has an h1 (`font-heading text-xl font-medium`),
       including Editor, Workflow runs, Run view and empty Home; the
       workflow Tabs sit under the title.
-- [ ] `Page fill` gives Editor and Run view a last region that takes the
+- [x] `Page fill` gives Editor and Run view a last region that takes the
       remaining height with `min-h-0 flex-1`; no `calc()` heights
       remain.
-- [ ] Section header rows are `min-h-8` (32px) with or without a
+- [x] Section header rows are `min-h-8` (32px) with or without a
       toolbar.
 - [ ] Evidence: Playwright video plus light and dark screenshots at
       1440x900 of every route, attached to the PR.

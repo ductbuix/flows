@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { connectionPath } from "@/lib/paths"
 import { AddConnectionDialog } from "./AddConnectionDialog"
@@ -76,7 +76,7 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
 
   return (
     <>
-      <Section title="How it works">
+      <PageSection title="How it works">
         <ol
           className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground"
           data-testid="connections-explainer"
@@ -88,7 +88,7 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
             leaves.
           </li>
         </ol>
-      </Section>
+      </PageSection>
 
       {error ? (
         <Alert variant="destructive">

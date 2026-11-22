@@ -6,7 +6,7 @@ type Props = {
   badge?: ReactNode
 }
 
-/** Page title block: heading, one muted sentence, optional Badge (DES-025). */
+/** Page title block: h1, one muted sentence, optional Badge (DES-027). */
 export function PageTitle({ title, description, badge }: Props) {
   return (
     <div className="flex flex-col gap-1">

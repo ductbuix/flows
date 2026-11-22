@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 const REFRESH: RefreshRule[] = ["15m", "1h", "1d", "never"]
 
@@ -23,7 +23,7 @@ type Props = {
 
 export function ConnectionRefreshField({ value, disabled, onChange }: Props) {
   return (
-    <Section title="Refresh rule">
+    <PageSection title="Refresh rule">
       <Field className="max-w-xs">
         <FieldLabel>Refresh</FieldLabel>
         <Select
@@ -49,6 +49,6 @@ export function ConnectionRefreshField({ value, disabled, onChange }: Props) {
           How often Flows considers pulled data stale.
         </FieldDescription>
       </Field>
-    </Section>
+    </PageSection>
   )
 }

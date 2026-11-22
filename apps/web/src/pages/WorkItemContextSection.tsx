@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link2 } from "lucide-react"
 import type { LibraryEntity, WorkItem, WorkItemLink } from "@workspace/shared"
-import {
-  libraryListSchema,
-  workItemDetailSchema,
-} from "@workspace/shared"
+import { libraryListSchema, workItemDetailSchema } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import {
   Empty,
@@ -22,7 +19,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { toast } from "sonner"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import {
   entityKey,
@@ -102,7 +99,7 @@ export function WorkItemContextSection({
   }
 
   return (
-    <Section title="Context">
+    <PageSection title="Context">
       {item.links.length === 0 ? (
         <Empty data-testid="work-item-context-empty">
           <EmptyHeader>
@@ -163,6 +160,6 @@ export function WorkItemContextSection({
           </Button>
         </div>
       </Field>
-    </Section>
+    </PageSection>
   )
 }

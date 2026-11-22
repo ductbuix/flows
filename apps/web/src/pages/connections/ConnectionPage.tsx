@@ -16,7 +16,7 @@ import {
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
-import { PageHeader } from "@/components/PageHeader"
+import { Page } from "@/components/page"
 import { api } from "@/lib/api"
 import { connectionsPath } from "@/lib/paths"
 import { ConnectionPageBody } from "./ConnectionPageBody"
@@ -107,51 +107,46 @@ export function ConnectionPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader
-        crumbs={[
-          { label: "Connections", to: connectionsPath() },
-          { label: detail?.name ?? connectionId },
-        ]}
-      />
-      <div
-        className="flex flex-1 flex-col gap-6 overflow-auto p-6"
-        data-testid="connection-page"
-      >
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : !detail ? (
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : (
-          <ConnectionPageBody
-            detail={detail}
-            localData={localData}
-            saving={saving}
-            signIn={signIn}
-            mcpKey={mcpKey(detail.scope)}
-            onSaveRefresh={(refresh) =>
-              void saveConnection(
-                { refresh },
-                "Refresh rule updated",
-                "Could not update refresh rule"
-              )
-            }
-            onSavePolicy={(policy) =>
-              void saveConnection(
-                { policy },
-                "Publish policy updated",
-                "Could not update publish policy"
-              )
-            }
-          />
-        )}
-      </div>
-    </div>
+    <Page
+      crumbs={[
+        { label: "Connections", to: connectionsPath() },
+        { label: detail?.name ?? connectionId },
+      ]}
+      data-testid="connection-page"
+    >
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : !detail ? (
+        <div className="space-y-3">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : (
+        <ConnectionPageBody
+          detail={detail}
+          localData={localData}
+          saving={saving}
+          signIn={signIn}
+          mcpKey={mcpKey(detail.scope)}
+          onSaveRefresh={(refresh) =>
+            void saveConnection(
+              { refresh },
+              "Refresh rule updated",
+              "Could not update refresh rule"
+            )
+          }
+          onSavePolicy={(policy) =>
+            void saveConnection(
+              { policy },
+              "Publish policy updated",
+              "Could not update publish policy"
+            )
+          }
+        />
+      )}
+    </Page>
   )
 }

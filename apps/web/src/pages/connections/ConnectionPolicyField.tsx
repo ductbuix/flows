@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 const POLICIES: PublishPolicy[] = [
   "read-only",
@@ -43,7 +43,7 @@ type Props = {
 /** Editable publish policy Select with FieldDescription per option (BL-051). */
 export function ConnectionPolicyField({ value, disabled, onChange }: Props) {
   return (
-    <Section title="Publish policy">
+    <PageSection title="Publish policy">
       <Field className="max-w-md">
         <FieldLabel>Policy</FieldLabel>
         <Select
@@ -75,6 +75,6 @@ export function ConnectionPolicyField({ value, disabled, onChange }: Props) {
           </FieldDescription>
         ))}
       </Field>
-    </Section>
+    </PageSection>
   )
 }

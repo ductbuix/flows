@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { runPath, workflowPath } from "@/lib/paths"
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 
 export function ConnectionUsedBy({ workflows, runs }: Props) {
   return (
-    <Section title="Used by">
+    <PageSection title="Used by">
       <div
         className="flex flex-col gap-2 text-sm"
         data-testid="connection-used-by"
@@ -44,6 +44,6 @@ export function ConnectionUsedBy({ workflows, runs }: Props) {
               ))}
         </div>
       </div>
-    </Section>
+    </PageSection>
   )
 }
