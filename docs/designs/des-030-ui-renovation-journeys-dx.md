@@ -5,7 +5,20 @@ type: ui
 status: draft
 summary: Journeys with click counts before and after the renovation, DX for people using Flows, and conventions, lint and checks for us.
 tags: [ui, web, ux, dx, journeys, lint, testing, ai-elements]
-related: [DES-008, DES-016, DES-024, DES-025, DES-027, DES-028, DES-029]
+related:
+  [
+    DES-008,
+    DES-016,
+    DES-024,
+    DES-025,
+    DES-027,
+    DES-028,
+    DES-029,
+    BL-059,
+    BL-060,
+    BL-061,
+    BL-072,
+  ]
 updated: 2026-11-22
 ---
 

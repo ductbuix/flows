@@ -5,7 +5,21 @@ type: ui
 status: draft
 summary: Region layout with exact sizes for run lists, the run view (summary first), connections, library, settings and every dialog.
 tags: [ui, web, ux, runs, connections, settings, layout]
-related: [DES-009, DES-011, DES-019, DES-025, DES-027, DES-028, DES-030]
+related:
+  [
+    DES-009,
+    DES-011,
+    DES-019,
+    DES-025,
+    DES-027,
+    DES-028,
+    DES-030,
+    BL-062,
+    BL-063,
+    BL-064,
+    BL-070,
+    BL-071,
+  ]
 updated: 2026-11-22
 ---
 
@@ -65,8 +79,7 @@ Summary first, then tasks. `Page fill`.
 - **Lead**, only when needed: the Confirmation pattern when a task waits
   for approval, or `Alert variant="destructive"` naming the failed task
   and attempt with an "Open Terminal" `Button` (`outline`, 32px).
-- **Summary cards:** `grid grid-cols-1 gap-4 @xl/main:grid-cols-2
-@5xl/main:grid-cols-4` of `Card size="sm"` (272px each): `CardDescription`
+- **Summary cards:** `grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4` of `Card size="sm"` (272px each): `CardDescription`
   label, `CardTitle` value in `text-2xl font-semibold tabular-nums` as in
   dashboard-01 SectionCards. Tasks card adds `Progress` (4px). Inputs card
   lists `Attachment` chips or "None".
@@ -96,8 +109,7 @@ Summary first, then tasks. `Page fill`.
   Stack Trace, `max-h-64` logs), Environment (env Items and the CLI
   command in a `CodeBlock`). No Card around it, so no card in a card.
 - **SUMMARY.md** renders through react-markdown with mapped parts: h1
-  `font-heading text-xl font-medium`, h2 `font-heading text-base
-font-medium`, h3 `text-sm font-medium`, p and lists `text-sm`, tables
+  `font-heading text-xl font-medium`, h2 `font-heading text-base font-medium`, h3 `text-sm font-medium`, p and lists `text-sm`, tables
   as shadcn `Table` in the wrapper, code blocks as `CodeBlock size="sm"`
   (S10).
 

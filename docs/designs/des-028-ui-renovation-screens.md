@@ -5,7 +5,21 @@ type: ui
 status: draft
 summary: Region layout with exact sizes for the shell, Home, work items, workflows, the editor, the task Sheet and workflow settings.
 tags: [ui, web, ux, editor, work-items, layout]
-related: [DES-010, DES-013, DES-025, DES-027, DES-029, DES-030]
+related:
+  [
+    DES-010,
+    DES-013,
+    DES-025,
+    DES-027,
+    DES-029,
+    DES-030,
+    BL-065,
+    BL-066,
+    BL-067,
+    BL-068,
+    BL-069,
+    BL-070,
+  ]
 updated: 2026-11-22
 ---
 
@@ -165,8 +179,7 @@ lists of runs, connections, settings and dialogs are in
   kind switch (J-b). A publish task opens the task Sheet with its
   connection Select first; the node is added once a connection is
   picked, so no invalid node appears (#19).
-- Nodes are `Card size="sm"` with `w-56` (224px): name `text-sm
-font-medium`, then a row of `Badge`s (kind, connections, approval).
+- Nodes are `Card size="sm"` with `w-56` (224px): name `text-sm font-medium`, then a row of `Badge`s (kind, connections, approval).
   Selected node: `ring-2 ring-ring`.
 - `fitView` uses `maxZoom: 1` and `padding: 0.2`, so one task renders at
   100%, not 2.3x (S12, #21). Controls are a `ButtonGroup` of
