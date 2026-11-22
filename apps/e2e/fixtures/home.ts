@@ -212,5 +212,14 @@ export function createNodesE2eHome(): string {
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
+  // Empty node workflows for node-add.spec.ts (BL-094); each test owns one.
+  for (const id of ["node-empty-light", "node-empty-dark", "node-sample"]) {
+    const empty = join(home, "workflows", id)
+    mkdirSync(empty, { recursive: true })
+    writeFileSync(
+      join(empty, "workflow.yaml"),
+      `id: ${id}\ngoal: e2e empty node workflow\nnodes: []\nedges: []\n`
+    )
+  }
   return home
 }

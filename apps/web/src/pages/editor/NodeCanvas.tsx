@@ -8,7 +8,9 @@ import {
   ReactFlow,
   useNodesState,
   useReactFlow,
+  type Connection,
   type Edge,
+  type FinalConnectionState,
   type Node,
   type NodeProps,
 } from "@xyflow/react"
@@ -22,7 +24,10 @@ import {
 } from "@workspace/ui/components/button-group"
 import { Card } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
+import { toast } from "sonner"
 import { placeNodes, type Pos } from "./node-canvas-layout"
+import { wireRefusal } from "./node-add"
+import type { WireSide } from "./node-add"
 
 type CardData = { label: string; kind: string }
 
@@ -78,9 +83,25 @@ type Props = {
   saved: Readonly<Record<string, Pos>>
   /** Called on drag end with every node's position. */
   onPositions: (positions: Record<string, Pos>) => void
+  /** A checked wire between two nodes. */
+  onWire: (edge: { from: string; to: string }) => void
+  /** A wire dropped on empty canvas: where, and from which end. */
+  onDrop: (drop: { wire: WireSide; client: Pos; flow: Pos }) => void
 }
 
-export function NodeCanvas({ workflow, saved, onPositions }: Props) {
+function pointOf(event: MouseEvent | TouchEvent): Pos {
+  const p = "changedTouches" in event ? event.changedTouches[0]! : event
+  return { x: p.clientX, y: p.clientY }
+}
+
+export function NodeCanvas({
+  workflow,
+  saved,
+  onPositions,
+  onWire,
+  onDrop,
+}: Props) {
+  const { screenToFlowPosition } = useReactFlow()
   const initial = useMemo<Node<CardData>[]>(() => {
     const pos = placeNodes(workflow.nodes, workflow.edges, saved)
     return workflow.nodes.map((n) => ({
@@ -104,6 +125,31 @@ export function NodeCanvas({ workflow, saved, onPositions }: Props) {
     [workflow.edges]
   )
 
+  const onConnect = (c: Connection) => {
+    const edge = { from: c.source, to: c.target }
+    const why = wireRefusal(workflow.nodes, workflow.edges, edge)
+    if (why) toast.error(why)
+    else onWire(edge)
+  }
+
+  const onConnectEnd = (
+    event: MouseEvent | TouchEvent,
+    state: FinalConnectionState
+  ) => {
+    if (state.isValid || state.toNode || !state.fromNode || !state.fromHandle) {
+      return
+    }
+    const client = pointOf(event)
+    onDrop({
+      wire: {
+        id: state.fromNode.id,
+        handle: state.fromHandle.type === "source" ? "source" : "target",
+      },
+      client,
+      flow: screenToFlowPosition(client),
+    })
+  }
+
   return (
     <div className="h-full min-h-70 w-full" data-testid="canvas">
       <ReactFlow
@@ -111,7 +157,8 @@ export function NodeCanvas({ workflow, saved, onPositions }: Props) {
         edges={edges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
-        nodesConnectable={false}
+        onConnect={onConnect}
+        onConnectEnd={onConnectEnd}
         deleteKeyCode={null}
         multiSelectionKeyCode={null}
         fitView

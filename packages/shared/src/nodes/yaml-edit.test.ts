@@ -86,3 +86,16 @@ describe("node yaml edit helpers", () => {
     expect(removeEdge(fixture, { from: "x", to: "y" })).toBe(fixture)
   })
 })
+
+describe("empty flow lists", () => {
+  it("grow into block lists", () => {
+    const text = addNode("id: a\nnodes: []\nedges: []\n", {
+      id: "t",
+      kind: "trigger",
+      type: "manual",
+    })
+    expect(text).toContain("nodes:\n  - ")
+    const out = addEdge(text, { from: "t", to: "t" })
+    expect(out).toContain("edges:\n  - { from: t, to: t }")
+  })
+})

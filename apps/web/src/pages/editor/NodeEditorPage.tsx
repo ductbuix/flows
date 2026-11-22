@@ -8,13 +8,14 @@ import { Page } from "@/components/page"
 import { WorkflowStartButton } from "@/components/WorkflowStartButton"
 import { useWorkflowLabel } from "@/lib/workflows-context"
 import { WorkflowHeading } from "@/pages/WorkflowHeading"
-import { NodeCanvas } from "./NodeCanvas"
+import { ReactFlowProvider } from "@xyflow/react"
+import { NodeEditorSurface } from "./NodeEditorSurface"
 import { useNodeEditor } from "./useNodeEditor"
 
 /** Editor canvas for node workflows, behind FLOWS_NODES (BL-077). */
 export function NodeEditorPage({ workflowId }: { workflowId: string }) {
   const editor = useNodeEditor(workflowId)
-  const workflow = editor.detail?.workflow ?? null
+  const workflow = editor.workflow
   const label = useWorkflowLabel(workflowId, workflow?.name)
   const crumbs = [
     { label: "Workflows", to: "/workflows" },
@@ -39,7 +40,7 @@ export function NodeEditorPage({ workflowId }: { workflowId: string }) {
     )
   }
 
-  const errors = editor.detail?.errors ?? []
+  const errors = editor.errors
   return (
     <Page
       crumbs={[...crumbs]}
@@ -67,13 +68,9 @@ export function NodeEditorPage({ workflowId }: { workflowId: string }) {
         </Alert>
       ) : null}
       {workflow ? (
-        <div data-bleed className="min-h-0 flex-1 border-t">
-          <NodeCanvas
-            workflow={workflow}
-            saved={editor.saved}
-            onPositions={editor.savePositions}
-          />
-        </div>
+        <ReactFlowProvider>
+          <NodeEditorSurface editor={editor} />
+        </ReactFlowProvider>
       ) : null}
     </Page>
   )

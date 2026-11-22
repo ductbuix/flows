@@ -68,3 +68,19 @@ export function placeNodes(
   }
   return out
 }
+
+/**
+ * Where a node added from the toolbar lands: right of the selected node, else
+ * right of the rightmost one, else the origin. Moves down past other nodes.
+ */
+export function nextSlot(
+  nodes: readonly { position: Pos; selected?: boolean }[]
+): Pos {
+  if (nodes.length === 0) return { x: 0, y: 0 }
+  const anchor =
+    nodes.find((n) => n.selected) ??
+    nodes.reduce((a, b) => (b.position.x > a.position.x ? b : a))
+  const pos = { x: anchor.position.x + NODE_W + GAP_X, y: anchor.position.y }
+  while (nodes.some((n) => overlaps(n.position, pos))) pos.y += NODE_H + GAP_Y
+  return pos
+}
