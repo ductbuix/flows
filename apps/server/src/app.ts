@@ -96,7 +96,10 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", layoutRoutes(engine))
     .route("/", workItemRoutes(engine))
     .get("/health", (c) =>
-      c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
+      c.json(
+        { ok: true, version: "0.0.1", nodes: nodesEnabled() } satisfies Health,
+        200
+      )
     )
     .get("/workflows", (c) => {
       const items = listWorkflowSummaries(engine)

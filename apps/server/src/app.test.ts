@@ -73,6 +73,7 @@ describe("GET /api/health", () => {
     expect(healthSchema.parse(await res.json())).toEqual({
       ok: true,
       version: "0.0.1",
+      nodes: false,
     })
     engine.close()
   })

@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useWorkflowLabel } from "@/lib/workflows-context"
 import { useParams } from "react-router"
+import { useNodesEnabled } from "@/lib/use-nodes-enabled"
+import { NodeEditorPage } from "./NodeEditorPage"
 import { Button } from "@workspace/ui/components/button"
 import {
   ResizableHandle,
@@ -25,8 +27,7 @@ import { usePendingTaskDelete } from "./usePendingTaskDelete"
 import { YamlErrorAlert } from "./YamlErrorAlert"
 import { useWorkflowEditor } from "./useWorkflowEditor"
 
-export function WorkflowEditorPage() {
-  const { workflowId } = useParams() as { workflowId: string }
+function TaskEditorPage({ workflowId }: { workflowId: string }) {
   const editor = useWorkflowEditor(workflowId)
   const { state } = editor
   const [pane, setPane] = useState<EditorPane>("graph")
@@ -185,5 +186,23 @@ export function WorkflowEditorPage() {
         onShowDiff={() => editor.setShowDiff(!state.showDiff)}
       />
     </Page>
+  )
+}
+
+/** Task editor, or the node canvas when the server runs FLOWS_NODES=1. */
+export function WorkflowEditorPage() {
+  const { workflowId } = useParams() as { workflowId: string }
+  const nodes = useNodesEnabled()
+  if (nodes === undefined) {
+    return (
+      <Page crumbs={[{ label: "Workflows", to: "/workflows" }]}>
+        <Skeleton className="h-120 w-full" />
+      </Page>
+    )
+  }
+  return nodes ? (
+    <NodeEditorPage workflowId={workflowId} />
+  ) : (
+    <TaskEditorPage workflowId={workflowId} />
   )
 }
