@@ -305,6 +305,26 @@ export function createNodesE2eHome(): string {
       writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, run))
     }
   }
+  // Finished failing node runs for node-run-view.spec.ts (BL-087).
+  for (const theme of ["light", "dark"]) {
+    const dir = join(home, "workflows", `node-view-${theme}`)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      nodeRunYaml(`node-view-${theme}`, "echo broken >&2; exit 1")
+    )
+    writeFileSync(
+      join(dir, "workflow.layout.json"),
+      JSON.stringify({
+        version: 1,
+        nodes: {
+          start: { x: 0, y: 0 },
+          build: { x: 400, y: 120 },
+          done: { x: 800, y: 0 },
+        },
+      })
+    )
+  }
   const noTrigger = join(home, "workflows", "node-run-none")
   mkdirSync(noTrigger, { recursive: true })
   writeFileSync(
