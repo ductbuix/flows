@@ -36,6 +36,7 @@ import { executorFor } from "./registry.ts"
 import { frozenDir, stepDir } from "./step-paths.ts"
 import { nextActions } from "./walk.ts"
 import { cancelRequested, finishNodeCancel } from "./cancel.ts"
+import { assertPartialReady, seedPartialRun, type PartialRun } from "./partial.ts"
 
 export type NodeRunOptions = {
   log: EventLog
@@ -65,6 +66,8 @@ export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
   /** Wait for a free slot under `maxConcurrentRuns`: append only (DES-021). */
   queued?: boolean
   workItemId?: string
+  /** Run step or Run from here: reuses results of earlier runs (BL-102). */
+  partial?: PartialRun
   /** Pins made before the start; their pull events follow `run_started` (BL-082). */
   pins?: { pulledEvents: EngineEvent[] }
   crashAt?: NodeRunOptions["crashAt"]
@@ -78,6 +81,16 @@ const now = () => new Date().toISOString()
  */
 export function startNodeRun(opts: StartNodeRunOptions): StepsState {
   const { log, home, runId, graph } = opts
+  if (opts.partial) {
+    assertPartialReady({
+      log,
+      home,
+      workflowId: graph.id,
+      graph,
+      partial: opts.partial,
+    })
+  }
+
   const wfRoot = workflowDir(home, graph.id)
   const runRoot = runDir(wfRoot, runId)
   mkdirSync(runRoot, { recursive: true })
@@ -85,8 +98,13 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
 
   const input = join(runRoot, "input")
   mkdirSync(input, { recursive: true })
-  if (existsSync(join(wfRoot, "input"))) {
-    cpSync(join(wfRoot, "input"), input, { recursive: true })
+  // A partial run keeps the inputs of the run it builds on.
+  const inputBase = opts.partial?.bases
+    .map((id) => join(runDir(wfRoot, id), "input"))
+    .find((p) => existsSync(p))
+  const inputSource = inputBase ?? join(wfRoot, "input")
+  if (existsSync(inputSource)) {
+    cpSync(inputSource, input, { recursive: true })
   }
   if (opts.inputText !== undefined) {
     writeFileSync(join(input, "text.md"), opts.inputText)
@@ -122,10 +140,22 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
     graph: graph as never,
     source: "manual",
     ...(trigger ? { trigger } : {}),
+    ...(opts.partial?.only ? { only: opts.partial.only } : {}),
+    ...(opts.partial?.from ? { from: opts.partial.from } : {}),
     ...(opts.queued ? { queued: true } : {}),
     ...(opts.workItemId !== undefined ? { workItemId: opts.workItemId } : {}),
   })
   for (const pulled of opts.pins?.pulledEvents ?? []) log.append(pulled)
+  if (opts.partial && (opts.partial.only || opts.partial.from)) {
+    seedPartialRun({
+      log,
+      home,
+      workflowId: graph.id,
+      runId,
+      graph,
+      partial: opts.partial,
+    })
+  }
   if (opts.queued) return foldSteps(log.listByRun(runId).map((x) => x.event))
   return tickNodes(opts)
 }
@@ -133,7 +163,11 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
 function runStarted(events: readonly EngineEvent[]) {
   const e = events.find((x) => x.type === "run_started")
   if (!e || e.type !== "run_started") throw new Error("run has no run_started")
-  return { graph: nodeWorkflowSchema.parse(e.graph) as NodeWorkflow, trigger: e.trigger }
+  return {
+    graph: nodeWorkflowSchema.parse(e.graph) as NodeWorkflow,
+    trigger: e.trigger,
+    only: e.only,
+  }
 }
 
 /** Source steps of the active edges into a node, in edge file order. */
@@ -169,7 +203,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
   const { log, home, runId } = opts
   for (;;) {
     const events = log.listByRun(runId).map((s) => s.event)
-    const { graph, trigger } = runStarted(events)
+    const { graph, trigger, only } = runStarted(events)
     const runRoot = runDir(workflowDir(home, graph.id), runId)
     const steps = foldSteps(events)
     if (steps.ended) return steps
@@ -387,7 +421,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
 
     const actions = nextActions(
       graph,
-      { trigger: trigger ?? "", loopPasses: graph.limits?.loopPasses },
+      { trigger: only ?? trigger ?? "", only, loopPasses: graph.limits?.loopPasses },
       steps
     )
     for (const a of actions) {

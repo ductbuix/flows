@@ -21,6 +21,7 @@ function stepsOf(state: RunState): RunStep[] | undefined {
         ...(step.question !== undefined ? { question: step.question } : {}),
         ...(step.decision ? { decision: step.decision } : {}),
         ...(step.answer ? { answer: step.answer } : {}),
+        ...(step.reused ? { reused: true as const } : {}),
         ...(step.current?.startedAt ? { startedAt: step.current.startedAt } : {}),
         ...(step.current?.endedAt ? { endedAt: step.current.endedAt } : {}),
       })

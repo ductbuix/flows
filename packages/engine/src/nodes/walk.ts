@@ -15,6 +15,8 @@ export type WalkGraph = {
 /** What a run covers. `trigger` is the trigger the run started from. */
 export type WalkScope = {
   trigger: string
+  /** Partial run: only this node runs; seeded steps are its inputs (BL-102). */
+  only?: string
   /** Passes a node may run before it fails with `loop_limit`; default 5. */
   loopPasses?: number
 }
@@ -97,6 +99,11 @@ export function nextActions(
   for (const id of order) {
     const latest = latestStep(steps, id)
     const kind = kindOf.get(id)!
+    // Run step: the other nodes only hold the results copied in.
+    if (scope.only !== undefined && id !== scope.only) {
+      eff.set(id, latest ? terminalEff(latest) : { s: "none" })
+      continue
+    }
     const isSource = (PORT_TABLE[kind]?.in.length ?? 0) === 0
     const incoming = graph.edges
       .map((e, i) => ({ e, loop: loops.has(i) }))
@@ -114,6 +121,8 @@ export function nextActions(
       // A self edge feeds the node's own finished pass back to it.
       const newer = incoming.some(({ e }) => {
         const src = latestStep(steps, e.from)
+        // Steps copied from an earlier run are not newer than each other.
+        if (latest.reused && src?.reused) return false
         return feeds(e, src) && (e.from === id || src.seq > latest.seq)
       })
       if (stale || !newer || isSource) {

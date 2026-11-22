@@ -134,6 +134,8 @@ export const runStepSchema = z.object({
   decision: z.enum(["approved", "rejected"]).optional(),
   /** Agent and LLM steps with named answers (BL-085). */
   answer: z.record(z.string(), z.unknown()).optional(),
+  /** Copied from an earlier run by Run step or Run from here (BL-102). */
+  reused: z.literal(true).optional(),
   startedAt: z.string().optional(),
   endedAt: z.string().optional(),
 })

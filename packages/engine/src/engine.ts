@@ -58,6 +58,7 @@ import { assertPublishTasksValid } from "./publish.ts"
 import { appendRunStarted } from "./start-run.ts"
 import { assertNodeTemplatesValid } from "./nodes/answers.ts"
 import { startNodeRun as startNodeRunQueued } from "./nodes/tick.ts"
+import { assertPartialReady, type PartialRun } from "./nodes/partial.ts"
 import {
   LIBRARY_RETENTION_INTERVAL_MS,
   sweepLibrary,
@@ -95,6 +96,8 @@ export type StartNodeRunInput = {
   workItemId?: string
   /** Pins from `pinNodeRun`, appended as `library_pulled` after `run_started` (BL-082). */
   pins?: MaterializeResourcesResult
+  /** Run step or Run from here (BL-102); `baseRunId` defaults to the latest run. */
+  partial?: { only?: string; from?: string; baseRunId?: string }
 }
 
 export type RunHandle = {
@@ -318,6 +321,9 @@ export class Engine {
     graph: NodeWorkflow
     runId: string
     workItemId?: string
+    /** Reuse the pins of this run (rerun, partial runs) unless `refreshPins`. */
+    pinFromRunId?: string
+    refreshPins?: boolean
   }): Promise<MaterializeResourcesResult | undefined> {
     assertNodePublishValid(this.home, input.graph)
     assertNodeTemplatesValid(this.home, input.graph)
@@ -334,7 +340,16 @@ export class Engine {
       runRoot,
       runId: input.runId,
       workItemLinks: links,
+      pinFromRunRoot: this.runRootOf(input.pinFromRunId),
+      refreshPins: input.refreshPins,
     })
+  }
+
+  private runRootOf(runId: string | undefined): string | undefined {
+    const prior = runId === undefined ? undefined : this.fold(runId)
+    return prior && runId !== undefined
+      ? runDir(workflowDir(this.home, prior.workflowId), runId)
+      : undefined
   }
 
   /**
@@ -349,11 +364,15 @@ export class Engine {
     const queued =
       countRunningRuns(this.listRunsForWorkflow(graph.id)) >=
       (graph.limits?.maxConcurrentRuns ?? 1)
+    const partial = input.partial
+      ? this.partialOf(graph, runId, input.partial)
+      : undefined
     const opts = {
       log: this.log,
       home: this.home,
       runId,
       graph,
+      ...(partial ? { partial } : {}),
       trigger: input.trigger,
       inputText: input.inputText,
       inputs: input.inputs,
@@ -365,6 +384,47 @@ export class Engine {
       return this.queuedHandle(runId)
     }
     return this.trackNodeRun(runId, runNodes(opts, this.hostSink(runId)))
+  }
+
+  /** Earlier node runs to build a partial run on, the base first (BL-102). */
+  private partialOf(
+    graph: NodeWorkflow,
+    runId: string,
+    request: NonNullable<StartNodeRunInput["partial"]>
+  ): PartialRun | undefined {
+    if (request.only === undefined && request.from === undefined) {
+      return undefined
+    }
+    const earlier = this.listRunsForWorkflow(graph.id)
+      .filter((r) => r.nodeGraph && !r.deleted && r.runId !== runId)
+      .map((r) => r.runId)
+    if (request.baseRunId !== undefined && !earlier.includes(request.baseRunId)) {
+      throw new Error(`unknown base run ${request.baseRunId}`)
+    }
+    const partial: PartialRun = {
+      only: request.only,
+      from: request.from,
+      bases: [
+        ...(request.baseRunId !== undefined ? [request.baseRunId] : []),
+        ...earlier.filter((id) => id !== request.baseRunId),
+      ],
+    }
+    assertPartialReady({
+      log: this.log,
+      home: this.home,
+      workflowId: graph.id,
+      graph,
+      partial,
+    })
+    return partial
+  }
+
+  /** Run id that pins and inputs of a partial run come from, if any. */
+  latestNodeRunId(workflowId: string, baseRunId?: string): string | undefined {
+    if (baseRunId !== undefined) return baseRunId
+    return this.listRunsForWorkflow(workflowId).find(
+      (r) => r.nodeGraph && !r.deleted
+    )?.runId
   }
 
   private trackNodeRun(runId: string, done: Promise<StepsState>): RunHandle {

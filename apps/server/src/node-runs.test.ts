@@ -217,6 +217,49 @@ edges:
     s.engine.close()
   })
 
+  it("runs one step and runs from a node on the latest run (BL-102)", async () => {
+    const s = stack()
+    const first = await start(s, { values: { text: "story" } })
+    await until(() => types(s, first.runId).includes("run_succeeded"))
+
+    const detail = async (id: string) =>
+      runDetailSchema.parse(await (await s.app.request(`/api/runs/${id}`)).json())
+    const step = await start(s, { only: "o" })
+    await until(() => types(s, step.runId).includes("run_succeeded"))
+    const only = (await detail(step.runId)).steps ?? []
+    expect(only.find((x) => x.nodeId === "c")?.reused).toBe(true)
+    expect(only.find((x) => x.nodeId === "t")).toBeUndefined()
+    expect(only.find((x) => x.nodeId === "o")?.reused).toBeUndefined()
+
+    const from = await start(s, { from: "c" })
+    await until(() => types(s, from.runId).includes("run_succeeded"))
+    const rows = (await detail(from.runId)).steps ?? []
+    expect(rows.find((x) => x.nodeId === "t")?.reused).toBe(true)
+    expect(rows.find((x) => x.nodeId === "c")?.reused).toBeUndefined()
+    // The input of the run it builds on is kept.
+    expect(
+      readFileSync(join(runDir(s.dir, from.runId), "input", "text.md"), "utf8")
+    ).toBe("story")
+
+    const missing = await post(s.app, "/workflows/nr/runs", { only: "nope" })
+    expect(missing.status).toBe(400)
+  })
+
+  it("reruns a finished node run from the current workflow (BL-102)", async () => {
+    const s = stack()
+    const first = await start(s, { values: { text: "story" } })
+    await until(() => types(s, first.runId).includes("run_succeeded"))
+    const res = await post(s.app, `/runs/${first.runId}/rerun`, {
+      values: { text: "again" },
+    })
+    expect(res.status).toBe(200)
+    const again = (await res.json()) as { runId: string }
+    await until(() => types(s, again.runId).includes("run_succeeded"))
+    expect(
+      readFileSync(join(runDir(s.dir, again.runId), "input", "text.md"), "utf8")
+    ).toBe("again")
+  })
+
   it("queues a second start under maxConcurrentRuns and runs it after the first", async () => {
     const s = stack("sleep 0.4")
     const a = await start(s)

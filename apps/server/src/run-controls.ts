@@ -84,7 +84,8 @@ async function startNodeRoute(
   dir: string,
   workflowId: string,
   body: StartRunBody,
-  files: ManualFilePart[]
+  files: ManualFilePart[],
+  rerunOf?: { runId: string; workItemId?: string }
 ): Promise<Response> {
   const parsed = parseNodeWorkflowYaml(
     readFileSync(join(dir, "workflow.yaml"), "utf8")
@@ -97,26 +98,47 @@ async function startNodeRoute(
       parsed.errors[0]?.message ?? "invalid workflow"
     )
   }
+  const partial =
+    body.only !== undefined || body.from !== undefined
+      ? { only: body.only, from: body.from, baseRunId: body.baseRunId }
+      : undefined
+  // A partial run keeps the inputs of the run it builds on (BL-102).
+  const base = partial
+    ? engine.latestNodeRunId(workflowId, partial.baseRunId)
+    : undefined
   const decls = triggerInputs(parsed.workflow)
-  const validated = validateStartInput(c, decls, body.values, files)
+  const keepInputs = base !== undefined
+  const validated = keepInputs
+    ? { values: {} as Record<string, string> }
+    : validateStartInput(c, decls, body.values, files)
   if (validated instanceof Response) return validated
-  const linked = resolveStartWorkItem(c, engine, body.workItemId, "")
+  const linked = resolveStartWorkItem(
+    c,
+    engine,
+    rerunOf ? rerunOf.workItemId : body.workItemId,
+    ""
+  )
   if (linked instanceof Response) return linked
-  const withInputs = decls.length > 0 || files.length > 0
+  const withInputs = !keepInputs && (decls.length > 0 || files.length > 0)
   try {
     // Asset resources are pulled and pinned before the run starts (BL-082).
     const runId = randomUUID()
+    const pinFromRunId = rerunOf?.runId ?? base
     const pins = await engine.pinNodeRun({
       graph: parsed.workflow,
       runId,
       workItemId: linked.workItemId,
+      ...(pinFromRunId !== undefined ? { pinFromRunId } : {}),
+      refreshPins: body.refreshPins,
     })
     const handle = engine.startNodeRun({
       graph: parsed.workflow,
       runId,
       pins,
+      ...(partial ? { partial } : {}),
       // Without declared inputs the whole start text is `input/text.md`.
-      inputText: decls.length === 0 ? body.values?.text : undefined,
+      inputText:
+        keepInputs || decls.length > 0 ? undefined : body.values?.text,
       ...(withInputs
         ? { inputs: { decls, values: validated.values, files } }
         : {}),
@@ -242,6 +264,13 @@ export function createRunControls({
           return errorJson(c, 409, "conflict", "run is still live")
         }
         const dir = workflowDir(engine.home, state.workflowId)
+        if (state.nodeGraph) {
+          // A node run starts again from the current workflow.yaml (BL-102).
+          return startNodeRoute(c, engine, dir, state.workflowId, body, files, {
+            runId,
+            workItemId: state.workItemId,
+          })
+        }
         let workflow
         try {
           workflow = engine.loadWorkflow(dir)

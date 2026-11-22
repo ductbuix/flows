@@ -72,6 +72,8 @@ type Props = {
   onPositions: (positions: Record<string, Pos>) => void
   /** A checked wire between two nodes. */
   onWire: (edge: { from: string; to: string; branch?: string }) => void
+  /** The selected node, or null (the Run menu runs from it). */
+  onSelect?: (id: string | null) => void
   /** A wire dropped on empty canvas: where, and from which end. */
   onDrop: (drop: { wire: WireSide; client: Pos; flow: Pos }) => void
 }
@@ -89,6 +91,7 @@ export function NodeCanvas({
   onPositions,
   onWire,
   onDrop,
+  onSelect,
 }: Props) {
   const { screenToFlowPosition } = useReactFlow()
   const initial = useMemo<Node<NodeCardData>[]>(() => {
@@ -160,6 +163,9 @@ export function NodeCanvas({
         onNodesChange={onNodesChange}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
+        onSelectionChange={({ nodes: picked }) =>
+          onSelect?.(picked[0]?.id ?? null)
+        }
         deleteKeyCode={null}
         multiSelectionKeyCode={null}
         fitView

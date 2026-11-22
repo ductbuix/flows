@@ -45,6 +45,10 @@ export const runStartedEventSchema = z.object({
   ]) as unknown as typeof workflowSchema,
   /** Node path: the trigger node the run started from (DES-034). */
   trigger: z.string().min(1).optional(),
+  /** Partial run: only this node runs, on the latest upstream results (BL-102). */
+  only: z.string().min(1).optional(),
+  /** Partial run: this node and what follows run; unchanged steps before it are reused (BL-102). */
+  from: z.string().min(1).optional(),
   /** Trust-once for this run so resume does not re-ask (DES-019). */
   trustGrant: z.literal("once").optional(),
   /** Input source id (DES-021). */
@@ -300,6 +304,8 @@ export const stepDoneEventSchema = z.object({
   outputs: z.array(z.string().min(1)).optional(),
   branch: z.string().min(1).optional(),
   answer: z.record(z.string(), z.unknown()).optional(),
+  /** Copied from an earlier run by a partial run (BL-102). */
+  reused: z.literal(true).optional(),
 })
 
 export const stepFailedEventSchema = z.object({
@@ -319,6 +325,8 @@ export const stepFailedEventSchema = z.object({
 export const stepSkippedEventSchema = z.object({
   type: z.literal("step_skipped"),
   ...stepBase,
+  /** Copied from an earlier run by a partial run (BL-102). */
+  reused: z.literal(true).optional(),
 })
 
 export const stepApprovedEventSchema = z.object({
