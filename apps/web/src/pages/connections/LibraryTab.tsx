@@ -20,7 +20,7 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { LibraryUsageAlert } from "@/components/LibraryUsageAlert"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 import { workItemPath } from "@/lib/paths"
 import { LibraryEntityTable } from "./LibraryEntityTable"
@@ -146,7 +146,7 @@ export function LibraryTab() {
 
   return (
     <div data-testid="library-tab">
-      <Section title="Library">
+      <PageSection title="Library">
         {usage ? <LibraryUsageAlert usage={usage} /> : null}
         {error ? (
           <Alert variant="destructive">
@@ -176,7 +176,7 @@ export function LibraryTab() {
             onCreateWorkItem={(e) => void createWorkItem(e)}
           />
         )}
-      </Section>
+      </PageSection>
     </div>
   )
 }

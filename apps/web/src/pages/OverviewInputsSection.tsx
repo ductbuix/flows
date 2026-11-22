@@ -13,14 +13,14 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 type Props = { inputs: WorkflowInputDecl[] }
 
 export function OverviewInputsSection({ inputs }: Props) {
   if (inputs.length === 0) {
     return (
-      <Section title="Inputs">
+      <PageSection title="Inputs">
         <Empty data-testid="overview-inputs-empty">
           <EmptyHeader>
             <EmptyTitle>No inputs</EmptyTitle>
@@ -29,11 +29,11 @@ export function OverviewInputsSection({ inputs }: Props) {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      </Section>
+      </PageSection>
     )
   }
   return (
-    <Section title="Inputs">
+    <PageSection title="Inputs">
       <Table data-testid="overview-inputs">
         <TableHeader>
           <TableRow>
@@ -52,6 +52,6 @@ export function OverviewInputsSection({ inputs }: Props) {
           ))}
         </TableBody>
       </Table>
-    </Section>
+    </PageSection>
   )
 }

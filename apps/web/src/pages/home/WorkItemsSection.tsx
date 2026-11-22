@@ -9,7 +9,7 @@ import {
   ItemTitle,
 } from "@workspace/ui/components/item"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { workItemPath } from "@/lib/paths"
 import type { HomeWorkItem } from "./home-work-items"
 
@@ -19,7 +19,7 @@ type Props = {
 
 export function WorkItemsSection({ items }: Props) {
   return (
-    <Section title="Work items">
+    <PageSection title="Work items">
       {items.length === 0 ? (
         <p
           className="text-sm text-muted-foreground"
@@ -64,6 +64,6 @@ export function WorkItemsSection({ items }: Props) {
           ))}
         </ItemGroup>
       )}
-    </Section>
+    </PageSection>
   )
 }

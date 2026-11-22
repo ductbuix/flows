@@ -9,7 +9,7 @@ import {
   ItemTitle,
 } from "@workspace/ui/components/item"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { runPath } from "@/lib/paths"
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 
 export function RunningSection({ runs }: Props) {
   return (
-    <Section title="Running">
+    <PageSection title="Running">
       {runs.length === 0 ? (
         <p className="text-sm text-muted-foreground" data-testid="home-running">
           Nothing running.
@@ -69,6 +69,6 @@ export function RunningSection({ runs }: Props) {
           })}
         </ItemGroup>
       )}
-    </Section>
+    </PageSection>
   )
 }

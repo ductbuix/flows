@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { taskConnectionIds } from "@/pages/overview-connections"
 
 function needsLabel(task: Workflow["tasks"][number]): string {
@@ -22,7 +22,7 @@ type Props = { workflow: Workflow }
 
 export function OverviewTasksSection({ workflow }: Props) {
   return (
-    <Section title="Tasks">
+    <PageSection title="Tasks">
       <Table data-testid="overview-tasks">
         <TableHeader>
           <TableRow>
@@ -60,6 +60,6 @@ export function OverviewTasksSection({ workflow }: Props) {
           })}
         </TableBody>
       </Table>
-    </Section>
+    </PageSection>
   )
 }

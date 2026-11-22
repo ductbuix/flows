@@ -18,8 +18,7 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
+import { Page, PageTitle } from "@/components/page"
 import { api } from "@/lib/api"
 import { useRunSummaries } from "@/lib/use-run-summaries"
 import { workItemPath, workflowPath } from "@/lib/paths"
@@ -77,84 +76,78 @@ export function HomePage() {
   )
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[{ label: "Home" }]} />
-      <div
-        className="flex flex-1 flex-col gap-6 overflow-auto p-4"
-        data-testid="home-page"
-      >
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : loading ? (
-          <div className="w-full max-w-lg space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        ) : workflows.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Empty data-testid="home-empty">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <FolderOpen />
-                </EmptyMedia>
-                <EmptyTitle>Create a workflow</EmptyTitle>
-                <EmptyDescription>
-                  First launch: create a workflow to start running tasks.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button
-                  data-testid="home-create-workflow"
-                  onClick={() => setCreateWorkflowOpen(true)}
-                >
-                  Create workflow
-                </Button>
-              </EmptyContent>
-            </Empty>
-          </div>
-        ) : workItems.length === 0 &&
-          (runs?.length ?? 0) === 0 &&
-          expiredSignIns.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Empty data-testid="home-empty">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Briefcase />
-                </EmptyMedia>
-                <EmptyTitle>New work item</EmptyTitle>
-                <EmptyDescription>
-                  You have a workflow. Create a work item to run it on.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button
-                  data-testid="home-create-work-item"
-                  onClick={() => setCreateWorkItemOpen(true)}
-                >
-                  New work item
-                </Button>
-              </EmptyContent>
-            </Empty>
-          </div>
-        ) : (
-          <>
-            <PageTitle
-              title="Home"
-              description="Approvals waiting on you, expired sign-ins, work items, live runs and recent finished runs."
-            />
-            <NeedsYouSection
-              items={collectNeedsYou(runs ?? [])}
-              expiredSignIns={expiredSignIns}
-            />
-            <RunningSection runs={collectRunning(runs ?? [])} />
-            <WorkItemsSection items={homeWorkItems} />
-            <RecentRunsSection runs={collectRecent(runs ?? [])} />
-          </>
-        )}
-      </div>
+    <Page crumbs={[{ label: "Home" }]} data-testid="home-page">
+      <PageTitle
+        title="Home"
+        description="Approvals waiting on you, expired sign-ins, work items, live runs and recent finished runs."
+      />
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : loading ? (
+        <div className="w-full max-w-lg space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      ) : workflows.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Empty data-testid="home-empty">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FolderOpen />
+              </EmptyMedia>
+              <EmptyTitle>Create a workflow</EmptyTitle>
+              <EmptyDescription>
+                First launch: create a workflow to start running tasks.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button
+                data-testid="home-create-workflow"
+                onClick={() => setCreateWorkflowOpen(true)}
+              >
+                Create workflow
+              </Button>
+            </EmptyContent>
+          </Empty>
+        </div>
+      ) : workItems.length === 0 &&
+        (runs?.length ?? 0) === 0 &&
+        expiredSignIns.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Empty data-testid="home-empty">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Briefcase />
+              </EmptyMedia>
+              <EmptyTitle>New work item</EmptyTitle>
+              <EmptyDescription>
+                You have a workflow. Create a work item to run it on.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button
+                data-testid="home-create-work-item"
+                onClick={() => setCreateWorkItemOpen(true)}
+              >
+                New work item
+              </Button>
+            </EmptyContent>
+          </Empty>
+        </div>
+      ) : (
+        <>
+          <NeedsYouSection
+            items={collectNeedsYou(runs ?? [])}
+            expiredSignIns={expiredSignIns}
+          />
+          <RunningSection runs={collectRunning(runs ?? [])} />
+          <WorkItemsSection items={homeWorkItems} />
+          <RecentRunsSection runs={collectRecent(runs ?? [])} />
+        </>
+      )}
 
       <CreateWorkflowDialog
         open={createWorkflowOpen}
@@ -168,6 +161,6 @@ export function HomePage() {
         onOpenChange={setCreateWorkItemOpen}
         onCreated={(id) => void navigate(workItemPath(id))}
       />
-    </div>
+    </Page>
   )
 }

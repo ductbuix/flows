@@ -22,8 +22,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
+import { Page, PageTitle } from "@/components/page"
 import { useRunsList } from "@/hooks/use-runs-list"
 import { useWorkItemTitles } from "@/hooks/use-work-item-titles"
 import { groupRunsByItem } from "@/lib/group-runs-by-item"
@@ -58,83 +57,74 @@ export function RunsPage() {
   )
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[{ label: "Runs" }]} />
-      <div
-        className="flex flex-1 flex-col gap-6 overflow-auto p-6"
-        data-testid="runs-page"
-      >
-        <PageTitle
-          title="Runs"
-          description="All runs across workflows, grouped by work item."
-        />
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : !runs ? (
-          <div className="space-y-3" data-testid="runs-loading">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-wrap gap-3">
-              <Select value={status} onValueChange={(v) => v && setStatus(v)}>
-                <SelectTrigger
-                  className="w-44"
-                  data-testid="runs-filter-status"
-                >
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={STATUS_ALL}>All statuses</SelectItem>
-                  {STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={workflowId}
-                onValueChange={(v) => v && setWorkflowId(v)}
+    <Page crumbs={[{ label: "Runs" }]} data-testid="runs-page">
+      <PageTitle
+        title="Runs"
+        description="All runs across workflows, grouped by work item."
+      />
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : !runs ? (
+        <div className="space-y-3" data-testid="runs-loading">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-3">
+            <Select value={status} onValueChange={(v) => v && setStatus(v)}>
+              <SelectTrigger className="w-44" data-testid="runs-filter-status">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={STATUS_ALL}>All statuses</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={workflowId}
+              onValueChange={(v) => v && setWorkflowId(v)}
+            >
+              <SelectTrigger
+                className="w-52"
+                data-testid="runs-filter-workflow"
               >
-                <SelectTrigger
-                  className="w-52"
-                  data-testid="runs-filter-workflow"
-                >
-                  <SelectValue placeholder="Workflow" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={WORKFLOW_ALL}>All workflows</SelectItem>
-                  {(workflows ?? []).map((wf) => (
-                    <SelectItem key={wf.id} value={wf.id}>
-                      {wf.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {runs.length === 0 ? (
-              <Empty data-testid="runs-empty">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Play />
-                  </EmptyMedia>
-                  <EmptyTitle>No runs</EmptyTitle>
-                  <EmptyDescription>
-                    Start a run from a workflow, or clear the filters.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <RunsGroupedTable groups={groups!} />
-            )}
-          </>
-        )}
-      </div>
-    </div>
+                <SelectValue placeholder="Workflow" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={WORKFLOW_ALL}>All workflows</SelectItem>
+                {(workflows ?? []).map((wf) => (
+                  <SelectItem key={wf.id} value={wf.id}>
+                    {wf.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {runs.length === 0 ? (
+            <Empty data-testid="runs-empty">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Play />
+                </EmptyMedia>
+                <EmptyTitle>No runs</EmptyTitle>
+                <EmptyDescription>
+                  Start a run from a workflow, or clear the filters.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <RunsGroupedTable groups={groups!} />
+          )}
+        </>
+      )}
+    </Page>
   )
 }

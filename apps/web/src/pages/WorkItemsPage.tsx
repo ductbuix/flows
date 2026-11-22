@@ -18,8 +18,7 @@ import {
 } from "@workspace/ui/components/empty"
 import { Input } from "@workspace/ui/components/input"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
+import { Page, PageTitle } from "@/components/page"
 import { useRunsList } from "@/hooks/use-runs-list"
 import { api } from "@/lib/api"
 import { workItemPath } from "@/lib/paths"
@@ -81,76 +80,73 @@ export function WorkItemsPage() {
   const loading = !error && (!items || !runs)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[{ label: "Work items" }]} />
-      <div
-        className="flex flex-1 flex-col gap-6 overflow-auto p-6"
-        data-testid="work-items-page"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <PageTitle
-            title="Work items"
-            description="Search work items and open one to run a workflow."
-          />
-          <Button
-            data-testid="work-items-new"
-            onClick={() => setCreateOpen(true)}
-          >
-            New work item
-          </Button>
+    <Page
+      crumbs={[{ label: "Work items" }]}
+      data-testid="work-items-page"
+      actions={
+        <Button
+          data-testid="work-items-new"
+          onClick={() => setCreateOpen(true)}
+        >
+          New work item
+        </Button>
+      }
+    >
+      <PageTitle
+        title="Work items"
+        description="Search work items and open one to run a workflow."
+      />
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : loading ? (
+        <div className="space-y-3" data-testid="work-items-loading">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
         </div>
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : loading ? (
-          <div className="space-y-3" data-testid="work-items-loading">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : (
-          <>
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search work items"
-              data-testid="work-items-search"
-              className="max-w-sm"
+      ) : (
+        <>
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search work items"
+            data-testid="work-items-search"
+            className="max-w-sm"
+          />
+          {filtered!.length === 0 ? (
+            <Empty data-testid="work-items-empty">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Briefcase />
+                </EmptyMedia>
+                <EmptyTitle>
+                  {items!.length === 0
+                    ? "No work items yet"
+                    : "No matching work items"}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {items!.length === 0
+                    ? "Create one to start applying workflows."
+                    : "Try a different search."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <WorkItemsTable
+              items={filtered!}
+              lastRuns={lastRuns}
+              onOpen={(id) => void navigate(workItemPath(id))}
             />
-            {filtered!.length === 0 ? (
-              <Empty data-testid="work-items-empty">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Briefcase />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                    {items!.length === 0
-                      ? "No work items yet"
-                      : "No matching work items"}
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    {items!.length === 0
-                      ? "Create one to start applying workflows."
-                      : "Try a different search."}
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <WorkItemsTable
-                items={filtered!}
-                lastRuns={lastRuns}
-                onOpen={(id) => void navigate(workItemPath(id))}
-              />
-            )}
-          </>
-        )}
-      </div>
+          )}
+        </>
+      )}
       <CreateWorkItemDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={(id) => void navigate(workItemPath(id))}
       />
-    </div>
+    </Page>
   )
 }

@@ -22,7 +22,7 @@ import {
   AlertTitle,
 } from "@workspace/ui/components/alert"
 import { RunStatusBadge } from "@/components/RunStatusBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { useRunsList } from "@/hooks/use-runs-list"
 import { runPath } from "@/lib/paths"
 
@@ -36,7 +36,7 @@ export function WorkItemRunsSection({ workItemId }: Props) {
   const { runs, error } = useRunsList({ workItemId })
 
   return (
-    <Section title="Runs">
+    <PageSection title="Runs">
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
@@ -103,6 +103,6 @@ export function WorkItemRunsSection({ workItemId }: Props) {
           </TableBody>
         </Table>
       )}
-    </Section>
+    </PageSection>
   )
 }

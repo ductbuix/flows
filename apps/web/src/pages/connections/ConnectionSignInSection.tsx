@@ -1,7 +1,7 @@
 import type { Connection, ConnectionCheckResult } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 type Busy = "sign-in" | "remove" | "check" | "mcp" | null
 
@@ -63,7 +63,7 @@ export function ConnectionSignInSection({
     : check?.ok === true || (!check && signedIn)
 
   return (
-    <Section title="Sign-in">
+    <PageSection title="Sign-in">
       <div
         className="flex max-w-xl flex-col gap-4"
         data-testid="connection-signin"
@@ -159,6 +159,6 @@ export function ConnectionSignInSection({
           </p>
         ) : null}
       </div>
-    </Section>
+    </PageSection>
   )
 }

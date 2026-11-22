@@ -1,6 +1,6 @@
 import type { LibraryEntity } from "@workspace/shared"
 import { FreshnessBadge } from "@/components/FreshnessBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 type Props = {
   entities: LibraryEntity[]
@@ -8,7 +8,7 @@ type Props = {
 
 export function ConnectionLocalData({ entities }: Props) {
   return (
-    <Section title="Local data">
+    <PageSection title="Local data">
       {entities.length === 0 ? (
         <p
           className="text-sm text-muted-foreground"
@@ -34,6 +34,6 @@ export function ConnectionLocalData({ entities }: Props) {
           ))}
         </ul>
       )}
-    </Section>
+    </PageSection>
   )
 }

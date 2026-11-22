@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { toast } from "sonner"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { api } from "@/lib/api"
 
 type Props = {
@@ -78,7 +78,7 @@ export function WorkItemNotesSection({ workItemId }: Props) {
   }
 
   return (
-    <Section title="Notes">
+    <PageSection title="Notes">
       <Textarea
         data-testid="work-item-notes"
         value={content}
@@ -101,6 +101,6 @@ export function WorkItemNotesSection({ workItemId }: Props) {
       >
         Save notes
       </Button>
-    </Section>
+    </PageSection>
   )
 }

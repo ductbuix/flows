@@ -12,7 +12,7 @@ import {
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Spinner } from "@workspace/ui/components/spinner"
-import { PageHeader } from "@/components/PageHeader"
+import { Page, PageTitle } from "@/components/page"
 import { workflowPath } from "@/lib/paths"
 import { RunEffectsTable } from "./RunEffectsTable"
 import { RunHeader } from "./RunHeader"
@@ -59,96 +59,87 @@ export function RunViewPage() {
 
   if (loading && !run) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} />
-        <div className="flex flex-col gap-4 p-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-100 w-full" />
-        </div>
-      </div>
+      <Page crumbs={[...crumbs]}>
+        <PageTitle title="Run" description={runId} />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-100 w-full" />
+      </Page>
     )
   }
 
   if (error || !run) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader crumbs={[...crumbs]} />
-        <div className="p-4">
-          <Alert variant="destructive">
-            <AlertTitle>Could not load run</AlertTitle>
-            <AlertDescription>{error ?? "Unknown error"}</AlertDescription>
-          </Alert>
-        </div>
-      </div>
+      <Page crumbs={[...crumbs]}>
+        <PageTitle title="Run" description={runId} />
+        <Alert variant="destructive">
+          <AlertTitle>Could not load run</AlertTitle>
+          <AlertDescription>{error ?? "Unknown error"}</AlertDescription>
+        </Alert>
+      </Page>
     )
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader crumbs={[...crumbs]} />
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
-        <RunLead run={run} />
-        <RunHeader
-          run={run}
-          view={view}
-          onViewChange={setView}
-          wsState={wsState}
-          stale={stale}
-        />
-        <RunEffectsTable run={run} />
-        <UnpublishedChanges run={run} />
-        <RunLibraryPins pins={run.pins ?? []} />
-        <ResizablePanelGroup
-          orientation="horizontal"
-          className="min-h-0 flex-1"
-        >
-          <ResizablePanel defaultSize={48} minSize={28}>
-            {view === "list" ? (
-              <div className="flex h-full min-h-0 gap-4">
-                <div className="min-w-0 flex-1 overflow-auto">
-                  <RunPlan run={run} />
-                </div>
-                <div className="min-w-0 flex-[1.4]">
-                  <TaskList
-                    run={run}
-                    selectedTaskId={taskId}
-                    onSelectTask={setTaskId}
-                  />
-                </div>
+    <Page crumbs={[...crumbs]} fill>
+      <PageTitle title={run.workflowId} description={`Run ${runId}`} />
+      <RunLead run={run} />
+      <RunHeader
+        run={run}
+        view={view}
+        onViewChange={setView}
+        wsState={wsState}
+        stale={stale}
+      />
+      <RunEffectsTable run={run} />
+      <UnpublishedChanges run={run} />
+      <RunLibraryPins pins={run.pins ?? []} />
+      <ResizablePanelGroup orientation="horizontal" className="min-h-96 flex-1">
+        <ResizablePanel defaultSize={48} minSize={28}>
+          {view === "list" ? (
+            <div className="flex h-full min-h-0 gap-4">
+              <div className="min-w-0 flex-1 overflow-auto">
+                <RunPlan run={run} />
               </div>
-            ) : (
-              <Suspense
-                fallback={
-                  <div className="flex h-full items-center justify-center">
-                    <Spinner />
-                  </div>
-                }
-              >
-                <TaskGraph
+              <div className="min-w-0 flex-[1.4]">
+                <TaskList
                   run={run}
                   selectedTaskId={taskId}
                   onSelectTask={setTaskId}
                 />
-              </Suspense>
-            )}
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={52} minSize={32}>
-            {selectedTask ? (
-              <TaskDetail
+              </div>
+            </div>
+          ) : (
+            <Suspense
+              fallback={
+                <div className="flex h-full items-center justify-center">
+                  <Spinner />
+                </div>
+              }
+            >
+              <TaskGraph
                 run={run}
-                task={selectedTask}
-                tab={tab}
-                onTabChange={setTab}
+                selectedTaskId={taskId}
+                onSelectTask={setTaskId}
               />
-            ) : (
-              <p className="p-4 text-sm text-muted-foreground">
-                Select a task to see output, terminal, and attempts.
-              </p>
-            )}
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    </div>
+            </Suspense>
+          )}
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={52} minSize={32}>
+          {selectedTask ? (
+            <TaskDetail
+              run={run}
+              task={selectedTask}
+              tab={tab}
+              onTabChange={setTab}
+            />
+          ) : (
+            <p className="p-4 text-sm text-muted-foreground">
+              Select a task to see output, terminal, and attempts.
+            </p>
+          )}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </Page>
   )
 }

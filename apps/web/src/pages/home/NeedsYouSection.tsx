@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { Confirmation } from "@/components/ai-elements/confirmation"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 import { approveTask, rejectTask } from "@/lib/run-actions"
 import type { NeedsYouItem } from "./home-run-filters"
 import { ExpiredSignIns, type ExpiredSignIn } from "./ExpiredSignIns"
@@ -38,7 +38,7 @@ export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
   }
 
   return (
-    <Section title="Needs you">
+    <PageSection title="Needs you">
       <div className="flex flex-col gap-3" data-testid="home-needs-you">
         <ExpiredSignIns items={expiredSignIns} />
         {items.map((item) => {
@@ -88,6 +88,6 @@ export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
         }
         onConfirm={() => void onReject()}
       />
-    </Section>
+    </PageSection>
   )
 }

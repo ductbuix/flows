@@ -14,13 +14,13 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { FreshnessBadge } from "@/components/FreshnessBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 type Props = { pins: RunLibraryPin[] }
 
 export function RunLibraryPins({ pins }: Props) {
   return (
-    <Section title="Library pins">
+    <PageSection title="Library pins">
       {pins.length === 0 ? (
         <Empty data-testid="run-pins-empty">
           <EmptyHeader>
@@ -74,6 +74,6 @@ export function RunLibraryPins({ pins }: Props) {
           </TableBody>
         </Table>
       )}
-    </Section>
+    </PageSection>
   )
 }

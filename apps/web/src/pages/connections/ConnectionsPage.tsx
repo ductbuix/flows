@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { useSearchParams } from "react-router"
 import { Button } from "@workspace/ui/components/button"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
+import { Page, PageTitle } from "@/components/page"
 import { parseConnectionsTab } from "@/lib/paths"
 import { ConnectionsListTab } from "./ConnectionsListTab"
 import { ConnectionsTabs } from "./ConnectionsTabs"
@@ -15,36 +14,31 @@ export function ConnectionsPage() {
   const [addOpen, setAddOpen] = useState(false)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <PageHeader
-        crumbs={[{ label: "Connections" }]}
-        actions={
-          tab === "connections" ? (
-            <Button
-              size="sm"
-              data-testid="connections-add"
-              onClick={() => setAddOpen(true)}
-            >
-              Add connection
-            </Button>
-          ) : null
-        }
+    <Page
+      crumbs={[{ label: "Connections" }]}
+      data-testid="connections-page"
+      actions={
+        tab === "connections" ? (
+          <Button
+            size="sm"
+            data-testid="connections-add"
+            onClick={() => setAddOpen(true)}
+          >
+            Add connection
+          </Button>
+        ) : null
+      }
+    >
+      <PageTitle
+        title="Connections"
+        description="Connect sources, pull into the Library, and decide how changes go back."
       />
-      <div
-        className="flex flex-1 flex-col gap-6 overflow-auto p-6"
-        data-testid="connections-page"
-      >
-        <PageTitle
-          title="Connections"
-          description="Connect sources, pull into the Library, and decide how changes go back."
-        />
-        <ConnectionsTabs tab={tab} />
-        {tab === "library" ? (
-          <LibraryTab />
-        ) : (
-          <ConnectionsListTab addOpen={addOpen} onAddOpenChange={setAddOpen} />
-        )}
-      </div>
-    </div>
+      <ConnectionsTabs tab={tab} />
+      {tab === "library" ? (
+        <LibraryTab />
+      ) : (
+        <ConnectionsListTab addOpen={addOpen} onAddOpenChange={setAddOpen} />
+      )}
+    </Page>
   )
 }

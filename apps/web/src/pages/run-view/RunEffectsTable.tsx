@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { ImpactBadge } from "@/components/ImpactBadge"
-import { Section } from "@/components/Section"
+import { PageSection } from "@/components/page"
 
 type Props = {
   run: RunDetail
@@ -24,7 +24,7 @@ type Props = {
 export function RunEffectsTable({ run }: Props) {
   const effects = run.effects ?? []
   return (
-    <Section title="Effects">
+    <PageSection title="Effects">
       {effects.length === 0 ? (
         <Empty data-testid="run-effects-empty">
           <EmptyHeader>
@@ -67,6 +67,6 @@ export function RunEffectsTable({ run }: Props) {
           </TableBody>
         </Table>
       )}
-    </Section>
+    </PageSection>
   )
 }

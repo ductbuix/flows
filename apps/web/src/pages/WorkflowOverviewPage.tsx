@@ -7,14 +7,13 @@ import {
   AlertTitle,
 } from "@workspace/ui/components/alert"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { PageHeader } from "@/components/PageHeader"
-import { PageTitle } from "@/components/PageTitle"
+import { Page } from "@/components/page"
+import { WorkflowHeading } from "@/pages/WorkflowHeading"
 import { api } from "@/lib/api"
 import { runPath } from "@/lib/paths"
 import { OverviewConnectionsSection } from "@/pages/OverviewConnectionsSection"
 import { OverviewInputsSection } from "@/pages/OverviewInputsSection"
 import { OverviewTasksSection } from "@/pages/OverviewTasksSection"
-import { WorkflowDetailTabs } from "@/pages/WorkflowDetailTabs"
 import { WorkflowStartCard } from "@/pages/WorkflowStartCard"
 
 export function WorkflowOverviewPage() {
@@ -57,50 +56,42 @@ export function WorkflowOverviewPage() {
   ] as const
 
   return (
-    <div
-      className="flex min-h-0 flex-1 flex-col"
-      data-testid="workflow-overview"
-    >
-      <PageHeader crumbs={[...crumbs]} />
-      <div className="flex flex-1 flex-col gap-6 overflow-auto p-4">
-        <WorkflowDetailTabs workflowId={workflowId} tab="overview" />
-        {error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : loading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        ) : workflow ? (
-          <>
-            <PageTitle
-              title={workflowId}
-              description={
-                workflow.goal?.trim() || "Tasks, inputs and start a run."
-              }
-            />
-            <OverviewTasksSection workflow={workflow} />
-            <OverviewConnectionsSection workflow={workflow} />
-            <OverviewInputsSection inputs={workflow.inputs ?? []} />
-            <WorkflowStartCard
-              workflowId={workflowId}
-              onStarted={(runId) => {
-                void navigate(runPath(runId))
-              }}
-            />
-          </>
-        ) : (
-          <Alert variant="destructive">
-            <AlertTitle>Invalid workflow</AlertTitle>
-            <AlertDescription>
-              Fix YAML errors in the Editor before starting a run.
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
-    </div>
+    <Page crumbs={[...crumbs]} data-testid="workflow-overview">
+      <WorkflowHeading
+        workflowId={workflowId}
+        tab="overview"
+        description={workflow?.goal?.trim() || "Tasks, inputs and start a run."}
+      />
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : loading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : workflow ? (
+        <>
+          <OverviewTasksSection workflow={workflow} />
+          <OverviewConnectionsSection workflow={workflow} />
+          <OverviewInputsSection inputs={workflow.inputs ?? []} />
+          <WorkflowStartCard
+            workflowId={workflowId}
+            onStarted={(runId) => {
+              void navigate(runPath(runId))
+            }}
+          />
+        </>
+      ) : (
+        <Alert variant="destructive">
+          <AlertTitle>Invalid workflow</AlertTitle>
+          <AlertDescription>
+            Fix YAML errors in the Editor before starting a run.
+          </AlertDescription>
+        </Alert>
+      )}
+    </Page>
   )
 }
