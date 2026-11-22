@@ -1,6 +1,6 @@
 import type { RunDetail, Task as WorkflowTask } from "@workspace/shared"
 import { upstreamEnvName } from "@workspace/shared"
-import type { EnvVar } from "@/components/ai-elements/environment-variables"
+import type { EnvVar } from "@/components/data/EnvironmentVariables"
 
 function graphTask(run: RunDetail, taskId: string): WorkflowTask | undefined {
   return run.graph.tasks.find((t) => t.id === taskId)

@@ -1,3 +1,7 @@
+/**
+ * Adapted from shadcn apps/v4/examples/base/file-tree-demo.tsx (shadcn-ui/ui@bfa64ff).
+ * Changed base-rhea to base-nova: imports use @workspace/ui/components/*, not @/styles/base-rhea/ui/*; chat demo wiring (useChat, Bubble, Message) removed.
+ */
 import { ChevronRightIcon, FileIcon, FolderIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import {

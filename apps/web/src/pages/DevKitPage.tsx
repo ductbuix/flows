@@ -6,8 +6,42 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import { useState } from "react"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@workspace/ui/components/accordion"
+import { Button } from "@workspace/ui/components/button"
+import { Checkbox } from "@workspace/ui/components/checkbox"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@workspace/ui/components/combobox"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@workspace/ui/components/hover-card"
+import { Label } from "@workspace/ui/components/label"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
 import { Confirmation } from "@/components/ai-elements/confirmation"
+import { FileTree, pathsToFileTree } from "@/components/ai-elements/file-tree"
 import { Plan } from "@/components/ai-elements/plan"
+import { PromptInput } from "@/components/ai-elements/prompt-input"
+import { StackTrace } from "@/components/ai-elements/stack-trace"
+import { Terminal } from "@/components/ai-elements/terminal"
+import { ModelSelector } from "@/components/ai-elements/model-selector"
+import { EnvironmentVariables } from "@/components/data/EnvironmentVariables"
 import { Task } from "@/components/ai-elements/task"
 import { FreshnessBadge } from "@/components/data/FreshnessBadge"
 import { ImpactBadge } from "@/components/data/ImpactBadge"
@@ -25,6 +59,9 @@ const RUN_STATUSES = [
 
 /** Dev-only kit of shared page patterns (DES-025). */
 export function DevKitPage() {
+  const [prompt, setPrompt] = useState("")
+  const [model, setModel] = useState<string | undefined>()
+  const [effort, setEffort] = useState<"low" | "high" | undefined>()
   return (
     <Page crumbs={[{ label: "Dev kit" }]} data-testid="dev-kit">
       <PageTitle
@@ -125,6 +162,83 @@ export function DevKitPage() {
             { title: "Publish", status: "pending" },
           ]}
         />
+      </PageSection>
+
+      <PageSection title="shadcn parts">
+        <div className="flex flex-wrap items-start gap-4" data-testid="kit-parts">
+          <Popover>
+            <PopoverTrigger render={<Button variant="outline" />}>
+              Popover
+            </PopoverTrigger>
+            <PopoverContent>Popover content</PopoverContent>
+          </Popover>
+          <HoverCard>
+            <HoverCardTrigger render={<Button variant="link" />}>
+              Hover card
+            </HoverCardTrigger>
+            <HoverCardContent>Hover card content</HoverCardContent>
+          </HoverCard>
+          <div className="flex items-center gap-2">
+            <Checkbox id="kit-checkbox" data-testid="kit-checkbox" />
+            <Label htmlFor="kit-checkbox">Checkbox</Label>
+          </div>
+          <Combobox items={["main", "develop", "release"]}>
+            <ComboboxInput placeholder="Branch" data-testid="kit-combobox" />
+            <ComboboxContent>
+              <ComboboxEmpty>No match</ComboboxEmpty>
+              <ComboboxList>
+                {(item: string) => (
+                  <ComboboxItem key={item} value={item}>
+                    {item}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+          <Accordion className="w-64" data-testid="kit-accordion">
+            <AccordionItem value="a">
+              <AccordionTrigger>Accordion</AccordionTrigger>
+              <AccordionContent>Accordion content</AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </PageSection>
+
+      <PageSection title="AI Elements">
+        <div className="flex max-w-xl flex-col gap-4">
+          <FileTree
+            data-testid="kit-file-tree"
+            roots={pathsToFileTree(["out/report.md", "out/data/a.json"])}
+          />
+          <PromptInput
+            data-testid="kit-prompt-input"
+            value={prompt}
+            onChange={setPrompt}
+            onSubmit={() => undefined}
+          />
+          <ModelSelector
+            catalog={null}
+            model={model}
+            effort={effort}
+            onChangeModel={setModel}
+            onChangeEffort={setEffort}
+          />
+          <StackTrace
+            data-testid="kit-stack-trace"
+            error="Error: boom"
+            frames={["at run (src/run.ts:1:1)"]}
+          />
+          <Terminal
+            data-testid="kit-terminal"
+            title="pnpm build"
+            output="done"
+            defaultOpen
+          />
+          <EnvironmentVariables
+            data-testid="kit-env"
+            vars={[{ name: "RUN_INPUT", value: "{}", badge: "frozen" }]}
+          />
+        </div>
       </PageSection>
     </Page>
   )

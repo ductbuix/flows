@@ -1,3 +1,7 @@
+/**
+ * Adapted from shadcn apps/v4/examples/base/model-selector-demo.tsx (shadcn-ui/ui@bfa64ff).
+ * Changed base-rhea to base-nova: imports use @workspace/ui/components/*, not @/styles/base-rhea/ui/*; chat demo wiring (useChat, Bubble, Message) removed.
+ */
 import { useState } from "react"
 import { ChevronDownIcon } from "lucide-react"
 import type { CliModelCatalog, Effort } from "@workspace/shared"
