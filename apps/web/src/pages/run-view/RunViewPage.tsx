@@ -35,7 +35,6 @@ import { RunLead } from "./RunLead"
 import { RunLibraryPins } from "./RunLibraryPins"
 import { RunSummaryCards, useRunDuration } from "./RunSummaryCards"
 import { StepTable } from "./StepTable"
-import { TaskList } from "./TaskList"
 import { TaskDetail } from "./TaskDetail"
 import { UnpublishedChanges } from "./UnpublishedChanges"
 import { useSearchView } from "./useSearchView"
@@ -44,9 +43,6 @@ import { useRunFetch } from "./useRunFetch"
 
 const NodeRunGraph = lazy(() =>
   import("./NodeRunGraph.tsx").then((m) => ({ default: m.NodeRunGraph }))
-)
-const TaskGraph = lazy(() =>
-  import("./TaskGraph.tsx").then((m) => ({ default: m.TaskGraph }))
 )
 
 /** Failed run: first failed task; waiting: the waiting one; else running, else last. */
@@ -213,19 +209,11 @@ export function RunViewPage() {
           >
             <ResizablePanel defaultSize={35} minSize={25}>
               {view === "list" ? (
-                run.steps ? (
-                  <StepTable
-                    run={run}
-                    selectedTaskId={selectedTask?.id}
-                    onSelectTask={setTaskId}
-                  />
-                ) : (
-                  <TaskList
-                    run={run}
-                    selectedTaskId={selectedTask?.id}
-                    onSelectTask={setTaskId}
-                  />
-                )
+                <StepTable
+                  run={run}
+                  selectedTaskId={selectedTask?.id}
+                  onSelectTask={setTaskId}
+                />
               ) : (
                 <Suspense
                   fallback={
@@ -234,19 +222,11 @@ export function RunViewPage() {
                     </div>
                   }
                 >
-                  {run.steps ? (
-                    <NodeRunGraph
-                      run={run}
-                      selectedTaskId={selectedTask?.id}
-                      onSelectTask={setTaskId}
-                    />
-                  ) : (
-                    <TaskGraph
-                      run={run}
-                      selectedTaskId={selectedTask?.id}
-                      onSelectTask={setTaskId}
-                    />
-                  )}
+                  <NodeRunGraph
+                    run={run}
+                    selectedTaskId={selectedTask?.id}
+                    onSelectTask={setTaskId}
+                  />
                 </Suspense>
               )}
             </ResizablePanel>

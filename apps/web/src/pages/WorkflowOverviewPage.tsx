@@ -3,9 +3,7 @@ import { useWorkflowLabel } from "@/lib/workflows-context"
 import { useParams } from "react-router"
 import {
   nodeWorkflowDetailSchema,
-  workflowDetailSchema,
   type NodeWorkflow,
-  type Workflow,
   type WorkflowInputDecl,
 } from "@workspace/shared"
 import {
@@ -17,16 +15,13 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Page } from "@/components/page"
 import { WorkflowHeading } from "@/pages/WorkflowHeading"
 import { api } from "@/lib/api"
-import { OverviewConnectionsSection } from "@/pages/OverviewConnectionsSection"
 import { OverviewInputsSection } from "@/pages/OverviewInputsSection"
 import { OverviewNodesSection } from "@/pages/OverviewNodesSection"
-import { OverviewTasksSection } from "@/pages/OverviewTasksSection"
 import { WorkflowStartButton } from "@/components/WorkflowStartButton"
 
 export function WorkflowOverviewPage() {
   const { workflowId } = useParams() as { workflowId: string }
-  const [workflow, setWorkflow] = useState<Workflow | null>(null)
-  // FLOWS_NODES: the workflow is a node graph; inputs sit on its Trigger.
+  // Inputs sit on the Trigger node.
   const [nodeWorkflow, setNodeWorkflow] = useState<NodeWorkflow | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -50,14 +45,7 @@ export function WorkflowOverviewPage() {
         return
       }
       const json: unknown = await res.json()
-      const legacy = workflowDetailSchema.safeParse(json)
-      if (legacy.success) {
-        setNodeWorkflow(null)
-        setWorkflow(legacy.data.workflow)
-      } else {
-        setWorkflow(null)
-        setNodeWorkflow(nodeWorkflowDetailSchema.parse(json).workflow)
-      }
+      setNodeWorkflow(nodeWorkflowDetailSchema.parse(json).workflow)
       setLoading(false)
     })()
     return () => {
@@ -80,17 +68,14 @@ export function WorkflowOverviewPage() {
   return (
     <Page
       crumbs={[...crumbs]}
-      actions={workflow || nodeWorkflow ? <WorkflowStartButton workflowId={workflowId} /> : null}
+      actions={nodeWorkflow ? <WorkflowStartButton workflowId={workflowId} /> : null}
       data-testid="workflow-overview"
     >
       <WorkflowHeading
         workflowId={workflowId}
         tab="overview"
         description={
-          (workflow?.goal ?? nodeWorkflow?.goal)?.trim() ||
-          (nodeWorkflow
-            ? "Nodes, inputs and start a run."
-            : "Tasks, inputs and start a run.")
+          nodeWorkflow?.goal?.trim() || "Nodes, inputs and start a run."
         }
       />
       {error ? (
@@ -107,12 +92,6 @@ export function WorkflowOverviewPage() {
         <>
           <OverviewNodesSection workflow={nodeWorkflow} />
           <OverviewInputsSection inputs={nodeInputs} />
-        </>
-      ) : workflow ? (
-        <>
-          <OverviewTasksSection workflow={workflow} />
-          <OverviewConnectionsSection workflow={workflow} />
-          <OverviewInputsSection inputs={workflow.inputs ?? []} />
         </>
       ) : (
         <Alert variant="destructive">
