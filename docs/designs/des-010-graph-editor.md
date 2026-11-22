@@ -19,11 +19,14 @@ related:
     DES-021,
     DES-022,
     DES-023,
+    DES-028,
   ]
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # UI: workflow list and graph editor
+
+> Superseded in part by the UI renovation (draft, lands with BL-057 to BL-072): the editor layout; the Inspector becomes the task and workflow settings Sheets; see [DES-028](des-028-ui-renovation-screens.md).
 
 Screens for BL-009 / BL-029. Follow [DES-008](des-008-ui.md) and
 [DES-012](des-012-ui-libraries.md) for libraries. `workflow.yaml` is the

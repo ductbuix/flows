@@ -17,11 +17,17 @@ related:
     DES-019,
     DES-024,
     DES-026,
+    DES-027,
+    DES-028,
+    DES-029,
+    DES-030,
   ]
 updated: 2026-11-22
 ---
 
 # Journey-led UI redesign
+
+> Superseded in part by the UI renovation (draft, lands with BL-057 to BL-072): layout rule 1 (the `p-6` frame), "Pages", "Developer experience" and the Start card answer; see [DES-027](des-027-ui-renovation.md) to [DES-030](des-030-ui-renovation-journeys-dx.md).
 
 Phase 13 ([DES-024](des-024-ui-shadcn-baseline.md)) removed stray values.
 This design arranges the same shadcn parts around what people do. The

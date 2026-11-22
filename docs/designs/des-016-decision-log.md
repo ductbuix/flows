@@ -23,6 +23,12 @@ related:
     DES-023,
     DES-024,
     DOC-001,
+    DES-025,
+    DES-026,
+    DES-027,
+    DES-028,
+    DES-029,
+    DES-030,
   ]
 updated: 2026-11-22
 ---
@@ -95,61 +101,69 @@ reversed, keep the row and add a new one that says so.
 
 ## UI
 
-| Date       | Decision                                                  | Reason                                                         | Holds it        |
-| ---------- | --------------------------------------------------------- | -------------------------------------------------------------- | --------------- |
-| 2026-11-20 | Visual editor and `workflow.yaml` kept in sync            | the file is the source of truth, the graph a view of it        | DES-002, 010    |
-| 2026-11-21 | react-markdown with remark-gfm for summaries              | about 49 KB, never renders raw HTML                            | DES-012         |
-| 2026-11-21 | CodeMirror 6 for the YAML pane                            | about 141 KB with diagnostics; Monaco is about 1.1 MB          | DES-012         |
-| 2026-11-21 | React Flow with dagre, automatic layout                   | about 16 KB; no positions to sync                              | DES-012, 010    |
-| 2026-11-21 | Run view has full controls and list plus graph            | answered in the run view review                                | DES-009, 011    |
-| 2026-11-21 | Server folds runs; web applies `run_snapshot`             | web must not import engine (DES-015); same fold result         | DES-009, 015    |
-| 2026-11-21 | YAML writes keep comments and key order                   | hand edits must survive graph edits                            | DES-013         |
-| 2026-11-21 | Kind switch writes a valid shape for the new kind         | Inspector only patched kind, so agent tasks failed save        | DES-018         |
-| 2026-11-21 | Plain textarea for memory and instructions files          | quicker edit in the UI; YAML pane keeps CodeMirror             | DES-018         |
-| 2026-11-21 | Add memory .md files with a native file picker            | on a name collision, ask to overwrite or rename                | DES-018         |
-| 2026-11-21 | Inspector shows a fixed prompt path and Edit prompt       | the user no longer edits the path                              | DES-020         |
-| 2026-11-21 | Task rename moves the prompt folder in the same PUT       | yaml and files stay in sync                                    | DES-020, 013    |
-| 2026-11-21 | No task-id rename in the app; earlier move plan dropped   | ids are immutable, so folder moves are not needed              | DES-020         |
-| 2026-11-21 | Inspector shows a read-only id and an editable name       | the id is generated; name is what the user sees                | DES-020         |
-| 2026-11-21 | Start run form, then trust, then a duplicate ask          | reuse TrustStartGate; never auto-skip                          | DES-021, 011    |
-| 2026-11-21 | Run view shows the run's frozen input files               | retry and resume must match what the user sees                 | DES-021, 009    |
-| 2026-11-21 | Inspector edits `inputs:` and `maxConcurrentRuns`         | the yaml stays the source of truth                             | DES-021, 010    |
-| 2026-11-21 | Delete one task from the drawer or canvas, with confirm   | pending edit until Save; dependents lose the link              | DES-022, 010    |
-| 2026-11-21 | Snapshot undo for graph and inspector edits               | no undo existed; YAML pane keeps CodeMirror history            | DES-022, 010    |
-| 2026-11-21 | Drawer Model and Effort selects, Default first            | the first option shows the CLI's current setting               | DES-023, 010    |
-| 2026-11-21 | Run view shows model and effort on the attempt            | record what was actually resolved                              | DES-023, 009    |
-| 2026-11-21 | shadcn base-nova defaults are the only style source       | no custom tokens or density; keep the kit stable               | DES-024, 008    |
-| 2026-11-21 | Lint bans arbitrary values and palette colors in apps/web | generated shadcn files keep theirs, never hand-edited          | DES-024         |
-| 2026-11-21 | shadcn Sidebar shell with workflows and Settings          | replaces the hand-rolled nav; no icon-only mode                | DES-024, 019    |
-| 2026-11-21 | One UI; YAML, env and raw logs behind Advanced            | one product for POs and developers                             | DES-024         |
-| 2026-11-21 | Theme default light; dark and system stay                 | the `d` shortcut still toggles                                 | DES-024, 008    |
-| 2026-11-21 | No Simple/Pro mode; detail lives in Tabs                  | one UI for all; replaces the Advanced switch                   | DES-025         |
-| 2026-11-22 | Tasks use a local copy of outside systems                 | pull, work locally, publish: only publish affects others       | DES-025         |
-| 2026-11-22 | Work item is a saved record; many per workflow            | the user's unit of work is not a workflow or task node         | DES-026         |
-| 2026-11-22 | One central library, pulled by entity on demand           | reuse across work items; runs pin revisions; read-only         | DES-026         |
-| 2026-11-22 | Secrets in macOS Keychain, one item per connection        | never in files or logs; reversed below: no Keychain            | DES-026         |
-| 2026-11-22 | Trust never publishes on doubt or destructive ops         | agent escalate, error or delete falls back to approval         | DES-026         |
-| 2026-11-22 | Change set envelope per source; conflicts not merged      | one UI for all connectors; pull again or discard               | DES-026         |
-| 2026-11-22 | Library retention: pinned kept, 7 days, 5 GB cap          | reproducible runs without unbounded disk use                   | DES-026         |
-| 2026-11-22 | GitHub is the first connector                             | delegated sign-in, shared clone, draft PR is undoable          | DES-026         |
-| 2026-11-22 | Publish policy per connection                             | read only, approve each publish, or trust agent review         | DES-025         |
-| 2026-11-22 | Trust-agent-review judge is Claude with DES-023 defaults  | no per-connection CLI; escalate/error/timeout/destructive wait | DES-026, BL-052 |
-| 2026-11-22 | Connection access declared and warned                     | no network blocking yet; credentials never reach tasks         | DES-025         |
-| 2026-11-22 | No Keychain; reverses the Keychain row above              | any user process reads it via `security`; tasks too            | DES-026         |
-| 2026-11-22 | Sign-in is CLI-owned, allowed local MCP, or cookies       | no API tokens; cookies from a Chrome sign-in by Flows          | DES-026         |
-| 2026-11-22 | MCP allowlist is `mcp-trust.json` (command or URL keys)   | same allow-before-run as CLI trust; file avoids app.db locks   | DES-026, BL-054 |
-| 2026-11-22 | Cookies in `secrets/`, 0700, sandbox denies reads         | enforced for sandboxed tasks, unlike the Keychain              | DES-026         |
-| 2026-11-22 | Connectors are in-repo adapters only                      | no plugin loading; J12 is a pull request                       | DES-026         |
-| 2026-11-22 | Repo work copy is `git clone --shared`, no worktree       | worktree metadata is outside the sandbox write root            | DES-026         |
-| 2026-11-22 | Port lease per attempt, `serial` repos, local caches      | parallel copies do not clash; installs work sandboxed          | DES-026         |
-| 2026-11-22 | Waiting is derived (`needsYou`), no new run status        | no event or fold change; old runs fold unchanged               | DES-025         |
-| 2026-11-22 | Publish is a `kind: publish` task the user places         | the graph decides when; reuses the approval gate               | DES-026         |
-| 2026-11-22 | Run `resources/` folder with every pin, for all tasks     | a work item's context is readable without YAML                 | DES-026         |
-| 2026-11-22 | Pins are taken at start, frozen like inputs               | queued runs too; "Rerun with fresh pull" pins again            | DES-026         |
-| 2026-11-22 | Work item ids are generated slugs from the title          | POST creates the id; callers do not choose one                 | DES-026         |
-| 2026-11-22 | Delete moves a work item to `workitems/.trash/`           | keep files; never delete runs when removing an item            | DES-026         |
-| 2026-11-22 | Run `itemKey` comes from `workItemId` when set            | duplicate warn is per work item and workflow; ad hoc unchanged | DES-026, BL-039 |
-| 2026-11-22 | GitHub publish branch is `flows/<runId>/<publishTaskId>`  | unique per publish; clash with other commits is conflict       | DES-026, BL-050 |
+| Date       | Decision                                                    | Reason                                                         | Holds it        |
+| ---------- | ----------------------------------------------------------- | -------------------------------------------------------------- | --------------- |
+| 2026-11-20 | Visual editor and `workflow.yaml` kept in sync              | the file is the source of truth, the graph a view of it        | DES-002, 010    |
+| 2026-11-21 | react-markdown with remark-gfm for summaries                | about 49 KB, never renders raw HTML                            | DES-012         |
+| 2026-11-21 | CodeMirror 6 for the YAML pane                              | about 141 KB with diagnostics; Monaco is about 1.1 MB          | DES-012         |
+| 2026-11-21 | React Flow with dagre, automatic layout                     | about 16 KB; no positions to sync                              | DES-012, 010    |
+| 2026-11-21 | Run view has full controls and list plus graph              | answered in the run view review                                | DES-009, 011    |
+| 2026-11-21 | Server folds runs; web applies `run_snapshot`               | web must not import engine (DES-015); same fold result         | DES-009, 015    |
+| 2026-11-21 | YAML writes keep comments and key order                     | hand edits must survive graph edits                            | DES-013         |
+| 2026-11-21 | Kind switch writes a valid shape for the new kind           | Inspector only patched kind, so agent tasks failed save        | DES-018         |
+| 2026-11-21 | Plain textarea for memory and instructions files            | quicker edit in the UI; YAML pane keeps CodeMirror             | DES-018         |
+| 2026-11-21 | Add memory .md files with a native file picker              | on a name collision, ask to overwrite or rename                | DES-018         |
+| 2026-11-21 | Inspector shows a fixed prompt path and Edit prompt         | the user no longer edits the path                              | DES-020         |
+| 2026-11-21 | Task rename moves the prompt folder in the same PUT         | yaml and files stay in sync                                    | DES-020, 013    |
+| 2026-11-21 | No task-id rename in the app; earlier move plan dropped     | ids are immutable, so folder moves are not needed              | DES-020         |
+| 2026-11-21 | Inspector shows a read-only id and an editable name         | the id is generated; name is what the user sees                | DES-020         |
+| 2026-11-21 | Start run form, then trust, then a duplicate ask            | reuse TrustStartGate; never auto-skip                          | DES-021, 011    |
+| 2026-11-21 | Run view shows the run's frozen input files                 | retry and resume must match what the user sees                 | DES-021, 009    |
+| 2026-11-21 | Inspector edits `inputs:` and `maxConcurrentRuns`           | the yaml stays the source of truth                             | DES-021, 010    |
+| 2026-11-21 | Delete one task from the drawer or canvas, with confirm     | pending edit until Save; dependents lose the link              | DES-022, 010    |
+| 2026-11-21 | Snapshot undo for graph and inspector edits                 | no undo existed; YAML pane keeps CodeMirror history            | DES-022, 010    |
+| 2026-11-21 | Drawer Model and Effort selects, Default first              | the first option shows the CLI's current setting               | DES-023, 010    |
+| 2026-11-21 | Run view shows model and effort on the attempt              | record what was actually resolved                              | DES-023, 009    |
+| 2026-11-21 | shadcn base-nova defaults are the only style source         | no custom tokens or density; keep the kit stable               | DES-024, 008    |
+| 2026-11-21 | Lint bans arbitrary values and palette colors in apps/web   | generated shadcn files keep theirs, never hand-edited          | DES-024         |
+| 2026-11-21 | shadcn Sidebar shell with workflows and Settings            | replaces the hand-rolled nav; no icon-only mode                | DES-024, 019    |
+| 2026-11-21 | One UI; YAML, env and raw logs behind Advanced              | one product for POs and developers                             | DES-024         |
+| 2026-11-21 | Theme default light; dark and system stay                   | the `d` shortcut still toggles                                 | DES-024, 008    |
+| 2026-11-21 | No Simple/Pro mode; detail lives in Tabs                    | one UI for all; replaces the Advanced switch                   | DES-025         |
+| 2026-11-22 | Tasks use a local copy of outside systems                   | pull, work locally, publish: only publish affects others       | DES-025         |
+| 2026-11-22 | Work item is a saved record; many per workflow              | the user's unit of work is not a workflow or task node         | DES-026         |
+| 2026-11-22 | One central library, pulled by entity on demand             | reuse across work items; runs pin revisions; read-only         | DES-026         |
+| 2026-11-22 | Secrets in macOS Keychain, one item per connection          | never in files or logs; reversed below: no Keychain            | DES-026         |
+| 2026-11-22 | Trust never publishes on doubt or destructive ops           | agent escalate, error or delete falls back to approval         | DES-026         |
+| 2026-11-22 | Change set envelope per source; conflicts not merged        | one UI for all connectors; pull again or discard               | DES-026         |
+| 2026-11-22 | Library retention: pinned kept, 7 days, 5 GB cap            | reproducible runs without unbounded disk use                   | DES-026         |
+| 2026-11-22 | GitHub is the first connector                               | delegated sign-in, shared clone, draft PR is undoable          | DES-026         |
+| 2026-11-22 | Publish policy per connection                               | read only, approve each publish, or trust agent review         | DES-025         |
+| 2026-11-22 | Trust-agent-review judge is Claude with DES-023 defaults    | no per-connection CLI; escalate/error/timeout/destructive wait | DES-026, BL-052 |
+| 2026-11-22 | Connection access declared and warned                       | no network blocking yet; credentials never reach tasks         | DES-025         |
+| 2026-11-22 | No Keychain; reverses the Keychain row above                | any user process reads it via `security`; tasks too            | DES-026         |
+| 2026-11-22 | Sign-in is CLI-owned, allowed local MCP, or cookies         | no API tokens; cookies from a Chrome sign-in by Flows          | DES-026         |
+| 2026-11-22 | MCP allowlist is `mcp-trust.json` (command or URL keys)     | same allow-before-run as CLI trust; file avoids app.db locks   | DES-026, BL-054 |
+| 2026-11-22 | Cookies in `secrets/`, 0700, sandbox denies reads           | enforced for sandboxed tasks, unlike the Keychain              | DES-026         |
+| 2026-11-22 | Connectors are in-repo adapters only                        | no plugin loading; J12 is a pull request                       | DES-026         |
+| 2026-11-22 | Repo work copy is `git clone --shared`, no worktree         | worktree metadata is outside the sandbox write root            | DES-026         |
+| 2026-11-22 | Port lease per attempt, `serial` repos, local caches        | parallel copies do not clash; installs work sandboxed          | DES-026         |
+| 2026-11-22 | Waiting is derived (`needsYou`), no new run status          | no event or fold change; old runs fold unchanged               | DES-025         |
+| 2026-11-22 | Publish is a `kind: publish` task the user places           | the graph decides when; reuses the approval gate               | DES-026         |
+| 2026-11-22 | Run `resources/` folder with every pin, for all tasks       | a work item's context is readable without YAML                 | DES-026         |
+| 2026-11-22 | Pins are taken at start, frozen like inputs                 | queued runs too; "Rerun with fresh pull" pins again            | DES-026         |
+| 2026-11-22 | Work item ids are generated slugs from the title            | POST creates the id; callers do not choose one                 | DES-026         |
+| 2026-11-22 | Delete moves a work item to `workitems/.trash/`             | keep files; never delete runs when removing an item            | DES-026         |
+| 2026-11-22 | Run `itemKey` comes from `workItemId` when set              | duplicate warn is per work item and workflow; ad hoc unchanged | DES-026, BL-039 |
+| 2026-11-22 | GitHub publish branch is `flows/<runId>/<publishTaskId>`    | unique per publish; clash with other commits is conflict       | DES-026, BL-050 |
+| 2026-11-22 | Renovation builds on shadcn components, blocks, AI Elements | base-nova defaults stay the only style source; no new tokens   | DES-027         |
+| 2026-11-22 | DX covers people using Flows and us building it             | detail one step away; folders, lint guards and a layout check  | DES-030         |
+| 2026-11-22 | New users start from a work item, then a workflow           | the work item is the front door, also on first launch          | DES-028         |
+| 2026-11-22 | Run view leads with a run summary, then the tasks           | status and cause first; tasks get more height                  | DES-029         |
+| 2026-11-22 | Task settings in a right Sheet over a full-width graph      | the graph keeps its width; the Inspector panel goes            | DES-028         |
+| 2026-11-22 | Controls 32px by default; small sizes only in dense rows    | one height and one radius per row                              | DES-027         |
+| 2026-11-22 | Readable names and relative times first; ids secondary      | ids stay copyable in mono; no raw UTC in labels                | DES-027, 030    |
+| 2026-11-22 | Renovation order: frame, run view, editor, home and lists   | command palette later (BL-072)                                 | DES-017, 027    |
 
 ## Docs and tooling
 

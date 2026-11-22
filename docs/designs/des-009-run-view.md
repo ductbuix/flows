@@ -19,11 +19,14 @@ related:
     DES-023,
     DES-024,
     DES-025,
+    DES-029,
   ]
 updated: 2026-11-22
 ---
 
 # UI: run view
+
+> Superseded in part by the UI renovation (draft, lands with BL-057 to BL-072): the run view layout (summary first, one task list, task Tabs); see [DES-029](des-029-ui-renovation-run-screens.md).
 
 Screen for BL-008 (done). It shows what the engine is doing, live. Run
 actions (start, cancel, rerun, retry a task, delete a run) are in
