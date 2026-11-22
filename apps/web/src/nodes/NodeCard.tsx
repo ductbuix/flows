@@ -30,6 +30,8 @@ export const NodeEditsContext = createContext<NodeEdits>(noop)
 export type NodeRunState = {
   views: Readonly<Record<string, NodeRunView>>
   retry: (id: string) => void
+  /** Run step: this node alone on the latest upstream results (BL-102). */
+  runStep?: (id: string) => void
   /** Approve or Reject a waiting Approval step (BL-080). */
   decide?: (id: string, decision: Decision) => void
   /** The run view: no Retry, no settings, the body is not editable (BL-087). */
@@ -64,6 +66,9 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       branches={PORT_TABLE[data.node.kind]?.branches}
       onDecide={
         run.decide ? (decision) => run.decide?.(id, decision) : undefined
+      }
+      onRun={
+        run.readOnly || !run.runStep ? undefined : () => run.runStep?.(id)
       }
       onRetry={run.readOnly ? undefined : () => run.retry(id)}
       onSettings={run.readOnly ? undefined : () => edits.openSettings(id)}

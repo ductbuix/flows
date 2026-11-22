@@ -59,6 +59,9 @@ export type StartRunOptions = {
   files?: { field: string; file: File }[]
   confirmDuplicate?: boolean
   workItemId?: string
+  /** Node run: only this node, or from it (BL-102). */
+  only?: string
+  from?: string
 }
 
 export type StartRunResult =
@@ -76,6 +79,8 @@ function startRunJsonBody(options: StartRunOptions) {
     ...(options.values !== undefined && { values: options.values }),
     ...(options.confirmDuplicate === true && { confirmDuplicate: true }),
     ...(options.workItemId !== undefined && { workItemId: options.workItemId }),
+    ...(options.only !== undefined && { only: options.only }),
+    ...(options.from !== undefined && { from: options.from }),
   }
 }
 

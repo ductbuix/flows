@@ -58,6 +58,8 @@ export async function materializeNodeRunResources(options: {
   runRoot: string
   runId: string
   workItemLinks?: WorkItemLink[]
+  pinFromRunRoot?: string
+  refreshPins?: boolean
 }): Promise<MaterializeResourcesResult> {
   const targets = collectNodePullTargets(
     options.home,
@@ -81,7 +83,18 @@ async function pinTargets(
 
   if (pinFromRunRoot && !refreshPins) {
     const prior = readResourcesJson(pinFromRunRoot)
-    if (prior && prior.pins.length > 0) {
+    // Pins missing for a target (a node changed since) mean a fresh pull.
+    const covers =
+      prior !== undefined &&
+      targets.every((t) =>
+        prior.pins.some(
+          (p) =>
+            p.connection === t.connection.id &&
+            p.kind === t.kind &&
+            p.entityId === t.entityId
+        )
+      )
+    if (prior && prior.pins.length > 0 && covers) {
       const reused: ResourcesJson = { v: 1, pins: prior.pins, warnings: [] }
       linkRunResources(home, runRoot, reused)
       return { resources: reused, pulledEvents: [] }

@@ -162,6 +162,8 @@ has no kind branches.
 - Run from here: `from: nodeId`. Steps before it whose settings and
   inputs did not change are reused, as OpenBot's `runScope` and
   `currentAnswers`; the rest run again.
+- Both start a new run. Earlier results enter it as `step_done` events
+  with `reused: true` (`nodes/partial.ts`); see DES-016 (BL-102).
 
 ## Retry
 

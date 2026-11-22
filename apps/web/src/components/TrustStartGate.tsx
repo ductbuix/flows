@@ -67,7 +67,10 @@ export function TrustStartGate({ children, onStarted }: Props) {
   ) {
     setLastGrant(grant)
     setPending(true)
-    const options = runOptions(body, grant, confirmDuplicate)
+    const options = {
+      ...runOptions(body, grant, confirmDuplicate),
+      ...(target.mode === "start" ? target.partial : {}),
+    }
     const workflowId = workflowOf(target, body)
     const result =
       target.mode === "start"
@@ -122,6 +125,11 @@ export function TrustStartGate({ children, onStarted }: Props) {
   }
 
   function begin(target: StartTarget) {
+    if (target.mode === "start" && target.partial) {
+      // A partial run keeps the inputs of the run it builds on.
+      void afterFormSubmit(target, { values: {}, files: [] })
+      return
+    }
     setPipelineTarget(target)
     setFormTarget(target)
     setFieldErrors(undefined)

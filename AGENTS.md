@@ -31,7 +31,7 @@ Schema and writing rules: `docs/README.md`.
   connection), expired sign-ins, Work items; Impact/Freshness/Policy on
   `/dev/kit`; Overview (Connections + impact)/Editor (node
   canvas, drag saves layout, loop edges curved; Connections FieldSet with Propose, publish
-  node + Cloud badge)/Runs; canvas (Add node, wires, empty state); run view summary Cards + Tasks (step table)/Changes/Library
+  node + Cloud badge)/Runs; canvas (Add node, Run step + menu, wires, empty state); run view summary Cards + Tasks (step table)/Changes/Library
   pins tabs; connection policy Select.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
@@ -53,7 +53,7 @@ Schema and writing rules: `docs/README.md`.
   preflight, trust markers, spawn, resume, approval, cancel, retry,
   repeat, `agents` limits, run deletion, frozen `RUN_INPUT`, queued runs,
   summary cache, port leases, `<workflow>/.cache`; `nodes/` (walk, loops,
-  executors incl. `publish.ts`, `answers.ts` (named answers), `tickNodes`, retry).
+  executors incl. `publish.ts`, `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`).
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
   websocket, workflow (incl. `kind: publish`), `connection.yaml`, library
   list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,

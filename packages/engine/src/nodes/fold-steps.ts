@@ -49,6 +49,8 @@ export type StepState = {
   decision?: "approved" | "rejected"
   /** Latest attempt of a process step. */
   current?: AttemptInfo
+  /** Copied from an earlier run by a partial run (BL-102). */
+  reused?: boolean
   /** Position in the event log; later steps are newer. */
   seq: number
 }
@@ -168,6 +170,7 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         s.outputs = event.outputs
         s.branch = event.branch
         s.answer = event.answer
+        s.reused = event.reused
         s.seq = seq
         return
       }
@@ -181,6 +184,7 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
       case "step_skipped": {
         const s = ensureStep(state, event.nodeId, event.pass, seq)
         s.status = "skipped"
+        s.reused = event.reused
         s.seq = seq
         return
       }
@@ -203,6 +207,7 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         s.current = undefined
         s.question = undefined
         s.decision = undefined
+        s.reused = undefined
         s.seq = seq
         state.ended = false
         return

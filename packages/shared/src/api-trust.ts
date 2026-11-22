@@ -26,6 +26,12 @@ export const startRunBodySchema = z.object({
   refreshPins: z.boolean().optional(),
   /** Optional work item; unknown id is 400 unknown_work_item (BL-039). */
   workItemId: workItemIdSchema.optional(),
+  /** Node run: run only this node on the latest upstream results (BL-102). */
+  only: z.string().min(1).optional(),
+  /** Node run: run from this node, reusing unchanged earlier steps (BL-102). */
+  from: z.string().min(1).optional(),
+  /** Node run: the earlier run to reuse; default is the latest (BL-102). */
+  baseRunId: z.string().min(1).optional(),
 })
 
 export type StartRunBody = z.infer<typeof startRunBodySchema>

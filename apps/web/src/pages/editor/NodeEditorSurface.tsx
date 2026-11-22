@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useReactFlow } from "@xyflow/react"
-import { PlayIcon, Redo2Icon, SaveIcon, Undo2Icon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  PlayIcon,
+  Redo2Icon,
+  SaveIcon,
+  Undo2Icon,
+} from "lucide-react"
 import { toast } from "sonner"
 import {
   Alert,
@@ -15,9 +21,19 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@workspace/ui/components/popover"
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@workspace/ui/components/button-group"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
 import { addEdge, loopWarnings } from "@workspace/shared"
 import { ActionButton } from "@/components/ActionButton"
-import { TrustStartGate } from "@/components/TrustStartGate"
+import { TrustStartGate, type StartTarget } from "@/components/TrustStartGate"
 import { retryTask } from "@/lib/run-actions"
 import { NodeRunContext } from "@/nodes/NodeCard"
 import { decideStep, type Decision } from "@/nodes/decide"
@@ -42,12 +58,31 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
   const rf = useReactFlow()
   const [drop, setDrop] = useState<Drop | null>(null)
   const [sheetId, setSheetId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const workflow = editor.workflow
   const nodeRun = useNodeRun()
   const { runId, follow } = nodeRun
+  const latest = useRef(editor)
+  latest.current = editor
+  const beginRef = useRef<(target: StartTarget) => void>(undefined)
+  const live = nodeRun.live
   const runState = useMemo(
     () => ({
       views: nodeRun.views,
+      // Run step (BL-102): the saved workflow, this node, latest upstream results.
+      runStep: (id: string) => {
+        const wf = latest.current.workflow
+        if (!wf) return
+        if (latest.current.dirty) toast.info("Save to run")
+        else if (live) toast.info("A run is still going")
+        else {
+          beginRef.current?.({
+            mode: "start",
+            workflowId: wf.id,
+            partial: { only: id },
+          })
+        }
+      },
       retry: (id: string) => {
         if (!runId) return
         void retryTask(runId, id).then((r) => {
@@ -58,10 +93,8 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
         if (runId) decideStep(runId, id, decision)
       },
     }),
-    [nodeRun.views, runId]
+    [nodeRun.views, runId, live]
   )
-  const latest = useRef(editor)
-  latest.current = editor
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -147,6 +180,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
         <AddNodeMenu onPick={addAtSlot} />
         <TrustStartGate onStarted={(_wf, id) => follow(id)}>
           {({ begin, pending }) => {
+            beginRef.current = begin
             const hint = !hasTrigger(workflow.nodes)
               ? "Add a trigger to run"
               : editor.dirty
@@ -162,18 +196,53 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
                     {hint}
                   </span>
                 ) : null}
-                <ActionButton
-                  variant="outline"
-                  data-testid="canvas-run"
-                  pending={pending || nodeRun.live}
-                  disabled={hint !== null}
-                  onClick={() =>
-                    begin({ mode: "start", workflowId: workflow.id })
-                  }
-                >
-                  <PlayIcon data-icon="inline-start" />
-                  Run
-                </ActionButton>
+                <ButtonGroup>
+                  <ActionButton
+                    variant="outline"
+                    data-testid="canvas-run"
+                    pending={pending || nodeRun.live}
+                    disabled={hint !== null}
+                    onClick={() =>
+                      begin({ mode: "start", workflowId: workflow.id })
+                    }
+                  >
+                    <PlayIcon data-icon="inline-start" />
+                    Run
+                  </ActionButton>
+                  <ButtonGroupSeparator />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          aria-label="Run menu"
+                          data-testid="canvas-run-menu"
+                          disabled={pending || nodeRun.live}
+                        />
+                      }
+                    >
+                      <ChevronDownIcon />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        data-testid="canvas-run-from"
+                        disabled={hint !== null || selectedId === null}
+                        onClick={() =>
+                          selectedId !== null &&
+                          begin({
+                            mode: "start",
+                            workflowId: workflow.id,
+                            partial: { from: selectedId },
+                          })
+                        }
+                      >
+                        Run from selected node
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </ButtonGroup>
               </>
             )
           }}
@@ -216,6 +285,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
               onPositions={editor.savePositions}
               onWire={(edge) => editor.addEdgeYaml((y) => addEdge(y, edge))}
               onDrop={setDrop}
+              onSelect={setSelectedId}
             />
           </NodeRunContext.Provider>
         )}

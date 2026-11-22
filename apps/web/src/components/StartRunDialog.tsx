@@ -35,7 +35,13 @@ export const WORK_ITEM_NONE = "__none__"
  * from a workflow leaves it unset (asks for the work item or None).
  */
 export type StartDialogTarget =
-  | { mode: "start"; workflowId?: string; workItemId?: string }
+  | {
+      mode: "start"
+      workflowId?: string
+      workItemId?: string
+      /** Run step or Run from here: no input form, builds on the latest run (BL-102). */
+      partial?: { only: string } | { from: string }
+    }
   | { mode: "rerun"; runId: string; workflowId: string }
 
 type Props = {
