@@ -31,6 +31,8 @@ export function defaultNode(
       return { id, kind, cli: "claude" }
     case "command":
       return { id, kind, run: 'echo "hello"' }
+    case "approval":
+      return { id, kind, question: "Continue?" }
     case "output":
       return { id, kind, target: "folder" }
     default:

@@ -3,6 +3,7 @@ import type { NodeRunView } from "@/pages/editor/node-run"
 import { PORT_TABLE, type WorkflowNode } from "@workspace/shared"
 import type { Node, NodeProps } from "@xyflow/react"
 import type { NodeBodyProps } from "./define"
+import type { Decision } from "./decide"
 import { NodeFrame, branchLabel } from "./NodeFrame"
 import { isStepKind, viewOf } from "./index"
 
@@ -29,6 +30,8 @@ export const NodeEditsContext = createContext<NodeEdits>(noop)
 export type NodeRunState = {
   views: Readonly<Record<string, NodeRunView>>
   retry: (id: string) => void
+  /** Approve or Reject a waiting Approval step (BL-080). */
+  decide?: (id: string, decision: Decision) => void
   /** The run view: no Retry, no settings, the body is not editable (BL-087). */
   readOnly?: boolean
 }
@@ -58,6 +61,9 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       result={live?.result}
       verdict={live?.verdict ? branchLabel(live.verdict) : undefined}
       branches={PORT_TABLE[data.node.kind]?.branches}
+      onDecide={
+        run.decide ? (decision) => run.decide?.(id, decision) : undefined
+      }
       onRetry={run.readOnly ? undefined : () => run.retry(id)}
       onSettings={run.readOnly ? undefined : () => edits.openSettings(id)}
     >

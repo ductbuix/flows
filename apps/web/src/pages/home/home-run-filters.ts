@@ -4,6 +4,8 @@ export type NeedsYouItem = {
   run: RunSummary
   taskId: string
   connectionId?: string
+  /** Approval node: the question to answer. */
+  question?: string
 }
 
 export function isLiveRun(run: RunSummary): boolean {
@@ -29,6 +31,7 @@ export function collectNeedsYou(runs: RunSummary[]): NeedsYouItem[] {
         ...(entry.connectionId !== undefined
           ? { connectionId: entry.connectionId }
           : {}),
+        ...(entry.question !== undefined ? { question: entry.question } : {}),
       })
     }
   }

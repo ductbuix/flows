@@ -64,11 +64,11 @@ export function trackTimes(
   return next
 }
 
-/** Branch each Judge took, by node id; the latest pass wins. */
+/** Branch each Judge took or decision each Approval got, by node id; the latest pass wins. */
 export function verdictsOf(steps: RunDetail["steps"]): Record<string, string> {
   const out: Record<string, string> = {}
   for (const s of steps ?? []) {
-    if (s.branch) out[s.nodeId] = s.branch
+    if (s.branch ?? s.decision) out[s.nodeId] = (s.branch ?? s.decision)!
     else delete out[s.nodeId]
   }
   return out

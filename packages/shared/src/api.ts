@@ -26,6 +26,8 @@ export type WorkflowSummary = z.infer<typeof workflowSummarySchema>
 export const needsYouEntrySchema = z.object({
   taskId: z.string().min(1),
   connectionId: z.string().min(1).optional(),
+  /** Approval node: the question to answer (BL-080). */
+  question: z.string().optional(),
 })
 
 export type NeedsYouEntry = z.infer<typeof needsYouEntrySchema>
@@ -127,6 +129,9 @@ export const runStepSchema = z.object({
   branch: z.string().min(1).optional(),
   /** Why the step failed, as the engine wrote it (`unclear` for a Judge). */
   failReason: z.string().min(1).optional(),
+  /** Approval step: the question and the decision a person made. */
+  question: z.string().optional(),
+  decision: z.enum(["approved", "rejected"]).optional(),
   startedAt: z.string().optional(),
   endedAt: z.string().optional(),
 })

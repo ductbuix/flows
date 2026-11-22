@@ -2,10 +2,7 @@ import { createHash } from "node:crypto"
 import {
   cpSync,
   existsSync,
-  mkdirSync,
-  readFileSync,
   readdirSync,
-  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs"
@@ -20,9 +17,9 @@ import {
   judgeVerdict,
   resolveJudgeModelEffort,
 } from "../judge.ts"
+import { forwardInputs } from "./forward.ts"
 import { defineExecutor, type ExecContext, type ExecResult } from "./define.ts"
 import { readOptional } from "./process.ts"
-import { relOut } from "./step-paths.ts"
 
 type Recorded = { key: string; verdict: "yes" | "no"; answer: string }
 
@@ -92,29 +89,6 @@ function readRecorded(ctx: ExecContext): Recorded | undefined {
   }
 }
 
-/** Forwards what came in: the step text is the joined input, files are merged. */
-function forward(ctx: ExecContext, text: string): string[] {
-  rmSync(join(ctx.stepDir, "text.md"), { force: true })
-  rmSync(join(ctx.stepDir, "files"), { recursive: true, force: true })
-  mkdirSync(ctx.stepDir, { recursive: true })
-  writeFileSync(join(ctx.stepDir, "text.md"), text)
-  const base = relOut("nodes", ctx.node.id, `pass-${ctx.pass}`)
-  const outputs = [relOut(base, "text.md")]
-  for (const input of ctx.inputs) {
-    const files = join(input.dir, "files")
-    if (!existsSync(files)) continue
-    for (const name of readdirSync(files).sort()) {
-      cpSync(join(files, name), join(ctx.stepDir, "files", name), {
-        recursive: true,
-        dereference: true,
-      })
-      const rel = relOut(base, "files", name)
-      if (!outputs.includes(rel)) outputs.push(rel)
-    }
-  }
-  return outputs
-}
-
 /**
  * Judge in rule mode (DES-032): the CLI reads `rule.md`, answers yes or
  * no for the input, and the first word picks the branch. Anything else
@@ -130,7 +104,7 @@ export const judgeExecutor = defineExecutor({
     const recorded = readRecorded(ctx)
     if (recorded?.key === key) {
       const text = readOptional(join(ctx.stepDir, "text.md")) ?? ""
-      return { outputs: forward(ctx, text), branch: recorded.verdict }
+      return { outputs: forwardInputs(ctx, text), branch: recorded.verdict }
     }
     return {
       launch: {
@@ -171,7 +145,7 @@ export const judgeExecutor = defineExecutor({
     const verdict = judgeVerdict(answer)
     if (!verdict) return { outputs: [], failed: "unclear" }
     const text = readOptional(join(attemptRoot, "input", "text.md")) ?? ""
-    const outputs = forward(ctx, text)
+    const outputs = forwardInputs(ctx, text)
     const recorded: Recorded = { key: keyOf(ctx), verdict, answer: answer.trim() }
     writeFileSync(join(ctx.stepDir, "judge.json"), JSON.stringify(recorded))
     return { outputs, branch: verdict }

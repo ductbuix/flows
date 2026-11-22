@@ -20,6 +20,7 @@ export function finishNodeCancel(log: EventLog, runId: string): void {
   const events = log.listByRun(runId).map((s) => s.event)
   const steps = foldSteps(events)
   if (steps.ended) return
+  const rejected = events.some((e) => e.type === "step_rejected")
   for (const list of Object.values(steps.steps)) {
     for (const s of list) {
       if (s.current?.open && s.current.pid !== undefined) {
@@ -39,7 +40,12 @@ export function finishNodeCancel(log: EventLog, runId: string): void {
       })
     }
   }
-  log.append({ type: "run_cancelled", runId, at: now() })
+  log.append({
+    type: "run_cancelled",
+    runId,
+    at: now(),
+    ...(rejected ? { reason: "rejected" as const } : {}),
+  })
 }
 
 /** Cancels a live node run: `cancel_requested`, then the finish. */
@@ -49,6 +55,54 @@ export function cancelNodeRun(log: EventLog, runId: string): void {
   if (!cancelRequested(events)) {
     log.append({ type: "cancel_requested", runId, at: now() })
   }
+  finishNodeCancel(log, runId)
+}
+
+function waitingStep(log: EventLog, runId: string, nodeId: string) {
+  const events = log.listByRun(runId).map((s) => s.event)
+  const steps = foldSteps(events)
+  const step = steps.steps[nodeId]?.at(-1)
+  if (!step || step.status !== "waiting" || steps.ended) {
+    throw new Error(`task ${nodeId} is not awaiting approval`)
+  }
+  return step
+}
+
+/** Approve: `step_approved`; the next tick forwards the input (DES-034). */
+export function approveNodeStep(
+  log: EventLog,
+  runId: string,
+  nodeId: string
+): void {
+  const step = waitingStep(log, runId, nodeId)
+  log.append({
+    type: "step_approved",
+    runId,
+    at: now(),
+    nodeId,
+    pass: step.pass,
+  })
+}
+
+/**
+ * Reject: the run stops as for cancel and ends `run_cancelled` with
+ * reason `rejected`. `cancel_requested` goes first so a crash in between
+ * resumes the stop instead of finishing the run (DES-034, Approval).
+ */
+export function rejectNodeStep(
+  log: EventLog,
+  runId: string,
+  nodeId: string
+): void {
+  const step = waitingStep(log, runId, nodeId)
+  log.append({ type: "cancel_requested", runId, at: now() })
+  log.append({
+    type: "step_rejected",
+    runId,
+    at: now(),
+    nodeId,
+    pass: step.pass,
+  })
   finishNodeCancel(log, runId)
 }
 

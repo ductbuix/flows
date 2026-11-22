@@ -128,6 +128,10 @@ export const approvalRequestedEventSchema = z.object({
   type: z.literal("approval_requested"),
   ...eventBase,
   taskId: z.string().min(1),
+  /** Node path (DES-034): the Approval step and its filled question. */
+  nodeId: z.string().min(1).optional(),
+  pass: z.number().int().positive().optional(),
+  question: z.string().optional(),
 })
 
 export const taskApprovedEventSchema = z.object({
@@ -187,6 +191,8 @@ export const taskCancelledEventSchema = z.object({
 export const runCancelledEventSchema = z.object({
   type: z.literal("run_cancelled"),
   ...eventBase,
+  /** `rejected`: an Approval step was rejected (DES-034). */
+  reason: z.literal("rejected").optional(),
 })
 
 export const runSucceededEventSchema = z.object({

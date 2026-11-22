@@ -15,6 +15,7 @@ import { ActionButton } from "@/components/ActionButton"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { retryTask } from "@/lib/run-actions"
 import { NodeRunContext } from "@/nodes/NodeCard"
+import { decideStep, type Decision } from "@/nodes/decide"
 import { nodeTextPath } from "@/nodes"
 import { AddNodeList } from "./AddNodeList"
 import { AddNodeMenu } from "./AddNodeMenu"
@@ -47,6 +48,9 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
         void retryTask(runId, id).then((r) => {
           if (!r.ok) toast.error(r.error)
         })
+      },
+      decide: (id: string, decision: Decision) => {
+        if (runId) decideStep(runId, id, decision)
       },
     }),
     [nodeRun.views, runId]
