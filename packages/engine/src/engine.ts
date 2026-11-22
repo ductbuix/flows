@@ -34,9 +34,15 @@ import {
   freeRunSlots,
   nextQueuedRun,
 } from "./run-queue.ts"
-import { cancelNodeRun, requestNodeRetry } from "./nodes/cancel.ts"
+import {
+  approveNodeStep,
+  cancelNodeRun,
+  rejectNodeStep,
+  requestNodeRetry,
+} from "./nodes/cancel.ts"
 import { resumeNodes, runNodes } from "./nodes/drive.ts"
 import type { StepsState } from "./nodes/fold-steps.ts"
+import type { ProcessHost } from "./nodes/process.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
 import { Scheduler } from "./scheduler.ts"
 import type { ManualFilePart, ManualItem } from "./source-manual.ts"
@@ -95,6 +101,8 @@ export class Engine {
   private readonly summaryCache: RunSummaryCache
   /** Live node-run drivers by run id (DES-034). */
   private readonly nodeRuns = new Map<string, Promise<StepsState>>()
+  /** Wake handles of those drivers, so Approve can tick a waiting run. */
+  private readonly nodeHosts = new Map<string, ProcessHost>()
   private retentionTimer: ReturnType<typeof setInterval> | undefined
 
   constructor(options: CreateEngineOptions = {}) {
@@ -314,7 +322,7 @@ export class Engine {
       startNodeRunQueued({ ...opts, queued: true })
       return this.queuedHandle(runId)
     }
-    return this.trackNodeRun(runId, runNodes(opts))
+    return this.trackNodeRun(runId, runNodes(opts, this.hostSink(runId)))
   }
 
   private trackNodeRun(runId: string, done: Promise<StepsState>): RunHandle {
@@ -332,7 +340,10 @@ export class Engine {
     })
     this.nodeRuns.set(runId, tracked)
     const clear = () => {
-      if (this.nodeRuns.get(runId) === tracked) this.nodeRuns.delete(runId)
+      if (this.nodeRuns.get(runId) === tracked) {
+        this.nodeRuns.delete(runId)
+        this.nodeHosts.delete(runId)
+      }
     }
     tracked.then(clear, clear)
     return this.nodeHandle(runId, tracked)
@@ -350,6 +361,23 @@ export class Engine {
     }
   }
 
+  /** Ticks a live node run again after a person decided (BL-080). */
+  private wakeNodeRun(runId: string): void {
+    const host = this.nodeHosts.get(runId)
+    if (host) {
+      host.wake()
+      return
+    }
+    this.nodeRuns.delete(runId)
+    this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId), this.hostSink(runId)))
+  }
+
+  private hostSink(runId: string): (host: ProcessHost) => void {
+    return (host) => {
+      this.nodeHosts.set(runId, host)
+    }
+  }
+
   private mustFold(runId: string): RunState {
     const state = this.fold(runId)
     if (!state) throw new Error(`unknown run ${runId}`)
@@ -357,10 +385,20 @@ export class Engine {
   }
 
   approveTask(runId: string, taskId: string): void {
+    if (this.fold(runId)?.nodeGraph) {
+      approveNodeStep(this.log, runId, taskId)
+      this.wakeNodeRun(runId)
+      return
+    }
     this.requireScheduler(runId).approve(taskId)
   }
 
   rejectTask(runId: string, taskId: string): void {
+    if (this.fold(runId)?.nodeGraph) {
+      rejectNodeStep(this.log, runId, taskId)
+      this.wakeNodeRun(runId)
+      return
+    }
     this.requireScheduler(runId).reject(taskId)
   }
 
@@ -389,7 +427,7 @@ export class Engine {
       if (state.deleted) throw new Error(`run ${runId} is deleted`)
       requestNodeRetry(this.log, runId, taskId, state.nodeGraph.edges)
       this.nodeRuns.delete(runId)
-      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId)))
+      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId), this.hostSink(runId)))
     }
     requestManualRetry(runId, taskId, state, (event) => this.log.append(event))
     this.schedulers.delete(runId)
@@ -445,7 +483,7 @@ export class Engine {
     if (state.nodeGraph) {
       const live = this.nodeRuns.get(runId)
       if (live) return this.nodeHandle(runId, live)
-      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId)))
+      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId), this.hostSink(runId)))
     }
 
     const workflowRoot = workflowDir(this.home, state.workflowId)
@@ -510,7 +548,7 @@ export class Engine {
           runId: next.runId,
           at: new Date().toISOString(),
         })
-        this.trackNodeRun(next.runId, resumeNodes(this.nodeOpts(next.runId)))
+        this.trackNodeRun(next.runId, resumeNodes(this.nodeOpts(next.runId), this.hostSink(next.runId)))
         continue
       }
       if (!graph) {

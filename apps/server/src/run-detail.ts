@@ -18,6 +18,8 @@ function stepsOf(state: RunState): RunStep[] | undefined {
         status: stepTaskStatus(step.status),
         ...(step.branch ? { branch: step.branch } : {}),
         ...(step.failReason ? { failReason: step.failReason } : {}),
+        ...(step.question !== undefined ? { question: step.question } : {}),
+        ...(step.decision ? { decision: step.decision } : {}),
         ...(step.current?.startedAt ? { startedAt: step.current.startedAt } : {}),
         ...(step.current?.endedAt ? { endedAt: step.current.endedAt } : {}),
       })

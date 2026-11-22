@@ -42,6 +42,9 @@ export type StepState = {
   branch?: string
   answer?: Record<string, unknown>
   failReason?: StepFailReason
+  /** Approval step: the question asked and the decision recorded (BL-080). */
+  question?: string
+  decision?: "approved" | "rejected"
   /** Latest attempt of a process step. */
   current?: AttemptInfo
   /** Position in the event log; later steps are newer. */
@@ -140,13 +143,21 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         return
       }
       case "approval_requested": {
-        const s = latestStep(state, event.taskId)
-        if (s && s.status === "running") s.status = "waiting"
+        const s = event.nodeId
+          ? stepFor(state, event.nodeId, event.pass ?? 1)
+          : latestStep(state, event.taskId)
+        if (s && s.status === "running") {
+          s.status = "waiting"
+          if (event.question !== undefined) s.question = event.question
+        }
         return
       }
       case "step_approved": {
         const s = stepFor(state, event.nodeId, event.pass)
-        if (s && s.status === "waiting") s.status = "running"
+        if (s && s.status === "waiting") {
+          s.status = "running"
+          s.decision = "approved"
+        }
         return
       }
       case "step_done": {
@@ -175,6 +186,7 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
       case "step_cancelled": {
         const s = ensureStep(state, event.nodeId, event.pass, seq)
         s.status = "cancelled"
+        if (event.type === "step_rejected") s.decision = "rejected"
         s.seq = seq
         return
       }
@@ -187,6 +199,8 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         s.branch = undefined
         s.answer = undefined
         s.current = undefined
+        s.question = undefined
+        s.decision = undefined
         s.seq = seq
         state.ended = false
         return

@@ -21,8 +21,10 @@ export function summarizeRun(state: RunState): RunSummary | null {
     const status = task?.status ?? "pending"
     if (DONE.has(status)) done += 1
     if (status === "awaiting_approval") {
+      const question = state.steps?.steps[spec.id]?.at(-1)?.question
       needsYou.push({
         taskId: spec.id,
+        ...(question !== undefined ? { question } : {}),
         ...(isPublishTask(spec) ? { connectionId: spec.connection } : {}),
       })
     }

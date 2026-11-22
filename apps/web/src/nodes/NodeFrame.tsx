@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { Handle, Position } from "@xyflow/react"
-import { PlayIcon, RotateCcwIcon, Settings2Icon, type LucideIcon } from "lucide-react"
+import { CheckIcon, PlayIcon, RotateCcwIcon, XIcon, Settings2Icon, type LucideIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
@@ -41,6 +41,8 @@ export type NodeFrameProps = {
   branches?: readonly string[]
   onRun?: () => void
   onRetry?: () => void
+  /** Approve or Reject while the step waits for a person (BL-080). */
+  onDecide?: (decision: "approve" | "reject") => void
   /** Opens the node Sheet (BL-095). */
   onSettings?: () => void
   children?: ReactNode
@@ -60,6 +62,7 @@ export function NodeFrame({
   branches,
   onRun,
   onRetry,
+  onDecide,
   onSettings,
   children,
 }: NodeFrameProps) {
@@ -129,6 +132,31 @@ export function NodeFrame({
         ) : null}
       </div>
       {children ? <div className="px-3">{children}</div> : null}
+      {status === "waiting" && onDecide ? (
+        <div className="flex gap-2 px-3" data-testid={`node-decide-${id}`}>
+          <Button
+            type="button"
+            size="sm"
+            className="nodrag"
+            data-testid={`node-approve-${id}`}
+            onClick={() => onDecide("approve")}
+          >
+            <CheckIcon data-icon="inline-start" />
+            Approve
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="nodrag"
+            data-testid={`node-reject-${id}`}
+            onClick={() => onDecide("reject")}
+          >
+            <XIcon data-icon="inline-start" />
+            Reject
+          </Button>
+        </div>
+      ) : null}
       {result || (status === "failed" && onRetry) ? (
         <div className="flex flex-col gap-2 px-3">
           {result ? (

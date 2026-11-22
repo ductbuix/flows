@@ -61,7 +61,9 @@ export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
               description={
                 publish
                   ? `Connection ${item.connectionId} · ${runLabelFor(item.run)}`
-                  : runLabelFor(item.run)
+                  : item.question !== undefined
+                    ? `${item.question} · ${runLabelFor(item.run)}`
+                    : runLabelFor(item.run)
               }
               approveLabel={publish ? "Publish" : "Approve"}
               denyLabel={publish ? "Discard" : "Reject"}
@@ -80,8 +82,16 @@ export function NeedsYouSection({ items, expiredSignIns = [] }: Props) {
         onOpenChange={(open) => {
           if (!open) setRejectTarget(null)
         }}
-        title="Reject this task?"
-        description="It ends as failed, and the run fails unless the task has continueOnError."
+        title={
+          rejectTarget?.question !== undefined
+            ? "Reject and stop this run?"
+            : "Reject this task?"
+        }
+        description={
+          rejectTarget?.question !== undefined
+            ? "The run ends as cancelled. This cannot be undone."
+            : "It ends as failed, and the run fails unless the task has continueOnError."
+        }
         confirmLabel="Reject"
         cancelLabel="Keep waiting"
         pending={

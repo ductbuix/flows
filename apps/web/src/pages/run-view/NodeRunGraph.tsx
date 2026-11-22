@@ -3,6 +3,7 @@ import { runCanvasSchema, type RunCanvas, type RunDetail } from "@workspace/shar
 import { Background, Controls, ReactFlow, type Edge, type Node } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { api } from "@/lib/api"
+import { decideStep, type Decision } from "@/nodes/decide"
 import { NodeCard, NodeRunContext, type NodeCardData } from "@/nodes/NodeCard"
 import { branchLabel } from "@/nodes/NodeFrame"
 import { nodeTextPath } from "@/nodes"
@@ -77,8 +78,14 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
           : {}),
       }
     }
-    return { views, retry: noRetry, readOnly: true }
-  }, [run.steps])
+    return {
+      views,
+      retry: noRetry,
+      decide: (id: string, decision: Decision) =>
+        decideStep(run.id, id, decision),
+      readOnly: true,
+    }
+  }, [run.steps, run.id])
 
   return (
     <div className="h-full min-h-80 w-full" data-testid="run-graph">

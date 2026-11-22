@@ -30,6 +30,11 @@ function isPublishWaiting(run: RunDetail, task: TaskView): boolean {
   return Boolean(spec && isPublishTask(spec))
 }
 
+/** The question of a waiting Approval step, if the task is one. */
+function questionOf(run: RunDetail, task: TaskView): string | undefined {
+  return run.steps?.findLast((s) => s.nodeId === task.id && s.question)?.question
+}
+
 /** Waiting Confirmation or failure Alert at the top of the run view (DES-025). */
 export function RunLead({ run }: Props) {
   const waiting = run.tasks.filter((t) => t.status === "awaiting_approval")
@@ -51,20 +56,29 @@ export function RunLead({ run }: Props) {
     if (!result.ok) toast.error(result.error)
   }
 
+  const rejectIsApproval = waiting.some(
+    (t) => t.id === rejectTaskId && questionOf(run, t) !== undefined
+  )
+
   if (waiting.length > 0) {
     return (
       <div className="flex flex-col gap-3" data-testid="run-waiting">
         {waiting.map((t) => {
           const publish = isPublishWaiting(run, t)
+          const question = questionOf(run, t)
           return (
             <div key={t.id} className="flex flex-col gap-3">
               {publish ? <ChangesToPublish run={run} task={t} /> : null}
               <Confirmation
                 data-testid="task-confirmation"
                 icon={<ShieldCheck />}
-                title={publish ? `Publish ${t.id}?` : `Approve ${t.id}?`}
+                title={
+                  question ?? (publish ? `Publish ${t.id}?` : `Approve ${t.id}?`)
+                }
                 description={
-                  publish
+                  question !== undefined
+                    ? "Approve continues the run. Reject stops it."
+                    : publish
                     ? "Publish sends these changes out. Discard ends the task as failed."
                     : "The task runs after approval. Deny ends it as failed."
                 }
@@ -87,7 +101,9 @@ export function RunLead({ run }: Props) {
             if (!open) setRejectTaskId(null)
           }}
           title={
-            rejectTaskId &&
+            rejectIsApproval
+              ? "Reject and stop this run?"
+              : rejectTaskId &&
             isPublishWaiting(
               run,
               waiting.find((t) => t.id === rejectTaskId) ?? waiting[0]!
@@ -95,7 +111,11 @@ export function RunLead({ run }: Props) {
               ? "Discard this publish?"
               : "Reject this task?"
           }
-          description="It ends as failed, and the run fails unless the task has continueOnError."
+          description={
+            rejectIsApproval
+              ? "The run ends as cancelled. This cannot be undone."
+              : "It ends as failed, and the run fails unless the task has continueOnError."
+          }
           confirmLabel={
             rejectTaskId &&
             isPublishWaiting(

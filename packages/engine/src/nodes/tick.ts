@@ -16,7 +16,7 @@ import { runDir, workflowDir } from "../paths.ts"
 import { manualItemKey } from "../item-key.ts"
 import { manualSource, type ManualItem } from "../source-manual.ts"
 import { retryBackoffMs } from "../loops.ts"
-import { isLaunchPlan, type ExecContext, type ExecInput } from "./define.ts"
+import { isLaunchPlan, isWaitPlan, type ExecContext, type ExecInput } from "./define.ts"
 import { foldSteps, latestStep, type StepsState } from "./fold-steps.ts"
 import {
   launchAttempt,
@@ -228,6 +228,19 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         if (isLaunchPlan(result)) {
           return launchAttempt({ ...opts, runId }, ctx, result.launch, steps)
         }
+        if (isWaitPlan(result)) {
+          // No slot, no process: the step waits for a person (BL-080).
+          log.append({
+            type: "approval_requested",
+            runId,
+            at: now(),
+            taskId: nodeId,
+            nodeId,
+            pass,
+            question: result.wait.question,
+          })
+          return true
+        }
         settle(nodeId, pass, result)
       } catch (error) {
         if (error instanceof CrashError) throw error
@@ -273,6 +286,24 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
 
     let progressed = false
 
+    // An approved Approval step settles by forwarding its input.
+    for (const [nodeId, list] of Object.entries(steps.steps)) {
+      for (const s of list) {
+        if (s.status !== "running" || s.decision !== "approved") continue
+        const { ctx, executor } = build(nodeId, s.pass)
+        try {
+          settle(nodeId, s.pass, executor.approved!(ctx))
+        } catch (error) {
+          if (error instanceof CrashError) throw error
+          fail(nodeId, s.pass, "exit")
+        }
+        progressed = true
+        break
+      }
+      if (progressed) break
+    }
+    if (progressed) continue
+
     // Re-attach to attempts left open by a restart (DES-034).
     if (opts.process) {
       const before = events.length
@@ -292,6 +323,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         const kind = graph.nodes.find((n) => n.id === nodeId)?.kind
         if (
           s.status === "running" &&
+          s.decision !== "approved" &&
           !s.current &&
           kind &&
           executorFor(kind)

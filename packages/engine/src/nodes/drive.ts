@@ -13,7 +13,8 @@ import {
  */
 function drive(
   first: (process: ProcessHost) => StepsState,
-  again: (process: ProcessHost) => StepsState
+  again: (process: ProcessHost) => StepsState,
+  onHost?: (host: ProcessHost) => void
 ): Promise<StepsState> {
   return new Promise((resolve, reject) => {
     const timers = new Set<ReturnType<typeof setTimeout>>()
@@ -45,20 +46,28 @@ function drive(
       wake: () => later(0),
       later,
     }
+    onHost?.(host)
     pump(first)
   })
 }
 
 /** Starts a node run and resolves when it ends (DES-034). */
-export function runNodes(opts: StartNodeRunOptions): Promise<StepsState> {
+export function runNodes(
+  opts: StartNodeRunOptions,
+  onHost?: (host: ProcessHost) => void
+): Promise<StepsState> {
   return drive(
     (process) => startNodeRun({ ...opts, process }),
-    (process) => tickNodes({ ...opts, process })
+    (process) => tickNodes({ ...opts, process }),
+    onHost
   )
 }
 
 /** Resumes a node run after a restart: re-attaches, then drives it. */
-export function resumeNodes(opts: NodeRunOptions): Promise<StepsState> {
+export function resumeNodes(
+  opts: NodeRunOptions,
+  onHost?: (host: ProcessHost) => void
+): Promise<StepsState> {
   const run = (process: ProcessHost) => tickNodes({ ...opts, process })
-  return drive(run, run)
+  return drive(run, run, onHost)
 }

@@ -1,5 +1,6 @@
 import type { NodeExecutor } from "./define.ts"
 import { agentExecutor } from "./agent.ts"
+import { approvalExecutor } from "./approval.ts"
 import { commandExecutor } from "./command.ts"
 import { judgeExecutor } from "./judge.ts"
 import { outputExecutor } from "./output.ts"
@@ -13,6 +14,7 @@ export const EXECUTORS: readonly NodeExecutor[] = [
   agentExecutor,
   commandExecutor,
   judgeExecutor,
+  approvalExecutor,
   outputExecutor,
 ]
 

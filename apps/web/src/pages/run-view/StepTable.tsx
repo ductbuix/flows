@@ -80,7 +80,9 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
                 <TableCell data-testid={`step-verdict-${key}`}>
                   {step.branch
                     ? branchLabel(step.branch)
-                    : step.kind === "judge" && step.failReason
+                    : step.decision
+                      ? branchLabel(step.decision)
+                      : step.kind === "judge" && step.failReason
                       ? step.failReason
                       : "-"}
                 </TableCell>

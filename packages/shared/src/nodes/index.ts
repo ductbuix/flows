@@ -2,6 +2,7 @@ import { z } from "zod"
 import { workflowAgentSchema } from "../model-effort.ts"
 import { timeoutSecondsSchema } from "../workflow.ts"
 import { agentKind } from "./agent.ts"
+import { approvalKind } from "./approval.ts"
 import { commandKind } from "./command.ts"
 import type { PortType } from "./define.ts"
 import { judgeKind } from "./judge.ts"
@@ -19,6 +20,7 @@ export const NODE_KINDS = [
   agentKind,
   commandKind,
   judgeKind,
+  approvalKind,
   outputKind,
 ] as const
 

@@ -98,6 +98,23 @@ edges:
   - { from: check, to: rejected, branch: no }
 `
 
+const nodeApprovalYaml = (id: string) => `id: ${id}
+goal: e2e approval node
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: gate
+    kind: approval
+    question: Ship the change?
+  - id: after
+    kind: command
+    run: 'echo shipped'
+edges:
+  - { from: start, to: gate }
+  - { from: gate, to: after }
+`
+
 const nodeStartYaml = (id: string) => `id: ${id}
 goal: e2e node start inputs
 nodes:
@@ -204,6 +221,17 @@ export function createE2eHome(): string {
     join(judgeAdd, "workflow.yaml"),
     "id: node-judge-add\ngoal: e2e add a judge\nnodes: []\nedges: []\n"
   )
+  // Approval workflows for node-approval.spec.ts (BL-080); each test owns one.
+  for (const id of [
+    "node-approval-light",
+    "node-approval-dark",
+    "node-approval-reject",
+    "node-approval-home",
+  ]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeApprovalYaml(id))
+  }
   // A `claude` on PATH that answers yes, so Judge runs need no real CLI.
   const bin = join(home, "bin")
   mkdirSync(bin, { recursive: true })
