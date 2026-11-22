@@ -27,7 +27,7 @@ updated: 2026-11-22
 
 # Trade-offs and open questions
 
-> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the entry "Graph layout is automatic, positions are not saved" is reversed: positions are saved in a layout file ([DES-033](des-033-workflow-file-v2.md)).
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the entry "Graph layout is automatic, positions are not saved" is reversed: positions are saved in a layout file ([DES-033](des-033-workflow-file.md)).
 
 Each entry is a deliberate choice. The guard is what limits the damage
 today; the revisit trigger is the concrete event that reopens it. Add an

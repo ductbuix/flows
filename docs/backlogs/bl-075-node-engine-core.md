@@ -19,10 +19,9 @@ Design: [DES-034](../designs/des-034-node-engine.md),
 ## Done when
 
 - [ ] Event schemas in `packages/shared/src/events.ts` match the DES-034
-      table; `run_started` carries `schemaVersion: 2`; removed types are
-      gone.
-- [ ] The fold tracks steps per node and pass; runs without
-      `schemaVersion: 2` are skipped with one log line and never listed.
+      table; removed types are gone.
+- [ ] The fold tracks steps per node and pass; an old run fails
+      validation with a clear error (DES-033 Old files).
 - [ ] `nextActions` implements forward order, due rules, joins and
       skip on no active input, with table tests.
 - [ ] `packages/engine/src/nodes/` has executors for trigger, prompt,

@@ -1,17 +1,18 @@
 ---
 id: DES-033
-title: Workflow file v2, node files and layout file
+title: Workflow file, node files and layout file
 type: design
 status: draft
-summary: "workflow.yaml v2: nodes and edges with ports and branches, fixed node files, and a layout file keyed by node id."
+summary: "workflow.yaml: nodes and edges with ports and branches, fixed node files, and a layout file keyed by node id."
 tags: [design, yaml, workflow, nodes, layout, storage]
 related: [DES-031, DES-032, DES-034, DES-002, DES-013, DES-020, DES-021]
 updated: 2026-11-22
 ---
 
-# Workflow file v2, node files and layout file
+# Workflow file, node files and layout file
 
-`workflow.yaml` stays the source of truth. It lists nodes and edges.
+This is the workflow format; it replaced the task format in place, with
+no version key. `workflow.yaml` stays the source of truth. It lists nodes and edges.
 Long text lives in fixed files per node. Positions live in a separate
 layout file, so moving a node never changes `workflow.yaml`.
 
@@ -19,7 +20,7 @@ layout file, so moving a node never changes `workflow.yaml`.
 
 ```
 ~/.flowapp/workflows/<workflowId>/
-  workflow.yaml          # source of truth, version 2
+  workflow.yaml          # source of truth
   workflow.layout.json   # node positions and viewport (editor only)
   nodes/<nodeId>/        # prompt.md, system.md, text.md, rule.md
   nodes/.trash/<id>-<stamp>/   # removed node folders (as DES-022)
@@ -40,7 +41,6 @@ layout file, so moving a node never changes `workflow.yaml`.
 ```yaml
 id: story-fix
 name: Fix a story
-version: 2
 goal: Draft a fix for a story, review it, and open a draft PR
 limits: { concurrency: 3, agents: 2, maxConcurrentRuns: 1, loopPasses: 5 }
 timeout: 900
@@ -107,7 +107,6 @@ edges:
 | --------- | ------------------------------------------------------------ |
 | `id`      | folder name and stable key, as today                         |
 | `name`    | optional display label (BL-073)                              |
-| `version` | `2`; a file without it is rejected with a clear message      |
 | `goal`    | free text                                                    |
 | `limits`  | concurrency, agents, maxConcurrentRuns, and new `loopPasses` |
 | `timeout` | default per attempt seconds (DES-019)                        |
@@ -197,8 +196,9 @@ propose` on that connection upstream (DES-026 rule, moved).
 - A save names the YAML revision it started from; a stale editor gets
   the conflict dialog, as today.
 
-## Existing data
+## Old files
 
-pootato deletes old workflows himself. A v1 file is not migrated: the
-list shows it as "Old format" with Delete only. Old runs are covered in
-DES-034.
+There is one workflow format. A workflow or run left on disk from the
+old task format fails validation with a clear error that names it and
+the first old key; nothing reads, migrates or resumes it. pootato
+deletes them himself (DES-031 decision 10).

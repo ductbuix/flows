@@ -59,64 +59,64 @@ reversed, keep the row and add a new one that says so.
 
 ## Engine
 
-| Date       | Decision                                                    | Reason                                                           | Holds it     |
-| ---------- | ----------------------------------------------------------- | ---------------------------------------------------------------- | ------------ |
-| 2026-11-20 | SQLite append-only event log, state is a fold               | one source of truth, resume by replay                            | DES-003      |
-| 2026-11-21 | `node:sqlite` for `app.db` (no native addon)                | built into Node 22+; sync API fits append-then-act               | DES-003, 015 |
-| 2026-11-20 | Append, then act                                            | a crash can never act without a record, or act twice             | DES-003      |
-| 2026-11-20 | Tasks read upstream dirs by path                            | files are the context; no copying                                | DES-002, 007 |
-| 2026-11-20 | Retry and repeat are separate policies                      | failure and "not done yet" are different loops                   | DES-004      |
-| 2026-11-21 | Shared condition shape for when, until, branches            | one evaluator; cheap kinds before agent (BL-011)                 | DES-004      |
-| 2026-11-21 | Agent judge via CLI exit 0 / non-zero                       | same adapters as tasks; not a graph task; cached / run           | DES-004      |
-| 2026-11-20 | Nested concurrency limits plus an `agents` limit            | control at global, workflow, run and group level                 | DES-003      |
-| 2026-11-21 | Dynamic workflows: fan-out by spawn, no `matrix`            | agents decide the split; one mechanism instead of two            | DES-001, 005 |
-| 2026-11-21 | Headless Claude/Cursor adapters + `tasks_spawned`           | file spawn under attempt `out/spawn/`; reject to input           | DES-005      |
-| 2026-11-21 | Per-task instructions file, no agent limits yet             | user writes the instructions; limits wait for real need          | DES-002, 007 |
-| 2026-11-21 | Approval gates with `approval: true`                        | a human can hold a task; events make it survive restarts         | DES-003      |
-| 2026-11-21 | `cancelled` terminal state for tasks and runs               | cancel is not failure                                            | DES-003      |
-| 2026-11-21 | Run delete keeps events with a deleted marker               | the log stays append-only; files are removed                     | DES-003      |
-| 2026-11-21 | Manual retry via `task_retry_requested` event               | reopen finished runs; UI retry is not `retry.max`                | DES-003, 011 |
-| 2026-11-21 | Per-attempt timeout, default 900s                           | a hung CLI must not sit in `running` until cancel                | DES-004, 019 |
-| 2026-11-21 | App-owned trust for all of `FLOWAPP_HOME`                   | CLIs stay headless; the human decision stays in the app          | DES-019      |
-| 2026-11-21 | Cursor agents may write under `~/.cursor`                   | CLI needs projects/chats dirs; seatbelt still limits elsewhere   | DES-006, 019 |
-| 2026-11-21 | Always-trust is a settings row, bound to realpath           | not run state; the events table requires `run_id`                | DES-003, 019 |
-| 2026-11-21 | Pre-run checks warn only, including paths outside           | the user can still run after a double check                      | DES-019, 007 |
-| 2026-11-21 | CLI adapter, check list, and `decideTrust`                  | add a CLI or check without new layers; no plugin loader          | DES-019      |
-| 2026-11-21 | Fixed prompt paths; no `instructions` key                   | yaml and the prompt file cannot drift                            | DES-020      |
-| 2026-11-21 | At most one agent judge per slot                            | one slot, one file; revisit if a workflow needs two              | DES-020, 007 |
-| 2026-11-21 | Leftover `instructions` keys are a parse error              | no auto-migration; the error names the target path               | DES-020      |
-| 2026-11-21 | Engine generates task ids (`task-` plus 8 hex)              | ids also name folders; users should not edit them                | DES-020      |
-| 2026-11-21 | Optional `name` is the display label                        | the id is no longer readable on its own                          | DES-020      |
-| 2026-11-21 | Task ids are immutable; rename-and-move is dropped          | subtract the folder-move design now that ids do not change       | DES-020      |
-| 2026-11-21 | Legacy ids still parse; only new ids use the pattern        | existing workflows must not break on load                        | DES-020, 007 |
-| 2026-11-21 | Spawn specs are identified by file stem, not `id`           | the engine assigns the id and rewrites sibling `needs`           | DES-020, 005 |
-| 2026-11-21 | `UPSTREAM_*` maps `-` in the id to `_`                      | a hyphen is not valid in a shell variable name                   | DES-020, 002 |
-| 2026-11-21 | Per-run frozen `RUN_INPUT`; shared `WF_INPUT` stays         | each ticket is its own run; defaults stay on the workflow        | DES-021, 002 |
-| 2026-11-21 | Optional `inputs:` of `text`, `markdown`, `file`            | Start run can show a form; the type set stays small              | DES-021, 007 |
-| 2026-11-21 | Manual is the only source; more adapters later              | connectors and folder lists stay out of this cut                 | DES-021      |
-| 2026-11-21 | Same item key asks, never auto-skips                        | the user decides whether to run again                            | DES-021      |
-| 2026-11-21 | `maxConcurrentRuns` default 1; extras are `queued`          | one live run unless the workflow asks for more                   | DES-021, 003 |
-| 2026-11-21 | Save moves a removed task folder to `tasks/.trash/`         | keep the files; do not leave orphans in `tasks/`                 | DES-022, 002 |
-| 2026-11-21 | PUT diffs task ids; no client-sent remove list              | raw YAML edits follow the same path                              | DES-022, 013 |
-| 2026-11-21 | Block Save-remove while a live or queued run needs the task | authored prompts are read from the workflow folder at launch     | DES-022, 007 |
-| 2026-11-21 | Optional `model` and `effort`; omit flags for CLI defaults  | use each CLI's own settings when the yaml is silent              | DES-023, 005 |
-| 2026-11-21 | Workflow agent defaults are per CLI                         | a Claude default must not leak onto a Cursor task                | DES-023      |
-| 2026-11-21 | Cursor Effort select is mapped onto the model id            | Cursor ids embed effort; Claude uses a separate `--effort`       | DES-023      |
-| 2026-11-21 | Judges get model and effort; inherit same-cli parent        | a judge can share the task's model or override it                | DES-023, 020 |
-| 2026-11-21 | Unknown model is a pre-run warning, never a block           | the user can still run after a double check                      | DES-023, 019 |
-| 2026-11-22 | Workflows are nodes and edges of nine kinds                 | few kinds, many variants; OpenBot's first-visit clarity          | DES-031, 032 |
-| 2026-11-22 | One node kind registry per layer                            | a new kind is three files; no kind switches elsewhere            | DES-035      |
-| 2026-11-22 | Steps stay stateless CLI processes, not agent queues        | sandbox and trust per attempt, as DES-005                        | DES-031      |
-| 2026-11-22 | Judge node: instructions, model, effort; yes or no word     | as OpenBot's condition; unclear fails; replaces exit-code judges | DES-032, 034 |
-| 2026-11-22 | Approval is a node; Reject stops the run                    | as OpenBot; replaces `approval: true`                            | DES-032, 034 |
-| 2026-11-22 | Loops are back edges with `limits.loopPasses` (default 5)   | as OpenBot, plus a limit OpenBot lacks; replaces `repeat`        | DES-034      |
-| 2026-11-22 | Loop entry ties break by YAML node order                    | the engine never reads the layout file                           | DES-034      |
-| 2026-11-22 | Spawned steps are removed                                   | pootato's decision; reverses the 11-21 spawn rows                | DES-031, 034 |
-| 2026-11-22 | LLM node runs a CLI in print mode, tools off                | no API tokens; same sign-in as agents                            | DES-032      |
-| 2026-11-22 | Asset node holds library resources, pinned at run start     | chosen repos and pulled pages as wired inputs; replaces `uses`   | DES-032      |
-| 2026-11-22 | Output is a node kind: folder, publish, notify              | several outputs per workflow; replaces `kind: publish`           | DES-032      |
-| 2026-11-22 | Named answers and `{{name}}` templates                      | as OpenBot; a Judge can test an answer without a model           | DES-032      |
-| 2026-11-22 | No migration; runs without `schemaVersion: 2` are skipped   | development phase; old workflows are deleted by hand             | DES-033, 034 |
+| Date       | Decision                                                    | Reason                                                                            | Holds it     |
+| ---------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------ |
+| 2026-11-20 | SQLite append-only event log, state is a fold               | one source of truth, resume by replay                                             | DES-003      |
+| 2026-11-21 | `node:sqlite` for `app.db` (no native addon)                | built into Node 22+; sync API fits append-then-act                                | DES-003, 015 |
+| 2026-11-20 | Append, then act                                            | a crash can never act without a record, or act twice                              | DES-003      |
+| 2026-11-20 | Tasks read upstream dirs by path                            | files are the context; no copying                                                 | DES-002, 007 |
+| 2026-11-20 | Retry and repeat are separate policies                      | failure and "not done yet" are different loops                                    | DES-004      |
+| 2026-11-21 | Shared condition shape for when, until, branches            | one evaluator; cheap kinds before agent (BL-011)                                  | DES-004      |
+| 2026-11-21 | Agent judge via CLI exit 0 / non-zero                       | same adapters as tasks; not a graph task; cached / run                            | DES-004      |
+| 2026-11-20 | Nested concurrency limits plus an `agents` limit            | control at global, workflow, run and group level                                  | DES-003      |
+| 2026-11-21 | Dynamic workflows: fan-out by spawn, no `matrix`            | agents decide the split; one mechanism instead of two                             | DES-001, 005 |
+| 2026-11-21 | Headless Claude/Cursor adapters + `tasks_spawned`           | file spawn under attempt `out/spawn/`; reject to input                            | DES-005      |
+| 2026-11-21 | Per-task instructions file, no agent limits yet             | user writes the instructions; limits wait for real need                           | DES-002, 007 |
+| 2026-11-21 | Approval gates with `approval: true`                        | a human can hold a task; events make it survive restarts                          | DES-003      |
+| 2026-11-21 | `cancelled` terminal state for tasks and runs               | cancel is not failure                                                             | DES-003      |
+| 2026-11-21 | Run delete keeps events with a deleted marker               | the log stays append-only; files are removed                                      | DES-003      |
+| 2026-11-21 | Manual retry via `task_retry_requested` event               | reopen finished runs; UI retry is not `retry.max`                                 | DES-003, 011 |
+| 2026-11-21 | Per-attempt timeout, default 900s                           | a hung CLI must not sit in `running` until cancel                                 | DES-004, 019 |
+| 2026-11-21 | App-owned trust for all of `FLOWAPP_HOME`                   | CLIs stay headless; the human decision stays in the app                           | DES-019      |
+| 2026-11-21 | Cursor agents may write under `~/.cursor`                   | CLI needs projects/chats dirs; seatbelt still limits elsewhere                    | DES-006, 019 |
+| 2026-11-21 | Always-trust is a settings row, bound to realpath           | not run state; the events table requires `run_id`                                 | DES-003, 019 |
+| 2026-11-21 | Pre-run checks warn only, including paths outside           | the user can still run after a double check                                       | DES-019, 007 |
+| 2026-11-21 | CLI adapter, check list, and `decideTrust`                  | add a CLI or check without new layers; no plugin loader                           | DES-019      |
+| 2026-11-21 | Fixed prompt paths; no `instructions` key                   | yaml and the prompt file cannot drift                                             | DES-020      |
+| 2026-11-21 | At most one agent judge per slot                            | one slot, one file; revisit if a workflow needs two                               | DES-020, 007 |
+| 2026-11-21 | Leftover `instructions` keys are a parse error              | no auto-migration; the error names the target path                                | DES-020      |
+| 2026-11-21 | Engine generates task ids (`task-` plus 8 hex)              | ids also name folders; users should not edit them                                 | DES-020      |
+| 2026-11-21 | Optional `name` is the display label                        | the id is no longer readable on its own                                           | DES-020      |
+| 2026-11-21 | Task ids are immutable; rename-and-move is dropped          | subtract the folder-move design now that ids do not change                        | DES-020      |
+| 2026-11-21 | Legacy ids still parse; only new ids use the pattern        | existing workflows must not break on load                                         | DES-020, 007 |
+| 2026-11-21 | Spawn specs are identified by file stem, not `id`           | the engine assigns the id and rewrites sibling `needs`                            | DES-020, 005 |
+| 2026-11-21 | `UPSTREAM_*` maps `-` in the id to `_`                      | a hyphen is not valid in a shell variable name                                    | DES-020, 002 |
+| 2026-11-21 | Per-run frozen `RUN_INPUT`; shared `WF_INPUT` stays         | each ticket is its own run; defaults stay on the workflow                         | DES-021, 002 |
+| 2026-11-21 | Optional `inputs:` of `text`, `markdown`, `file`            | Start run can show a form; the type set stays small                               | DES-021, 007 |
+| 2026-11-21 | Manual is the only source; more adapters later              | connectors and folder lists stay out of this cut                                  | DES-021      |
+| 2026-11-21 | Same item key asks, never auto-skips                        | the user decides whether to run again                                             | DES-021      |
+| 2026-11-21 | `maxConcurrentRuns` default 1; extras are `queued`          | one live run unless the workflow asks for more                                    | DES-021, 003 |
+| 2026-11-21 | Save moves a removed task folder to `tasks/.trash/`         | keep the files; do not leave orphans in `tasks/`                                  | DES-022, 002 |
+| 2026-11-21 | PUT diffs task ids; no client-sent remove list              | raw YAML edits follow the same path                                               | DES-022, 013 |
+| 2026-11-21 | Block Save-remove while a live or queued run needs the task | authored prompts are read from the workflow folder at launch                      | DES-022, 007 |
+| 2026-11-21 | Optional `model` and `effort`; omit flags for CLI defaults  | use each CLI's own settings when the yaml is silent                               | DES-023, 005 |
+| 2026-11-21 | Workflow agent defaults are per CLI                         | a Claude default must not leak onto a Cursor task                                 | DES-023      |
+| 2026-11-21 | Cursor Effort select is mapped onto the model id            | Cursor ids embed effort; Claude uses a separate `--effort`                        | DES-023      |
+| 2026-11-21 | Judges get model and effort; inherit same-cli parent        | a judge can share the task's model or override it                                 | DES-023, 020 |
+| 2026-11-21 | Unknown model is a pre-run warning, never a block           | the user can still run after a double check                                       | DES-023, 019 |
+| 2026-11-22 | Workflows are nodes and edges of nine kinds                 | few kinds, many variants; OpenBot's first-visit clarity                           | DES-031, 032 |
+| 2026-11-22 | One node kind registry per layer                            | a new kind is three files; no kind switches elsewhere                             | DES-035      |
+| 2026-11-22 | Steps stay stateless CLI processes, not agent queues        | sandbox and trust per attempt, as DES-005                                         | DES-031      |
+| 2026-11-22 | Judge node: instructions, model, effort; yes or no word     | as OpenBot's condition; unclear fails; replaces exit-code judges                  | DES-032, 034 |
+| 2026-11-22 | Approval is a node; Reject stops the run                    | as OpenBot; replaces `approval: true`                                             | DES-032, 034 |
+| 2026-11-22 | Loops are back edges with `limits.loopPasses` (default 5)   | as OpenBot, plus a limit OpenBot lacks; replaces `repeat`                         | DES-034      |
+| 2026-11-22 | Loop entry ties break by YAML node order                    | the engine never reads the layout file                                            | DES-034      |
+| 2026-11-22 | Spawned steps are removed                                   | pootato's decision; reverses the 11-21 spawn rows                                 | DES-031, 034 |
+| 2026-11-22 | LLM node runs a CLI in print mode, tools off                | no API tokens; same sign-in as agents                                             | DES-032      |
+| 2026-11-22 | Asset node holds library resources, pinned at run start     | chosen repos and pulled pages as wired inputs; replaces `uses`                    | DES-032      |
+| 2026-11-22 | Output is a node kind: folder, publish, notify              | several outputs per workflow; replaces `kind: publish`                            | DES-032      |
+| 2026-11-22 | Named answers and `{{name}}` templates                      | as OpenBot; a Judge can test an answer without a model                            | DES-032      |
+| 2026-11-22 | One workflow format, replaced in place; no migration        | development phase; old workflows and runs fail validation and are deleted by hand | DES-033, 034 |
 
 ## UI
 

@@ -22,7 +22,7 @@ updated: 2026-11-22
 
 # Remove a task in the editor
 
-> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): removal applies to nodes: folders move to `nodes/.trash/` ([DES-033](des-033-workflow-file-v2.md)).
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): removal applies to nodes: folders move to `nodes/.trash/` ([DES-033](des-033-workflow-file.md)).
 
 `removeTask` already drops a task from `workflow.yaml` and removes
 `needs` entries that pointed at it, including object needs and their

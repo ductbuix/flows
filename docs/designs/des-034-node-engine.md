@@ -30,7 +30,7 @@ output refs, its branch (Judge) and its answer.
 
 | Event                  | Status  | Meaning                                                                                               |
 | ---------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| `run_started`          | changed | carries the v2 graph and `schemaVersion: 2`, plus `from` and `only` for partial runs                  |
+| `run_started`          | changed | carries the graph, plus `from` and `only` for partial runs                                            |
 | `run_activated`        | kept    | queued run starts (DES-021)                                                                           |
 | `step_started`         | new     | node, pass and step id written before any action                                                      |
 | `attempt_started`      | changed | carries `nodeId` and `pass`; written before launch                                                    |
@@ -186,10 +186,7 @@ has no kind branches.
   `repeat` logic in `loops.ts` (`decideLoop`, `evalUntil`).
 - Task folds: `fold.ts` and `fold-apply.ts` move to steps.
 
-## Existing runs in app.db
+## Old runs
 
-Old runs are not replayed. The fold reads `schemaVersion` from
-`run_started`; runs without `2` are skipped with one log line, and the
-lists never show them. Their events stay (the log is append-only); a
-run folder goes when pootato deletes its workflow. A cleanup command
-is open question 9 in DES-031.
+Old runs fail validation with a clear error, as DES-033 (Old files)
+says; the engine has no second format.

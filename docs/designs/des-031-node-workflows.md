@@ -43,7 +43,7 @@ writes, the sandbox and trust checks, connections and the library stay.
 | ------- | ------------------------------------------------------------- |
 | DES-031 | this overview: decisions, goals, what changes, open questions |
 | DES-032 | node catalog: each kind, its settings, ports, run and UI      |
-| DES-033 | workflow file v2, node files and the layout file              |
+| DES-033 | workflow file, node files and the layout file                 |
 | DES-034 | engine: events, walk, loops, judge, approval, data, recovery  |
 | DES-035 | node kind registry and how to add a kind                      |
 | DES-036 | canvas editor and run view, tied to the DES-027 spec sheet    |
@@ -64,7 +64,7 @@ Backlogs BL-074 to BL-087 hold the work, one verifiable slice each.
 | 7   | A dedicated Judge node: instructions, model, effort, yes or no | DES-032  |
 | 8   | Spawned steps are removed entirely                             | DES-034  |
 | 9   | Node positions are saved, as in OpenBot                        | DES-033  |
-| 10  | No migration: old workflows are deleted by hand                | DES-033  |
+| 10  | One format, replaced in place; old workflows deleted by hand   | DES-033  |
 | 11  | An Asset node points at library resources (repos, pages, more) | DES-032  |
 | 12  | No decorative nodes now (drawing, note, shape, text); later    | this doc |
 | 13  | Named answers with `{{name}}`, as in OpenBot                   | DES-032  |
@@ -135,7 +135,7 @@ flowchart LR
 
 | Doc     | Part that changes                                               |
 | ------- | --------------------------------------------------------------- |
-| DES-002 | workflow file and task folders; replaced by DES-033             |
+| DES-002 | rewritten in place; points to DES-033 for the format            |
 | DES-003 | task lifecycle and event kinds; replaced by DES-034             |
 | DES-004 | conditions, branch edges, `repeat`; replaced by Judge and loops |
 | DES-005 | spawn and fan-out; removed. Stateless CLI rules stay            |
@@ -180,5 +180,3 @@ fits as Asset sources or as Agent node settings, and its examples use
 8. A failed node: the plan follows OpenBot, so open steps on other
    branches finish and the run then ends failed. Is that right, or
    should the run stop at once?
-9. Old runs in `app.db`: hide them only, or also add a one-time
-   cleanup command?

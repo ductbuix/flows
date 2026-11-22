@@ -25,7 +25,7 @@ updated: 2026-11-22
 
 # Fixed prompt files and generated task ids
 
-> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): `tasks/<id>/` becomes `nodes/<id>/`, and the judge slots (`when.md`, `until.md`, `need-<id>.md`) become the Judge's `rule.md` ([DES-033](des-033-workflow-file-v2.md)). Spawn and promote are removed. Fixed paths stay.
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): `tasks/<id>/` becomes `nodes/<id>/`, and the judge slots (`when.md`, `until.md`, `need-<id>.md`) become the Judge's `rule.md` ([DES-033](des-033-workflow-file.md)). Spawn and promote are removed. Fixed paths stay.
 
 The `instructions` key is a free path today, and task ids are
 free-text. This design removes the key, derives prompt paths from

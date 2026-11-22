@@ -17,14 +17,14 @@ hold the acceptance criteria; DES-017 holds the phases.
 
 ## Slices
 
-| Slice | Backlogs               | What works at the end                                                                                                   |
-| ----- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 1     | BL-074, BL-075, BL-076 | a v2 workflow with Trigger, Prompt, Agent, Command and folder Output runs end to end; spawn and old conditions are gone |
-| 2     | BL-077, BL-078         | the canvas: empty state, Add node, drag to connect, settings on nodes, saved positions                                  |
-| 3     | BL-086                 | Run step on a node, live status and results on the canvas, run history                                                  |
-| 4     | BL-079, BL-080, BL-081 | Judge picks a path, Approval holds a run, a Judge loop ends by verdict or limit                                         |
-| 5     | BL-082, BL-083, BL-084 | Asset feeds repos and pages, LLM node, publish and notify Outputs                                                       |
-| 6     | BL-085, BL-087         | named answers and `{{name}}`, Judge check mode, run view for node steps                                                 |
+| Slice | Backlogs               | What works at the end                                                                                                |
+| ----- | ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 1     | BL-074, BL-075, BL-076 | a workflow with Trigger, Prompt, Agent, Command and folder Output runs end to end; spawn and old conditions are gone |
+| 2     | BL-077, BL-078         | the canvas: empty state, Add node, drag to connect, settings on nodes, saved positions                               |
+| 3     | BL-086                 | Run step on a node, live status and results on the canvas, run history                                               |
+| 4     | BL-079, BL-080, BL-081 | Judge picks a path, Approval holds a run, a Judge loop ends by verdict or limit                                      |
+| 5     | BL-082, BL-083, BL-084 | Asset feeds repos and pages, LLM node, publish and notify Outputs                                                    |
+| 6     | BL-085, BL-087         | named answers and `{{name}}`, Judge check mode, run view for node steps                                              |
 
 Slices 1 to 3 give the new editing experience on a small set of kinds
 early. Later slices add kinds one at a time through the registry, which
@@ -45,7 +45,7 @@ slice 2; BL-068 to BL-071 are unaffected.
     `packages/engine/src/resume-harness.ts`);
   - registry completeness test (DES-035).
 - Server tests: PUT with nodes, node folder trash and rename, layout
-  writes with orphan cleanup, v1 file rejected as "Old format".
+  writes with orphan cleanup, a file with old keys failing validation with a clear error.
 - e2e (Playwright, temporary `FLOWAPP_HOME`, never the user's data):
   build the sample workflow on the canvas, run it, approve, see the
   loop pass count, see results on nodes.

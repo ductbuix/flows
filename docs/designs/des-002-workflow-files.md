@@ -3,7 +3,7 @@ id: DES-002
 title: Folder layout and workflow file
 type: design
 status: active
-summary: On-disk layout under ~/.flowapp, the workflow.yaml format, and the env vars tasks get.
+summary: On-disk layout under ~/.flowapp, where the workflow format lives (DES-033), and the env vars steps get.
 tags: [storage, yaml, workflow, files]
 related:
   [
@@ -17,140 +17,60 @@ related:
     DES-027,
     BL-073,
     DES-031,
+    DES-033,
+    DES-034,
   ]
 updated: 2026-11-22
 ---
 
 # Folder layout and workflow file
 
-> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the workflow file, `tasks/` folders and task env names; [DES-033](des-033-workflow-file-v2.md) holds workflow.yaml v2 and the layout file.
-
 ## Folder layout
 
 ```
 ~/.flowapp/
-  app.db
+  app.db                      # append-only event log (DES-003, DES-034)
   config.yaml                 # global limits
-  workflows/<workflowId>/
-    workflow.yaml             # source of truth; editor reads and writes it
-    tasks/<taskId>/           # authored prompts and judge files (DES-020)
-      prompt.md  when.md  until.md  need-<id>.md
-    tasks/.trash/<id>-<stamp>/  # removed task folders (DES-022)
-    memory/*.md               # initial memories for agent tasks
-    input/  output/  SUMMARY.md
-    .cache/                   # package caches for sandboxed installs (DES-026)
-    runs/<runId>/
-      graph.json              # starting graph plus tasks spawned in this run
-      input/                  # frozen run input, including inputs.json (DES-021)
-      tasks/<taskId>/         # this run's attempts, not the prompt folder
-        input/
-        attempt-<n>/out/  attempt-<n>/SUMMARY.md  stdout.log  stderr.log
-        latest -> attempt-<n>
+  workflows/<workflowId>/     # one folder per workflow (DES-033)
 ```
 
-A dir is the compacted context of its object. Each task writes its own
+A workflow folder holds `workflow.yaml`, `workflow.layout.json`, one
+`nodes/<nodeId>/` folder of fixed files per node, `memory/`, `input/`,
+`output/`, `.cache/` and `runs/<runId>/`. The full tree is in
+[DES-033](des-033-workflow-file.md).
+
+A dir is the compacted context of its object. Each step writes its own
 `SUMMARY.md`; the engine warns if it is missing.
 
 ## Workflow file
 
-```yaml
-id: research-report
-name: Research report # optional display name (DES-027)
-goal: Produce a sourced report on input/topic.md
-limits:
-  {
-    concurrency: 3,
-    agents: 2,
-    maxTasks: 50,
-    maxSpawnDepth: 2,
-    maxConcurrentRuns: 1,
-  }
-timeout: 900 # default per-attempt seconds; task timeout wins (DES-019)
-agent: # optional per-CLI model and effort defaults (DES-023)
-  claude: { model: sonnet, effort: high }
-tasks:
-  - id: task-a1b2c3d4
-    name: Plan
-    kind: agent
-    cli: claude # or cursor
-    model: opus # optional; then workflow, then the CLI's settings
-    effort: xhigh
-    # prompt is tasks/task-a1b2c3d4/prompt.md (DES-020)
-    # optional workflow inputs: and RUN_INPUT are in DES-021
-    memory: [memory/style.md]
-    spawn: true
-    timeout: 1800
-    retry: { max: 2 }
-  - id: task-b2c3d4e5
-    name: Fetch
-    kind: command
-    run: node scripts/fetch.js
-    needs: [task-a1b2c3d4]
-  - id: task-c3d4e5f6
-    name: Check
-    kind: command
-    run: python check.py
-    needs: [task-b2c3d4e5]
-    repeat:
-      max: 5
-      until:
-        any:
-          - expr: "json('out/score.json').score >= 0.8"
-          - agent: { cli: claude } # reads tasks/task-c3d4e5f6/until.md
-  - id: task-d4e5f607
-    name: Publish
-    kind: command
-    run: cp -r $UPSTREAM_task_c3d4e5f6/out/* $WF_OUTPUT/
-    needs: [task-c3d4e5f6]
-    when: { exit: 0 }
-    approval: true # wait for approval in the UI before running
-  - id: task-e5f60718
-    name: On fail
-    kind: command
-    run: echo failed
-    needs:
-      - task: task-c3d4e5f6
-        when: { exit: 1 } # branch edge (DES-004)
-```
+`workflow.yaml` is the source of truth; the canvas and the YAML pane
+stay in sync with it. It lists `nodes` and `edges`. The node kinds are
+in [DES-032](des-032-node-catalog.md); the format, node files, layout
+file and validation are in [DES-033](des-033-workflow-file.md). The
+node format replaced the task format in place (DES-031); there is no
+version key and only one format.
 
-The visual editor and `workflow.yaml` stay in sync; the file is the source
-of truth. The top-level `id` is the folder name and the stable key; the
+The top-level `id` is the folder name and the stable key; the
 optional `name` (1 to 80 characters) is only the display label, and the
 UI falls back to the humanized id when it is absent
-([DES-027](des-027-ui-renovation.md), BL-073). New task ids are generated as `task-` plus eight hex
-characters, and `name` is the display label
-([DES-020](des-020-fixed-prompt-files.md)). Legacy ids such as `plan`
-still parse. Conditions, `when`, `retry`, `repeat` and branch edges:
-[DES-004](des-004-conditions-loops.md).
-
-## Task prompts
-
-An agent task's prompt is always `tasks/<taskId>/prompt.md` in the
-workflow folder. Agent judges use fixed files in the same folder,
-named by slot (`when.md`, `until.md`, `need-<id>.md`). There is no
-`instructions` key; the engine derives the path
-([DES-020](des-020-fixed-prompt-files.md)). Command tasks have no
-prompt file. No agent limits (turns, time, tokens, cost) are defined
-yet; ledger entry in [DES-007](des-007-tradeoffs.md).
+([DES-027](des-027-ui-renovation.md), BL-073). New node ids are
+generated as `node-` plus eight hex characters.
 
 ## App home
 
 The app home is `~/.flowapp`. `FLOWAPP_HOME` overrides it, so tests and
 e2e runs use a temporary directory and never touch the user's data.
 
-## Task environment
+## Step environment
 
-Tasks read upstream outputs by path. Env: `UPSTREAM_*`, `TASK_IN`,
-`TASK_INSTRUCTIONS`, `TASK_OUT`, `PREV_ATTEMPT`, `WF_DIR`,
-`WF_INPUT`, `WF_OUTPUT`, `RUN_ID`, `RUN_INPUT`. `RUN_INPUT` is
-this run's frozen `runs/<runId>/input/` folder (DES-021).
-`WF_INPUT` stays the workflow's shared `input/`. The `UPSTREAM_*`
-name is `UPSTREAM_` plus the task id with every `-` replaced by `_`,
-because a hyphen is not valid in a shell variable name (DES-020). For
-`task-c3d4e5f6` the name is `UPSTREAM_task_c3d4e5f6`.
-`TASK_INSTRUCTIONS` is set only for agent tasks, and is the absolute
-path of `tasks/<taskId>/prompt.md` (or the stamped spawn `promptDir`
-for a spawned task).
+Steps read upstream outputs by path. The env names (`UPSTREAM_*`,
+`NODE_IN`, `NODE_OUT`, `RUN_INPUT`, `RESOURCES_DIR`, `WF_DIR`,
+`WF_INPUT`, `WF_OUTPUT`, `RUN_ID` and the rest) are in
+[DES-034](des-034-node-engine.md) (Data passing). The `UPSTREAM_*`
+name is `UPSTREAM_` plus the node id with every `-` replaced by `_`,
+because a hyphen is not valid in a shell variable name. For
+`node-4d5e6f70` the name is `UPSTREAM_node_4d5e6f70`.
 
 Each attempt also gets a leased port block (`PORT`, `FLOWS_PORT_BASE`,
 `FLOWS_PORT_COUNT`, default count 10) and package-cache dirs under

@@ -22,7 +22,7 @@ updated: 2026-11-22
 
 # UI: workflow files, sync, lifecycle and memory
 
-> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the PUT shape and task id diff now cover nodes, edges, node folders and a separate layout write ([DES-033](des-033-workflow-file-v2.md)). Comment-keeping writes stay.
+> Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): the PUT shape and task id diff now cover nodes, edges, node folders and a separate layout write ([DES-033](des-033-workflow-file.md)). Comment-keeping writes stay.
 
 Part of the editor ([DES-010](des-010-graph-editor.md)). Paths are from
 [DES-002](des-002-workflow-files.md): each workflow lives in
