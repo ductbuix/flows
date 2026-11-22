@@ -122,7 +122,7 @@ export function wrapCommandWithExitCode(run: string, codePath: string): string {
   ].join("\n")
 }
 
-function spawnWrapped(
+export function spawnWrapped(
   shellCommand: string,
   cwd: string,
   env: NodeJS.ProcessEnv,

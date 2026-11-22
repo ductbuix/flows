@@ -20,7 +20,7 @@ export type AttemptModelFields = {
  */
 export function resolveAttemptModelFields(
   task: Task,
-  graph: Workflow
+  graph: Pick<Workflow, "agent">
 ): AttemptModelFields | undefined {
   if (!isAgentTask(task)) return undefined
   const resolved = resolveModelEffort({

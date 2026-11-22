@@ -12,6 +12,23 @@ describe("foldSteps", () => {
       ev({ type: "step_started", nodeId: "a", pass: 1 }),
       ev({ type: "attempt_started", taskId: "a", nodeId: "a", pass: 1, attempt: 1 }),
       ev({
+        type: "attempt_launched",
+        taskId: "a",
+        nodeId: "a",
+        pass: 1,
+        attempt: 1,
+        pid: 42,
+        timeout: 9,
+      }),
+      ev({
+        type: "attempt_finished",
+        taskId: "a",
+        nodeId: "a",
+        pass: 1,
+        attempt: 1,
+        exitCode: 0,
+      }),
+      ev({
         type: "step_done",
         nodeId: "a",
         pass: 1,
@@ -29,7 +46,17 @@ describe("foldSteps", () => {
         outputs: ["out/x"],
         branch: "yes",
         answer: { ok: true },
-        seq: 3,
+        current: {
+          attempt: 1,
+          startedAt: "t",
+          open: false,
+          pid: 42,
+          timeout: 9,
+          exitCode: 0,
+          reason: undefined,
+          endedAt: "t",
+        },
+        seq: 5,
       },
     ])
   })

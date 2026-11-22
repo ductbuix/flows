@@ -79,6 +79,9 @@ export const attemptLaunchedEventSchema = z.object({
   type: z.literal("attempt_launched"),
   ...eventBase,
   taskId: z.string().min(1),
+  /** Node path (DES-034). */
+  nodeId: z.string().min(1).optional(),
+  pass: z.number().int().positive().optional(),
   attempt: z.number().int().positive(),
   pid: z.number().int().positive(),
   /** False when sandbox-exec was not applied (DES-006). */

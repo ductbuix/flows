@@ -17,6 +17,20 @@ export type StepFailReason =
   | "answer"
   | "loop_limit"
 
+/** The latest attempt of a step (DES-034, Retry and Crash recovery). */
+export type AttemptInfo = {
+  attempt: number
+  startedAt: string
+  pid?: number
+  timeout?: number
+  /** True from `attempt_started` until finished or interrupted. */
+  open: boolean
+  exitCode?: number
+  reason?: string
+  interrupted?: boolean
+  endedAt?: string
+}
+
 /** One pass of one node. */
 export type StepState = {
   nodeId: string
@@ -28,6 +42,8 @@ export type StepState = {
   branch?: string
   answer?: Record<string, unknown>
   failReason?: StepFailReason
+  /** Latest attempt of a process step. */
+  current?: AttemptInfo
   /** Position in the event log; later steps are newer. */
   seq: number
 }
@@ -95,6 +111,32 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         const s = ensureStep(state, event.nodeId, event.pass ?? 1, seq)
         s.attempts = Math.max(s.attempts, event.attempt)
         s.status = "running"
+        s.current = { attempt: event.attempt, startedAt: event.at, open: true }
+        return
+      }
+      case "attempt_launched": {
+        if (!event.nodeId) return
+        const c = stepFor(state, event.nodeId, event.pass ?? 1)?.current
+        if (c && c.attempt === event.attempt) {
+          c.pid = event.pid
+          c.timeout = event.timeout
+        }
+        return
+      }
+      case "attempt_finished":
+      case "attempt_interrupted": {
+        if (!event.nodeId) return
+        const c = stepFor(state, event.nodeId, event.pass ?? 1)?.current
+        if (c && c.attempt === event.attempt) {
+          c.open = false
+          c.endedAt = event.at
+          if (event.type === "attempt_finished") {
+            c.exitCode = event.exitCode
+            c.reason = event.reason
+          } else {
+            c.interrupted = true
+          }
+        }
         return
       }
       case "approval_requested": {
@@ -144,6 +186,7 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         s.outputs = undefined
         s.branch = undefined
         s.answer = undefined
+        s.current = undefined
         s.seq = seq
         state.ended = false
         return
