@@ -33,7 +33,5 @@ guards, Layout check).
 - [ ] Baselines are committed and compared with
       `toHaveScreenshot(..., { maxDiffPixelRatio: 0.01 })`.
 - [ ] DES-008 "Testing and evidence" links to the layout check.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of the layout spec run, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

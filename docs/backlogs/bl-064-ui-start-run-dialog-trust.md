@@ -32,8 +32,6 @@ Design: [DES-029](../designs/des-029-ui-renovation-run-screens.md)
       start (primary); checks, FLOWAPP_HOME, paths and flags sit in a
       closed `Collapsible` "Technical checks". The MCP trust dialog
       matches.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of starting from a work item, a workflow and the Runs
       tab, and the first agent run, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

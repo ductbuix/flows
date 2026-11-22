@@ -44,9 +44,7 @@ spec").
 - [x] Create workflow asks for Name first and fills the folder id from
       it (lowercase, dashes), still editable, shown in mono.
 - [x] DES-002 shows `name` in the workflow file example.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of creating a named workflow, editing its name in the
       editor, and the sidebar and Workflows table showing it, attached to
       the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

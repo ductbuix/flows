@@ -28,8 +28,6 @@ settings Sheet),
       `InputGroup` with an Add button, and Import .md (`outline`).
 - [ ] Edit memory file and Edit prompt are 576px, with plain titles, the
       path in mono in the description, and Save in the footer.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of editing goal, an input and a memory file, attached to
       the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

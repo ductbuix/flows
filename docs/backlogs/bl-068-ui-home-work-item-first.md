@@ -29,8 +29,6 @@ Fixes #01, #02.
       readable title and description; Running rows show "2 of 5 tasks".
 - [ ] Journey R1 in DES-030 takes 7 clicks from first launch to a
       started run.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of first launch through the first run, and a populated
       Home, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

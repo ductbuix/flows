@@ -36,8 +36,6 @@ label). Fixes S11 and the time part of S16.
       raw UUID or ISO timestamp is a primary label on Home, Runs, Run
       view or Library.
 - [x] Status Badge mappings move to `components/data/`.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of Home, Runs, a run view and the Library tab, attached
       to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.

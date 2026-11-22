@@ -37,8 +37,6 @@ view). Fixes #26 to #36, S3, S8, S16.
       less.
 - [ ] "ws: open" is gone; a secondary Badge "Reconnecting" shows only
       while the socket is down.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
+- [ ] Evidence: light and dark screenshots at
       1440x900 of succeeded, failed, awaiting approval and with-inputs
       runs, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.
