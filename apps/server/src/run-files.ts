@@ -7,7 +7,7 @@ import {
   readdirSync,
   statSync,
 } from "node:fs"
-import { join } from "node:path"
+import { join, resolve, sep } from "node:path"
 import {
   attemptRootOf,
   runDir,
@@ -15,7 +15,12 @@ import {
   workflowDir,
   type Engine,
 } from "@workspace/engine"
-import type { LogChunk, OutList, SummaryResponse } from "@workspace/shared"
+import type {
+  LogChunk,
+  OutList,
+  RunInputFileDetail,
+  SummaryResponse,
+} from "@workspace/shared"
 
 const CHUNK_BYTES = 64 * 1024
 
@@ -90,4 +95,25 @@ export function listOutFiles(attemptRoot: string): OutList {
   walk("", outRoot)
   files.sort((a, b) => a.path.localeCompare(b.path))
   return { files }
+}
+
+/** Resolve a path under attempt out/; null if missing or escapes. */
+export function resolveOutPath(
+  attemptRoot: string,
+  rel: string
+): string | null {
+  if (!rel || rel.includes("\0") || rel.split("/").includes("..")) return null
+  const absRoot = resolve(attemptRoot, "out")
+  const full = resolve(absRoot, ...rel.split("/"))
+  if (full !== absRoot && !full.startsWith(absRoot + sep)) return null
+  return full
+}
+
+export function readOutTextFile(
+  attemptRoot: string,
+  rel: string
+): RunInputFileDetail | null {
+  const path = resolveOutPath(attemptRoot, rel)
+  if (!path || !existsSync(path) || !statSync(path).isFile()) return null
+  return { path: rel, content: readFileSync(path, "utf8") }
 }

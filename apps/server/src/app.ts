@@ -2,22 +2,16 @@ import { upgradeWebSocket } from "@hono/node-server"
 import { zValidator } from "@hono/zod-validator"
 import type { Engine } from "@workspace/engine"
 import {
-  logChunkSchema,
-  outListSchema,
   putWorkflowBodySchema,
   runDetailSchema,
   runStatusSchema,
   runSummarySchema,
-  summaryResponseSchema,
   workflowConflictSchema,
   workflowDetailSchema,
   workflowSummarySchema,
   type Health,
-  type LogChunk,
-  type OutList,
   type RunDetail,
   type RunSummary,
-  type SummaryResponse,
   type WorkflowDetail,
   type WorkflowSummary,
 } from "@workspace/shared"
@@ -25,12 +19,6 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { IdempotencyStore } from "./idempotency.ts"
 import { buildRunDetail, buildRunSummaries } from "./run-detail.ts"
-import {
-  listOutFiles,
-  readLogChunk,
-  readSummary,
-  resolveAttemptRoot,
-} from "./run-files.ts"
 import { createRunControls } from "./run-controls.ts"
 import {
   readNodeWorkflowDetail,
@@ -40,6 +28,7 @@ import { connectionRoutes } from "./connection-routes.ts"
 import { libraryRoutes } from "./library-routes.ts"
 import { fileRoutes } from "./file-routes.ts"
 import { lifecycleRoutes } from "./lifecycle-routes.ts"
+import { runAttemptRoutes } from "./run-attempt-routes.ts"
 import { runChangesRoutes } from "./run-changes-routes.ts"
 import { runInputRoutes } from "./run-input-routes.ts"
 import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
@@ -52,15 +41,6 @@ import { WsHub } from "./ws-hub.ts"
 
 const idParam = z.object({ workflowId: z.string().min(1) })
 const runParam = z.object({ runId: z.string().min(1) })
-const attemptParams = z.object({
-  runId: z.string().min(1),
-  taskId: z.string().min(1),
-  n: z.coerce.number().int().positive(),
-})
-const logQuery = z.object({
-  stream: z.enum(["stdout", "stderr"]),
-  offset: z.coerce.number().int().nonnegative().optional(),
-})
 const runsQuery = z.object({
   status: runStatusSchema.optional(),
   workflowId: z.string().min(1).optional(),
@@ -78,6 +58,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", lifecycleRoutes(engine, hub))
     .route("/", fileRoutes(engine))
     .route("/", runInputRoutes(engine))
+    .route("/", runAttemptRoutes(engine))
     .route("/", runChangesRoutes(engine))
     .route("/", trustRoutes(engine))
     .route("/", mcpTrustRoutes(engine))
@@ -87,10 +68,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", layoutRoutes(engine))
     .route("/", workItemRoutes(engine))
     .get("/health", (c) =>
-      c.json(
-        { ok: true, version: "0.0.1" } satisfies Health,
-        200
-      )
+      c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
     )
     .get("/workflows", (c) => {
       const items = listWorkflowSummaries(engine)
@@ -177,45 +155,6 @@ export function createApp({ engine }: { engine: Engine }) {
       if (!detail) return c.json({ message: "run not found" }, 404)
       return c.json(runDetailSchema.parse(detail) satisfies RunDetail, 200)
     })
-    .get(
-      "/runs/:runId/tasks/:taskId/attempts/:n/log",
-      zValidator("param", attemptParams),
-      zValidator("query", logQuery),
-      (c) => {
-        const { runId, taskId, n } = c.req.valid("param")
-        const { stream, offset: rawOffset } = c.req.valid("query")
-        const offset = rawOffset ?? 0
-        const attemptRoot = resolveAttemptRoot(engine, runId, taskId, n)
-        if (!attemptRoot) return c.json({ message: "not found" }, 404)
-        const chunk = readLogChunk(attemptRoot, stream, offset)
-        return c.json(logChunkSchema.parse(chunk) satisfies LogChunk, 200)
-      }
-    )
-    .get(
-      "/runs/:runId/tasks/:taskId/attempts/:n/summary",
-      zValidator("param", attemptParams),
-      (c) => {
-        const { runId, taskId, n } = c.req.valid("param")
-        const attemptRoot = resolveAttemptRoot(engine, runId, taskId, n)
-        if (!attemptRoot) return c.json({ message: "not found" }, 404)
-        const summary = readSummary(attemptRoot)
-        return c.json(
-          summaryResponseSchema.parse(summary) satisfies SummaryResponse,
-          200
-        )
-      }
-    )
-    .get(
-      "/runs/:runId/tasks/:taskId/attempts/:n/out",
-      zValidator("param", attemptParams),
-      (c) => {
-        const { runId, taskId, n } = c.req.valid("param")
-        const attemptRoot = resolveAttemptRoot(engine, runId, taskId, n)
-        if (!attemptRoot) return c.json({ message: "not found" }, 404)
-        const out = listOutFiles(attemptRoot)
-        return c.json(outListSchema.parse(out) satisfies OutList, 200)
-      }
-    )
     .get(
       "/ws",
       upgradeWebSocket(() => hub.connection())
