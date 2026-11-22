@@ -11,7 +11,8 @@ test.describe("run view", () => {
     await page.goto(`/runs/${runId}?task=a`)
 
     await expect(page.getByTestId("run-status")).toBeVisible()
-    await expect(page.getByTestId("ws-status")).toBeVisible()
+    await expect(page.getByTestId("run-summary-cards")).toBeVisible()
+    await expect(page.getByTestId("ws-status")).toHaveCount(0)
     // macOS sandbox-exec applies; badge only shows when unrestricted.
     await expect(page.getByTestId("sandbox-badge")).toHaveCount(0)
 
@@ -22,7 +23,9 @@ test.describe("run view", () => {
       )
     }
     await expect(page.getByTestId("run-status")).toHaveText("succeeded")
-    await expect(page.getByTestId("run-plan")).toBeVisible()
+    await expect(page.getByTestId("run-plan")).toHaveCount(0)
+    await expect(page.getByTestId("run-rerun")).toBeVisible()
+    await expect(page.getByTestId("run-cancel")).toHaveCount(0)
 
     await page.getByTestId("task-tab-terminal").click()
     await expect(page.getByTestId("log-output")).toContainText("HELLO_STDOUT", {

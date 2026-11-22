@@ -128,6 +128,7 @@ export function toRunDetail(
     id: state.runId,
     workflowId: state.workflowId,
     status: state.status,
+    ...(state.workItemId !== undefined ? { workItemId: state.workItemId } : {}),
     startedAt: opts.startedAt,
     finishedAt: opts.finishedAt,
     sandboxed: state.sandboxed,

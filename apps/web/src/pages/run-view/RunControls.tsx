@@ -3,10 +3,6 @@ import { useNavigate } from "react-router"
 import type { RunDetail } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"
 import {
-  ButtonGroup,
-  ButtonGroupSeparator,
-} from "@workspace/ui/components/button-group"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -60,40 +56,39 @@ export function RunControls({ run }: Props) {
     >
       {({ begin, pending: trustPending }) => (
         <>
-          <ButtonGroup>
-            <ActionButton
-              variant="destructive"
-              data-testid="run-cancel"
-              pending={pending === "cancel"}
-              disabled={!live}
-              disabledReason="Run is not live"
-              onClick={() => setCancelOpen(true)}
-            >
-              Cancel
-            </ActionButton>
-            <ButtonGroupSeparator />
-            <ActionButton
-              data-testid="run-rerun"
-              pending={pending === "rerun" || trustPending}
-              disabled={live}
-              disabledReason="Cancel or wait for the run to finish"
-              tooltip="Starts a new run from the current workflow.yaml (may differ from this run's frozen graph)"
-              onClick={() =>
-                begin({
-                  mode: "rerun",
-                  runId: run.id,
-                  workflowId: run.workflowId,
-                })
-              }
-            >
-              Rerun
-            </ActionButton>
-            <ButtonGroupSeparator />
+          <div className="flex items-center gap-2">
+            {live ? (
+              <ActionButton
+                variant="outline"
+                data-testid="run-cancel"
+                pending={pending === "cancel"}
+                onClick={() => setCancelOpen(true)}
+              >
+                Cancel
+              </ActionButton>
+            ) : (
+              <ActionButton
+                data-testid="run-rerun"
+                pending={pending === "rerun" || trustPending}
+                tooltip="Starts a new run from the current workflow.yaml (may differ from this run's frozen graph)"
+                onClick={() =>
+                  begin({
+                    mode: "rerun",
+                    runId: run.id,
+                    workflowId: run.workflowId,
+                  })
+                }
+              >
+                Rerun
+              </ActionButton>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
                   <Button
                     variant="outline"
+                    size="icon"
+                    aria-label="More"
                     data-testid={`run-menu-${run.id}`}
                   />
                 }
@@ -113,7 +108,7 @@ export function RunControls({ run }: Props) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </ButtonGroup>
+          </div>
 
           <ConfirmDialog
             open={cancelOpen}

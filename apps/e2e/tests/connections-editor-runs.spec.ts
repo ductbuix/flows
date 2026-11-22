@@ -130,6 +130,7 @@ tasks:
     const { runId } = (await start.json()) as { runId: string }
 
     await page.goto(`/runs/${runId}`)
+    await page.getByTestId("run-tab-pins").click()
     await expect(page.getByTestId("run-library-pins")).toBeVisible({
       timeout: 30_000,
     })

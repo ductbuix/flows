@@ -5,9 +5,11 @@ import { useState } from "react"
 import { toast } from "sonner"
 import {
   Alert,
+  AlertAction,
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
+import { Button } from "@workspace/ui/components/button"
 import { Confirmation } from "@/components/ai-elements/confirmation"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { approveTask, rejectTask } from "@/lib/run-actions"
@@ -141,6 +143,8 @@ export function RunLead({ run }: Props) {
       )
     }
     const terminalHref = runTaskPath(run.id, failed.id, "terminal")
+    const name = run.graph.tasks.find((t) => t.id === failed.id)?.name
+    const attempt = failed.attempts.at(-1)?.attempt ?? 1
     return (
       <Alert variant="destructive" data-testid="run-failed-alert">
         <AlertTitle>Run failed</AlertTitle>
@@ -148,16 +152,20 @@ export function RunLead({ run }: Props) {
           Task{" "}
           <span className={mono} data-testid="run-failed-task">
             {failed.id}
-          </span>{" "}
-          failed.{" "}
-          <Link
-            to={terminalHref}
-            className="underline underline-offset-2"
-            data-testid="run-failed-terminal-link"
-          >
-            Open its Terminal
-          </Link>
+          </span>
+          {name && name !== failed.id ? ` (${name})` : ""} failed on attempt{" "}
+          {attempt}.
         </AlertDescription>
+        <AlertAction>
+          <Button
+            variant="outline"
+            data-testid="run-failed-terminal-link"
+            nativeButton={false}
+            render={<Link to={terminalHref} />}
+          >
+            Open Terminal
+          </Button>
+        </AlertAction>
       </Alert>
     )
   }

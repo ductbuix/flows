@@ -117,6 +117,8 @@ export const runDetailSchema = z.object({
   id: z.string().min(1),
   workflowId: z.string().min(1),
   status: runStatusSchema,
+  /** Work item this run belongs to, when started from one. */
+  workItemId: z.string().min(1).optional(),
   startedAt: z.string().min(1),
   finishedAt: z.string().optional(),
   sandboxed: z.boolean(),
