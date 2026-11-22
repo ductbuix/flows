@@ -8,6 +8,8 @@ export type NodeRunView = {
   result?: string
   /** Branch a Judge took: `yes` or `no`. */
   verdict?: string
+  /** Latest pass of a node that loops; shown from the second pass on. */
+  pass?: number
 }
 
 const STATUS: Record<TaskStatus, NodeStatus | undefined> = {
@@ -70,6 +72,15 @@ export function verdictsOf(steps: RunDetail["steps"]): Record<string, string> {
   for (const s of steps ?? []) {
     if (s.branch ?? s.decision) out[s.nodeId] = (s.branch ?? s.decision)!
     else delete out[s.nodeId]
+  }
+  return out
+}
+
+/** Latest pass of each node that ran more than once (DES-034, Loops). */
+export function passesOf(steps: RunDetail["steps"]): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const s of steps ?? []) {
+    if (s.pass > 1) out[s.nodeId] = Math.max(out[s.nodeId] ?? 0, s.pass)
   }
   return out
 }

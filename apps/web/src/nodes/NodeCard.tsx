@@ -60,6 +60,7 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       timer={live?.timer}
       result={live?.result}
       verdict={live?.verdict ? branchLabel(live.verdict) : undefined}
+      pass={live?.pass}
       branches={PORT_TABLE[data.node.kind]?.branches}
       onDecide={
         run.decide ? (decision) => run.decide?.(id, decision) : undefined

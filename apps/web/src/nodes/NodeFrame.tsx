@@ -37,6 +37,8 @@ export type NodeFrameProps = {
   result?: string
   /** Branch a Judge took, as shown: "Yes" or "No". */
   verdict?: string
+  /** Pass of a node that loops, from the second one (DES-034). */
+  pass?: number
   /** Out branches (Judge): one labelled handle each, instead of one output. */
   branches?: readonly string[]
   onRun?: () => void
@@ -59,6 +61,7 @@ export function NodeFrame({
   timer,
   result,
   verdict,
+  pass,
   branches,
   onRun,
   onRetry,
@@ -97,6 +100,11 @@ export function NodeFrame({
         {verdict ? (
           <Badge variant="secondary" data-testid={`node-verdict-${id}`}>
             {verdict}
+          </Badge>
+        ) : null}
+        {pass && pass > 1 ? (
+          <Badge variant="outline" data-testid={`node-pass-${id}`}>
+            Pass {pass}
           </Badge>
         ) : null}
         {timer ? (

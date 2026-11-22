@@ -5,9 +5,10 @@ import "@xyflow/react/dist/style.css"
 import { api } from "@/lib/api"
 import { decideStep, type Decision } from "@/nodes/decide"
 import { NodeCard, NodeRunContext, type NodeCardData } from "@/nodes/NodeCard"
-import { branchLabel } from "@/nodes/NodeFrame"
+import { edgeTypes } from "@/nodes/LoopEdge"
 import { nodeTextPath } from "@/nodes"
-import { formatElapsed, nodeStatus, verdictsOf, type NodeRunView } from "@/pages/editor/node-run"
+import { formatElapsed, nodeStatus, passesOf, verdictsOf, type NodeRunView } from "@/pages/editor/node-run"
+import { canvasEdges } from "@/pages/editor/canvas-edges"
 import { placeNodes } from "@/pages/editor/node-canvas-layout"
 
 const nodeTypes = { nodeCard: NodeCard }
@@ -52,20 +53,14 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
   }, [canvas, selectedTaskId])
 
   const edges = useMemo<Edge[]>(
-    () =>
-      (canvas?.workflow.edges ?? []).map((e, i) => ({
-        id: `edge-${i}-${e.from}-${e.to}`,
-        source: e.from,
-        target: e.to,
-        sourceHandle: e.branch,
-        label: e.branch ? branchLabel(e.branch) : undefined,
-      })),
+    () => (canvas ? canvasEdges(canvas.workflow) : []),
     [canvas]
   )
 
   const state = useMemo(() => {
     const views: Record<string, NodeRunView> = {}
     const verdicts = verdictsOf(run.steps)
+    const passes = passesOf(run.steps)
     for (const s of run.steps ?? []) {
       const status = nodeStatus(s.status)
       if (!status) continue
@@ -73,6 +68,7 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
       views[s.nodeId] = {
         status,
         ...(verdicts[s.nodeId] ? { verdict: verdicts[s.nodeId] } : {}),
+        ...(passes[s.nodeId] ? { pass: passes[s.nodeId] } : {}),
         ...(s.startedAt
           ? { timer: formatElapsed(end - Date.parse(s.startedAt)) }
           : {}),
@@ -94,6 +90,7 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable

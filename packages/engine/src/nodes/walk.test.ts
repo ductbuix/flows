@@ -136,14 +136,13 @@ describe("nextActions", () => {
     expect(walk(g, [done("t"), done("p")])).toEqual(["run a<t,p>"])
   })
 
-  it("returns a clear error on a cycle", () => {
+  it("a cycle is no longer an error: its back edge is a loop edge", () => {
     const g = {
       nodes: [T, n("a"), n("b")],
       edges: [e("t", "a"), e("a", "b"), e("b", "a")],
     }
-    expect(() => walk(g)).toThrow(/cycle through a, b/)
-    expect(() =>
-      walk({ nodes: [T, n("a")], edges: [e("a", "a")] })
-    ).toThrow(/cycle/)
+    expect(walk(g)).toEqual(["run t<>"])
+    expect(walk(g, [done("t")])).toEqual(["run a<t>"])
+    expect(() => walk({ nodes: [T, n("a")], edges: [e("a", "a")] })).not.toThrow()
   })
 })
