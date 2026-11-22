@@ -193,6 +193,14 @@ export {
   publishStartedEventSchema,
   publishFinishedEventSchema,
   agentReviewFinishedEventSchema,
+  stepStartedEventSchema,
+  stepDoneEventSchema,
+  stepFailedEventSchema,
+  stepSkippedEventSchema,
+  stepApprovedEventSchema,
+  stepRejectedEventSchema,
+  stepRetryRequestedEventSchema,
+  stepCancelledEventSchema,
   type TaskStatus,
   type RunStatus,
   type EngineEvent,
@@ -380,3 +388,12 @@ export {
 export { taskWithKind, switchTaskKind } from "./workflow-yaml-kind.ts"
 export { replaceMemoryRef } from "./workflow-yaml-memory.ts"
 export { applyWorkflowDiff } from "./workflow-yaml-diff.ts"
+export {
+  nodeWorkflowSchema,
+  nodeSchema,
+  edgeSchema,
+  PORT_TABLE,
+  type NodeWorkflow,
+  type WorkflowNode,
+  type WorkflowEdge,
+} from "./nodes/index.ts"

@@ -256,6 +256,16 @@ export function applyEvent(
       }
       return state
     }
+    // Node path (DES-034): folded by nodes/fold-steps.ts until BL-096.
+    case "step_started":
+    case "step_done":
+    case "step_failed":
+    case "step_skipped":
+    case "step_approved":
+    case "step_rejected":
+    case "step_retry_requested":
+    case "step_cancelled":
+      return state
     case "agent_review_finished": {
       if (!state) return state
       const task = state.tasks[event.taskId]

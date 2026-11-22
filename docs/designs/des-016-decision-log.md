@@ -206,3 +206,4 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-20 | Index files unpadded, skip prettier             | 33 to 60 percent smaller                                 | DES-007          |
 | 2026-11-21 | `direction` docs listed first in the root index | vision, architecture, decisions and roadmap in one place | DOC-001          |
 | 2026-11-21 | Keep code clean, refactor proactively, bounded  | cleaner code without churn; refactors in own commits     | `clean-code.mdc` |
+| 2026-11-22 | Walk starts every no-in-port node (Prompt), one trigger | a Prompt has no input and must feed its edges | BL-075 |

@@ -62,7 +62,8 @@ Each tick: fold, then `nextActions(graph, scope, latest)`:
 
 1. Find loop edges (below). The rest are forward edges.
 2. Visit nodes in forward order. The trigger the run started from is
-   due at run start; other triggers do not run. Any other node is due when a forward input has
+   due at run start, and so is any other node with no in port (Prompt);
+   other triggers do not run. Any other node is due when a forward input has
    a newer result than the node's latest step, or a loop edge's source
    has a newer active result (the next pass).
 3. A due node waits while any forward input is still due or open.
