@@ -139,6 +139,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Library retention: pinned kept, 7 days, 5 GB cap            | reproducible runs without unbounded disk use                   | DES-026         |
 | 2026-11-22 | GitHub is the first connector                               | delegated sign-in, shared clone, draft PR is undoable          | DES-026         |
 | 2026-11-22 | Publish policy per connection                               | read only, approve each publish, or trust agent review         | DES-025         |
+| 2026-11-22 | Page owns padding; `data-bleed` children go full width      | no page sets its own padding; alerts keep their own inset      | DES-027         |
 | 2026-11-22 | Trust-agent-review judge is Claude with DES-023 defaults    | no per-connection CLI; escalate/error/timeout/destructive wait | DES-026, BL-052 |
 | 2026-11-22 | Connection access declared and warned                       | no network blocking yet; credentials never reach tasks         | DES-025         |
 | 2026-11-22 | No Keychain; reverses the Keychain row above                | any user process reads it via `security`; tasks too            | DES-026         |

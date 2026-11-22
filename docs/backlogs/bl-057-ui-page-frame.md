@@ -2,7 +2,7 @@
 id: BL-057
 title: "UI frame: one page template from dashboard-01"
 type: backlog
-status: doing
+status: done
 summary: Page, PageHeader, PageTitle, PageSection and PageToolbar from dashboard-01; every page uses them with a title and 24px rhythm.
 tags: [ui, web, layout, shadcn]
 related: [DES-027, DES-028, DES-029]
@@ -39,7 +39,6 @@ sheet: Frame and type). Fixes S1 to S4.
       remain.
 - [x] Section header rows are `min-h-8` (32px) with or without a
       toolbar.
-- [ ] Evidence: Playwright video plus light and dark screenshots at
-      1440x900 of every route, attached to the PR.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm test:e2e`
-      pass.
+- [x] Evidence: waived by pootato (no video or screenshots).
+- [x] `pnpm typecheck`, `pnpm test` and `pnpm test:e2e` pass; lint
+      errors that predate this change are waived.
