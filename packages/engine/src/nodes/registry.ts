@@ -1,6 +1,7 @@
 import type { NodeExecutor } from "./define.ts"
 import { agentExecutor } from "./agent.ts"
 import { commandExecutor } from "./command.ts"
+import { judgeExecutor } from "./judge.ts"
 import { outputExecutor } from "./output.ts"
 import { promptExecutor } from "./prompt.ts"
 import { triggerExecutor } from "./trigger.ts"
@@ -11,6 +12,7 @@ export const EXECUTORS: readonly NodeExecutor[] = [
   promptExecutor,
   agentExecutor,
   commandExecutor,
+  judgeExecutor,
   outputExecutor,
 ]
 

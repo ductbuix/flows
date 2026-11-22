@@ -16,6 +16,8 @@ function stepsOf(state: RunState): RunStep[] | undefined {
         pass: step.pass,
         attempts: step.attempts,
         status: stepTaskStatus(step.status),
+        ...(step.branch ? { branch: step.branch } : {}),
+        ...(step.failReason ? { failReason: step.failReason } : {}),
         ...(step.current?.startedAt ? { startedAt: step.current.startedAt } : {}),
         ...(step.current?.endedAt ? { endedAt: step.current.endedAt } : {}),
       })

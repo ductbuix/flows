@@ -208,7 +208,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     const fail = (
       nodeId: string,
       pass: number,
-      reason: "exit" | "timeout"
+      reason: "exit" | "timeout" | "unclear"
     ) => {
       log.append({
         type: "step_failed",
@@ -245,11 +245,12 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
       if (!c.interrupted && c.exitCode === 0) {
         const { ctx, executor } = build(nodeId, pass)
         try {
-          settle(
-            nodeId,
-            pass,
-            executor.finish!(ctx, attemptRootOf(ctx.stepDir, c.attempt))
+          const result = executor.finish!(
+            ctx,
+            attemptRootOf(ctx.stepDir, c.attempt)
           )
+          if (result.failed) fail(nodeId, pass, result.failed)
+          else settle(nodeId, pass, result)
         } catch (error) {
           if (error instanceof CrashError) throw error
           fail(nodeId, pass, "exit")

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { spawn, type ChildProcess } from "node:child_process"
 import { existsSync } from "node:fs"
 import { resolve } from "node:path"
@@ -15,6 +16,8 @@ import { DEFAULT_ATTEMPT_TIMEOUT_SECONDS } from "./timeout.ts"
 export { judgePrompt } from "./agent-prompt.ts"
 
 export type JudgeResolveOpts = {
+  /** Replaces the exit-code prompt (Judge node, DES-032). */
+  prompt?: string
   parentTask?: AgentTask
   workflowAgent?: WorkflowAgent
 }
@@ -29,8 +32,17 @@ export function buildJudgeShellCommand(
   return getCliAdapter(judge.cli).buildJudgeCommand(
     judge,
     instructionsAbsPath,
-    resolved
+    resolved,
+    opts?.prompt
   )
+}
+
+/** The branch a Judge answer takes: its first word, yes or no (DES-032). */
+export function judgeVerdict(text: string): "yes" | "no" | undefined {
+  const word = /[a-z]+/i.exec(text)?.[0]?.toLowerCase()
+  if (word === "yes" || word === "true") return "yes"
+  if (word === "no" || word === "false") return "no"
+  return undefined
 }
 
 export function resolveJudgeModelEffort(
@@ -138,4 +150,31 @@ export function judgeCacheKey(
     workflowRoot,
     attemptRoot,
   ].join("\0")
+}
+
+/**
+ * Key of one Judge node run: the CLI settings, the rule, the pass and a
+ * hash of the input. The same key reuses a recorded verdict (DES-034).
+ */
+export function judgeNodeKey(parts: {
+  judge: AgentJudge
+  resolved: ResolvedModelEffort
+  nodeId: string
+  pass: number
+  rule: string
+  inputHash: string
+}): string {
+  return createHash("sha256")
+    .update(
+      [
+        parts.judge.cli,
+        parts.resolved.model ?? "",
+        parts.resolved.effort ?? "",
+        parts.nodeId,
+        String(parts.pass),
+        parts.rule,
+        parts.inputHash,
+      ].join("\0")
+    )
+    .digest("hex")
 }

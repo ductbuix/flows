@@ -6,6 +6,8 @@ export type NodeRunView = {
   status?: NodeStatus
   timer?: string
   result?: string
+  /** Branch a Judge took: `yes` or `no`. */
+  verdict?: string
 }
 
 const STATUS: Record<TaskStatus, NodeStatus | undefined> = {
@@ -60,4 +62,14 @@ export function trackTimes(
     }
   }
   return next
+}
+
+/** Branch each Judge took, by node id; the latest pass wins. */
+export function verdictsOf(steps: RunDetail["steps"]): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const s of steps ?? []) {
+    if (s.branch) out[s.nodeId] = s.branch
+    else delete out[s.nodeId]
+  }
+  return out
 }

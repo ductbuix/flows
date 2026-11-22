@@ -77,6 +77,27 @@ edges:
 ${trigger ? "  - { from: start, to: build }\n" : ""}  - { from: build, to: done }
 `
 
+const nodeJudgeYaml = (id: string) => `id: ${id}
+goal: e2e judge node
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: check
+    kind: judge
+    cli: claude
+  - id: approved
+    kind: command
+    run: 'echo took-yes'
+  - id: rejected
+    kind: command
+    run: 'echo took-no'
+edges:
+  - { from: start, to: check }
+  - { from: check, to: approved, branch: yes }
+  - { from: check, to: rejected, branch: no }
+`
+
 const nodeStartYaml = (id: string) => `id: ${id}
 goal: e2e node start inputs
 nodes:
@@ -170,6 +191,23 @@ export function createE2eHome(): string {
       })
     )
   }
+  // Judge workflows for node-judge.spec.ts (BL-079); each test owns one.
+  for (const id of ["node-judge-light", "node-judge-dark", "node-judge-light-view", "node-judge-dark-view"]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "check"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeJudgeYaml(id))
+    writeFileSync(join(dir, "nodes", "check", "rule.md"), "Is the request reasonable?\n")
+  }
+  const judgeAdd = join(home, "workflows", "node-judge-add")
+  mkdirSync(judgeAdd, { recursive: true })
+  writeFileSync(
+    join(judgeAdd, "workflow.yaml"),
+    "id: node-judge-add\ngoal: e2e add a judge\nnodes: []\nedges: []\n"
+  )
+  // A `claude` on PATH that answers yes, so Judge runs need no real CLI.
+  const bin = join(home, "bin")
+  mkdirSync(bin, { recursive: true })
+  writeFileSync(join(bin, "claude"), "#!/bin/sh\necho yes\n", { mode: 0o755 })
   const noTrigger = join(home, "workflows", "node-run-none")
   mkdirSync(noTrigger, { recursive: true })
   writeFileSync(

@@ -10,6 +10,7 @@ export const KIND_META: Record<string, Meta> = {
   prompt: { label: "Prompt", hint: "A fixed piece of text" },
   agent: { label: "Agent", hint: "An AI agent CLI" },
   command: { label: "Command", hint: "A shell command" },
+  judge: { label: "Judge", hint: "Answers yes or no and picks a branch" },
   output: { label: "Output", hint: "Saves the result to a folder" },
 }
 

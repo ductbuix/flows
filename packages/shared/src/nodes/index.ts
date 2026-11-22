@@ -4,6 +4,7 @@ import { timeoutSecondsSchema } from "../workflow.ts"
 import { agentKind } from "./agent.ts"
 import { commandKind } from "./command.ts"
 import type { PortType } from "./define.ts"
+import { judgeKind } from "./judge.ts"
 import { outputKind } from "./output.ts"
 import { promptKind } from "./prompt.ts"
 import { triggerKind } from "./trigger.ts"
@@ -17,6 +18,7 @@ export const NODE_KINDS = [
   promptKind,
   agentKind,
   commandKind,
+  judgeKind,
   outputKind,
 ] as const
 

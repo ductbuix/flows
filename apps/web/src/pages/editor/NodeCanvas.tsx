@@ -26,6 +26,7 @@ import {
   type NodeEdits,
 } from "@/nodes/NodeCard"
 import { nodeTextPath } from "@/nodes"
+import { branchLabel } from "@/nodes/NodeFrame"
 import { placeNodes, type Pos } from "./node-canvas-layout"
 import { wireRefusal } from "./node-add"
 import type { WireSide } from "./node-add"
@@ -69,7 +70,7 @@ type Props = {
   /** Called on drag end with every node's position. */
   onPositions: (positions: Record<string, Pos>) => void
   /** A checked wire between two nodes. */
-  onWire: (edge: { from: string; to: string }) => void
+  onWire: (edge: { from: string; to: string; branch?: string }) => void
   /** A wire dropped on empty canvas: where, and from which end. */
   onDrop: (drop: { wire: WireSide; client: Pos; flow: Pos }) => void
 }
@@ -121,13 +122,18 @@ export function NodeCanvas({
         id: `edge-${i}-${e.from}-${e.to}`,
         source: e.from,
         target: e.to,
-        label: e.branch,
+        sourceHandle: e.branch,
+        label: e.branch ? branchLabel(e.branch) : undefined,
       })),
     [workflow.edges]
   )
 
   const onConnect = (c: Connection) => {
-    const edge = { from: c.source, to: c.target }
+    const edge = {
+      from: c.source,
+      to: c.target,
+      ...(c.sourceHandle ? { branch: c.sourceHandle } : {}),
+    }
     const why = wireRefusal(workflow.nodes, workflow.edges, edge)
     if (why) toast.error(why)
     else onWire(edge)
@@ -145,6 +151,7 @@ export function NodeCanvas({
       wire: {
         id: state.fromNode.id,
         handle: state.fromHandle.type === "source" ? "source" : "target",
+        ...(state.fromHandle.id ? { branch: state.fromHandle.id } : {}),
       },
       client,
       flow: screenToFlowPosition(client),
