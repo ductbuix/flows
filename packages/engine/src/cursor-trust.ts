@@ -61,11 +61,7 @@ export function cursorTrustMarkerPath(
   projectsDir?: string
 ): string {
   const slug = sanitizeCursorProjectPath(workspacePath)
-  return join(
-    resolveCursorProjectsDir(projectsDir),
-    slug,
-    ".workspace-trusted"
-  )
+  return join(resolveCursorProjectsDir(projectsDir), slug, ".workspace-trusted")
 }
 
 /** Write Cursor trust markers for every path variant. */

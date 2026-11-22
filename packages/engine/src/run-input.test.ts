@@ -170,9 +170,9 @@ tasks:
     )
     const engine = createEngine({ home })
     await engine.startRun({ workflowDir: wf, runId: "live" })
-    expect((await engine.startRun({ workflowDir: wf, runId: "wait" })).status).toBe(
-      "queued"
-    )
+    expect(
+      (await engine.startRun({ workflowDir: wf, runId: "wait" })).status
+    ).toBe("queued")
     await new Promise((r) => setTimeout(r, 50))
     engine.close()
 

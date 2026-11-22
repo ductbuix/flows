@@ -91,7 +91,7 @@ existing record avoids a second abstraction.
   yield an empty result.
 - `listModels()` returns a catalog: the current defaults (for
   labels such as "Default (haiku)") and a list of `{ id, label,
-  efforts }`. Claude's list is the aliases `opus`, `sonnet`, and
+efforts }`. Claude's list is the aliases `opus`, `sonnet`, and
   `haiku` (plus a custom value in the UI). Cursor runs
   `agent --list-models` (or `agent models`) and groups ids into
   families (see below).
@@ -180,13 +180,13 @@ a condition editor exists.
 
 ## Impact map
 
-| Area | What changes |
-| ---- | ------------ |
-| Shared | optional `model` and `effort` on agent tasks, judges, and `workflow.agent.<cli>`; shared effort enum and resolve helper |
+| Area   | What changes                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared | optional `model` and `effort` on agent tasks, judges, and `workflow.agent.<cli>`; shared effort enum and resolve helper               |
 | Engine | adapter `readDefaults`, `listModels`, `composeFlags`; command builders; judge cache key; preflight warning; `attempt_launched` fields |
-| Server | `GET /api/cli/:cli/models` |
-| Web | drawer and workflow-default selects; attempt row shows model and effort; Playwright videos and screenshots |
-| Docs | DES-002, 005, 007, 009, 010, 016, 017, 019, 020 |
+| Server | `GET /api/cli/:cli/models`                                                                                                            |
+| Web    | drawer and workflow-default selects; attempt row shows model and effort; Playwright videos and screenshots                            |
+| Docs   | DES-002, 005, 007, 009, 010, 016, 017, 019, 020                                                                                       |
 
 ## Out of scope
 

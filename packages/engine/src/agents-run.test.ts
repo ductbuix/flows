@@ -309,9 +309,13 @@ tasks:
     )
     installStubBin(home, { name: "claude" })
     const engine = createEngine({ home })
-    const state = await (await engine
-      .startRun({ workflowDir: wf, runId: "r5", trustGrant: "once" }))
-      .wait()
+    const state = await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r5",
+        trustGrant: "once",
+      })
+    ).wait()
     expect(state.status).toBe("failed")
     expect(state.tasks.plan?.status).toBe("failed")
     const finished = engine

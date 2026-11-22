@@ -11,7 +11,6 @@ updated: 2026-11-21
 
 # Agents and runtime spawn
 
-
 - Headless agent CLI (Claude Code or Cursor CLI), cwd in its attempt dir,
   stateless: knows only its prompt file (DES-002, DES-020), input dir,
   memories and upstream paths. Turn/token/cost agent limits are not

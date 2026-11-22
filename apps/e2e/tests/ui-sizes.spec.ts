@@ -4,9 +4,11 @@ import { startRun } from "./helpers"
 test.use({ viewport: { width: 1440, height: 900 } })
 
 async function rowHeights(page: Page, selector: string): Promise<number[]> {
-  return page.locator(selector).evaluateAll((rows) =>
-    rows.map((row) => Math.round(row.getBoundingClientRect().height))
-  )
+  return page
+    .locator(selector)
+    .evaluateAll((rows) =>
+      rows.map((row) => Math.round(row.getBoundingClientRect().height))
+    )
 }
 
 async function expectTableSizes(page: Page) {
@@ -29,7 +31,9 @@ async function themes(page: Page, name: string) {
 
 async function width(page: Page, testId: string): Promise<number> {
   // offsetWidth ignores the open zoom animation's transform.
-  return page.getByTestId(testId).evaluate((el) => (el as HTMLElement).offsetWidth)
+  return page
+    .getByTestId(testId)
+    .evaluate((el) => (el as HTMLElement).offsetWidth)
 }
 
 test.describe("control sizes, tables, dialogs (BL-058)", () => {

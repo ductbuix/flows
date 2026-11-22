@@ -62,7 +62,9 @@ describe("trust marker keep and remove", () => {
     const home = tempHome()
     const wf = writeAgentWorkflow(home, "need-trust")
     const engine = createEngine({ home })
-    await expect(engine.startRun({ workflowDir: wf })).rejects.toThrow("trust_required")
+    await expect(engine.startRun({ workflowDir: wf })).rejects.toThrow(
+      "trust_required"
+    )
   })
 
   it("keeps the marker for a live once-grant and removes after it ends", async () => {
@@ -95,9 +97,13 @@ describe("trust marker keep and remove", () => {
       process.env.FLOWAPP_CURSOR_PROJECTS
     )
     expect(existsSync(marker)).toBe(true)
-    await (await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "always" }))
-      .wait()
+    await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r1",
+        trustGrant: "always",
+      })
+    ).wait()
     expect(existsSync(marker)).toBe(true)
     engine.revokeAlwaysTrust()
     expect(existsSync(marker)).toBe(false)

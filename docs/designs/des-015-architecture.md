@@ -5,7 +5,8 @@ type: direction
 status: active
 summary: System context, containers, package boundaries and dependency direction, data flow, runtime processes and failure recovery.
 tags: [direction, architecture, packages, runtime]
-related: [DES-001, DES-002, DES-003, DES-005, DES-006, DES-008, DES-014, DES-019]
+related:
+  [DES-001, DES-002, DES-003, DES-005, DES-006, DES-008, DES-014, DES-019]
 updated: 2026-11-21
 ---
 
@@ -30,15 +31,15 @@ task processes.
 
 ## Containers
 
-| Container      | What it is                                                   | Detail       |
-| -------------- | ------------------------------------------------------------ | ------------ |
-| `apps/web`     | Vite and React UI, shadcn, React Flow, CodeMirror            | DES-008, 012 |
-| `apps/server`  | Hono on `@hono/node-server`, `127.0.0.1:8787`, REST plus ws  | DES-001      |
-| engine         | `packages/engine`: scheduler, event log, runner              | DES-003      |
+| Container      | What it is                                                       | Detail       |
+| -------------- | ---------------------------------------------------------------- | ------------ |
+| `apps/web`     | Vite and React UI, shadcn, React Flow, CodeMirror                | DES-008, 012 |
+| `apps/server`  | Hono on `@hono/node-server`, `127.0.0.1:8787`, REST plus ws      | DES-001      |
+| engine         | `packages/engine`: scheduler, event log, runner                  | DES-003      |
 | Event log      | SQLite `app.db`: append-only `events`, plus `settings` (DES-019) | DES-003, 019 |
-| Files          | `FLOWAPP_HOME` (default `~/.flowapp`): workflows, runs, logs | DES-002      |
-| Task processes | commands, scripts, agent CLIs, each in its own process group | DES-003, 005 |
-| Sandbox        | `sandbox-exec` around task processes, warned fallback        | DES-006      |
+| Files          | `FLOWAPP_HOME` (default `~/.flowapp`): workflows, runs, logs     | DES-002      |
+| Task processes | commands, scripts, agent CLIs, each in its own process group     | DES-003, 005 |
+| Sandbox        | `sandbox-exec` around task processes, warned fallback            | DES-006      |
 
 ## Packages and dependency direction
 

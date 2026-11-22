@@ -90,9 +90,13 @@ tasks:
       "Pass if out/ok.txt exists.\n"
     )
     const engine = createEngine({ home })
-    const state = await (await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" }))
-      .wait()
+    const state = await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r1",
+        trustGrant: "once",
+      })
+    ).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.produce?.status).toBe("succeeded")
     expect(state.tasks.next?.status).toBe("succeeded")
@@ -123,9 +127,13 @@ tasks:
     mkdirSync(join(wf, "tasks", "next"), { recursive: true })
     writeFileSync(join(wf, "tasks", "next", "when.md"), "Always fail.\n")
     const engine = createEngine({ home })
-    const state = await (await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" }))
-      .wait()
+    const state = await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r1",
+        trustGrant: "once",
+      })
+    ).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.produce?.status).toBe("succeeded")
     expect(state.tasks.next?.status).toBe("skipped")
@@ -158,9 +166,13 @@ tasks:
     mkdirSync(join(wf, "tasks", "ok"), { recursive: true })
     writeFileSync(join(wf, "tasks", "ok", "need-check.md"), "Pass.\n")
     const engine = createEngine({ home })
-    const state = await (await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" }))
-      .wait()
+    const state = await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r1",
+        trustGrant: "once",
+      })
+    ).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.ok?.status).toBe("succeeded")
     engine.close()
@@ -194,9 +206,13 @@ tasks:
       "Pass when score is ready.\n"
     )
     const engine = createEngine({ home })
-    const state = await (await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" }))
-      .wait()
+    const state = await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r1",
+        trustGrant: "once",
+      })
+    ).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.work?.status).toBe("succeeded")
     expect(state.tasks.work?.attempts.length).toBe(1)
@@ -236,9 +252,13 @@ tasks:
       "Should not run.\n"
     )
     const engine = createEngine({ home })
-    const state = await (await engine
-      .startRun({ workflowDir: wf, runId: "r1", trustGrant: "once" }))
-      .wait()
+    const state = await (
+      await engine.startRun({
+        workflowDir: wf,
+        runId: "r1",
+        trustGrant: "once",
+      })
+    ).wait()
     expect(state.status).toBe("succeeded")
     expect(state.tasks.next?.status).toBe("skipped")
     expect(state.tasks.next?.skipReason).toBe("branch")

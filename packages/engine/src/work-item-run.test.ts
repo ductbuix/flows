@@ -107,22 +107,22 @@ tasks:
     const engine = createEngine({ home })
     const { item } = createWorkItem(home, { title: "Same item" })
 
-    await (await engine
-      .startRun({
+    await (
+      await engine.startRun({
         workflowDir: wf,
         runId: "a",
         values: { ticket: "first" },
         workItemId: item.id,
-      }))
-      .wait()
-    await (await engine
-      .startRun({
+      })
+    ).wait()
+    await (
+      await engine.startRun({
         workflowDir: wf,
         runId: "b",
         values: { ticket: "second" },
         workItemId: item.id,
-      }))
-      .wait()
+      })
+    ).wait()
 
     expect(engine.fold("a")?.itemKey).toBe(engine.fold("b")?.itemKey)
     expect(engine.fold("a")?.itemKey).toBe(workItemItemKey(item.id))

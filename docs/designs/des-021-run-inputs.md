@@ -215,14 +215,14 @@ exists.
 
 ## Impact map
 
-| Area | What changes |
-| ---- | ------------ |
-| Shared | `inputs` and `maxConcurrentRuns` on the workflow schema; `queued` and `run_activated`; `run_started` payload; start body, 400 and 409 errors, start response `status` |
+| Area   | What changes                                                                                                                                                                  |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared | `inputs` and `maxConcurrentRuns` on the workflow schema; `queued` and `run_activated`; `run_started` payload; start body, 400 and 409 errors, start response `status`         |
 | Engine | copy and write `runs/<runId>/input/`; `RUN_INPUT`; Manual adapter; start may queue; fold; cancel without a scheduler; `hasLiveRun`; resume activates; trust marker for queued |
-| Server | validate values and files; `confirmDuplicate`; multipart start |
-| Web | Start run form, then trust, then the duplicate ask; rerun prefills; list and header show `queued`; run view lists the run's inputs; editor Inputs list and the new limit |
-| Tests | fixtures; two starts on one workflow now queue unless the limit is raised; API and Playwright (videos and screenshots on the UI item) |
-| Docs | DES-002, 003, 007, 009, 010, 011, 013, 014, 016, 017 |
+| Server | validate values and files; `confirmDuplicate`; multipart start                                                                                                                |
+| Web    | Start run form, then trust, then the duplicate ask; rerun prefills; list and header show `queued`; run view lists the run's inputs; editor Inputs list and the new limit      |
+| Tests  | fixtures; two starts on one workflow now queue unless the limit is raised; API and Playwright (videos and screenshots on the UI item)                                         |
+| Docs   | DES-002, 003, 007, 009, 010, 011, 013, 014, 016, 017                                                                                                                          |
 
 Existing start clients that send only `requestId` and
 `trustGrant` stay valid. A workflow with no `inputs:` and a

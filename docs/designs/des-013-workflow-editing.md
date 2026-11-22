@@ -5,7 +5,8 @@ type: ui
 status: active
 summary: Disk change detection and conflict dialog, workflow create, rename and delete, memory file editing, YAML-preserving writes.
 tags: [ui, web, editor, yaml, files]
-related: [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020, DES-021, DES-022]
+related:
+  [DES-002, DES-005, DES-010, DES-012, DES-018, DES-020, DES-021, DES-022]
 updated: 2026-11-21
 ---
 

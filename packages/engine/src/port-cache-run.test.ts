@@ -64,7 +64,9 @@ describe("port leases and workflow caches", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await (await engine.startRun({ workflowDir: wf, runId: "r1" })).wait()
+    const state = await (
+      await engine.startRun({ workflowDir: wf, runId: "r1" })
+    ).wait()
 
     expect(state.status).toBe("succeeded")
     const events = engine
@@ -119,7 +121,9 @@ describe("port leases and workflow caches", () => {
 
     const engine = createEngine({ home })
     engines.push(engine)
-    const state = await (await engine.startRun({ workflowDir: wf, runId: "r1" })).wait()
+    const state = await (
+      await engine.startRun({ workflowDir: wf, runId: "r1" })
+    ).wait()
 
     expect(state.status).toBe("succeeded")
     expect(

@@ -5,17 +5,7 @@ type: design
 status: active
 summary: Delete one task from the drawer or canvas, confirm, undo before save, and move its folder to tasks/.trash on save.
 tags: [editor, yaml, files, ui]
-related:
-  [
-    DES-002,
-    DES-007,
-    DES-010,
-    DES-013,
-    DES-020,
-    DES-021,
-    BL-023,
-    BL-024,
-  ]
+related: [DES-002, DES-007, DES-010, DES-013, DES-020, DES-021, BL-023, BL-024]
 updated: 2026-11-21
 ---
 
@@ -152,13 +142,13 @@ the task back into the yaml.
 
 ## Impact map
 
-| Area | What changes |
-| ---- | ------------ |
-| Shared | `isSafeTaskId` rejects a leading `.`; files allowlist rejects `tasks/.trash/...`; `removeTask` is unchanged |
-| Server | `writeWorkflowYaml` diffs ids, blocks live or queued use, writes yaml, then moves folders |
-| Web | Delete button, canvas keys, confirm and mention warning, last-task guard, snapshot undo and redo, React Flow default delete off |
-| Tests | id and allowlist cases; PUT moves, skip, collision suffix, live 409, retry of leftover folders; Playwright for button, key, confirm, undo, last task (videos and screenshots on the UI item) |
-| Docs | DES-002, 007, 010, 013, 016, 017, 020 |
+| Area   | What changes                                                                                                                                                                                 |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared | `isSafeTaskId` rejects a leading `.`; files allowlist rejects `tasks/.trash/...`; `removeTask` is unchanged                                                                                  |
+| Server | `writeWorkflowYaml` diffs ids, blocks live or queued use, writes yaml, then moves folders                                                                                                    |
+| Web    | Delete button, canvas keys, confirm and mention warning, last-task guard, snapshot undo and redo, React Flow default delete off                                                              |
+| Tests  | id and allowlist cases; PUT moves, skip, collision suffix, live 409, retry of leftover folders; Playwright for button, key, confirm, undo, last task (videos and screenshots on the UI item) |
+| Docs   | DES-002, 007, 010, 013, 016, 017, 020                                                                                                                                                        |
 
 ## Out of scope
 

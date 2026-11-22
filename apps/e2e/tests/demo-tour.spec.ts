@@ -16,10 +16,9 @@ test("feature tour", async ({ page }) => {
   await expect(page.getByTestId("work-items-page")).toBeVisible()
   await beat(page)
   await page.getByTestId("work-items-new").click()
-  await page.getByTestId("work-item-create-title").pressSequentially(
-    "Fix login timeout",
-    { delay: 60 }
-  )
+  await page
+    .getByTestId("work-item-create-title")
+    .pressSequentially("Fix login timeout", { delay: 60 })
   await page.getByTestId("work-item-create-workflow").click()
   await page.getByRole("option", { name: "diamond" }).click()
   await beat(page)

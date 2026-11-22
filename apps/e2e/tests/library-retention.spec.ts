@@ -1,9 +1,4 @@
-import {
-  mkdirSync,
-  symlinkSync,
-  unlinkSync,
-  writeFileSync,
-} from "node:fs"
+import { mkdirSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { expect, test } from "@playwright/test"
 
