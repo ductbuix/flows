@@ -2,7 +2,7 @@ import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import {
   resolveModelEffort,
-  type AgentTask,
+  type AgentSpec,
   type WorkflowAgent,
 } from "@workspace/shared"
 import { getCliAdapter } from "./cli-adapters.ts"
@@ -21,7 +21,7 @@ export {
  * workspace flags keep the CLI inside the workflow (DES-006).
  */
 export function buildAgentShellCommand(
-  task: AgentTask,
+  task: AgentSpec,
   instructionsAbsPath: string,
   paths: AgentLaunchPaths,
   workflowAgent?: WorkflowAgent
@@ -40,7 +40,7 @@ export function buildAgentShellCommand(
  * Paths are relative to the workflow root.
  */
 export function copyTaskMemories(
-  task: AgentTask,
+  task: AgentSpec,
   workflowRoot: string,
   taskInputDir: string
 ): void {
@@ -65,13 +65,3 @@ export function copyTaskMemories(
   }
 }
 
-/** Ensure attempt out/ (and out/spawn when allowed) exist. */
-export function prepareAgentAttemptOut(
-  attemptRoot: string,
-  canSpawn: boolean
-): void {
-  mkdirSync(join(attemptRoot, "out"), { recursive: true })
-  if (canSpawn) {
-    mkdirSync(join(attemptRoot, "out", "spawn"), { recursive: true })
-  }
-}

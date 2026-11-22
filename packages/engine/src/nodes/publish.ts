@@ -3,7 +3,6 @@ import { join } from "node:path"
 import {
   type ChangeSet,
   type EngineEvent,
-  type NodeWorkflow,
   type Workflow,
 } from "@workspace/shared"
 import { readConnection } from "../connections.ts"
@@ -20,7 +19,6 @@ import { cancelRequested } from "./cancel.ts"
 import type { ExecContext } from "./define.ts"
 import { foldSteps } from "./fold-steps.ts"
 import type { ProcessHost } from "./process.ts"
-import { taskGraphOfNodes } from "./run-state.ts"
 import { frozenDir, relOut } from "./step-paths.ts"
 
 const now = () => new Date().toISOString()
@@ -34,7 +32,7 @@ export type PublishRun = {
 
 /** The connection of a publish Output node, if the node is one. */
 export function publishTargetOf(
-  graph: NodeWorkflow,
+  graph: Workflow,
   nodeId: string
 ): string | undefined {
   const node = graph.nodes.find((n) => n.id === nodeId)
@@ -44,7 +42,7 @@ export function publishTargetOf(
 }
 
 /** Fails a start when a publish Output names an unknown or read-only connection. */
-export function assertNodePublishValid(home: string, graph: NodeWorkflow): void {
+export function assertNodePublishValid(home: string, graph: Workflow): void {
   for (const n of graph.nodes) {
     if (n.kind !== "output" || n.target !== "publish") continue
     const conn = n.connection ? readConnection(home, n.connection) : null
@@ -248,16 +246,10 @@ async function gate(
   const nodeId = ctx.node.id
   const connection = changeSet.connection
   if (policy === "trust-agent-review") {
-    const workflow = {
-      ...taskGraphOfNodes(ctx.graph),
-      ...(ctx.graph.agent ? { agent: ctx.graph.agent } : {}),
-      ...(ctx.graph.timeout ? { timeout: ctx.graph.timeout } : {}),
-    } as Workflow
     const review = await runPublishAgentReview({
       home: run.home,
       runRoot: ctx.runRoot,
-      workflowRoot: ctx.workflowRoot,
-      workflow,
+      workflow: ctx.graph,
       task: {
         id: nodeId,
         connection,

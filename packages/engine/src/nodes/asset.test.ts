@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import {
   clearConnectors,
   fakeConnector,
@@ -63,7 +63,7 @@ function fakeConn(home: string, id: string, label: string) {
 /** Pins like the server route, then drives the run to its end. */
 async function run(
   home: string,
-  graph: ReturnType<typeof nodeWorkflowSchema.parse>,
+  graph: ReturnType<typeof workflowSchema.parse>,
   runId = "r1",
   workItemLinks: Parameters<typeof materializeNodeRunResources>[0]["workItemLinks"] = []
 ) {
@@ -84,7 +84,7 @@ async function run(
 }
 
 const wf = (resources: unknown[], run = "cat $NODE_IN/text.md") =>
-  nodeWorkflowSchema.parse({
+  workflowSchema.parse({
     id: "wf",
     nodes: [
       { id: "t", kind: "trigger", type: "manual" },
@@ -171,7 +171,7 @@ describe("asset node (fake connector)", () => {
   it("pinNodeRun returns nothing for a graph without an Asset node", async () => {
     const home = tempDir("flowapp-asset-")
     const engine = createEngine({ home })
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "plain",
       nodes: [{ id: "t", kind: "trigger", type: "manual" }],
       edges: [],

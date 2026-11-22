@@ -10,9 +10,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import {
-  nodeWorkflowSchema,
+  workflowSchema,
   type EngineEvent,
-  type NodeWorkflow,
+  type Workflow,
 } from "@workspace/shared"
 import {
   clearConnectors,
@@ -92,7 +92,7 @@ function wf(connections: string[] = ["demo"], edit?: string) {
       { from: `edit-${c}`, to: `ship-${c}` }
     )
   }
-  return nodeWorkflowSchema.parse({ id: "wf", nodes, edges })
+  return workflowSchema.parse({ id: "wf", nodes, edges })
 }
 
 type Started = {
@@ -106,7 +106,7 @@ type Started = {
 
 async function start(
   home: string,
-  graph: NodeWorkflow,
+  graph: Workflow,
   runId = "r1"
 ): Promise<Started> {
   const log = new EventLog(appDbPath(home))
@@ -173,7 +173,7 @@ describe("output publish: validation", () => {
       edges: [{ from: "lib", to: "o" }],
     }
     const msgs = (g: unknown) => {
-      const r = nodeWorkflowSchema.safeParse(g)
+      const r = workflowSchema.safeParse(g)
       return r.success ? [] : r.error.issues.map((i) => i.message)
     }
     expect(msgs(base).join()).toMatch(/needs an upstream Asset with propose/)
@@ -437,7 +437,7 @@ describe("output publish (fake connector)", () => {
   it("changes left in a work copy with no Output stay Local", async () => {
     const home = tempDir("flowapp-outpub-local-")
     fakeConn(home, "demo")
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },
@@ -511,7 +511,7 @@ describe("output publish (GitHub fixture)", () => {
     })
     expect(made.ok).toBe(true)
 
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },

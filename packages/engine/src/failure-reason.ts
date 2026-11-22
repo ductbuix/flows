@@ -1,11 +1,6 @@
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
 import { getCliAdapter, type CliKind } from "./cli-adapters.ts"
 
 export type { CliKind }
-
-/** Cursor stderr substrings → readable reason (DES-019). */
-export const CURSOR_FAILURE_PATTERNS = getCliAdapter("cursor").failurePatterns
 
 /** Map known CLI stderr patterns to a failure reason, else undefined. */
 export function mapStderrReason(
@@ -17,22 +12,6 @@ export function mapStderrReason(
     if (stderr.includes(pattern)) return pattern
   }
   return undefined
-}
-
-/** Read attempt stderr.log; empty string if missing. */
-export function readAttemptStderr(
-  runRoot: string,
-  taskId: string,
-  attempt: number
-): string {
-  try {
-    return readFileSync(
-      join(runRoot, "tasks", taskId, `attempt-${attempt}`, "stderr.log"),
-      "utf8"
-    )
-  } catch {
-    return ""
-  }
 }
 
 /**

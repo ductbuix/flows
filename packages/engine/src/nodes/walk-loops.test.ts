@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import {
   findLoopEdges,
   loopWarnings,
-  nodeWorkflowSchema,
+  workflowSchema,
   type EngineEvent,
 } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
@@ -70,7 +70,7 @@ async function run(
   limits?: { loopPasses: number }
 ) {
   const { home, log } = setup(judges)
-  const graph = nodeWorkflowSchema.parse({
+  const graph = workflowSchema.parse({
     id: "wf",
     ...(limits ? { limits } : {}),
     nodes: [{ id: "t", kind: "trigger", type: "manual" }, ...nodes],

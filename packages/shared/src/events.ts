@@ -1,8 +1,7 @@
 import { z } from "zod"
 import { connectionIdSchema } from "./connection.ts"
 import { effortSchema } from "./model-effort.ts"
-import { nodeWorkflowSchema } from "./nodes/index.ts"
-import { taskSchema, workflowSchema } from "./workflow.ts"
+import { workflowSchema } from "./nodes/index.ts"
 
 export const taskStatusSchema = z.enum([
   "pending",
@@ -34,16 +33,9 @@ export const runStartedEventSchema = z.object({
   type: z.literal("run_started"),
   ...eventBase,
   workflowId: z.string().min(1),
-  /**
-   * Task graph, or a node graph on the node path (DES-034). The type
-   * stays the task graph until BL-096 switches; the engine reads a node
-   * graph with `nodeWorkflowSchema.parse`.
-   */
-  graph: z.union([
-    workflowSchema,
-    nodeWorkflowSchema,
-  ]) as unknown as typeof workflowSchema,
-  /** Node path: the trigger node the run started from (DES-034). */
+  /** The frozen node graph (DES-034). */
+  graph: workflowSchema,
+  /** The trigger node the run started from (DES-034). */
   trigger: z.string().min(1).optional(),
   /** Partial run: only this node runs, on the latest upstream results (BL-102). */
   only: z.string().min(1).optional(),
@@ -98,10 +90,6 @@ export const attemptLaunchedEventSchema = z.object({
   effort: effortSchema.optional(),
   /** Where model/effort came from (DES-023). */
   modelSource: z.enum(["task", "workflow", "cli"]).optional(),
-  /** First port of the leased block (DES-026). */
-  portBase: z.number().int().positive().optional(),
-  /** Size of the leased port block (DES-026). */
-  portCount: z.number().int().positive().optional(),
 })
 
 export const attemptFinishedEventSchema = z.object({
@@ -138,58 +126,9 @@ export const approvalRequestedEventSchema = z.object({
   question: z.string().optional(),
 })
 
-export const taskApprovedEventSchema = z.object({
-  type: z.literal("task_approved"),
-  ...eventBase,
-  taskId: z.string().min(1),
-})
-
-export const taskRejectedEventSchema = z.object({
-  type: z.literal("task_rejected"),
-  ...eventBase,
-  taskId: z.string().min(1),
-  reason: z.literal("rejected"),
-})
-
-/** Scheduler decided the task succeeded (after loops / until). */
-export const taskSucceededEventSchema = z.object({
-  type: z.literal("task_succeeded"),
-  ...eventBase,
-  taskId: z.string().min(1),
-})
-
-/** Scheduler decided the task failed (retries exhausted or until max). */
-export const taskFailedEventSchema = z.object({
-  type: z.literal("task_failed"),
-  ...eventBase,
-  taskId: z.string().min(1),
-})
-
-/** when false, branch edge miss, or upstream skip (DES-004). */
-export const taskSkippedEventSchema = z.object({
-  type: z.literal("task_skipped"),
-  ...eventBase,
-  taskId: z.string().min(1),
-  reason: z.enum(["when", "upstream_skip", "branch"]),
-})
-
-/** Agent spawned tasks into this run's graph (DES-005 / BL-007). */
-export const tasksSpawnedEventSchema = z.object({
-  type: z.literal("tasks_spawned"),
-  ...eventBase,
-  parentTaskId: z.string().min(1),
-  tasks: z.array(taskSchema).min(1),
-})
-
 export const cancelRequestedEventSchema = z.object({
   type: z.literal("cancel_requested"),
   ...eventBase,
-})
-
-export const taskCancelledEventSchema = z.object({
-  type: z.literal("task_cancelled"),
-  ...eventBase,
-  taskId: z.string().min(1),
 })
 
 export const runCancelledEventSchema = z.object({
@@ -213,16 +152,6 @@ export const runFailedEventSchema = z.object({
 export const runDeletedEventSchema = z.object({
   type: z.literal("run_deleted"),
   ...eventBase,
-})
-
-/**
- * Manual retry from the UI (DES-011). Resets the task and its
- * dependants to pending and reopens a finished run.
- */
-export const taskRetryRequestedEventSchema = z.object({
-  type: z.literal("task_retry_requested"),
-  ...eventBase,
-  taskId: z.string().min(1),
 })
 
 /** One library pull as a Read effect (DES-026 / BL-043). */
@@ -357,19 +286,11 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   attemptFinishedEventSchema,
   attemptInterruptedEventSchema,
   approvalRequestedEventSchema,
-  taskApprovedEventSchema,
-  taskRejectedEventSchema,
-  taskSucceededEventSchema,
-  taskFailedEventSchema,
-  taskSkippedEventSchema,
-  tasksSpawnedEventSchema,
   cancelRequestedEventSchema,
-  taskCancelledEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,
   runFailedEventSchema,
   runDeletedEventSchema,
-  taskRetryRequestedEventSchema,
   libraryPulledEventSchema,
   workCopyChangedEventSchema,
   publishStartedEventSchema,

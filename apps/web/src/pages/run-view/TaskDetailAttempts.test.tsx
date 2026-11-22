@@ -14,19 +14,19 @@ const run = {
   lastSeq: 1,
   graph: {
     id: "w1",
-    tasks: [{ id: "hello", kind: "agent", cli: "claude", needs: [] }],
+    nodes: [{ id: "hello", kind: "agent", cli: "claude" }],
+    edges: [],
   },
   tasks: [],
   taskCounts: { total: 1, finished: 0, awaitingApproval: 0 },
   inputFiles: [],
-} as RunDetail
+} as unknown as RunDetail
 
 describe("TaskDetailAttempts model row", () => {
   it("shows model, effort, and source on an agent attempt", () => {
     const task = {
       id: "hello",
       status: "running",
-      spawned: false,
       attempts: [
         {
           attempt: 1,

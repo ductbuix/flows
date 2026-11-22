@@ -24,7 +24,7 @@ type Props = {
 /** Step table of a node run: one row per pass of each node (BL-087). */
 export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
   const names = new Map(
-    run.graph.tasks.map((t) => [t.id, t.name ?? t.id] as const)
+    run.graph.nodes.map((n) => [n.id, n.name ?? n.id] as const)
   )
   return (
     <ScrollArea className="h-full">

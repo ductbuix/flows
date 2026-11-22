@@ -280,6 +280,6 @@ const oldKeysGuard = z.unknown().check((ctx) => {
   }
 })
 
-export const nodeWorkflowSchema = oldKeysGuard.pipe(nodeWorkflowObjectSchema)
+export const workflowSchema = oldKeysGuard.pipe(nodeWorkflowObjectSchema)
 
-export type NodeWorkflow = z.infer<typeof nodeWorkflowObjectSchema>
+export type Workflow = z.infer<typeof nodeWorkflowObjectSchema>

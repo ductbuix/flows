@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
 import { CrashError } from "./tick.ts"
@@ -75,7 +75,7 @@ describe("agent and command executors", () => {
       "nodes/plan/prompt.md": "Plan the work.",
     })
     stubClaude(home)
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },
@@ -137,7 +137,7 @@ describe("agent and command executors", () => {
 
   it("retries a failed attempt in the same pass and sees PREV_ATTEMPT", async () => {
     const { home, log } = setup()
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },
@@ -163,7 +163,7 @@ describe("agent and command executors", () => {
 
   it("fails the step when retries run out, and on timeout", async () => {
     const { home, log } = setup()
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },
@@ -190,7 +190,7 @@ describe("agent and command executors", () => {
       "nodes/a2/prompt.md": "two",
     })
     stubClaude(home, 0.4)
-    const graph = nodeWorkflowSchema.parse({
+    const graph = workflowSchema.parse({
       id: "wf",
       limits: { agents: 1 },
       nodes: [
@@ -229,7 +229,7 @@ describe("agent and command executors", () => {
 
 describe("resume", () => {
   const graph = (retry?: number) =>
-    nodeWorkflowSchema.parse({
+    workflowSchema.parse({
       id: "wf",
       nodes: [
         { id: "t", kind: "trigger", type: "manual" },

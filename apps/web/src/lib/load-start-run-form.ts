@@ -1,6 +1,5 @@
 import {
   inputsJsonSchema,
-  nodeWorkflowDetailSchema,
   workflowDetailSchema,
   type WorkflowInputDecl,
 } from "@workspace/shared"
@@ -46,17 +45,13 @@ export async function loadStartRunForm(
     return { error: `Workflow failed (${wfRes.status})` }
   }
   const json: unknown = await wfRes.json()
-  const legacy = workflowDetailSchema.safeParse(json)
-  // Node workflows (FLOWS_NODES) declare inputs on their Trigger nodes.
-  const decls: WorkflowInputDecl[] = legacy.success
-    ? (legacy.data.workflow?.inputs ?? [])
-    : (nodeWorkflowDetailSchema
-        .parse(json)
-        .workflow?.nodes.flatMap((n) =>
-          n.kind === "trigger" && Array.isArray(n.inputs)
-            ? (n.inputs as WorkflowInputDecl[])
-            : []
-        ) ?? [])
+  // Declared inputs live on the Trigger nodes.
+  const decls: WorkflowInputDecl[] =
+    workflowDetailSchema.parse(json).workflow?.nodes.flatMap((n) =>
+      n.kind === "trigger" && Array.isArray(n.inputs)
+        ? (n.inputs as WorkflowInputDecl[])
+        : []
+    ) ?? []
   const values: Record<string, string> = {}
   const files: { field: string; file: File }[] = []
 

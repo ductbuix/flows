@@ -9,7 +9,6 @@ import {
   runStatusSchema,
   runSummarySchema,
   summaryResponseSchema,
-  taskInLiveRunErrorSchema,
   workflowConflictSchema,
   workflowDetailSchema,
   workflowSummarySchema,
@@ -34,12 +33,6 @@ import {
 } from "./run-files.ts"
 import { createRunControls } from "./run-controls.ts"
 import {
-  promoteSpawnedTask,
-  readWorkflowDetail,
-  writeWorkflowYaml,
-} from "./workflow-files.ts"
-import {
-  nodesEnabled,
   readNodeWorkflowDetail,
   writeNodeWorkflowYaml,
 } from "./node-workflow-files.ts"
@@ -58,10 +51,6 @@ import { WsHub } from "./ws-hub.ts"
 
 const idParam = z.object({ workflowId: z.string().min(1) })
 const runParam = z.object({ runId: z.string().min(1) })
-const promoteParam = z.object({
-  runId: z.string().min(1),
-  taskId: z.string().min(1),
-})
 const attemptParams = z.object({
   runId: z.string().min(1),
   taskId: z.string().min(1),
@@ -97,7 +86,7 @@ export function createApp({ engine }: { engine: Engine }) {
     .route("/", workItemRoutes(engine))
     .get("/health", (c) =>
       c.json(
-        { ok: true, version: "0.0.1", nodes: nodesEnabled() } satisfies Health,
+        { ok: true, version: "0.0.1" } satisfies Health,
         200
       )
     )
@@ -112,12 +101,7 @@ export function createApp({ engine }: { engine: Engine }) {
     })
     .get("/workflows/:workflowId", zValidator("param", idParam), (c) => {
       const { workflowId } = c.req.valid("param")
-      if (nodesEnabled()) {
-        const nodeDetail = readNodeWorkflowDetail(engine, workflowId)
-        if (!nodeDetail) return c.json({ message: "workflow not found" }, 404)
-        return c.json(nodeDetail as unknown as WorkflowDetail, 200)
-      }
-      const detail = readWorkflowDetail(engine, workflowId)
+      const detail = readNodeWorkflowDetail(engine, workflowId)
       if (!detail) return c.json({ message: "workflow not found" }, 404)
       return c.json(
         workflowDetailSchema.parse(detail) satisfies WorkflowDetail,
@@ -131,15 +115,13 @@ export function createApp({ engine }: { engine: Engine }) {
       (c) => {
         const { workflowId } = c.req.valid("param")
         const body = c.req.valid("json")
-        const result = nodesEnabled()
-          ? writeNodeWorkflowYaml(
-              engine,
-              workflowId,
-              body.yaml,
-              body.baseHash,
-              body.renames
-            )
-          : writeWorkflowYaml(engine, workflowId, body.yaml, body.baseHash)
+        const result = writeNodeWorkflowYaml(
+          engine,
+          workflowId,
+          body.yaml,
+          body.baseHash,
+          body.renames
+        )
         if (result.ok === false && result.kind === "not_found") {
           return c.json({ message: "workflow not found" }, 404)
         }
@@ -155,16 +137,6 @@ export function createApp({ engine }: { engine: Engine }) {
         }
         if (result.ok === false && result.kind === "invalid") {
           return c.json(result.detail as WorkflowDetail, 400)
-        }
-        if (result.ok === false && result.kind === "task_in_live_run") {
-          return c.json(
-            taskInLiveRunErrorSchema.parse({
-              error: "task_in_live_run",
-              taskIds: result.taskIds,
-              runIds: result.runIds,
-            }),
-            409
-          )
         }
         if (result.ok === false && result.kind === "trash_failed") {
           return c.json(
@@ -203,32 +175,6 @@ export function createApp({ engine }: { engine: Engine }) {
       if (!detail) return c.json({ message: "run not found" }, 404)
       return c.json(runDetailSchema.parse(detail) satisfies RunDetail, 200)
     })
-    .post(
-      "/runs/:runId/tasks/:taskId/promote",
-      zValidator("param", promoteParam),
-      (c) => {
-        const { runId, taskId } = c.req.valid("param")
-        const result = promoteSpawnedTask(engine, runId, taskId)
-        if (result.ok === false) {
-          const status =
-            result.kind === "not_found"
-              ? 404
-              : result.kind === "not_spawned"
-                ? 400
-                : 400
-          return c.json({ message: result.kind }, status)
-        }
-        hub.files.noteWrite(
-          result.detail.id,
-          "workflow.yaml",
-          result.detail.hash
-        )
-        return c.json(
-          workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
-          200
-        )
-      }
-    )
     .get(
       "/runs/:runId/tasks/:taskId/attempts/:n/log",
       zValidator("param", attemptParams),

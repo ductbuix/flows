@@ -11,15 +11,14 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
 import {
   connectionEnvName,
   connectionSchema,
+  parseNodeWorkflowYaml,
   type Connection,
   type ConnectionInput,
-  type TaskUsesEntry,
   type Workflow,
 } from "@workspace/shared"
 import { getConnector } from "./connectors/registry.ts"
 import { connectionDir, workflowDir, connectionsDir } from "./paths.ts"
 import { removeSignIn } from "./secrets.ts"
-import { loadWorkflowFile } from "./workflow.ts"
 
 export type ConnectionStoreError =
   | { kind: "not_found" }
@@ -172,7 +171,7 @@ function writeConnectionFile(home: string, conn: Connection): void {
   writeFileSync(connectionYamlPath(home, conn.id), stringifyYaml(conn), "utf8")
 }
 
-/** Workflow ids whose tasks `uses` this connection. */
+/** Workflow ids with an Asset or a publish Output on this connection. */
 export function workflowsUsingConnection(
   home: string,
   connectionId: string
@@ -182,13 +181,11 @@ export function workflowsUsingConnection(
   const ids: string[] = []
   for (const entry of readdirSync(root, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue
-    const dir = workflowDir(home, entry.name)
-    if (!existsSync(join(dir, "workflow.yaml"))) continue
-    try {
-      const wf = loadWorkflowFile(dir)
-      if (workflowUsesConnection(wf, connectionId)) ids.push(wf.id)
-    } catch {
-      continue
+    const file = join(workflowDir(home, entry.name), "workflow.yaml")
+    if (!existsSync(file)) continue
+    const { workflow } = parseNodeWorkflowYaml(readFileSync(file, "utf8"))
+    if (workflow && workflowUsesConnection(workflow, connectionId)) {
+      ids.push(workflow.id)
     }
   }
   return ids.sort()
@@ -198,23 +195,12 @@ export function workflowUsesConnection(
   workflow: Workflow,
   connectionId: string
 ): boolean {
-  if (
-    collectWorkflowUses(workflow).some((u) => u.connection === connectionId)
-  ) {
-    return true
-  }
-  return workflow.tasks.some(
-    (t) => t.kind === "publish" && t.connection === connectionId
+  return workflow.nodes.some(
+    (n) =>
+      (n.kind === "asset" &&
+        n.resources.some((r) => r.connection === connectionId)) ||
+      (n.kind === "output" &&
+        n.target === "publish" &&
+        n.connection === connectionId)
   )
-}
-
-export function collectWorkflowUses(workflow: Workflow): TaskUsesEntry[] {
-  const out: TaskUsesEntry[] = []
-  for (const task of workflow.tasks) {
-    // Publish names its connection separately; uses on it are ignored.
-    if (task.kind === "publish") continue
-    if (!task.uses) continue
-    out.push(...task.uses)
-  }
-  return out
 }

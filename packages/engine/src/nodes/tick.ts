@@ -7,16 +7,15 @@ import {
 } from "node:fs"
 import { join } from "node:path"
 import {
-  nodeWorkflowSchema,
+  workflowSchema,
   resolveAnswerValues,
   type EngineEvent,
-  type NodeWorkflow,
+  type Workflow,
 } from "@workspace/shared"
 import type { EventLog } from "../event-log.ts"
 import { runDir, workflowDir } from "../paths.ts"
 import { manualItemKey } from "../item-key.ts"
 import { manualSource, type ManualItem } from "../source-manual.ts"
-import { retryBackoffMs } from "../loops.ts"
 import {
   isLaunchPlan,
   isPublishPlan,
@@ -56,7 +55,7 @@ export type NodeRunOptions = {
 }
 
 export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
-  graph: NodeWorkflow
+  graph: Workflow
   /** Trigger to start from; default is the first trigger node. */
   trigger?: string
   /** Run input text, frozen as `input/text.md`. */
@@ -71,6 +70,16 @@ export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
   /** Pins made before the start; their pull events follow `run_started` (BL-082). */
   pins?: { pulledEvents: EngineEvent[] }
   crashAt?: NodeRunOptions["crashAt"]
+}
+
+/** Retry backoff base in ms; tests override it with FLOWAPP_RETRY_BACKOFF_MS. */
+export function retryBackoffMs(): number {
+  return Number(process.env.FLOWAPP_RETRY_BACKOFF_MS ?? 2000)
+}
+
+/** Attempts a node may start in one pass; undefined when it has no retry policy. */
+export function retryMax(node: object): number | undefined {
+  return (node as { retry?: { max: number } }).retry?.max
 }
 
 const now = () => new Date().toISOString()
@@ -164,7 +173,7 @@ function runStarted(events: readonly EngineEvent[]) {
   const e = events.find((x) => x.type === "run_started")
   if (!e || e.type !== "run_started") throw new Error("run has no run_started")
   return {
-    graph: nodeWorkflowSchema.parse(e.graph) as NodeWorkflow,
+    graph: workflowSchema.parse(e.graph) as Workflow,
     trigger: e.trigger,
     only: e.only,
   }
@@ -172,7 +181,7 @@ function runStarted(events: readonly EngineEvent[]) {
 
 /** Source steps of the active edges into a node, in edge file order. */
 function activeInputs(
-  graph: NodeWorkflow,
+  graph: Workflow,
   steps: StepsState,
   runRoot: string,
   nodeId: string
@@ -329,7 +338,7 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         }
         return true
       }
-      const max = (node as { retry?: { max: number } }).retry?.max
+      const max = retryMax(node)
       if (max !== undefined && step.attempts < max) {
         const wait = retryBackoffMs() * 2 ** (step.attempts - 1)
         const due = Date.parse(c.endedAt ?? now()) + wait

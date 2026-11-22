@@ -11,10 +11,15 @@ import {
 } from "@workspace/engine"
 import type { RunLibraryPin, Workflow } from "@workspace/shared"
 
+/** Asset nodes that list a resource of this connection. */
 function usedByTaskIds(graph: Workflow, connectionId: string): string[] {
-  return graph.tasks
-    .filter((t) => (t.uses ?? []).some((u) => u.connection === connectionId))
-    .map((t) => t.id)
+  return graph.nodes
+    .filter(
+      (n) =>
+        n.kind === "asset" &&
+        n.resources.some((r) => r.connection === connectionId)
+    )
+    .map((n) => n.id)
 }
 
 /** Build Library pin rows for the run view (BL-046). */

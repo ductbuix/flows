@@ -129,9 +129,9 @@ describe("foldSteps", () => {
     expect(s.ended).toBe(false)
   })
 
-  it("marks the run ended and ignores task events", () => {
+  it("marks the run ended and ignores events it does not fold", () => {
     const s = foldSteps([
-      ev({ type: "task_succeeded", taskId: "a" }),
+      ev({ type: "cancel_requested" }),
       ev({ type: "run_succeeded" }),
     ])
     expect(s.steps).toEqual({})

@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
 import { judgeNodeKey, judgeVerdict } from "../judge.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
@@ -42,7 +42,7 @@ function setup() {
 }
 
 const graph = () =>
-  nodeWorkflowSchema.parse({
+  workflowSchema.parse({
     id: "wf",
     nodes: [
       { id: "t", kind: "trigger", type: "manual" },

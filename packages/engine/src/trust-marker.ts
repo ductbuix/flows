@@ -1,5 +1,5 @@
 import { getCliAdapter } from "./cli-adapters.ts"
-import type { RunState } from "./fold.ts"
+import type { RunState } from "./nodes/run-state.ts"
 import { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"
 import type { CliTrustValue } from "@workspace/shared"
 

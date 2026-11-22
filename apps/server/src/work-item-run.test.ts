@@ -8,9 +8,8 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createEngine, runDir, workItemItemKey } from "@workspace/engine"
+import { createEngine, runDir } from "@workspace/engine"
 import {
-  duplicateInputErrorSchema,
   inputsJsonSchema,
   runSummarySchema,
   startRunResponseSchema,
@@ -19,6 +18,7 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { settle } from "./test-utils.ts"
 
 const homes: string[] = []
 
@@ -56,14 +56,19 @@ const WF = `
 id: wi-wf
 limits:
   maxConcurrentRuns: 2
-inputs:
-  - name: ticket
-    type: text
-    required: true
-tasks:
+nodes:
+  - id: t
+    kind: trigger
+    type: manual
+    inputs:
+      - name: ticket
+        type: text
+        required: true
   - id: a
     kind: command
     run: echo ok
+edges:
+  - { from: t, to: a }
 `
 
 describe("start/rerun with workItemId", () => {
@@ -103,11 +108,10 @@ describe("start/rerun with workItemId", () => {
         })
       ).json()
     )
-    await engine.resumeRun(started.runId)!.wait()
+    await settle(engine, started.runId)
 
     const state = engine.fold(started.runId)
     expect(state?.workItemId).toBe(workItemId)
-    expect(state?.itemKey).toBe(workItemItemKey(workItemId))
 
     const meta = inputsJsonSchema.parse(
       JSON.parse(
@@ -135,40 +139,6 @@ describe("start/rerun with workItemId", () => {
     engine.close()
   }, 20_000)
 
-  it("warns duplicate_input per work item and workflow", async () => {
-    const { engine, app } = stack(WF)
-    const workItemId = await createItem(app, "Dup item")
-
-    const start = (confirm?: boolean, ticket = "T-1") =>
-      app.request("/api/workflows/wi-wf/runs", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          requestId: randomUUID(),
-          values: { ticket },
-          workItemId,
-          confirmDuplicate: confirm,
-        }),
-      })
-
-    const first = startRunResponseSchema.parse(await (await start()).json())
-    await engine.resumeRun(first.runId)!.wait()
-
-    // Different values, same work item → still a duplicate.
-    const dupRes = await start(undefined, "T-2")
-    expect(dupRes.status).toBe(409)
-    const dup = duplicateInputErrorSchema.parse(await dupRes.json())
-    expect(dup.itemKey).toBe(workItemItemKey(workItemId))
-    expect(dup.existingRunIds).toContain(first.runId)
-
-    const second = startRunResponseSchema.parse(
-      await (await start(true, "T-2")).json()
-    )
-    expect(second.runId).not.toBe(first.runId)
-    await engine.resumeRun(second.runId)!.wait()
-    engine.close()
-  }, 20_000)
-
   it("rerun keeps the original workItemId", async () => {
     const { engine, app } = stack(WF)
     const workItemId = await createItem(app, "Rerun me")
@@ -186,7 +156,7 @@ describe("start/rerun with workItemId", () => {
         })
       ).json()
     )
-    await engine.resumeRun(first.runId)!.wait()
+    await settle(engine, first.runId)
 
     const rerunRes = await app.request(`/api/runs/${first.runId}/rerun`, {
       method: "POST",
@@ -194,15 +164,13 @@ describe("start/rerun with workItemId", () => {
       body: JSON.stringify({
         requestId: randomUUID(),
         values: { ticket: "T-1" },
-        confirmDuplicate: true,
       }),
     })
     expect(rerunRes.status).toBe(200)
     const second = startRunResponseSchema.parse(await rerunRes.json())
-    await engine.resumeRun(second.runId)!.wait()
+    await settle(engine, second.runId)
 
     expect(engine.fold(second.runId)?.workItemId).toBe(workItemId)
-    expect(engine.fold(second.runId)?.itemKey).toBe(workItemItemKey(workItemId))
     engine.close()
   }, 20_000)
 })

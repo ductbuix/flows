@@ -2,7 +2,6 @@ import type {
   EngineEvent,
   LibraryPullResult,
   ResourcePin,
-  NodeWorkflow,
   ResourcesJson,
   WorkItemLink,
   Workflow,
@@ -17,17 +16,15 @@ import {
 } from "./library.ts"
 import {
   collectNodePullTargets,
-  collectPullTargets,
   pullOneTarget,
   type PullTarget,
 } from "./library-run-targets.ts"
 
 export type MaterializeResourcesOptions = {
   home: string
-  workflow: Workflow
   runRoot: string
   runId: string
-  /** Work item context links pulled with uses (BL-046). */
+  /** Work item context links pulled with the Asset resources (BL-046). */
   workItemLinks?: WorkItemLink[]
   /** Prior run root to copy pins from (rerun without refreshPins). */
   pinFromRunRoot?: string
@@ -39,22 +36,10 @@ export type MaterializeResourcesResult = {
   pulledEvents: EngineEvent[]
 }
 
-/**
- * Resolve entities from task uses and work item links, pull or reuse pins,
- * write resources.json before run_started (BL-043 / BL-046).
- */
-export async function materializeRunResources(
-  options: MaterializeResourcesOptions
-): Promise<MaterializeResourcesResult> {
-  const { home, workflow, workItemLinks = [] } = options
-  const targets = collectPullTargets(home, workflow, workItemLinks)
-  return pinTargets({ ...options, targets })
-}
-
 /** Pins the Asset resources of a node run, with the work item's links (BL-082). */
 export async function materializeNodeRunResources(options: {
   home: string
-  graph: NodeWorkflow
+  graph: Workflow
   runRoot: string
   runId: string
   workItemLinks?: WorkItemLink[]
@@ -70,7 +55,7 @@ export async function materializeNodeRunResources(options: {
 }
 
 async function pinTargets(
-  options: Omit<MaterializeResourcesOptions, "workflow"> & {
+  options: MaterializeResourcesOptions & {
     targets: PullTarget[]
   }
 ): Promise<MaterializeResourcesResult> {

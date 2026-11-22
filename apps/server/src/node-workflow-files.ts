@@ -10,23 +10,18 @@ import { dirname, join } from "node:path"
 import { workflowDir, type Engine } from "@workspace/engine"
 import {
   NODE_KINDS,
-  nodeWorkflowDetailSchema,
+  workflowDetailSchema,
   parseNodeWorkflowYaml,
-  type NodeWorkflowDetail,
+  type WorkflowDetail,
 } from "@workspace/shared"
 import { moveLayoutIds } from "./layout-files.ts"
 import { hashContent } from "./hash.ts"
-import { orphanTaskFolderIds, trashStamp, uniqueTrashDir } from "./task-trash.ts"
+import { orphanNodeFolderIds, trashStamp, uniqueTrashDir } from "./node-trash.ts"
 import { workflowYamlPath } from "./workflow-files.ts"
 
-/** Node path is on unless `FLOWS_NODES=0` (DES-037 Rollout, BL-096); read per call. */
-export function nodesEnabled(): boolean {
-  return process.env.FLOWS_NODES !== "0"
-}
-
-function detailOf(workflowId: string, yaml: string): NodeWorkflowDetail {
+function detailOf(workflowId: string, yaml: string): WorkflowDetail {
   const parsed = parseNodeWorkflowYaml(yaml)
-  return nodeWorkflowDetailSchema.parse({
+  return workflowDetailSchema.parse({
     id: workflowId,
     yaml,
     hash: hashContent(yaml),
@@ -38,18 +33,18 @@ function detailOf(workflowId: string, yaml: string): NodeWorkflowDetail {
 export function readNodeWorkflowDetail(
   engine: Engine,
   workflowId: string
-): NodeWorkflowDetail | null {
+): WorkflowDetail | null {
   const path = workflowYamlPath(engine, workflowId)
   if (!existsSync(path)) return null
   return detailOf(workflowId, readFileSync(path, "utf8"))
 }
 
 export type WriteNodeWorkflowResult =
-  | { ok: true; detail: NodeWorkflowDetail }
+  | { ok: true; detail: WorkflowDetail }
   | { ok: false; kind: "not_found" }
   | { ok: false; kind: "conflict"; diskYaml: string; diskHash: string }
-  | { ok: false; kind: "invalid"; detail: NodeWorkflowDetail }
-  | { ok: false; kind: "trash_failed"; path: string; detail: NodeWorkflowDetail }
+  | { ok: false; kind: "invalid"; detail: WorkflowDetail }
+  | { ok: false; kind: "trash_failed"; path: string; detail: WorkflowDetail }
 
 const filesByKind = new Map<string, readonly { path: string; required: boolean }[]>(
   NODE_KINDS.map((k) => [k.kind, k.files])
@@ -108,7 +103,7 @@ export function writeNodeWorkflowYaml(
   )
   const toTrash = new Set([
     ...removed,
-    ...orphanTaskFolderIds(nodesRoot, newIds),
+    ...orphanNodeFolderIds(nodesRoot, newIds),
   ])
   const stamp = trashStamp()
   for (const id of [...toTrash].sort()) {

@@ -1,4 +1,4 @@
-import type { EngineEvent } from "@workspace/shared"
+import type { Effort, EngineEvent, ModelSource } from "@workspace/shared"
 
 /** Step states (DES-034). */
 export type StepStatus =
@@ -25,6 +25,10 @@ export type AttemptInfo = {
   startedAt: string
   pid?: number
   timeout?: number
+  /** Resolved model and effort of an agent attempt (DES-023). */
+  model?: string
+  effort?: Effort
+  modelSource?: ModelSource
   /** True from `attempt_started` until finished or interrupted. */
   open: boolean
   exitCode?: number
@@ -127,6 +131,9 @@ export function foldSteps(events: readonly EngineEvent[]): StepsState {
         if (c && c.attempt === event.attempt) {
           c.pid = event.pid
           c.timeout = event.timeout
+          c.model = event.model
+          c.effort = event.effort
+          c.modelSource = event.modelSource
         }
         return
       }

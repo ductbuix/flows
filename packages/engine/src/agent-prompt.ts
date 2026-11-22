@@ -9,18 +9,11 @@ export function shellSingleQuote(value: string): string {
 }
 
 /** Prompt that points the CLI at the instructions file (DES-005). */
-export function agentPrompt(
-  instructionsAbsPath: string,
-  canSpawn: boolean
-): string {
-  const spawn = canSpawn
-    ? " To spawn tasks, write one YAML task spec per file under out/spawn/<stem>.yaml; for agent tasks put prompt.md (and judge files) under out/spawn/<stem>/."
-    : ""
+export function agentPrompt(instructionsAbsPath: string): string {
   return (
     `Read the file at ${instructionsAbsPath} and follow those instructions. ` +
     `Your working directory is this attempt. Write outputs under out/. ` +
-    `Memories are under input/memory/. Upstream outputs are in the UPSTREAM_* env paths.` +
-    spawn
+    `Memories are under input/memory/. Upstream outputs are in the UPSTREAM_* env paths.`
   )
 }
 

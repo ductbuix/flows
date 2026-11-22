@@ -9,9 +9,8 @@ import {
 import { join } from "node:path"
 import { workflowDir, type Engine } from "@workspace/engine"
 import {
-  isAgentTask,
   memoryFileNameSchema,
-  parseWorkflowYaml,
+  parseNodeWorkflowYaml,
   replaceMemoryRef,
   type MemoryFileDetail,
   type MemoryFileSummary,
@@ -41,6 +40,7 @@ function memoryRefPath(name: string): string {
   return `memory/${name}`
 }
 
+/** Ids of the Agent nodes that list this memory file. */
 export function tasksReferencingMemory(
   engine: Engine,
   workflowId: string,
@@ -48,12 +48,12 @@ export function tasksReferencingMemory(
 ): string[] {
   const yamlPath = workflowYamlPath(engine, workflowId)
   if (!existsSync(yamlPath)) return []
-  const parsed = parseWorkflowYaml(readFileSync(yamlPath, "utf8"))
+  const parsed = parseNodeWorkflowYaml(readFileSync(yamlPath, "utf8"))
   if (!parsed.workflow) return []
   const target = memoryRefPath(name)
-  return parsed.workflow.tasks
-    .filter((t) => isAgentTask(t) && t.memory?.includes(target))
-    .map((t) => t.id)
+  return parsed.workflow.nodes
+    .filter((n) => n.kind === "agent" && n.memory?.includes(target))
+    .map((n) => n.id)
 }
 
 export function listMemoryFiles(

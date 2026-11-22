@@ -19,16 +19,16 @@ describe("resolveWorkflowFilePath", () => {
     homes.push(home)
     const engine = createEngine({ home })
     expect(resolveWorkflowFilePath(engine, "wf", "../x.md")).toBeNull()
-    expect(resolveWorkflowFilePath(engine, "wf", "tasks/../x.md")).toBeNull()
+    expect(resolveWorkflowFilePath(engine, "wf", "nodes/../x.md")).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "/etc/passwd")).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "a\\b.md")).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "workflow.yaml")).toBeNull()
     expect(resolveWorkflowFilePath(engine, "wf", "runs/a/b")).toBeNull()
     expect(
-      resolveWorkflowFilePath(engine, "wf", "tasks/.trash/x/prompt.md")
+      resolveWorkflowFilePath(engine, "wf", "nodes/.trash/x/prompt.md")
     ).toBeNull()
-    expect(resolveWorkflowFilePath(engine, "wf", "tasks/plan.md")).toMatch(
-      /tasks[/\\]plan\.md$/
+    expect(resolveWorkflowFilePath(engine, "wf", "nodes/plan.md")).toMatch(
+      /nodes[/\\]plan\.md$/
     )
     engine.close()
   })

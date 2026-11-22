@@ -18,6 +18,7 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { settle } from "./test-utils.ts"
 
 const homes: string[] = []
 
@@ -99,7 +100,7 @@ describe("workflow lifecycle API", () => {
     })
     expect(startRes.status).toBe(200)
     const { runId } = (await startRes.json()) as { runId: string }
-    await engine.resumeRun(runId)?.wait()
+    await settle(engine, runId)
 
     const renameRes = await app.request("/api/workflows/alpha/rename", {
       method: "POST",
@@ -140,10 +141,13 @@ describe("workflow lifecycle API", () => {
       join(dir, "workflow.yaml"),
       `id: slow
 goal: block
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: sleep
     kind: command
     run: "sleep 60"
+edges:
+  - { from: t, to: sleep }
 `
     )
 
@@ -154,9 +158,8 @@ tasks:
     })
     expect(startRes.status).toBe(200)
     const { runId } = (await startRes.json()) as { runId: string }
-    const handle = engine.resumeRun(runId)
-    expect(handle).not.toBeNull()
-    expect(handle!.state().status).toBe("running")
+    const handle = engine.resumeRun(runId)!
+    expect(handle.state().status).toBe("running")
 
     const renameRes = await app.request("/api/workflows/slow/rename", {
       method: "POST",
@@ -171,7 +174,7 @@ tasks:
     expect(delRes.status).toBe(409)
 
     engine.cancelRun(runId)
-    await handle!.wait()
+    await handle.wait()
     // Drain attempt-watch callbacks before closing the event log.
     await new Promise((r) => setTimeout(r, 100))
     engine.close()
@@ -191,11 +194,12 @@ describe("memory files API", () => {
       yamlPath,
       `id: mem-wf
 goal: memory
-tasks:
+nodes:
   - id: plan
     kind: agent
     cli: claude
     memory: [memory/style.md]
+edges: []
 `
     )
 

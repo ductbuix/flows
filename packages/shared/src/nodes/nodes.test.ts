@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { NODE_KINDS, PORT_TABLE, nodeWorkflowSchema } from "./index.ts"
+import { NODE_KINDS, PORT_TABLE, workflowSchema } from "./index.ts"
 
 const sample = {
   id: "story-fix",
@@ -40,18 +40,18 @@ const sample = {
 
 const withEdges = (edges: object[]) => ({ ...sample, edges })
 const messages = (v: unknown) => {
-  const r = nodeWorkflowSchema.safeParse(v)
+  const r = workflowSchema.safeParse(v)
   return r.success ? [] : r.error.issues.map((i) => i.message)
 }
 
 describe("node workflow schema", () => {
   it("parses the sample and defaults loopPasses", () => {
-    const r = nodeWorkflowSchema.parse(sample)
+    const r = workflowSchema.parse(sample)
     expect(r.nodes).toHaveLength(5)
     const { limits: _l, ...rest } = sample
-    expect(nodeWorkflowSchema.parse(rest).limits).toBeUndefined()
+    expect(workflowSchema.parse(rest).limits).toBeUndefined()
     expect(
-      nodeWorkflowSchema.parse({ ...rest, limits: { agents: 1 } }).limits
+      workflowSchema.parse({ ...rest, limits: { agents: 1 } }).limits
         ?.loopPasses
     ).toBe(5)
   })
@@ -135,14 +135,14 @@ describe("judge kind", () => {
   })
 
   it("accepts edges with a branch and refuses ones without", () => {
-    const ok = nodeWorkflowSchema.safeParse(
+    const ok = workflowSchema.safeParse(
       wf([
         { from: "t", to: "j" },
         { from: "j", to: "a", branch: "yes" },
       ])
     )
     expect(ok.success).toBe(true)
-    const bad = nodeWorkflowSchema.safeParse(wf([{ from: "j", to: "a" }]))
+    const bad = workflowSchema.safeParse(wf([{ from: "j", to: "a" }]))
     expect(bad.success).toBe(false)
     expect(JSON.stringify(bad.error?.issues)).toContain("needs branch yes or no")
   })
@@ -166,12 +166,12 @@ describe("llm kind", () => {
       ],
       edges: [edge],
     })
-    expect(nodeWorkflowSchema.safeParse(wf({ from: "l", to: "o" })).success).toBe(true)
+    expect(workflowSchema.safeParse(wf({ from: "l", to: "o" })).success).toBe(true)
     expect(
-      nodeWorkflowSchema.safeParse(wf({ from: "l", to: "o", port: "file" })).success
+      workflowSchema.safeParse(wf({ from: "l", to: "o", port: "file" })).success
     ).toBe(false)
     expect(
-      nodeWorkflowSchema.safeParse({
+      workflowSchema.safeParse({
         id: "wf",
         nodes: [{ id: "l", kind: "llm" }],
         edges: [],

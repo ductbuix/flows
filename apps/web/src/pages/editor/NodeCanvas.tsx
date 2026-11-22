@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import type { NodeWorkflow } from "@workspace/shared"
+import type { Workflow } from "@workspace/shared"
 import {
   Background,
   Panel,
@@ -61,7 +61,7 @@ function Controls() {
 }
 
 type Props = {
-  workflow: NodeWorkflow
+  workflow: Workflow
   /** Positions loaded from the layout file. */
   saved: Readonly<Record<string, Pos>>
   /** Edits of settings and node files, shown on the cards. */

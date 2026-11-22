@@ -1,18 +1,12 @@
 import { randomUUID } from "node:crypto"
 import { mkdirSync } from "node:fs"
 import type {
-  NodeWorkflow,
   CliTrustValue,
   EngineEvent,
   RunSummary,
   TrustDecision,
-  TrustGrant,
   Workflow,
-  WorkflowLimits,
 } from "@workspace/shared"
-import { collectWorkflowIssues } from "@workspace/shared"
-import { cancelQueuedRun } from "./cancel-queued.ts"
-import { loadAppConfig } from "./config.ts"
 import {
   materializeNodeRunResources,
   type MaterializeResourcesResult,
@@ -25,8 +19,6 @@ import {
   trustDecisionFor,
 } from "./engine-trust.ts"
 import { EventLog, type StoredEvent } from "./event-log.ts"
-import { foldEvents, isLiveRunStatus, type RunState } from "./fold.ts"
-import { requestManualRetry } from "./manual-retry.ts"
 import {
   appDbPath,
   resolveAppHome,
@@ -34,12 +26,7 @@ import {
   runDir,
   workflowDir,
 } from "./paths.ts"
-import { runPreflightChecks, type PreflightInput } from "./preflight.ts"
-import {
-  countRunningRuns,
-  freeRunSlots,
-  nextQueuedRun,
-} from "./run-queue.ts"
+import { countRunningRuns, nextQueuedRun } from "./run-queue.ts"
 import {
   approveNodeStep,
   cancelNodeRun,
@@ -50,12 +37,14 @@ import { resumeNodes, runNodes } from "./nodes/drive.ts"
 import { assertNodePublishValid } from "./nodes/publish.ts"
 import { recordUnpublishedLocalEffects } from "./work-copy.ts"
 import type { StepsState } from "./nodes/fold-steps.ts"
+import {
+  foldEvents,
+  isLiveRunStatus,
+  type RunState,
+} from "./nodes/run-state.ts"
 import type { ProcessHost } from "./nodes/process.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
-import { Scheduler } from "./scheduler.ts"
-import type { ManualFilePart, ManualItem } from "./source-manual.ts"
-import { assertPublishTasksValid } from "./publish.ts"
-import { appendRunStarted } from "./start-run.ts"
+import type { ManualItem } from "./source-manual.ts"
 import { assertNodeTemplatesValid } from "./nodes/answers.ts"
 import { startNodeRun as startNodeRunQueued } from "./nodes/tick.ts"
 import { assertPartialReady, type PartialRun } from "./nodes/partial.ts"
@@ -63,30 +52,14 @@ import {
   LIBRARY_RETENTION_INTERVAL_MS,
   sweepLibrary,
 } from "./library-retention.ts"
-import { decideTrust } from "./trust-policy.ts"
-import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
-import { runNeedsAgentCli, workflowAgentClis } from "./workflow-agents.ts"
 
 export type CreateEngineOptions = {
   home?: string
 }
 
-export type StartRunOptions = {
-  workflowDir: string
-  runId?: string
-  trustGrant?: TrustGrant
-  values?: Record<string, string>
-  files?: ManualFilePart[]
-  /** Prior run to reuse library pins from (rerun; BL-043). */
-  pinFromRunId?: string
-  /** Pull and pin again instead of reusing prior pins (BL-043). */
-  refreshPins?: boolean
-  workItemId?: string
-}
-
 /** Start a node run (DES-034). The caller parses and validates the graph. */
 export type StartNodeRunInput = {
-  graph: NodeWorkflow
+  graph: Workflow
   runId?: string
   trigger?: string
   /** Frozen as `input/text.md`. */
@@ -110,8 +83,6 @@ export type RunHandle = {
 export class Engine {
   readonly home: string
   private readonly log: EventLog
-  private readonly globalLimits: WorkflowLimits | undefined
-  private readonly schedulers = new Map<string, Scheduler>()
   private readonly summaryCache: RunSummaryCache
   /** Live node-run drivers by run id (DES-034). */
   private readonly nodeRuns = new Map<string, Promise<StepsState>>()
@@ -122,7 +93,6 @@ export class Engine {
   constructor(options: CreateEngineOptions = {}) {
     this.home = resolveAppHome(options.home)
     this.log = new EventLog(appDbPath(this.home))
-    this.globalLimits = loadAppConfig(this.home).limits
     this.summaryCache = new RunSummaryCache((runId) => this.fold(runId))
     this.log.onAppend((stored) => {
       const summary = this.summaryCache.refresh(stored.event.runId)
@@ -170,32 +140,6 @@ export class Engine {
       settings: this.getCliTrust(),
       runs: this.listRuns(),
     })
-  }
-
-  async preflight(options: { workflowDir: string; attemptDir?: string }) {
-    const workflow = this.loadWorkflow(options.workflowDir)
-    const input: PreflightInput = {
-      homeRealpath: this.homeRealpath(),
-      home: this.home,
-      workflowDir: options.workflowDir,
-      workflow,
-      attemptDir: options.attemptDir,
-    }
-    return {
-      trust: this.trustDecision(),
-      checks: await runPreflightChecks(input),
-      needsAgentCli: runNeedsAgentCli(this.home, workflow),
-      clis: workflowAgentClis(workflow, this.home),
-    }
-  }
-
-  loadWorkflow(workflowDirPath: string): Workflow {
-    const workflow = loadWorkflowFile(workflowDirPath)
-    assertValidGraph(workflow)
-    const issues = collectWorkflowIssues(workflow)
-    if (issues[0]) throw new Error(issues[0].message)
-    assertPublishTasksValid(this.home, workflow)
-    return workflow
   }
 
   events(runId: string): EngineEvent[] {
@@ -264,52 +208,7 @@ export class Engine {
         runId: state.runId,
         at: new Date().toISOString(),
       })
-      this.schedulers.delete(state.runId)
     }
-  }
-
-  async startRun(options: StartRunOptions): Promise<RunHandle> {
-    const graph = this.loadWorkflow(options.workflowDir)
-    const runId = options.runId ?? randomUUID()
-    const pinFromRunRoot = (() => {
-      if (!options.pinFromRunId) return undefined
-      const prior = this.fold(options.pinFromRunId)
-      if (!prior) return undefined
-      return runDir(
-        workflowDir(this.home, prior.workflowId),
-        options.pinFromRunId
-      )
-    })()
-    const started = await appendRunStarted({
-      log: this.log,
-      graph,
-      params: {
-        workflowDir: options.workflowDir,
-        runId,
-        trustGrant: options.trustGrant,
-        values: options.values,
-        files: options.files,
-        home: this.home,
-        pinFromRunRoot,
-        refreshPins: options.refreshPins,
-        workItemId: options.workItemId,
-      },
-      homeRealpath: this.homeRealpath(),
-      settings: this.getCliTrust(),
-      setAlwaysTrust: (value) => this.log.setCliTrust(value),
-      workflowRuns: this.listRunsForWorkflow(graph.id),
-    })
-
-    if (started.queued) {
-      return this.queuedHandle(started.runId)
-    }
-    const scheduler = this.attachScheduler(
-      started.runId,
-      options.workflowDir,
-      started.runRoot
-    )
-    scheduler.requestTick()
-    return this.handleFor(started.runId, scheduler, "running")
   }
 
   /**
@@ -318,7 +217,7 @@ export class Engine {
    * Asset node. Pass the result and `runId` to `startNodeRun`.
    */
   async pinNodeRun(input: {
-    graph: NodeWorkflow
+    graph: Workflow
     runId: string
     workItemId?: string
     /** Reuse the pins of this run (rerun, partial runs) unless `refreshPins`. */
@@ -388,7 +287,7 @@ export class Engine {
 
   /** Earlier node runs to build a partial run on, the base first (BL-102). */
   private partialOf(
-    graph: NodeWorkflow,
+    graph: Workflow,
     runId: string,
     request: NonNullable<StartNodeRunInput["partial"]>
   ): PartialRun | undefined {
@@ -396,7 +295,7 @@ export class Engine {
       return undefined
     }
     const earlier = this.listRunsForWorkflow(graph.id)
-      .filter((r) => r.nodeGraph && !r.deleted && r.runId !== runId)
+      .filter((r) => r.graph && !r.deleted && r.runId !== runId)
       .map((r) => r.runId)
     if (request.baseRunId !== undefined && !earlier.includes(request.baseRunId)) {
       throw new Error(`unknown base run ${request.baseRunId}`)
@@ -423,7 +322,7 @@ export class Engine {
   latestNodeRunId(workflowId: string, baseRunId?: string): string | undefined {
     if (baseRunId !== undefined) return baseRunId
     return this.listRunsForWorkflow(workflowId).find(
-      (r) => r.nodeGraph && !r.deleted
+      (r) => r.graph && !r.deleted
     )?.runId
   }
 
@@ -504,68 +403,35 @@ export class Engine {
     return state
   }
 
-  approveTask(runId: string, taskId: string): void {
-    if (this.fold(runId)?.nodeGraph) {
-      approveNodeStep(this.log, runId, taskId)
-      this.wakeNodeRun(runId)
-      return
-    }
-    this.requireScheduler(runId).approve(taskId)
+  approveTask(runId: string, nodeId: string): void {
+    approveNodeStep(this.log, runId, nodeId)
+    this.wakeNodeRun(runId)
   }
 
-  rejectTask(runId: string, taskId: string): void {
-    if (this.fold(runId)?.nodeGraph) {
-      rejectNodeStep(this.log, runId, taskId)
-      this.wakeNodeRun(runId)
-      return
-    }
-    this.requireScheduler(runId).reject(taskId)
+  rejectTask(runId: string, nodeId: string): void {
+    rejectNodeStep(this.log, runId, nodeId)
+    this.wakeNodeRun(runId)
   }
 
   cancelRun(runId: string): void {
     const state = this.fold(runId)
     if (!state || state.deleted) throw new Error(`unknown run ${runId}`)
-    if (state.status === "queued") {
-      if (state.nodeGraph) cancelNodeRun(this.log, runId)
-      else cancelQueuedRun(state, (event) => this.log.append(event))
-      return
+    if (state.status !== "queued" && state.status !== "running") {
+      throw new Error(`run ${runId} is not live`)
     }
-    if (state.nodeGraph) {
-      if (state.status !== "running") {
-        throw new Error(`run ${runId} is not live`)
-      }
-      cancelNodeRun(this.log, runId)
-      return
-    }
-    this.requireScheduler(runId).cancel()
+    cancelNodeRun(this.log, runId)
   }
 
-  retryTask(runId: string, taskId: string): RunHandle {
+  retryTask(runId: string, nodeId: string): RunHandle {
     const state = this.fold(runId)
     if (!state) throw new Error(`unknown run ${runId}`)
-    if (state.nodeGraph) {
-      if (state.deleted) throw new Error(`run ${runId} is deleted`)
-      requestNodeRetry(this.log, runId, taskId, state.nodeGraph.edges)
-      this.nodeRuns.delete(runId)
-      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId), this.hostSink(runId)))
-    }
-    requestManualRetry(runId, taskId, state, (event) => this.log.append(event))
-    this.schedulers.delete(runId)
-    const workflowRoot = workflowDir(this.home, state.workflowId)
-    const root = runDir(workflowRoot, runId)
-    if (runNeedsAgentCli(this.home, state.graph)) {
-      const decision = decideTrust({
-        homeRealpath: this.homeRealpath(),
-        settings: this.getCliTrust(),
-        runGrant: state.trustGrant,
-      })
-      if (decision !== "none") {
-        prepareTrustMarker(this.homeRealpath(), workflowRoot)
-      }
-    }
-    const scheduler = this.attachScheduler(runId, workflowRoot, root)
-    scheduler.requestTick()
-    return this.handleFor(runId, scheduler, "running")
+    if (state.deleted) throw new Error(`run ${runId} is deleted`)
+    requestNodeRetry(this.log, runId, nodeId, state.graph.edges)
+    this.nodeRuns.delete(runId)
+    return this.trackNodeRun(
+      runId,
+      resumeNodes(this.nodeOpts(runId), this.hostSink(runId))
+    )
   }
 
   deleteRun(runId: string): void {
@@ -573,7 +439,6 @@ export class Engine {
     if (!state) throw new Error(`unknown run ${runId}`)
     const root = runDir(workflowDir(this.home, state.workflowId), runId)
     deleteRunFiles(root, (event) => this.log.append(event), state)
-    this.schedulers.delete(runId)
     this.nodeRuns.delete(runId)
   }
 
@@ -595,27 +460,14 @@ export class Engine {
   }
 
   resumeRun(runId: string): RunHandle | null {
-    const existing = this.schedulers.get(runId)
-    if (existing) return this.handleFor(runId, existing, "running")
-
     const state = this.fold(runId)
     if (!state || state.deleted || state.status !== "running") return null
-    if (state.nodeGraph) {
-      const live = this.nodeRuns.get(runId)
-      if (live) return this.nodeHandle(runId, live)
-      return this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId), this.hostSink(runId)))
-    }
-
-    const workflowRoot = workflowDir(this.home, state.workflowId)
-    const runRoot = runDir(workflowRoot, runId)
-    const scheduler = this.attachScheduler(runId, workflowRoot, runRoot)
-    scheduler.resumeCancelIfNeeded()
-    if (scheduler.state().status !== "running") {
-      return this.handleFor(runId, scheduler, "running")
-    }
-    scheduler.resumeOpenAttempts()
-    scheduler.requestTick()
-    return this.handleFor(runId, scheduler, "running")
+    const live = this.nodeRuns.get(runId)
+    if (live) return this.nodeHandle(runId, live)
+    return this.trackNodeRun(
+      runId,
+      resumeNodes(this.nodeOpts(runId), this.hostSink(runId))
+    )
   }
 
   /** Run ids with queued or running status (block shared-clone gc). */
@@ -644,8 +496,6 @@ export class Engine {
       clearInterval(this.retentionTimer)
       this.retentionTimer = undefined
     }
-    for (const scheduler of this.schedulers.values()) scheduler.dispose()
-    this.schedulers.clear()
     this.log.close()
   }
 
@@ -654,54 +504,22 @@ export class Engine {
   }
 
   private activateQueuedForWorkflow(workflowId: string): void {
-    const workflowRoot = workflowDir(this.home, workflowId)
-    let graph: Workflow | undefined
     for (;;) {
       const runs = this.listRunsForWorkflow(workflowId)
       const next = nextQueuedRun(runs)
       if (!next) return
-      if (next.nodeGraph) {
-        const cap = next.nodeGraph.limits?.maxConcurrentRuns ?? 1
-        if (countRunningRuns(runs) >= cap) return
-        this.log.append({
-          type: "run_activated",
-          runId: next.runId,
-          at: new Date().toISOString(),
-        })
-        this.trackNodeRun(next.runId, resumeNodes(this.nodeOpts(next.runId), this.hostSink(next.runId)))
-        continue
-      }
-      if (!graph) {
-        try {
-          graph = this.loadWorkflow(workflowRoot)
-        } catch {
-          return
-        }
-      }
-      if (freeRunSlots(graph, runs) <= 0) return
-      this.activateRun(next, workflowRoot)
-    }
-  }
-
-  private activateRun(state: RunState, workflowRoot: string): void {
-    this.log.append({
-      type: "run_activated",
-      runId: state.runId,
-      at: new Date().toISOString(),
-    })
-    if (runNeedsAgentCli(this.home, state.graph)) {
-      const decision = decideTrust({
-        homeRealpath: this.homeRealpath(),
-        settings: this.getCliTrust(),
-        runGrant: state.trustGrant,
+      const cap = next.graph.limits?.maxConcurrentRuns ?? 1
+      if (countRunningRuns(runs) >= cap) return
+      this.log.append({
+        type: "run_activated",
+        runId: next.runId,
+        at: new Date().toISOString(),
       })
-      if (decision !== "none") {
-        prepareTrustMarker(this.homeRealpath(), workflowRoot)
-      }
+      this.trackNodeRun(
+        next.runId,
+        resumeNodes(this.nodeOpts(next.runId), this.hostSink(next.runId))
+      )
     }
-    const root = runDir(workflowRoot, state.runId)
-    const scheduler = this.attachScheduler(state.runId, workflowRoot, root)
-    scheduler.requestTick()
   }
 
   private rebuildSummaryCache(): void {
@@ -714,46 +532,6 @@ export class Engine {
       if (!state?.deleted) continue
       const root = runDir(workflowDir(this.home, state.workflowId), runId)
       finishRunRemoval(root)
-    }
-  }
-
-  private requireScheduler(runId: string): Scheduler {
-    const existing = this.schedulers.get(runId)
-    if (existing) return existing
-    const handle = this.resumeRun(runId)
-    if (!handle) throw new Error(`run ${runId} is not live`)
-    const scheduler = this.schedulers.get(runId)
-    if (!scheduler) throw new Error(`run ${runId} is not live`)
-    return scheduler
-  }
-
-  private attachScheduler(
-    runId: string,
-    workflowRoot: string,
-    runRoot: string
-  ): Scheduler {
-    const scheduler = new Scheduler({
-      log: this.log,
-      runId,
-      workflowRoot,
-      runRoot,
-      home: this.home,
-      globalLimits: this.globalLimits,
-    })
-    this.schedulers.set(runId, scheduler)
-    return scheduler
-  }
-
-  private handleFor(
-    runId: string,
-    scheduler: Scheduler,
-    status: "queued" | "running"
-  ): RunHandle {
-    return {
-      runId,
-      status,
-      wait: () => scheduler.wait(),
-      state: () => scheduler.state(),
     }
   }
 
@@ -780,8 +558,6 @@ export class Engine {
     ) {
       return Promise.resolve(current)
     }
-    const existing = this.schedulers.get(runId)
-    if (existing) return existing.wait()
     return new Promise((resolve, reject) => {
       const unsub = this.log.onAppend((stored) => {
         if (stored.event.runId !== runId) return
@@ -789,14 +565,6 @@ export class Engine {
         if (!state) {
           unsub()
           reject(new Error(`unknown run ${runId}`))
-          return
-        }
-        if (state.status === "running") {
-          const scheduler = this.schedulers.get(runId)
-          if (scheduler) {
-            unsub()
-            void scheduler.wait().then(resolve, reject)
-          }
           return
         }
         if (

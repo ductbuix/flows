@@ -8,7 +8,7 @@ import {
   type WsServerMessage,
 } from "@workspace/shared"
 import type { WSContext } from "hono/ws"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
 import { WsHub } from "./ws-hub.ts"
 
@@ -29,11 +29,7 @@ edges:
 `
 
 const homes: string[] = []
-beforeEach(() => {
-  process.env.FLOWS_NODES = "1"
-})
 afterEach(() => {
-  process.env.FLOWS_NODES = "0"
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
@@ -77,7 +73,7 @@ async function until(fn: () => boolean, ms = 8000) {
 const types = (s: Stack, runId: string) =>
   s.engine.events(runId).map((e) => e.type)
 
-describe("node runs behind FLOWS_NODES", () => {
+describe("node runs", () => {
   it("starts Trigger, Command, Output to run_succeeded and maps the fold", async () => {
     const s = stack()
     const { runId } = await start(s, { values: { text: "story" } })
@@ -313,14 +309,6 @@ edges:
     await handles.find((h) => h.runId === runId)!.wait()
     expect(engine2.fold(runId)!.status).toBe("succeeded")
     engine2.close()
-    s.engine.close()
-  })
-
-  it("keeps the task path with the flag off", async () => {
-    const s = stack()
-    process.env.FLOWS_NODES = "0"
-    const res = await post(s.app, "/workflows/nr/runs")
-    expect(res.status).toBe(400)
     s.engine.close()
   })
 })

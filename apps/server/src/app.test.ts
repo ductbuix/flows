@@ -23,27 +23,32 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { settle } from "./test-utils.ts"
 import { existsSync } from "node:fs"
 import { runDir, workflowDir } from "@workspace/engine"
 
 const fixtureYaml = `id: api-diamond
 goal: api test fixture
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: a
     kind: command
-    run: "printf 'HELLO_STDOUT\\n' && printf '# Title\\n' > \\"$(dirname \\"$TASK_OUT\\")/SUMMARY.md\\""
+    run: "printf 'HELLO_STDOUT\\n' && printf '# Title\\n' > \\"$(dirname \\"$NODE_OUT\\")/SUMMARY.md\\""
   - id: b
     kind: command
-    run: "printf b > \\"$TASK_OUT/letter.txt\\""
-    needs: [a]
+    run: "printf b > \\"$NODE_OUT/letter.txt\\""
   - id: c
     kind: command
-    run: "printf c > \\"$TASK_OUT/letter.txt\\""
-    needs: [a]
+    run: "printf c > \\"$NODE_OUT/letter.txt\\""
   - id: d
     kind: command
-    run: "printf done > \\"$TASK_OUT/out.txt\\""
-    needs: [b, c]
+    run: "printf done > \\"$NODE_OUT/out.txt\\""
+edges:
+  - { from: t, to: a }
+  - { from: a, to: b }
+  - { from: a, to: c }
+  - { from: b, to: d }
+  - { from: c, to: d }
 `
 
 const homes: string[] = []
@@ -73,7 +78,6 @@ describe("GET /api/health", () => {
     expect(healthSchema.parse(await res.json())).toEqual({
       ok: true,
       version: "0.0.1",
-      nodes: false,
     })
     engine.close()
   })
@@ -94,7 +98,7 @@ describe("run API", () => {
     expect(wfRes.status).toBe(200)
     const workflows = workflowSummarySchema.array().parse(await wfRes.json())
     expect(workflows).toEqual([
-      { id: "api-diamond", goal: "api test fixture", taskCount: 4 },
+      { id: "api-diamond", goal: "api test fixture", taskCount: 5 },
     ])
 
     const startRes = await app.request("/api/workflows/api-diamond/runs", {
@@ -105,9 +109,7 @@ describe("run API", () => {
     expect(startRes.status).toBe(200)
     const { runId } = startRunResponseSchema.parse(await startRes.json())
 
-    const handle = engine.resumeRun(runId)
-    expect(handle).not.toBeNull()
-    const state = await handle!.wait()
+    const state = await settle(engine, runId)
     expect(state.status).toBe("succeeded")
 
     const listRes = await app.request("/api/workflows/api-diamond/runs")
@@ -119,7 +121,7 @@ describe("run API", () => {
     expect(detailRes.status).toBe(200)
     const detail = runDetailSchema.parse(await detailRes.json())
     expect(detail.workflowId).toBe("api-diamond")
-    expect(detail.tasks.map((t) => t.id)).toEqual(["a", "b", "c", "d"])
+    expect(detail.tasks.map((t) => t.id)).toEqual(["t", "a", "b", "c", "d"])
     engine.close()
   }, 30_000)
 
@@ -132,8 +134,7 @@ describe("run API", () => {
       body: JSON.stringify({ requestId: randomUUID() }),
     })
     const { runId } = startRunResponseSchema.parse(await startRes.json())
-    const handle = engine.resumeRun(runId)!
-    await handle.wait()
+    await settle(engine, runId)
 
     const logRes = await app.request(
       `/api/runs/${runId}/tasks/a/attempts/1/log?stream=stdout&offset=0`
@@ -175,7 +176,7 @@ describe("run API", () => {
     )
     expect(second.runId).toBe(first.runId)
 
-    await engine.resumeRun(first.runId)!.wait()
+    await settle(engine, first.runId)
 
     const delId = randomUUID()
     const delRes = await app.request(`/api/runs/${first.runId}`, {

@@ -9,12 +9,10 @@ import {
   applyInputDefaults,
   buildManualValuesSchema,
   canonicalManualItemPayload,
-  duplicateInputErrorSchema,
   invalidInputErrorSchema,
   normalizeInputText,
   startRunBodySchema,
   unknownWorkItemErrorSchema,
-  type DuplicateInputError,
   type InvalidInputError,
   type ManualItemKeyField,
   type StartRunBody,
@@ -230,34 +228,4 @@ function computeItemKey(
 
   void byName
   return manualItemKey(fields)
-}
-
-/** Item key for a Manual start with no field values or files. */
-const EMPTY_MANUAL_ITEM_KEY = manualItemKey([])
-
-/**
- * 409 when a non-deleted run already has this itemKey.
- * Empty Manual starts (no inputs/files) skip the check so workflows
- * without `inputs:` still start repeatedly (DES-021).
- */
-export function duplicateInputResponse(
-  c: Context,
-  engine: Engine,
-  workflowId: string,
-  itemKey: string,
-  confirmDuplicate: boolean | undefined
-): Response | null {
-  if (confirmDuplicate === true) return null
-  if (itemKey === EMPTY_MANUAL_ITEM_KEY) return null
-  const existingRunIds = engine
-    .listRunsForWorkflow(workflowId)
-    .filter((r) => r.itemKey === itemKey)
-    .map((r) => r.runId)
-  if (existingRunIds.length === 0) return null
-  const body: DuplicateInputError = {
-    error: "duplicate_input",
-    itemKey,
-    existingRunIds,
-  }
-  return c.json(duplicateInputErrorSchema.parse(body), 409)
 }

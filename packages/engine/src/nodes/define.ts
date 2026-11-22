@@ -1,7 +1,7 @@
 import type {
   Effort,
   ModelSource,
-  NodeWorkflow,
+  Workflow,
   WorkflowNode,
 } from "@workspace/shared"
 
@@ -15,7 +15,7 @@ export type ExecInput = {
 
 export type ExecContext = {
   /** The frozen graph from `run_started`. */
-  graph: NodeWorkflow
+  graph: Workflow
   node: WorkflowNode
   pass: number
   runRoot: string

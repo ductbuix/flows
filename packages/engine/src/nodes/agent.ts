@@ -1,6 +1,6 @@
 import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { answerText, parseAnswerText, type AgentTask } from "@workspace/shared"
+import { answerText, parseAnswerText, type AgentSpec } from "@workspace/shared"
 import { resolveAttemptModelFields } from "../attempt-model.ts"
 import { buildAgentShellCommand, copyTaskMemories } from "../agents.ts"
 import { writeCursorTrustMarker } from "../cursor-trust.ts"
@@ -26,10 +26,7 @@ export const agentExecutor = defineExecutor({
     // The task text, filled and with the answer request, lives in the attempt.
     const instructionsOf = (attemptRoot: string) =>
       join(attemptRoot, "input", "prompt.md")
-    const task: AgentTask = {
-      id: node.id,
-      needs: [],
-      kind: "agent",
+    const task: AgentSpec = {
       cli: node.cli,
       ...(node.model !== undefined ? { model: node.model } : {}),
       ...(node.effort !== undefined ? { effort: node.effort } : {}),

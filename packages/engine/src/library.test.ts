@@ -1,6 +1,5 @@
 import {
   existsSync,
-  mkdirSync,
   mkdtempSync,
   readFileSync,
   readlinkSync,
@@ -10,6 +9,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { workflowSchema } from "@workspace/shared"
 import {
   clearConnectors,
   fakeConnector,
@@ -25,7 +25,7 @@ import {
   pullEntity,
   resolveScopeEntity,
 } from "./library.ts"
-import { libraryEntityDir } from "./paths.ts"
+import { libraryEntityDir, runDir, workflowDir } from "./paths.ts"
 import { createWorkItem } from "./workitems.ts"
 
 const homes: string[] = []
@@ -63,13 +63,6 @@ function writeConn(
   })
   expect(result.ok).toBe(true)
   return result.ok ? result.value : null
-}
-
-function writeWorkflow(home: string, id: string, body: string): string {
-  const wf = join(home, "workflows", id)
-  mkdirSync(wf, { recursive: true })
-  writeFileSync(join(wf, "workflow.yaml"), body)
-  return wf
 }
 
 describe("library store", () => {
@@ -135,47 +128,60 @@ describe("library store", () => {
   })
 })
 
+/** A node graph with one Asset on `connection`'s item `id`, or none. */
+function assetGraph(id: string, resource?: { connection: string; id: string }) {
+  return workflowSchema.parse({
+    id,
+    nodes: [
+      { id: "t", kind: "trigger", type: "manual" },
+      ...(resource
+        ? [
+            {
+              id: "lib",
+              kind: "asset",
+              resources: [
+                { connection: resource.connection, entity: "item", id: resource.id },
+              ],
+            },
+          ]
+        : [{ id: "p", kind: "prompt" }]),
+      { id: "o", kind: "output", target: "folder" },
+    ],
+    edges: [
+      { from: "t", to: "o" },
+      { from: resource ? "lib" : "p", to: "o" },
+    ],
+  })
+}
+
+const resourcesOf = (home: string, wf: string, runId: string) =>
+  JSON.parse(
+    readFileSync(
+      join(runDir(workflowDir(home, wf), runId), "resources.json"),
+      "utf8"
+    )
+  )
+
 describe("pull at run start and resources", () => {
-  it("pulls uses, writes resources.json before run_started, sets env", async () => {
+  it("pins Asset resources before run_started and writes resources.json", async () => {
     const home = tempHome()
     writeConn(home, "rally-pay", { label: "PAY-1" })
-    const wf = writeWorkflow(
-      home,
-      "with-uses",
-      `
-id: with-uses
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: rally-pay, access: read }
-    run: "test -f \\"$RESOURCES_DIR/rally-pay/item/PAY-1/data.txt\\" && test -f \\"$RESOURCE_RALLY_PAY/item/PAY-1/data.txt\\" && cat \\"$RESOURCE_RALLY_PAY/item/PAY-1/data.txt\\""
-`
-    )
+    const graph = assetGraph("with-assets", { connection: "rally-pay", id: "PAY-1" })
     const engine = createEngine({ home })
-    const handle = await engine.startRun({ workflowDir: wf, runId: "r1" })
-    const runRoot = join(wf, "runs", "r1")
-    const resources = JSON.parse(
-      readFileSync(join(runRoot, "resources.json"), "utf8")
-    )
+    const pins = await engine.pinNodeRun({ graph, runId: "r1" })
+    const runRoot = runDir(workflowDir(home, "with-assets"), "r1")
+    const resources = resourcesOf(home, "with-assets", "r1")
     expect(resources.v).toBe(1)
     expect(resources.pins).toHaveLength(1)
     expect(resources.pins[0].connection).toBe("rally-pay")
     expect(resources.pins[0].entityId).toBe("PAY-1")
     expect(existsSync(join(runRoot, "resources", "index.json"))).toBe(true)
-    const state = await handle.wait()
+    const state = await engine.startNodeRun({ graph, runId: "r1", pins }).wait()
     expect(state.status).toBe("succeeded")
-    expect(engine.events("r1").some((e) => e.type === "library_pulled")).toBe(
-      true
+    const types = engine.events("r1").map((e) => e.type)
+    expect(types.indexOf("library_pulled")).toBeGreaterThan(
+      types.indexOf("run_started")
     )
-    const startedIdx = engine
-      .events("r1")
-      .findIndex((e) => e.type === "run_started")
-    const pulledIdx = engine
-      .events("r1")
-      .findIndex((e) => e.type === "library_pulled")
-    expect(startedIdx).toBeGreaterThanOrEqual(0)
-    expect(pulledIdx).toBeGreaterThan(startedIdx)
     engine.close()
   })
 
@@ -186,57 +192,27 @@ tasks:
       title: "From context",
       links: [{ connection: "ctx-src", kind: "item", entityId: "CTX-1" }],
     })
-    const wf = writeWorkflow(
-      home,
-      "link-only",
-      `
-id: link-only
-tasks:
-  - id: a
-    kind: command
-    run: "test -f \\"$RESOURCES_DIR/ctx-src/item/CTX-1/data.txt\\""
-`
-    )
+    // Links are pulled only when the graph has an Asset node.
+    const graph = assetGraph("link-only", { connection: "ctx-src", id: "CTX-1" })
     const engine = createEngine({ home })
-    const handle = await engine.startRun({
-      workflowDir: wf,
-      runId: "r-link",
-      workItemId: item.id,
-    })
-    const resources = JSON.parse(
-      readFileSync(join(wf, "runs", "r-link", "resources.json"), "utf8")
-    )
-    expect(resources.pins).toEqual([
+    await engine.pinNodeRun({ graph, runId: "r-link", workItemId: item.id })
+    expect(resourcesOf(home, "link-only", "r-link").pins).toEqual([
       expect.objectContaining({
         connection: "ctx-src",
         kind: "item",
         entityId: "CTX-1",
       }),
     ])
-    const state = await handle.wait()
-    expect(state.status).toBe("succeeded")
     engine.close()
   })
 
   it("fails start when pull fails and no revision exists", async () => {
     const home = tempHome()
     writeConn(home, "bad", { label: "x", signedOut: "1" })
-    const wf = writeWorkflow(
-      home,
-      "fail-pull",
-      `
-id: fail-pull
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: bad, access: read }
-    run: "echo ok"
-`
-    )
+    const graph = assetGraph("fail-pull", { connection: "bad", id: "x" })
     const engine = createEngine({ home })
     await expect(
-      engine.startRun({ workflowDir: wf, runId: "r1" })
+      engine.pinNodeRun({ graph, runId: "r1" })
     ).rejects.toThrow(/library pull failed|signed out|fake signed out/)
     engine.close()
   })
@@ -277,27 +253,13 @@ tasks:
     meta.pulledAt = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     writeFileSync(metaPath, JSON.stringify(meta))
 
-    const wf = writeWorkflow(
-      home,
-      "warn-pull",
-      `
-id: warn-pull
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: flaky, access: read }
-    run: "test -f \\"$RESOURCE_FLAKY/item/x/data.txt\\""
-`
-    )
+    const graph = assetGraph("warn-pull", { connection: "flaky", id: "x" })
     const engine = createEngine({ home })
-    const handle = await engine.startRun({ workflowDir: wf, runId: "r1" })
-    const resources = JSON.parse(
-      readFileSync(join(wf, "runs", "r1", "resources.json"), "utf8")
-    )
+    const pins = await engine.pinNodeRun({ graph, runId: "r1" })
+    const resources = resourcesOf(home, "warn-pull", "r1")
     expect(resources.pins[0].revision).toBe(rev)
     expect(resources.warnings.length).toBeGreaterThan(0)
-    const state = await handle.wait()
+    const state = await engine.startNodeRun({ graph, runId: "r1", pins }).wait()
     expect(state.status).toBe("succeeded")
     engine.close()
   })
@@ -305,81 +267,22 @@ tasks:
   it("rerun reuses pins; refreshPins pulls again", async () => {
     const home = tempHome()
     writeConn(home, "src", { label: "v1" }, "never")
-    const wf = writeWorkflow(
-      home,
-      "rerun-pins",
-      `
-id: rerun-pins
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: src, access: read }
-    run: "echo ok"
-`
-    )
+    const graph = assetGraph("rerun-pins", { connection: "src", id: "v1" })
     const engine = createEngine({ home })
-    await (await engine.startRun({ workflowDir: wf, runId: "r1" })).wait()
-    const pins1 = JSON.parse(
-      readFileSync(join(wf, "runs", "r1", "resources.json"), "utf8")
-    ).pins
-    await (
-      await engine.startRun({
-        workflowDir: wf,
-        runId: "r2",
-        pinFromRunId: "r1",
-      })
-    ).wait()
-    const pins2 = JSON.parse(
-      readFileSync(join(wf, "runs", "r2", "resources.json"), "utf8")
-    ).pins
-    expect(pins2[0].revision).toBe(pins1[0].revision)
+    const pins1 = await engine.pinNodeRun({ graph, runId: "r1" })
+    await engine.startNodeRun({ graph, runId: "r1", pins: pins1 }).wait()
+    const rev1 = resourcesOf(home, "rerun-pins", "r1").pins[0].revision
 
-    await (
-      await engine.startRun({
-        workflowDir: wf,
-        runId: "r3",
-        pinFromRunId: "r1",
-        refreshPins: true,
-      })
-    ).wait()
-    const pins3 = JSON.parse(
-      readFileSync(join(wf, "runs", "r3", "resources.json"), "utf8")
-    ).pins
-    expect(pins3[0].revision).not.toBe(pins1[0].revision)
-    engine.close()
-  })
+    await engine.pinNodeRun({ graph, runId: "r2", pinFromRunId: "r1" })
+    expect(resourcesOf(home, "rerun-pins", "r2").pins[0].revision).toBe(rev1)
 
-  it("queued runs pin at start, not on activate", async () => {
-    const home = tempHome()
-    writeConn(home, "src", { label: "q" })
-    const wf = writeWorkflow(
-      home,
-      "queue-pin",
-      `
-id: queue-pin
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: src, access: read }
-    run: "sleep 0.2 && echo ok"
-`
-    )
-    const engine = createEngine({ home })
-    const first = await engine.startRun({ workflowDir: wf, runId: "a" })
-    const second = await engine.startRun({ workflowDir: wf, runId: "b" })
-    expect(second.status).toBe("queued")
-    expect(existsSync(join(wf, "runs", "b", "resources.json"))).toBe(true)
-    const pinsBefore = JSON.parse(
-      readFileSync(join(wf, "runs", "b", "resources.json"), "utf8")
-    ).pins[0].revision
-    await first.wait()
-    await second.wait()
-    const pinsAfter = JSON.parse(
-      readFileSync(join(wf, "runs", "b", "resources.json"), "utf8")
-    ).pins[0].revision
-    expect(pinsAfter).toBe(pinsBefore)
+    await engine.pinNodeRun({
+      graph,
+      runId: "r3",
+      pinFromRunId: "r1",
+      refreshPins: true,
+    })
+    expect(resourcesOf(home, "rerun-pins", "r3").pins[0].revision).not.toBe(rev1)
     engine.close()
   })
 })
@@ -401,20 +304,9 @@ describe("library API helpers", () => {
         .some((e) => e.type === "library_pulled")
     ).toBe(true)
 
-    const wf = writeWorkflow(
-      home,
-      "list-pins",
-      `
-id: list-pins
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: demo, access: read }
-    run: "echo ok"
-`
-    )
-    await (await engine.startRun({ workflowDir: wf, runId: "r1" })).wait()
+    const graph = assetGraph("list-pins", { connection: "demo", id: "z" })
+    const pins = await engine.pinNodeRun({ graph, runId: "r1" })
+    await engine.startNodeRun({ graph, runId: "r1", pins }).wait()
     const listed = listLibrary(home)
     expect(listed.entities).toHaveLength(1)
     expect(listed.entities[0].entityId).toBe("z")

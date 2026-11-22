@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { isPublishTask, type RunDetail, type TaskView } from "@workspace/shared"
+import type { RunDetail, TaskView } from "@workspace/shared"
 import { ShieldCheck } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -14,7 +14,7 @@ import { Confirmation } from "@/components/ai-elements/confirmation"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { approveTask, rejectTask } from "@/lib/run-actions"
 import { runTaskPath, workflowPath } from "@/lib/paths"
-import { ChangesToPublish } from "./ChangesToPublish"
+import { ChangesToPublish, publishConnectionOf } from "./ChangesToPublish"
 import { mono } from "@/components/data/mono"
 
 type Props = {
@@ -26,8 +26,7 @@ function firstFailedTask(run: RunDetail): TaskView | undefined {
 }
 
 function isPublishWaiting(run: RunDetail, task: TaskView): boolean {
-  const spec = run.graph.tasks.find((t) => t.id === task.id)
-  return Boolean(spec && isPublishTask(spec))
+  return publishConnectionOf(run, task.id) !== undefined
 }
 
 /** The question of a waiting Approval step, if the task is one. */
@@ -140,7 +139,10 @@ export function RunLead({ run }: Props) {
   if (run.status === "failed") {
     const failed = firstFailedTask(run)
     if (!failed) return null
-    if (failed.failReason === "conflict") {
+    const failReason = run.steps?.findLast(
+      (s) => s.nodeId === failed.id
+    )?.failReason
+    if (failReason === "conflict") {
       const overview = workflowPath(run.workflowId)
       return (
         <Alert variant="destructive" data-testid="run-conflict-alert">
@@ -163,7 +165,7 @@ export function RunLead({ run }: Props) {
       )
     }
     const terminalHref = runTaskPath(run.id, failed.id, "terminal")
-    const name = run.graph.tasks.find((t) => t.id === failed.id)?.name
+    const name = run.graph.nodes.find((n) => n.id === failed.id)?.name
     const attempt = failed.attempts.at(-1)?.attempt ?? 1
     return (
       <Alert variant="destructive" data-testid="run-failed-alert">

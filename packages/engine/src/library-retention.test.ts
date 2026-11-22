@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { workflowSchema } from "@workspace/shared"
 import {
   clearConnectors,
   fakeConnector,
@@ -106,12 +107,12 @@ describe("library retention", () => {
       "pin-wf",
       `
 id: pin-wf
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: demo, access: read }
-    run: "echo ok"
+nodes:
+  - id: lib
+    kind: asset
+    resources:
+      - { connection: demo, entity: item, id: alpha }
+edges: []
 `
     )
     // Pin the old revision by writing resources.json for a finished run.
@@ -245,22 +246,25 @@ tasks:
   it("deleting a run releases its pins so sweep can remove them", async () => {
     const home = tempHome()
     writeConn(home, "demo", "z")
-    const wf = writeWorkflow(
-      home,
-      "del-pin",
-      `
-id: del-pin
-tasks:
-  - id: a
-    kind: command
-    uses:
-      - { connection: demo, access: read }
-    run: "echo ok"
-`
-    )
+    const graph = workflowSchema.parse({
+      id: "del-pin",
+      nodes: [
+        { id: "t", kind: "trigger", type: "manual" },
+        {
+          id: "lib",
+          kind: "asset",
+          resources: [{ connection: "demo", entity: "item", id: "z" }],
+        },
+        { id: "o", kind: "output", target: "folder" },
+      ],
+      edges: [
+        { from: "t", to: "o" },
+        { from: "lib", to: "o" },
+      ],
+    })
     const engine = createEngine({ home })
-    const handle = await engine.startRun({ workflowDir: wf, runId: "r-pin" })
-    await handle.wait()
+    const pins = await engine.pinNodeRun({ graph, runId: "r-pin" })
+    await engine.startNodeRun({ graph, runId: "r-pin", pins }).wait()
     const entityRoot = libraryEntityDir(home, "demo", "item", "z")
     const rev = listLibrary(home).entities[0]?.revisions[0]?.revision
     expect(rev).toBeTruthy()

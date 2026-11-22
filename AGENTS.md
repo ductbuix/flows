@@ -34,27 +34,26 @@ Schema and writing rules: `docs/README.md`.
   pins tabs; connection policy Select.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
-  CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
+  CRUD, file GET/PUT, trust GET/PUT and preflight (CLIs of the nodes), GET
   `/cli/:cli/models`, connections CRUD/check/sign-in,
-  `GET/PUT /mcp-trust`, node GET/PUT, `/layout` and node
-  runs (on unless `FLOWS_NODES=0`; health reports it), `GET /connectors`, library
+  `GET/PUT /mcp-trust`, node GET/PUT, `/layout`, `GET /connectors`, library
   GET/pull/clear (usage + retention), work item CRUD, run REST (list/start/
   cancel/rerun/retry/approve/reject/delete, changes), run input/files, log/
   summary/out, websocket snapshots, `runs_changed`, log chunks, file watches.
-- `packages/engine`: SQLite event log + settings (`cli_trust`), fold,
-  scheduler, command/agent tasks (CliAdapter), connectors (github draft
-  PR, confluence via MCP, rally, fake), MCP trust allowlist, connections,
-  library pull/pins/retention (`library.ts`, maxBytes, sweep, clear,
-  `resources/` + `RESOURCE_*`), work items, cookie secrets under
-  `secrets/` (Chrome sign-in, sandbox denies), propose work copies
-  (`work/`, serial lock, change sets), `kind: publish` tasks (policy gate
-  incl. trust-agent-review, Cloud effects), model/effort resolve and
-  preflight, trust markers, spawn, resume, approval, cancel, retry,
-  repeat, `agents` limits, run deletion, frozen `RUN_INPUT`, queued runs,
-  summary cache, port leases, `<workflow>/.cache`; `nodes/` (walk, loops,
-  executors incl. `publish.ts`, `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`).
+- `packages/engine`: SQLite event log + settings (`cli_trust`; rows it
+  cannot parse, such as old task runs, are skipped), connectors (github
+  draft PR, confluence via MCP, rally, fake), MCP trust allowlist,
+  connections, library pull/pins/retention (`library.ts`, maxBytes, sweep,
+  clear, `resources/` + `RESOURCE_*`), work items, cookie secrets under
+  `secrets/` (Chrome sign-in, sandbox denies), propose work copies (`work/`,
+  change sets, publish gate incl. trust-agent-review, Cloud effects),
+  CliAdapter, model/effort resolve, trust markers, `agents` limits, run
+  deletion, frozen `RUN_INPUT`, queued runs, summary cache,
+  `<workflow>/.cache`; `nodes/` (walk, loops, executors incl. `publish.ts`,
+  `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
+  `run-state.ts` = the run fold).
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
-  websocket, workflow (incl. `kind: publish`), `connection.yaml`, library
+  websocket, node workflow (`workflowSchema`), `connection.yaml`, library
   list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
   events, `findLoopEdges`, YAML edits that keep comments and key order.
 - `packages/ui`: shared shadcn components and `globals.css`.

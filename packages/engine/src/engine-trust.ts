@@ -3,7 +3,7 @@ import type {
   TrustDecision,
   TrustGrant,
 } from "@workspace/shared"
-import type { RunState } from "./fold.ts"
+import type { RunState } from "./nodes/run-state.ts"
 import { workflowDir } from "./paths.ts"
 import { isAlwaysTrusted } from "./trust-policy.ts"
 import {

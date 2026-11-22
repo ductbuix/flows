@@ -1,4 +1,11 @@
-import { isMap, isScalar, isSeq, parseDocument, type Document } from "yaml"
+import {
+  isMap,
+  isScalar,
+  isSeq,
+  parseDocument,
+  Scalar,
+  type Document,
+} from "yaml"
 import type { WorkflowEdge } from "./index.ts"
 
 /**
@@ -119,5 +126,52 @@ export function removeEdge(text: string, edge: WorkflowEdge): string {
   const idx = seq.items.findIndex((e) => edgeMatches(e, edge))
   if (idx < 0) return text
   seq.delete(idx)
+  return doc.toString()
+}
+
+/**
+ * Sets a top-level workflow key (`id`, `name`, `goal`); `undefined` deletes
+ * it. A new `name` goes right after `id`, so the file reads top-down.
+ */
+export function setWorkflowField(
+  text: string,
+  field: "id" | "name" | "goal",
+  value: unknown
+): string {
+  const doc = parse(text)
+  if (value === undefined || value === null) {
+    doc.deleteIn([field])
+  } else if (field === "name" && isMap(doc.contents) && !doc.has("name")) {
+    const map = doc.contents
+    const at = map.items.findIndex(
+      (p) => String((p.key as Scalar).value) === "id"
+    )
+    map.items.splice(at + 1, 0, doc.createPair("name", value))
+  } else {
+    doc.setIn([field], value)
+  }
+  return doc.toString()
+}
+
+/** Replaces a memory path in every node's `memory:` list (DES-013 rename). */
+export function replaceMemoryRef(
+  text: string,
+  fromPath: string,
+  toPath: string
+): string {
+  const doc = parse(text)
+  const seq = seqOf(doc, "nodes")
+  if (!seq) return text
+  for (let i = 0; i < seq.items.length; i++) {
+    const mem = doc.getIn(["nodes", i, "memory"])
+    if (!isSeq(mem)) continue
+    for (let j = 0; j < mem.items.length; j++) {
+      const item = mem.items[j]
+      const val = item instanceof Scalar ? String(item.value) : String(item)
+      if (val !== fromPath) continue
+      if (item instanceof Scalar) item.value = toPath
+      else mem.set(j, toPath)
+    }
+  }
   return doc.toString()
 }

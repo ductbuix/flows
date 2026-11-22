@@ -1,5 +1,5 @@
 import { parseDocument, type Document } from "yaml"
-import { nodeWorkflowSchema, type NodeWorkflow } from "./index.ts"
+import { workflowSchema, type Workflow } from "./index.ts"
 
 export type NodeYamlDiagnostic = {
   message: string
@@ -10,7 +10,7 @@ export type NodeYamlDiagnostic = {
 }
 
 export type ParsedNodeWorkflowYaml = {
-  workflow: NodeWorkflow | null
+  workflow: Workflow | null
   errors: NodeYamlDiagnostic[]
 }
 
@@ -45,7 +45,7 @@ export function parseNodeWorkflowYaml(text: string): ParsedNodeWorkflowYaml {
     })
   }
   if (errors.length > 0) return { workflow: null, errors }
-  const parsed = nodeWorkflowSchema.safeParse(doc.toJS({ maxAliasCount: 1000 }))
+  const parsed = workflowSchema.safeParse(doc.toJS({ maxAliasCount: 1000 }))
   if (parsed.success) return { workflow: parsed.data, errors }
   for (const issue of parsed.error.issues) {
     const path = issue.path.filter(

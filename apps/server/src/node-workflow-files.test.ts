@@ -10,10 +10,9 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine } from "@workspace/engine"
-import { nodeWorkflowDetailSchema } from "@workspace/shared"
+import { workflowDetailSchema } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
-import { nodesEnabled } from "./node-workflow-files.ts"
 
 const nodeYaml = `id: nf
 nodes:
@@ -30,7 +29,6 @@ edges:
 const homes: string[] = []
 
 afterEach(() => {
-  process.env.FLOWS_NODES = "0"
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
@@ -46,7 +44,7 @@ function stack(yaml = nodeYaml) {
 }
 
 const get = async (app: ReturnType<typeof stack>["app"]) =>
-  nodeWorkflowDetailSchema.parse(
+  workflowDetailSchema.parse(
     await (await app.request("/api/workflows/nf")).json()
   )
 
@@ -62,9 +60,8 @@ const put = (
     body: JSON.stringify({ yaml, baseHash, renames }),
   })
 
-describe("node workflow files (FLOWS_NODES)", () => {
+describe("node workflow files", () => {
   it("reads a node workflow and creates node files on PUT", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, dir, engine } = stack()
     const d = await get(app)
     expect(d.workflow?.nodes).toHaveLength(2)
@@ -76,7 +73,6 @@ describe("node workflow files (FLOWS_NODES)", () => {
   })
 
   it("keeps existing node files", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, dir, engine } = stack()
     mkdirSync(join(dir, "nodes", "b"), { recursive: true })
     writeFileSync(join(dir, "nodes", "b", "prompt.md"), "keep me")
@@ -89,7 +85,6 @@ describe("node workflow files (FLOWS_NODES)", () => {
   })
 
   it("moves a removed node folder to nodes/.trash", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, dir, engine } = stack()
     mkdirSync(join(dir, "nodes", "b"), { recursive: true })
     writeFileSync(join(dir, "nodes", "b", "prompt.md"), "p")
@@ -113,7 +108,6 @@ nodes:
   })
 
   it("moves the folder on rename", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, dir, engine } = stack()
     mkdirSync(join(dir, "nodes", "b"), { recursive: true })
     writeFileSync(join(dir, "nodes", "b", "prompt.md"), "p")
@@ -130,7 +124,6 @@ nodes:
   })
 
   it("returns 409 with disk content on a stale baseHash", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, engine } = stack()
     const res = await put(app, nodeYaml, "stale")
     expect(res.status).toBe(409)
@@ -141,7 +134,6 @@ nodes:
   })
 
   it("returns a validation error for a file with old keys", async () => {
-    process.env.FLOWS_NODES = "1"
     const old = `id: nf
 tasks:
   - id: a
@@ -159,7 +151,6 @@ tasks:
   })
 
   it("rejects an invalid node file without writing", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, dir, engine } = stack()
     const d = await get(app)
     const bad = nodeYaml.replace("cli: claude", "cli: nope")
@@ -169,27 +160,7 @@ tasks:
     engine.close()
   })
 
-  it("leaves the task schema in place when the flag is off", async () => {
-    const { app, engine } = stack()
-    const body = (await (await app.request("/api/workflows/nf")).json()) as {
-      workflow: unknown
-      errors: unknown[]
-    }
-    // Task schema: a node file is not a valid task workflow.
-    expect(body.workflow).toBeNull()
-    expect(body.errors.length).toBeGreaterThan(0)
-    engine.close()
-  })
-
-  it("is on by default and off only with FLOWS_NODES=0 (BL-096)", () => {
-    delete process.env.FLOWS_NODES
-    expect(nodesEnabled()).toBe(true)
-    process.env.FLOWS_NODES = "0"
-    expect(nodesEnabled()).toBe(false)
-  })
-
   it("lists node workflows and an old-format file with its error", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, home, engine } = stack()
     const old = join(home, "workflows", "old")
     mkdirSync(old, { recursive: true })
@@ -215,7 +186,6 @@ tasks:
   })
 
   it("creates a node workflow with a Trigger", async () => {
-    process.env.FLOWS_NODES = "1"
     const { app, home, engine } = stack()
     const res = await app.request("/api/workflows", {
       method: "POST",

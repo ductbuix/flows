@@ -129,7 +129,7 @@ export const judgeExecutor = defineExecutor({
         cli: node.cli,
         instructions: frozen,
         modelFields: resolveAttemptModelFields(
-          { id: node.id, needs: [], kind: "agent", ...judge },
+          judge,
           ctx.graph
         ),
         prepare({ attemptRoot, inputDir }) {

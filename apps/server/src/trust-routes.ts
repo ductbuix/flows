@@ -23,7 +23,6 @@ import {
 import { Hono } from "hono"
 import { z } from "zod"
 import { errorJson } from "./control-helpers.ts"
-import { nodesEnabled } from "./node-workflow-files.ts"
 
 const workflowParam = z.object({ workflowId: z.string().min(1) })
 const cliParam = z.object({ cli: z.enum(["claude", "cursor"]) })
@@ -87,44 +86,28 @@ export function trustRoutes(engine: Engine) {
         if (!existsSync(join(dir, "workflow.yaml"))) {
           return errorJson(c, 404, "not_found", "workflow not found")
         }
-        // Node workflows have no tasks to check; the CLIs are those of the
-        // Agent, LLM and Judge nodes. The node start route does not gate on trust yet.
-        if (nodesEnabled()) {
-          const parsed = parseNodeWorkflowYaml(
-            readFileSync(join(dir, "workflow.yaml"), "utf8")
-          )
-          const clis = [
-            ...new Set(
-              (parsed.workflow?.nodes ?? []).flatMap((n) =>
-                (n.kind === "agent" || n.kind === "judge" || n.kind === "llm") &&
-                n.cli !== undefined
-                  ? [n.cli]
-                  : []
-              )
-            ),
-          ].sort()
-          const body: PreflightResponse = {
-            trust: engine.trustDecision(),
-            checks: [],
-            needsAgentCli: clis.length > 0,
-            clis,
-          }
-          return c.json(preflightResponseSchema.parse(body), 200)
+        // The CLIs are those of the Agent, LLM and Judge nodes. The start
+        // route does not gate on trust yet.
+        const parsed = parseNodeWorkflowYaml(
+          readFileSync(join(dir, "workflow.yaml"), "utf8")
+        )
+        const clis = [
+          ...new Set(
+            (parsed.workflow?.nodes ?? []).flatMap((n) =>
+              (n.kind === "agent" || n.kind === "judge" || n.kind === "llm") &&
+              n.cli !== undefined
+                ? [n.cli]
+                : []
+            )
+          ),
+        ].sort()
+        const body: PreflightResponse = {
+          trust: engine.trustDecision(),
+          checks: [],
+          needsAgentCli: clis.length > 0,
+          clis,
         }
-        try {
-          const result = await engine.preflight({ workflowDir: dir })
-          const body: PreflightResponse = {
-            trust: result.trust,
-            checks: result.checks,
-            needsAgentCli: result.needsAgentCli,
-            clis: result.clis,
-          }
-          return c.json(preflightResponseSchema.parse(body), 200)
-        } catch (err) {
-          const message =
-            err instanceof Error ? err.message : "preflight failed"
-          return errorJson(c, 400, "bad_request", message)
-        }
+        return c.json(preflightResponseSchema.parse(body), 200)
       }
     )
 }

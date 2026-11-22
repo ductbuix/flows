@@ -1,10 +1,10 @@
 import {
   deriveAttemptKind,
+  type RetrySpec,
   type RunDetail,
   type TaskView,
 } from "@workspace/shared"
-import { needTaskId } from "@workspace/shared"
-import { serialLocks, type RunState } from "@workspace/engine"
+import type { RunState } from "@workspace/engine"
 
 const TERMINAL = new Set(["succeeded", "failed", "skipped", "cancelled"])
 
@@ -18,66 +18,15 @@ function taskCounts(state: RunState) {
   }
 }
 
-/** Topological order; spawned tasks stay under their parent when adjacent. */
+/** Nodes in graph order; the run view lists one task per node. */
 export function topoTaskIds(state: RunState): string[] {
-  const byId = new Map(state.graph.tasks.map((t) => [t.id, t]))
-  const indegree = new Map<string, number>()
-  const children = new Map<string, string[]>()
-  for (const task of state.graph.tasks) {
-    indegree.set(task.id, 0)
-    children.set(task.id, [])
-  }
-  for (const task of state.graph.tasks) {
-    for (const need of task.needs ?? []) {
-      const parent = needTaskId(need)
-      if (!indegree.has(parent) || !indegree.has(task.id)) continue
-      indegree.set(task.id, (indegree.get(task.id) ?? 0) + 1)
-      children.get(parent)?.push(task.id)
-    }
-  }
-  const queue = state.graph.tasks
-    .filter((t) => (indegree.get(t.id) ?? 0) === 0)
-    .map((t) => t.id)
-  const ordered: string[] = []
-  while (queue.length > 0) {
-    const id = queue.shift()!
-    ordered.push(id)
-    for (const child of children.get(id) ?? []) {
-      const next = (indegree.get(child) ?? 1) - 1
-      indegree.set(child, next)
-      if (next === 0) queue.push(child)
-    }
-  }
-  for (const task of state.graph.tasks) {
-    if (!ordered.includes(task.id)) ordered.push(task.id)
-  }
-  // Prefer spawned tasks immediately after their parent for list nesting.
-  const withSpawn: string[] = []
-  const placed = new Set<string>()
-  for (const id of ordered) {
-    if (placed.has(id)) continue
-    const spec = byId.get(id)
-    if (spec?.spawnedBy && !placed.has(spec.spawnedBy)) continue
-    withSpawn.push(id)
-    placed.add(id)
-    for (const other of ordered) {
-      if (placed.has(other)) continue
-      if (byId.get(other)?.spawnedBy === id) {
-        withSpawn.push(other)
-        placed.add(other)
-      }
-    }
-  }
-  for (const id of ordered) {
-    if (!placed.has(id)) withSpawn.push(id)
-  }
-  return withSpawn
+  return state.graph.nodes.map((n) => n.id)
 }
 
 export function toTaskViews(state: RunState): TaskView[] {
   return topoTaskIds(state).map((id) => {
     const taskState = state.tasks[id]
-    const spec = state.graph.tasks.find((t) => t.id === id)
+    const node = state.graph.nodes.find((n) => n.id === id) as RetrySpec | undefined
     const attempts = (taskState?.attempts ?? []).map((a, index) => ({
       attempt: a.attempt,
       pid: a.pid,
@@ -85,36 +34,21 @@ export function toTaskViews(state: RunState): TaskView[] {
       interrupted: a.interrupted,
       reason: a.reason,
       kind: deriveAttemptKind(
-        spec!,
-        taskState!.attempts.map((x) => ({
+        node ?? {},
+        (taskState?.attempts ?? []).map((x) => ({
           attempt: x.attempt,
           exitCode: x.exitCode,
           interrupted: x.interrupted,
-          manualRetry: x.manualRetry,
         })),
         index
       ),
       ...(a.model !== undefined ? { model: a.model } : {}),
       ...(a.effort !== undefined ? { effort: a.effort } : {}),
       ...(a.modelSource !== undefined ? { modelSource: a.modelSource } : {}),
-      ...(a.portBase !== undefined ? { portBase: a.portBase } : {}),
-      ...(a.portCount !== undefined ? { portCount: a.portCount } : {}),
     }))
-    const waitingReason = serialLocks.waitingReason(state.runId, id)
     return {
       id,
       status: taskState?.status ?? "pending",
-      spawned: Boolean(spec?.spawnedBy),
-      spawnedBy: spec?.spawnedBy,
-      failReason: taskState?.failReason,
-      skipReason: taskState?.skipReason,
-      ...(waitingReason ? { waitingReason } : {}),
-      ...(taskState?.reviewVerdict
-        ? { reviewVerdict: taskState.reviewVerdict }
-        : {}),
-      ...(taskState?.reviewReason
-        ? { reviewReason: taskState.reviewReason }
-        : {}),
       attempts,
     }
   })

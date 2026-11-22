@@ -19,6 +19,7 @@ import {
 } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
+import { settle } from "./test-utils.ts"
 
 const homes: string[] = []
 
@@ -266,10 +267,13 @@ describe("work items API", () => {
       join(wfDir, "workflow.yaml"),
       `id: demo
 goal: keep
-tasks:
+nodes:
+  - { id: t, kind: trigger, type: manual }
   - id: start
     kind: command
-    run: "printf ok > \\"$TASK_OUT/out.txt\\""
+    run: "printf ok > \\"$NODE_OUT/out.txt\\""
+edges:
+  - { from: t, to: start }
 `
     )
     const startRes = await app.request("/api/workflows/demo/runs", {
@@ -279,7 +283,7 @@ tasks:
     })
     expect(startRes.status).toBe(200)
     const { runId } = (await startRes.json()) as { runId: string }
-    await engine.resumeRun(runId)?.wait()
+    await settle(engine, runId)
 
     const createRes = await app.request("/api/workitems", {
       method: "POST",

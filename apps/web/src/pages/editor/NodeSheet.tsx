@@ -3,7 +3,7 @@ import {
   proposeConnectionsUpstream,
   type AnswerDecl,
   type AssetResource,
-  type NodeWorkflow,
+  type Workflow,
   type WorkflowInputDecl,
   type WorkflowNode,
 } from "@workspace/shared"
@@ -41,7 +41,7 @@ import { parsePositiveInt, settingKeys } from "./node-sheet"
 type Props = {
   workflowId: string
   /** The whole graph: a publish Output lists the connections upstream. */
-  graph?: NodeWorkflow
+  graph?: Workflow
   node: WorkflowNode
   onSetting: (key: string, value: unknown) => void
   onEditEnd: () => void

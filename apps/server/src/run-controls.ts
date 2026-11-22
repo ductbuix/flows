@@ -4,7 +4,6 @@ import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import {
   workflowDir,
-  workItemItemKey,
   type Engine,
   type ManualFilePart,
 } from "@workspace/engine"
@@ -12,12 +11,10 @@ import {
   okResponseSchema,
   startRunBodySchema,
   startRunResponseSchema,
-  trustRequiredErrorSchema,
   type OkResponse,
   type StartRunBody,
-  type NodeWorkflow,
+  type Workflow,
   type StartRunResponse,
-  type TrustRequiredError,
   type WorkflowInputDecl,
 } from "@workspace/shared"
 import { parseNodeWorkflowYaml } from "@workspace/shared"
@@ -29,9 +26,7 @@ import {
   withIdempotency,
 } from "./control-helpers.ts"
 import type { IdempotencyStore } from "./idempotency.ts"
-import { nodesEnabled } from "./node-workflow-files.ts"
 import {
-  duplicateInputResponse,
   parseStartRequest,
   resolveStartWorkItem,
   validateStartInput,
@@ -48,27 +43,8 @@ function ok(c: { json: (body: OkResponse, status: 200) => Response }) {
   return c.json(okResponseSchema.parse({ ok: true } satisfies OkResponse), 200)
 }
 
-async function trustRequired(
-  c: { json: (body: TrustRequiredError, status: 409) => Response },
-  engine: Engine,
-  dir: string
-) {
-  const pre = await engine.preflight({ workflowDir: dir })
-  const body: TrustRequiredError = {
-    error: "trust_required",
-    message: "Trust is required before starting an agent CLI run",
-    trust: "none",
-    checks: pre.checks,
-  }
-  return c.json(trustRequiredErrorSchema.parse(body), 409)
-}
-
-function isTrustRequired(err: unknown): boolean {
-  return err instanceof Error && err.message === "trust_required"
-}
-
 /** Inputs declared on the Trigger a node run starts from (BL-104). */
-function triggerInputs(graph: NodeWorkflow): WorkflowInputDecl[] {
+function triggerInputs(graph: Workflow): WorkflowInputDecl[] {
   const trigger = graph.nodes.find((n) => n.kind === "trigger")
   const inputs = trigger && "inputs" in trigger ? trigger.inputs : undefined
   return (inputs as WorkflowInputDecl[] | undefined) ?? []
@@ -177,59 +153,9 @@ export function createRunControls({
         if (parsed instanceof Response) return parsed
         const { body, files } = parsed
 
-        if (nodesEnabled()) {
-          return withIdempotency(c, idempotency, body.requestId, () =>
-            startNodeRoute(c, engine, dir, workflowId, body, files)
-          )
-        }
-
-        return withIdempotency(c, idempotency, body.requestId, async () => {
-          let workflow
-          try {
-            workflow = engine.loadWorkflow(dir)
-          } catch (err) {
-            return mapEngineError(c, err)
-          }
-          const validated = validateStartInput(
-            c,
-            workflow.inputs ?? [],
-            body.values,
-            files
-          )
-          if (validated instanceof Response) return validated
-          const linked = resolveStartWorkItem(
-            c,
-            engine,
-            body.workItemId,
-            validated.itemKey
-          )
-          if (linked instanceof Response) return linked
-          const dup = duplicateInputResponse(
-            c,
-            engine,
-            workflowId,
-            linked.itemKey,
-            body.confirmDuplicate
-          )
-          if (dup) return dup
-          try {
-            const handle = await engine.startRun({
-              workflowDir: dir,
-              trustGrant: body.trustGrant,
-              values: validated.values,
-              files: validated.files,
-              workItemId: linked.workItemId,
-            })
-            const resBody: StartRunResponse = {
-              runId: handle.runId,
-              status: handle.status,
-            }
-            return c.json(startRunResponseSchema.parse(resBody), 200)
-          } catch (err) {
-            if (isTrustRequired(err)) return trustRequired(c, engine, dir)
-            return mapEngineError(c, err)
-          }
-        })
+        return withIdempotency(c, idempotency, body.requestId, () =>
+          startNodeRoute(c, engine, dir, workflowId, body, files)
+        )
       }
     )
     .post(
@@ -264,59 +190,11 @@ export function createRunControls({
           return errorJson(c, 409, "conflict", "run is still live")
         }
         const dir = workflowDir(engine.home, state.workflowId)
-        if (state.nodeGraph) {
-          // A node run starts again from the current workflow.yaml (BL-102).
-          return startNodeRoute(c, engine, dir, state.workflowId, body, files, {
-            runId,
-            workItemId: state.workItemId,
-          })
-        }
-        let workflow
-        try {
-          workflow = engine.loadWorkflow(dir)
-        } catch (err) {
-          return mapEngineError(c, err)
-        }
-        const validated = validateStartInput(
-            c,
-            workflow.inputs ?? [],
-            body.values,
-            files
-          )
-        if (validated instanceof Response) return validated
-        // Keep the original workItemId even if the item was trashed (BL-039).
-        const workItemId = state.workItemId
-        const itemKey =
-          workItemId !== undefined
-            ? workItemItemKey(workItemId)
-            : validated.itemKey
-        const dup = duplicateInputResponse(
-          c,
-          engine,
-          state.workflowId,
-          itemKey,
-          body.confirmDuplicate
-        )
-        if (dup) return dup
-        try {
-          const handle = await engine.startRun({
-            workflowDir: dir,
-            trustGrant: body.trustGrant,
-            values: validated.values,
-            files: validated.files,
-            pinFromRunId: runId,
-            refreshPins: body.refreshPins,
-            workItemId,
-          })
-          const resBody: StartRunResponse = {
-            runId: handle.runId,
-            status: handle.status,
-          }
-          return c.json(startRunResponseSchema.parse(resBody), 200)
-        } catch (err) {
-          if (isTrustRequired(err)) return trustRequired(c, engine, dir)
-          return mapEngineError(c, err)
-        }
+        // A node run starts again from the current workflow.yaml (BL-102).
+        return startNodeRoute(c, engine, dir, state.workflowId, body, files, {
+          runId,
+          workItemId: state.workItemId,
+        })
       })
     })
     .post(

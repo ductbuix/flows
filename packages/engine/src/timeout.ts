@@ -1,4 +1,4 @@
-import type { Task, Workflow } from "@workspace/shared"
+import type { Workflow } from "@workspace/shared"
 
 /** Builtin default when neither task nor workflow sets timeout (DES-019). */
 export const DEFAULT_ATTEMPT_TIMEOUT_SECONDS = 900
@@ -7,7 +7,7 @@ export const DEFAULT_ATTEMPT_TIMEOUT_SECONDS = 900
  * Resolve attempt timeout: task → workflow → 900 seconds.
  */
 export function resolveAttemptTimeout(
-  task: Pick<Task, "timeout">,
+  task: { timeout?: number },
   workflow: Pick<Workflow, "timeout">
 ): number {
   return task.timeout ?? workflow.timeout ?? DEFAULT_ATTEMPT_TIMEOUT_SECONDS

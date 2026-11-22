@@ -8,7 +8,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { nodeWorkflowSchema, type EngineEvent } from "@workspace/shared"
+import { workflowSchema, type EngineEvent } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
 import { foldSteps } from "./fold-steps.ts"
@@ -19,7 +19,7 @@ afterEach(() => {
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
-const graph = nodeWorkflowSchema.parse({
+const graph = workflowSchema.parse({
   id: "wf",
   nodes: [
     { id: "t", kind: "trigger", type: "manual" },
@@ -196,7 +196,7 @@ describe("Run from here (from)", () => {
   it("runs a step again when its settings changed", () => {
     const { home, log } = setup()
     fullRun(home, log)
-    const changed = nodeWorkflowSchema.parse({
+    const changed = workflowSchema.parse({
       ...graph,
       nodes: graph.nodes.map((n) =>
         n.id === "p" ? { ...n, name: "Rules" } : n

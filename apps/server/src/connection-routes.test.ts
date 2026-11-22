@@ -140,12 +140,12 @@ describe("connection routes", () => {
       join(wf, "workflow.yaml"),
       `
 id: demo
-tasks:
-  - id: a
-    kind: command
-    run: echo
-    uses:
-      - { connection: github-acme, access: read }
+nodes:
+  - id: lib
+    kind: asset
+    resources:
+      - { connection: github-acme, entity: repo, id: acme }
+edges: []
 `
     )
     const delRes = await app.request("/api/connections/github-acme", {

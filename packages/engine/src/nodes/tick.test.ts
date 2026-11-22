@@ -11,7 +11,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { afterEach, describe, expect, it } from "vitest"
-import { NODE_KINDS, nodeWorkflowSchema } from "@workspace/shared"
+import { NODE_KINDS, workflowSchema } from "@workspace/shared"
 import { EventLog } from "../event-log.ts"
 import { appDbPath, runDir, workflowDir } from "../paths.ts"
 import { EXECUTORS } from "./registry.ts"
@@ -22,7 +22,7 @@ afterEach(() => {
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
-const graph = nodeWorkflowSchema.parse({
+const graph = workflowSchema.parse({
   id: "wf",
   nodes: [
     { id: "t", kind: "trigger", type: "manual" },

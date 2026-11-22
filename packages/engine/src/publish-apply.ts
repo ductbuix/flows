@@ -1,23 +1,17 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { ChangeSet, EngineEvent, PublishTask } from "@workspace/shared"
+import type { ChangeSet, EngineEvent } from "@workspace/shared"
 import { readConnection } from "./connections.ts"
 import { getConnector } from "./connectors/registry.ts"
 import type { ConnectorPublishResult } from "./connectors/types.ts"
-import { prepareAttemptDirs } from "./dirs.ts"
-import type { RunState } from "./fold.ts"
-import { attemptDir } from "./paths.ts"
-import { runPublishAgentReview } from "./publish-review.ts"
 import { advanceWorkCopyBase } from "./work-copy.ts"
 
+/** What a publish call and its events need from the run. */
 export type PublishHost = {
   runId: string
   runRoot: string
-  workflowRoot: string
   home: string
-  state: () => RunState
   append: (event: EngineEvent) => void
-  requestTick: () => void
 }
 
 export function nowIso(): string {
@@ -29,56 +23,6 @@ export function needsPersonGate(policy: string, changeSet: ChangeSet): boolean {
   // Destructive ops always wait; trust-agent-review still records a
   // review event before the gate (DES-026 / BL-052).
   return changeSet.ops.some((o) => o.destructive)
-}
-
-/** True when the publish may proceed (person or agent approved). */
-export async function gatePublish(
-  host: PublishHost,
-  task: PublishTask,
-  changeSet: ChangeSet,
-  policy: string
-): Promise<boolean> {
-  const live = host.state().tasks[task.id]
-  if (!live || live.approved) return true
-
-  if (policy === "trust-agent-review") {
-    const review = await runPublishAgentReview({
-      home: host.home,
-      runRoot: host.runRoot,
-      workflowRoot: host.workflowRoot,
-      workflow: host.state().graph,
-      task,
-      changeSet,
-    })
-    host.append({
-      type: "agent_review_finished",
-      runId: host.runId,
-      taskId: task.id,
-      connection: task.connection,
-      verdict: review.verdict,
-      reason: review.reason,
-      at: nowIso(),
-    })
-    if (review.verdict === "approve") return true
-    host.append({
-      type: "approval_requested",
-      runId: host.runId,
-      taskId: task.id,
-      at: nowIso(),
-    })
-    return false
-  }
-
-  if (needsPersonGate(policy, changeSet)) {
-    host.append({
-      type: "approval_requested",
-      runId: host.runId,
-      taskId: task.id,
-      at: nowIso(),
-    })
-    return false
-  }
-  return true
 }
 
 /** The part of a task a publish call needs; a publish Output node has the same. */
@@ -98,25 +42,17 @@ export async function callPublish(
   })
 }
 
-/**
- * `resultDir` is where `result.json` goes; a task publish uses its attempt
- * `out/`, an Output step passes its own step folder (BL-084).
- */
+/** `resultDir` is where `result.json` goes: the Output step folder (BL-084). */
 export function appendPublishFinished(
   host: Pick<PublishHost, "runId" | "runRoot" | "append">,
   task: PublishTarget,
   outcome: ConnectorPublishResult,
-  resultDir?: string
+  resultDir: string
 ): void {
   if (outcome.status === "applied") {
-    let out = resultDir
-    if (out === undefined) {
-      prepareAttemptDirs(host.runRoot, task.id, 1)
-      out = join(attemptDir(host.runRoot, task.id, 1), "out")
-    }
-    mkdirSync(out, { recursive: true })
+    mkdirSync(resultDir, { recursive: true })
     writeFileSync(
-      join(out, "result.json"),
+      join(resultDir, "result.json"),
       JSON.stringify(outcome.result, null, 2)
     )
     advanceWorkCopyBase(host.runRoot, task.connection)

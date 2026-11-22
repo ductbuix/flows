@@ -19,12 +19,10 @@ edges:
 `
 const homes: string[] = []
 afterEach(() => {
-  process.env.FLOWS_NODES = "0"
   for (const h of homes.splice(0)) rmSync(h, { recursive: true, force: true })
 })
 
 function stack() {
-  process.env.FLOWS_NODES = "1"
   const home = mkdtempSync(join(tmpdir(), "flowapp-layout-"))
   homes.push(home)
   const engine = createEngine({ home })

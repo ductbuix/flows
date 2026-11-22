@@ -1,6 +1,6 @@
 import type { AttemptKindInfo } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
-import { Hand, Play, Repeat, RotateCcw, Unplug } from "lucide-react"
+import { Hand, Play, RotateCcw, Unplug } from "lucide-react"
 
 type Props = {
   kind: AttemptKindInfo
@@ -11,8 +11,6 @@ function variantFor(kind: AttemptKindInfo["kind"]) {
   switch (kind) {
     case "retry":
       return "destructive" as const
-    case "repeat":
-      return "secondary" as const
     default:
       return "outline" as const
   }
@@ -24,8 +22,6 @@ function Icon({ kind }: { kind: AttemptKindInfo["kind"] }) {
       return <Play />
     case "retry":
       return <RotateCcw />
-    case "repeat":
-      return <Repeat />
     case "manual_retry":
       return <Hand />
     case "interrupted":

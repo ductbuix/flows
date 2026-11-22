@@ -1,14 +1,8 @@
 import { describe, expect, it } from "vitest"
 import { deriveAttemptKind } from "./attempt-kind.ts"
-import type { Task } from "./workflow.ts"
+import type { RetrySpec } from "./attempt-kind.ts"
 
-const command = (overrides: Partial<Task> = {}): Task =>
-  ({
-    id: "t",
-    kind: "command",
-    run: "true",
-    ...overrides,
-  }) as Task
+const command = (overrides: RetrySpec = {}): RetrySpec => overrides
 
 describe("deriveAttemptKind", () => {
   it("labels the first attempt as Run", () => {
@@ -37,20 +31,6 @@ describe("deriveAttemptKind", () => {
       max: 3,
     })
     expect(info.ariaLabel).toContain("Retry 2 of 3")
-  })
-
-  it("labels repeat after success with n/max", () => {
-    const task = command({
-      repeat: { max: 5, until: { expr: "false" } },
-    })
-    const attempts = [{ attempt: 1, exitCode: 0 }, { attempt: 2 }]
-    const info = deriveAttemptKind(task, attempts, 1)
-    expect(info).toMatchObject({
-      kind: "repeat",
-      label: "Repeat 2/5",
-      n: 2,
-      max: 5,
-    })
   })
 
   it("labels manual retry without counting against retry.max", () => {

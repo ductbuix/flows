@@ -1,20 +1,19 @@
-import type { RunDetail, Task as WorkflowTask } from "@workspace/shared"
+import type { RunDetail } from "@workspace/shared"
 import { upstreamEnvName } from "@workspace/shared"
 import type { EnvVar } from "@/components/data/EnvironmentVariables"
-
-function graphTask(run: RunDetail, taskId: string): WorkflowTask | undefined {
-  return run.graph.tasks.find((t) => t.id === taskId)
-}
 
 /** Command line shown in Terminal / Environment (from the frozen graph). */
 export function taskCommandLine(
   run: RunDetail,
   taskId: string
 ): string | undefined {
-  const task = graphTask(run, taskId)
-  if (!task) return undefined
-  if (task.kind === "command") return task.run
-  return `${task.cli} (agent)`
+  const node = run.graph.nodes.find((n) => n.id === taskId)
+  if (!node) return undefined
+  if (node.kind === "command") return node.run
+  if (node.kind === "agent" || node.kind === "llm" || node.kind === "judge") {
+    return `${node.cli} (${node.kind})`
+  }
+  return undefined
 }
 
 const CACHE_ENV: EnvVar[] = [
@@ -32,50 +31,37 @@ export function taskEnvVars(
   attempt: number
 ): EnvVar[] {
   const runId = run.id
+  const step = `runs/${runId}/nodes/${taskId}`
   const base: EnvVar[] = [
     { name: "RUN_ID", value: runId, badge: "run" },
+    { name: "NODE_ID", value: taskId, badge: "run" },
     { name: "WF_DIR", value: "<workflow>", badge: "path" },
     { name: "WF_INPUT", value: "input", badge: "path" },
     { name: "WF_OUTPUT", value: "output", badge: "path" },
     { name: "RUN_INPUT", value: `runs/${runId}/input`, badge: "path" },
     {
-      name: "TASK_IN",
-      value: `runs/${runId}/tasks/${taskId}/input`,
+      name: "NODE_IN",
+      value: `${step}/pass-<n>/attempt-${attempt}/input`,
       badge: "path",
     },
     {
-      name: "TASK_OUT",
-      value: `runs/${runId}/tasks/${taskId}/attempt-${attempt}/out`,
+      name: "NODE_OUT",
+      value: `${step}/pass-<n>/attempt-${attempt}/out`,
       badge: "path",
     },
     {
       name: "PREV_ATTEMPT",
       value:
-        attempt > 1
-          ? `runs/${runId}/tasks/${taskId}/attempt-${attempt - 1}`
-          : "",
+        attempt > 1 ? `${step}/pass-<n>/attempt-${attempt - 1}` : "",
       badge: "path",
     },
   ]
-  const attemptView = run.tasks
-    .find((t) => t.id === taskId)
-    ?.attempts.find((a) => a.attempt === attempt)
-  if (attemptView?.portBase !== undefined) {
-    const count = attemptView.portCount ?? 10
-    base.push(
-      { name: "PORT", value: String(attemptView.portBase), badge: "port" },
-      {
-        name: "FLOWS_PORT_BASE",
-        value: String(attemptView.portBase),
-        badge: "port",
-      },
-      { name: "FLOWS_PORT_COUNT", value: String(count), badge: "port" }
-    )
-  }
-  const upstream = run.graph.tasks.map((t) => ({
-    name: upstreamEnvName(t.id),
-    value: `runs/${runId}/tasks/${t.id}/latest/out`,
-    badge: "upstream",
-  }))
+  const upstream = run.graph.edges
+    .filter((e) => e.to === taskId)
+    .map((e) => ({
+      name: upstreamEnvName(e.from),
+      value: `runs/${runId}/nodes/${e.from}/pass-<n>/files`,
+      badge: "upstream",
+    }))
   return [...base, ...CACHE_ENV, ...upstream]
 }

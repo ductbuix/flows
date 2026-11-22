@@ -1,9 +1,9 @@
-import { findLoopEdges, type NodeWorkflow } from "@workspace/shared"
+import { findLoopEdges, type Workflow } from "@workspace/shared"
 import type { Edge } from "@xyflow/react"
 import { branchLabel } from "@/nodes/NodeFrame"
 
 /** React Flow edges of a workflow: loop edges get the curved `loop` type (DES-034). */
-export function canvasEdges(workflow: NodeWorkflow): Edge[] {
+export function canvasEdges(workflow: Workflow): Edge[] {
   const loops = findLoopEdges(workflow.nodes, workflow.edges)
   return workflow.edges.map((e, i) => {
     const base = {

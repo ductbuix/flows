@@ -9,7 +9,6 @@ import {
 } from "node:fs"
 import { join } from "node:path"
 import {
-  attemptDir,
   attemptRootOf,
   runDir,
   stepDir,
@@ -29,18 +28,10 @@ export function resolveAttemptRoot(
   const state = engine.fold(runId)
   if (!state || state.deleted) return null
   if (!state.tasks[taskId]) return null
-  if (state.steps) {
-    const step = state.steps.steps[taskId]?.at(-1)
-    if (!step || step.attempts < attempt) return null
-    const root = runDir(workflowDir(engine.home, state.workflowId), runId)
-    return attemptRootOf(stepDir(root, taskId, step.pass), attempt)
-  }
-  const hasAttempt = (state.tasks[taskId]?.attempts ?? []).some(
-    (a) => a.attempt === attempt
-  )
-  if (!hasAttempt) return null
-  const wfRoot = workflowDir(engine.home, state.workflowId)
-  return attemptDir(runDir(wfRoot, runId), taskId, attempt)
+  const step = state.steps.steps[taskId]?.at(-1)
+  if (!step || step.attempts < attempt) return null
+  const root = runDir(workflowDir(engine.home, state.workflowId), runId)
+  return attemptRootOf(stepDir(root, taskId, step.pass), attempt)
 }
 
 export function readLogChunk(

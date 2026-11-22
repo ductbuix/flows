@@ -1,11 +1,9 @@
 import { z } from "zod"
-import type { Task } from "./workflow.ts"
 
 export const attemptKindSchema = z.enum([
   "run",
   "retry",
-  "repeat",
-  "manual_retry",
+    "manual_retry",
   "interrupted",
 ])
 
@@ -23,7 +21,6 @@ export const attemptKindInfoSchema = z.object({
 export type AttemptKindInfo = z.infer<typeof attemptKindInfoSchema>
 
 const DEFAULT_RETRY_MAX = 3
-const DEFAULT_REPEAT_MAX = 5
 
 export type AttemptLike = {
   attempt: number
@@ -33,12 +30,11 @@ export type AttemptLike = {
   manualRetry?: boolean
 }
 
-function retryMax(task: Task): number {
-  return task.retry?.max ?? DEFAULT_RETRY_MAX
-}
+/** The retry policy of a node, the only part of it an attempt label reads. */
+export type RetrySpec = { retry?: { max?: number } }
 
-function repeatMax(task: Task): number {
-  return task.repeat?.max ?? DEFAULT_REPEAT_MAX
+function retryMax(task: RetrySpec): number {
+  return task.retry?.max ?? DEFAULT_RETRY_MAX
 }
 
 function failed(a: AttemptLike): boolean {
@@ -47,16 +43,12 @@ function failed(a: AttemptLike): boolean {
   )
 }
 
-function succeeded(a: AttemptLike): boolean {
-  return a.exitCode === 0 && !a.interrupted
-}
-
 /**
  * Derive DES-009 attempt kind from prior attempts and the task policy.
  * Manual retry (DES-011) wins over automatic retry/repeat labels.
  */
 export function deriveAttemptKind(
-  task: Task,
+  task: RetrySpec,
   attempts: AttemptLike[],
   index: number
 ): AttemptKindInfo {
@@ -84,7 +76,6 @@ export function deriveAttemptKind(
 
   const prior = attempts.slice(0, index)
   const priorFailures = prior.filter(failed).length
-  const priorSuccesses = prior.filter(succeeded).length
   const last = prior[prior.length - 1]
 
   if (last && failed(last) && task.retry) {
@@ -98,18 +89,6 @@ export function deriveAttemptKind(
       kind: "retry",
       label: `Retry ${n}/${max}`,
       ariaLabel: `Retry ${n} of ${max} ${reason}`,
-      n,
-      max,
-    }
-  }
-
-  if (last && succeeded(last) && task.repeat) {
-    const n = priorSuccesses + 1
-    const max = repeatMax(task)
-    return {
-      kind: "repeat",
-      label: `Repeat ${n}/${max}`,
-      ariaLabel: `Repeat ${n} of ${max}`,
       n,
       max,
     }

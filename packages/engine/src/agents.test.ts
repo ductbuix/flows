@@ -33,12 +33,7 @@ describe("agent adapters", () => {
   it("builds a headless Claude Code command", () => {
     const cmd = buildAgentShellCommand(
       {
-        id: "plan",
-        kind: "agent",
         cli: "claude",
-
-        needs: [],
-        spawn: true,
       },
       "/wf/tasks/plan.md",
       { workflowRoot: "/wf", attemptRoot: "/wf/runs/r/tasks/plan/attempt-1" }
@@ -46,7 +41,7 @@ describe("agent adapters", () => {
     expect(cmd).toContain("claude --print --permission-mode dontAsk")
     expect(cmd).toContain(`--add-dir ${shellSingleQuote("/wf")}`)
     expect(cmd).toContain(
-      shellSingleQuote(agentPrompt("/wf/tasks/plan.md", true))
+      shellSingleQuote(agentPrompt("/wf/tasks/plan.md"))
     )
     expect(cmd).not.toContain("--model")
     expect(cmd).not.toContain("--effort")
@@ -55,11 +50,8 @@ describe("agent adapters", () => {
   it("adds Claude model and effort flags from task and workflow", () => {
     const cmd = buildAgentShellCommand(
       {
-        id: "plan",
-        kind: "agent",
         cli: "claude",
         model: "opus",
-        needs: [],
       },
       "/wf/tasks/plan.md",
       { workflowRoot: "/wf", attemptRoot: "/wf/runs/r/tasks/plan/attempt-1" },
@@ -73,11 +65,7 @@ describe("agent adapters", () => {
     const attempt = "/wf/runs/r/tasks/plan/attempt-1"
     const cmd = buildAgentShellCommand(
       {
-        id: "plan",
-        kind: "agent",
         cli: "cursor",
-
-        needs: [],
       },
       "/wf/tasks/plan.md",
       { workflowRoot: "/wf", attemptRoot: attempt }
@@ -85,19 +73,15 @@ describe("agent adapters", () => {
     expect(cmd).toContain("agent -p --force --trust")
     expect(cmd).toContain(`--workspace ${shellSingleQuote(attempt)}`)
     expect(cmd).toContain(`--add-dir ${shellSingleQuote("/wf")}`)
-    expect(cmd).not.toContain("out/spawn")
     expect(cmd).not.toMatch(/--model/)
   })
 
   it("adds a composed Cursor --model flag", () => {
     const cmd = buildAgentShellCommand(
       {
-        id: "plan",
-        kind: "agent",
         cli: "cursor",
         model: "grok-4.7",
         effort: "high",
-        needs: [],
       },
       "/wf/tasks/plan.md",
       { workflowRoot: "/wf", attemptRoot: "/wf/runs/r/tasks/plan/attempt-1" }
@@ -115,11 +99,7 @@ describe("agent adapters", () => {
 
     copyTaskMemories(
       {
-        id: "plan",
-        kind: "agent",
         cli: "claude",
-
-        needs: [],
         memory: ["memory/style.md"],
       },
       wf,

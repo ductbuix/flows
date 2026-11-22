@@ -1,7 +1,3 @@
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
-import { attemptDir } from "./paths.ts"
-
 /** True if the process exists (signal 0). */
 export function isPidAlive(pid: number): boolean {
   try {
@@ -25,32 +21,6 @@ export function killProcessGroup(
     } catch {
       // already gone
     }
-  }
-}
-
-export function exitCodePath(
-  runRoot: string,
-  taskId: string,
-  attempt: number
-): string {
-  return join(attemptDir(runRoot, taskId, attempt), "exit.code")
-}
-
-/** Read exit.code written by the launch wrapper; null if missing or invalid. */
-export function readExitCode(
-  runRoot: string,
-  taskId: string,
-  attempt: number
-): number | null {
-  try {
-    const raw = readFileSync(
-      exitCodePath(runRoot, taskId, attempt),
-      "utf8"
-    ).trim()
-    if (!/^-?\d+$/.test(raw)) return null
-    return Number(raw)
-  } catch {
-    return null
   }
 }
 

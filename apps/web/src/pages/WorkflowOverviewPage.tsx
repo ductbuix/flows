@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { useWorkflowLabel } from "@/lib/workflows-context"
 import { useParams } from "react-router"
 import {
-  nodeWorkflowDetailSchema,
-  type NodeWorkflow,
+  workflowDetailSchema,
+  type Workflow,
   type WorkflowInputDecl,
 } from "@workspace/shared"
 import {
@@ -22,7 +22,7 @@ import { WorkflowStartButton } from "@/components/WorkflowStartButton"
 export function WorkflowOverviewPage() {
   const { workflowId } = useParams() as { workflowId: string }
   // Inputs sit on the Trigger node.
-  const [nodeWorkflow, setNodeWorkflow] = useState<NodeWorkflow | null>(null)
+  const [nodeWorkflow, setNodeWorkflow] = useState<Workflow | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -45,7 +45,7 @@ export function WorkflowOverviewPage() {
         return
       }
       const json: unknown = await res.json()
-      setNodeWorkflow(nodeWorkflowDetailSchema.parse(json).workflow)
+      setNodeWorkflow(workflowDetailSchema.parse(json).workflow)
       setLoading(false)
     })()
     return () => {

@@ -14,7 +14,7 @@ import {
   NODE_KINDS,
   connectionEnvName,
   upstreamEnvName,
-  type NodeWorkflow,
+  type Workflow,
 } from "@workspace/shared"
 import { loadAppConfig, effectiveLimit } from "../config.ts"
 import { resolveFinishReason } from "../failure-reason.ts"
@@ -67,20 +67,20 @@ function readStderr(attemptRoot: string): string {
   }
 }
 
-function cliOf(graph: NodeWorkflow, nodeId: string): "claude" | "cursor" | undefined {
+function cliOf(graph: Workflow, nodeId: string): "claude" | "cursor" | undefined {
   const node = graph.nodes.find((n) => n.id === nodeId)
   return node?.kind === "agent" || node?.kind === "judge" || node?.kind === "llm"
     ? node.cli
     : undefined
 }
 
-function isCliKind(graph: NodeWorkflow, nodeId: string): boolean {
+function isCliKind(graph: Workflow, nodeId: string): boolean {
   const kind = graph.nodes.find((n) => n.id === nodeId)?.kind
   return NODE_KINDS.find((k) => k.kind === kind)?.process === "cli"
 }
 
 /** Open attempts across the run, and how many are CLI steps. */
-function openCounts(graph: NodeWorkflow, steps: StepsState) {
+function openCounts(graph: Workflow, steps: StepsState) {
   let all = 0
   let agents = 0
   for (const [nodeId, list] of Object.entries(steps.steps)) {
@@ -211,7 +211,7 @@ function appendFinished(
 type WatchArgs = {
   run: Run
   host: ProcessHost
-  graph: NodeWorkflow
+  graph: Workflow
   nodeId: string
   pass: number
   attempt: number
@@ -419,7 +419,7 @@ export function launchAttempt(
  */
 export function reattachAttempts(
   run: Run,
-  graph: NodeWorkflow,
+  graph: Workflow,
   steps: StepsState,
   runRootOf: (nodeId: string, pass: number) => string
 ): void {

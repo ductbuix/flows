@@ -4,11 +4,11 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  writeFileSync,
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { workflowSchema } from "@workspace/shared"
 import {
   clearConnectors,
   fakeConnector,
@@ -16,9 +16,7 @@ import {
 } from "./connectors/index.ts"
 import { createConnection } from "./connections.ts"
 import { createEngine } from "./engine.ts"
-import { loadWorkflowFile } from "./workflow.ts"
-import { resolveAppHomeRealpath } from "./paths.ts"
-import { runPreflightChecks } from "./preflight.ts"
+import { runDir, workflowDir } from "./paths.ts"
 import { cookiesPath, writeCookies } from "./secrets.ts"
 import {
   buildSandboxSpawn,
@@ -72,47 +70,61 @@ describe("sandbox helpers", () => {
   })
 })
 
+const shq = (path: string) => path.replaceAll("'", "'\\''")
+
+/** Independent command nodes off one Trigger, plus an optional read Asset. */
+function graphOf(
+  id: string,
+  commands: Record<string, string>,
+  asset?: { connection: string; id: string }
+) {
+  const nodes: object[] = [{ id: "t", kind: "trigger", type: "manual" }]
+  const edges: object[] = []
+  if (asset) {
+    nodes.push({
+      id: "lib",
+      kind: "asset",
+      resources: [
+        { connection: asset.connection, entity: "item", id: asset.id },
+      ],
+    })
+  }
+  for (const [nodeId, run] of Object.entries(commands)) {
+    nodes.push({ id: nodeId, kind: "command", run })
+    edges.push({ from: "t", to: nodeId })
+    if (asset) edges.push({ from: "lib", to: nodeId })
+  }
+  return workflowSchema.parse({ id, nodes, edges })
+}
+
+async function runGraph(home: string, graph: ReturnType<typeof graphOf>) {
+  const engine = createEngine({ home })
+  engines.push(engine)
+  const pins = await engine.pinNodeRun({ graph, runId: "r1" })
+  const state = await engine.startNodeRun({ graph, runId: "r1", pins }).wait()
+  return { engine, state, root: runDir(workflowDir(home, graph.id), "r1") }
+}
+
 describe("sandbox write boundary", () => {
   it("allows writes inside the workflow dir and blocks outside", async () => {
     if (!canApplySandbox()) return
 
     const home = tempHome()
-    const wf = join(home, "workflows", "sandbox-boundary")
     const outside = join(home, "outside")
-    mkdirSync(wf, { recursive: true })
     mkdirSync(outside, { recursive: true })
     const outsideFile = join(outside, "bad.txt")
-    writeFileSync(
-      join(wf, "workflow.yaml"),
-      [
-        "id: sandbox-boundary",
-        "tasks:",
-        "  - id: inside",
-        "    kind: command",
-        '    run: "printf ok > \\"$TASK_OUT/ok.txt\\""',
-        "  - id: outside",
-        "    kind: command",
-        `    run: "printf bad > '${outsideFile.replaceAll("'", "'\\''")}'"`,
-        "    needs: [inside]",
-        "    continueOnError: true",
-        "",
-      ].join("\n")
-    )
+    const graph = graphOf("sandbox-boundary", {
+      inside: 'printf ok > "$NODE_OUT/ok.txt"',
+      outside: `printf bad > '${shq(outsideFile)}'`,
+    })
+    const { engine, state, root } = await runGraph(home, graph)
 
-    const engine = createEngine({ home })
-    engines.push(engine)
-    const state = await (
-      await engine.startRun({ workflowDir: wf, runId: "r1" })
-    ).wait()
-
-    expect(state.status).toBe("succeeded")
     expect(state.tasks.inside?.status).toBe("succeeded")
     expect(state.tasks.outside?.status).toBe("failed")
     expect(state.sandboxed).toBe(true)
-
     expect(
       readFileSync(
-        join(wf, "runs", "r1", "tasks", "inside", "latest", "out", "ok.txt"),
+        join(root, "nodes", "inside", "pass-1", "attempt-1", "out", "ok.txt"),
         "utf8"
       )
     ).toBe("ok")
@@ -127,41 +139,14 @@ describe("sandbox write boundary", () => {
   it("marks the run unsandboxed when sandbox is forced off", async () => {
     process.env.FLOWAPP_SANDBOX = "0"
     const home = tempHome()
-    const wf = join(home, "workflows", "no-sandbox")
-    mkdirSync(wf, { recursive: true })
-    writeFileSync(
-      join(wf, "workflow.yaml"),
-      [
-        "id: no-sandbox",
-        "tasks:",
-        "  - id: a",
-        "    kind: command",
-        '    run: "printf x > \\"$TASK_OUT/x.txt\\""',
-        "",
-      ].join("\n")
-    )
-
-    const engine = createEngine({ home })
-    engines.push(engine)
-    const state = await (
-      await engine.startRun({ workflowDir: wf, runId: "r1" })
-    ).wait()
+    const graph = graphOf("no-sandbox", { a: 'printf x > "$NODE_OUT/x.txt"' })
+    const { state } = await runGraph(home, graph)
 
     expect(state.status).toBe("succeeded")
     expect(state.sandboxed).toBe(false)
-
-    const checks = await runPreflightChecks({
-      homeRealpath: resolveAppHomeRealpath(home),
-      home,
-      workflowDir: wf,
-      workflow: loadWorkflowFile(wf),
-    })
-    const sandbox = checks.find((c) => c.id === "sandbox")
-    expect(sandbox?.status).toBe("warn")
-    expect(sandbox?.message).toMatch(/secrets\/ protection is off/)
   })
 
-  it("denies sandboxed tasks from reading secrets/cookies.json", async () => {
+  it("denies sandboxed steps from reading secrets/cookies.json", async () => {
     if (!canApplySandbox()) return
 
     const home = tempHome()
@@ -174,53 +159,26 @@ describe("sandbox write boundary", () => {
       },
     ])
     const cookieFile = cookiesPath(home, "rally-payments")
-    const wf = join(home, "workflows", "secrets-deny")
-    mkdirSync(wf, { recursive: true })
-    const escaped = cookieFile.replaceAll("'", "'\\''")
-    writeFileSync(
-      join(wf, "workflow.yaml"),
-      [
-        "id: secrets-deny",
-        "tasks:",
-        "  - id: read-secret",
-        "    kind: command",
-        `    run: "cat '${escaped}' > \\"$TASK_OUT/leak.txt\\""`,
-        "    continueOnError: true",
-        "",
-      ].join("\n")
-    )
+    const graph = graphOf("secrets-deny", {
+      "read-secret": `cat '${shq(cookieFile)}' > "$NODE_OUT/leak.txt"`,
+    })
+    const { state, root } = await runGraph(home, graph)
 
-    const engine = createEngine({ home })
-    engines.push(engine)
-    const state = await (
-      await engine.startRun({ workflowDir: wf, runId: "r1" })
-    ).wait()
-
-    expect(state.status).toBe("succeeded")
     expect(state.tasks["read-secret"]?.status).toBe("failed")
     expect(state.sandboxed).toBe(true)
-    const leakPath = join(
-      wf,
-      "runs",
-      "r1",
-      "tasks",
-      "read-secret",
-      "latest",
-      "out",
-      "leak.txt"
-    )
+    const attempt = join(root, "nodes", "read-secret", "pass-1", "attempt-1")
     // Redirect may create an empty file before cat is denied.
+    const leakPath = join(attempt, "out", "leak.txt")
     if (existsSync(leakPath)) {
       expect(readFileSync(leakPath, "utf8")).not.toContain(
         "sandbox-secret-cookie"
       )
     }
-    const stderr = readFileSync(
-      join(wf, "runs", "r1", "tasks", "read-secret", "attempt-1", "stderr.log"),
-      "utf8"
+    expect(readFileSync(join(attempt, "stderr.log"), "utf8")).toMatch(
+      /Operation not permitted|Permission denied/
     )
-    expect(stderr).toMatch(/Operation not permitted|Permission denied/)
 
+    const wf = workflowDir(home, "secrets-deny")
     const spawn = buildSandboxSpawn("true", wf)
     expect(spawn.sandboxed).toBe(true)
     if (spawn.sandboxed) {
@@ -242,34 +200,16 @@ describe("sandbox library boundary", () => {
       signIn: "cli",
       refresh: "never",
     })
-
-    const wf = join(home, "workflows", "lib-sandbox")
-    mkdirSync(wf, { recursive: true })
     const libraryFile = join(home, "library", "should-not-write.txt")
-    writeFileSync(
-      join(wf, "workflow.yaml"),
-      [
-        "id: lib-sandbox",
-        "tasks:",
-        "  - id: read",
-        "    kind: command",
-        "    uses:",
-        "      - { connection: demo, access: read }",
-        '    run: "test -f \\"$RESOURCE_DEMO/item/z/data.txt\\" && printf ok > \\"$TASK_OUT/ok.txt\\""',
-        "  - id: write-lib",
-        "    kind: command",
-        `    run: "printf bad > '${libraryFile.replaceAll("'", "'\\''")}'"`,
-        "    needs: [read]",
-        "    continueOnError: true",
-        "",
-      ].join("\n")
+    const graph = graphOf(
+      "lib-sandbox",
+      {
+        read: 'test -f "$RESOURCE_DEMO/item/z/data.txt" && printf ok > "$NODE_OUT/ok.txt"',
+        "write-lib": `printf bad > '${shq(libraryFile)}'`,
+      },
+      { connection: "demo", id: "z" }
     )
-
-    const engine = createEngine({ home })
-    engines.push(engine)
-    const state = await (
-      await engine.startRun({ workflowDir: wf, runId: "r1" })
-    ).wait()
+    const { state } = await runGraph(home, graph)
 
     expect(state.tasks.read?.status).toBe("succeeded")
     expect(state.tasks["write-lib"]?.status).toBe("failed")
