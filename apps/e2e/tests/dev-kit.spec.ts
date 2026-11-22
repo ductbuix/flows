@@ -9,6 +9,19 @@ test.describe("dev kit", () => {
     await expect(page.getByTestId("kit-freshness-fresh")).toBeVisible()
     await expect(page.getByTestId("kit-confirmation")).toBeVisible()
     await expect(page.getByTestId("kit-plan")).toBeVisible()
+    for (const id of [
+      "kit-parts",
+      "kit-checkbox",
+      "kit-combobox",
+      "kit-accordion",
+      "kit-file-tree",
+      "kit-prompt-input",
+      "kit-stack-trace",
+      "kit-terminal",
+      "kit-env",
+    ]) {
+      await expect(page.getByTestId(id)).toBeVisible()
+    }
 
     await page.screenshot({
       path: "test-results/dev-kit-light.png",

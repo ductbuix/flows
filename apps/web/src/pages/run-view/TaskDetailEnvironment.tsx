@@ -16,7 +16,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
-import { EnvironmentVariables } from "@/components/ai-elements/environment-variables"
+import { EnvironmentVariables } from "@/components/data/EnvironmentVariables"
 import { taskCommandLine, taskEnvVars } from "./task-env"
 import { useTaskLog, type LogStream } from "./useTaskLog"
 

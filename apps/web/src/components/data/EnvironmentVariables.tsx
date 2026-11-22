@@ -1,3 +1,6 @@
+/**
+ * Project component (no shadcn example). Moved out of ai-elements; uses base-nova Item and Switch.
+ */
 import { Badge } from "@workspace/ui/components/badge"
 import {
   Item,

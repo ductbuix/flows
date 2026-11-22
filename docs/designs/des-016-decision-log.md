@@ -171,6 +171,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | No `name` falls back to the humanized folder id             | old workflows read well with no file change                    | DES-027, BL-073 |
 | 2026-11-22 | Create asks for Name; the folder id is its slug, editable   | people type a name, not a folder; id stays the stable key      | DES-027, BL-073 |
 | 2026-11-22 | Run label is the work item title, else "Ad hoc run"         | runs have no name of their own; UUID stays in IdText           | DES-029, BL-059 |
+| 2026-11-22 | AI Element files carry a shadcn source comment; env vars live in `components/data/` | shadcn demos are chat-wired; ours are app-specific adaptations | DES-027, BL-060 |
 
 ## Docs and tooling
 
