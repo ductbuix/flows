@@ -39,7 +39,7 @@ import { resumeNodes, runNodes } from "./nodes/drive.ts"
 import type { StepsState } from "./nodes/fold-steps.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
 import { Scheduler } from "./scheduler.ts"
-import type { ManualFilePart } from "./source-manual.ts"
+import type { ManualFilePart, ManualItem } from "./source-manual.ts"
 import { assertPublishTasksValid } from "./publish.ts"
 import { appendRunStarted } from "./start-run.ts"
 import { startNodeRun as startNodeRunQueued } from "./nodes/tick.ts"
@@ -75,6 +75,8 @@ export type StartNodeRunInput = {
   trigger?: string
   /** Frozen as `input/text.md`. */
   inputText?: string
+  /** Declared Trigger inputs and uploads, frozen under `input/` (BL-104). */
+  inputs?: ManualItem
   workItemId?: string
 }
 
@@ -305,6 +307,7 @@ export class Engine {
       graph,
       trigger: input.trigger,
       inputText: input.inputText,
+      inputs: input.inputs,
       workItemId: input.workItemId,
     }
     if (queued) {

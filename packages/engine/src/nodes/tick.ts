@@ -13,6 +13,8 @@ import {
 } from "@workspace/shared"
 import type { EventLog } from "../event-log.ts"
 import { runDir, workflowDir } from "../paths.ts"
+import { manualItemKey } from "../item-key.ts"
+import { manualSource, type ManualItem } from "../source-manual.ts"
 import { retryBackoffMs } from "../loops.ts"
 import { isLaunchPlan, type ExecContext, type ExecInput } from "./define.ts"
 import { foldSteps, latestStep, type StepsState } from "./fold-steps.ts"
@@ -50,6 +52,8 @@ export type StartNodeRunOptions = Omit<NodeRunOptions, "crashAt"> & {
   trigger?: string
   /** Run input text, frozen as `input/text.md`. */
   inputText?: string
+  /** Declared Trigger inputs and uploads, written like a task run (BL-104). */
+  inputs?: ManualItem
   /** Wait for a free slot under `maxConcurrentRuns`: append only (DES-021). */
   queued?: boolean
   workItemId?: string
@@ -76,6 +80,16 @@ export function startNodeRun(opts: StartNodeRunOptions): StepsState {
   }
   if (opts.inputText !== undefined) {
     writeFileSync(join(input, "text.md"), opts.inputText)
+  }
+  if (opts.inputs) {
+    const { fields, inputsJson } = manualSource.materialize(opts.inputs, input)
+    const full = {
+      ...inputsJson,
+      itemKey: manualItemKey(fields),
+      itemKeyVersion: 1,
+      ...(opts.workItemId !== undefined ? { workItemId: opts.workItemId } : {}),
+    }
+    writeFileSync(join(input, "inputs.json"), JSON.stringify(full, null, 2))
   }
 
   for (const node of graph.nodes) {

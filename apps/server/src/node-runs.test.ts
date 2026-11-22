@@ -121,6 +121,57 @@ describe("node runs behind FLOWS_NODES", () => {
     s.engine.close()
   })
 
+  it("lists the CLIs of Agent nodes in the preflight", async () => {
+    const s = stack()
+    writeFileSync(
+      join(s.dir, "workflow.yaml"),
+      `id: nr
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: a, kind: agent, cli: cursor }
+  - { id: b, kind: agent, cli: claude }
+  - { id: c, kind: agent, cli: claude }
+edges:
+  - { from: t, to: a }
+`
+    )
+    const res = await post(s.app, "/workflows/nr/runs/preflight")
+    expect(await res.json()).toMatchObject({
+      needsAgentCli: true,
+      clis: ["claude", "cursor"],
+    })
+    s.engine.close()
+  })
+
+  it("writes declared Trigger inputs to the run input and checks them", async () => {
+    const s = stack(
+      'cat "$RUN_INPUT/ticket.txt"',
+      ""
+    )
+    writeFileSync(
+      join(s.dir, "workflow.yaml"),
+      yaml('cat "$RUN_INPUT/ticket.txt"').replace(
+        "    type: manual\n",
+        "    type: manual\n    inputs:\n      - { name: ticket, type: text, required: true }\n"
+      )
+    )
+    const bad = await post(s.app, "/workflows/nr/runs", { values: {} })
+    expect(bad.status).toBe(400)
+    expect(await bad.json()).toMatchObject({
+      error: "invalid_input",
+      fields: { ticket: expect.any(String) },
+    })
+
+    const { runId } = await start(s, { values: { ticket: "T-9" } })
+    await until(() => types(s, runId).includes("run_succeeded"))
+    const input = join(runDir(s.dir, runId), "input")
+    expect(readFileSync(join(input, "ticket.txt"), "utf8")).toBe("T-9")
+    expect(
+      JSON.parse(readFileSync(join(input, "inputs.json"), "utf8")).fields.ticket
+    ).toEqual({ type: "text", value: "T-9" })
+    s.engine.close()
+  })
+
   it("cancels a run with a live process", async () => {
     const s = stack("sleep 30")
     const { runId } = await start(s)

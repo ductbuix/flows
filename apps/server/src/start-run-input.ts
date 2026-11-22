@@ -19,7 +19,6 @@ import {
   type ManualItemKeyField,
   type StartRunBody,
   type UnknownWorkItemError,
-  type Workflow,
   type WorkflowInputDecl,
 } from "@workspace/shared"
 import type { Context } from "hono"
@@ -112,11 +111,10 @@ export type ValidatedStartInput = {
  */
 export function validateStartInput(
   c: Context,
-  workflow: Workflow,
+  decls: WorkflowInputDecl[],
   values: Record<string, string> | undefined,
   files: ManualFilePart[]
 ): ValidatedStartInput | Response {
-  const decls = workflow.inputs ?? []
   const fieldErrors: Record<string, string> = {}
   const rawValues = values ?? {}
 

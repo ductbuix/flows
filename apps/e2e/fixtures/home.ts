@@ -264,6 +264,28 @@ edges:
 ${trigger ? "  - { from: start, to: build }\n" : ""}  - { from: build, to: done }
 `
 
+const nodeStartYaml = (id: string) => `id: ${id}
+goal: e2e node start inputs
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+    inputs:
+      - { name: ticket, type: text, required: true }
+  - id: build
+    kind: command
+    run: 'cat "$RUN_INPUT/ticket.txt"'
+  - id: review
+    kind: agent
+    cli: claude
+  - id: done
+    kind: output
+    target: folder
+edges:
+  - { from: start, to: build }
+  - { from: build, to: done }
+`
+
 /** Temp FLOWAPP_HOME for the FLOWS_NODES=1 server (node workflow fixtures). */
 export function createNodesE2eHome(): string {
   const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-nodes-"))
@@ -304,6 +326,13 @@ export function createNodesE2eHome(): string {
       mkdirSync(dir, { recursive: true })
       writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, run))
     }
+  }
+  // Trigger inputs for node-start.spec.ts (BL-104); each test owns one.
+  for (const id of ["node-start-light", "node-start-dark", "node-start-run"]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "review"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeStartYaml(id))
+    writeFileSync(join(dir, "nodes", "review", "prompt.md"), "Review it.\n")
   }
   // Finished failing node runs for node-run-view.spec.ts (BL-087).
   for (const theme of ["light", "dark"]) {

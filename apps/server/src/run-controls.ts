@@ -1,7 +1,12 @@
 import { zValidator } from "@hono/zod-validator"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, workItemItemKey, type Engine } from "@workspace/engine"
+import {
+  workflowDir,
+  workItemItemKey,
+  type Engine,
+  type ManualFilePart,
+} from "@workspace/engine"
 import {
   okResponseSchema,
   startRunBodySchema,
@@ -9,8 +14,10 @@ import {
   trustRequiredErrorSchema,
   type OkResponse,
   type StartRunBody,
+  type NodeWorkflow,
   type StartRunResponse,
   type TrustRequiredError,
+  type WorkflowInputDecl,
 } from "@workspace/shared"
 import { parseNodeWorkflowYaml } from "@workspace/shared"
 import { Hono, type Context } from "hono"
@@ -59,6 +66,13 @@ function isTrustRequired(err: unknown): boolean {
   return err instanceof Error && err.message === "trust_required"
 }
 
+/** Inputs declared on the Trigger a node run starts from (BL-104). */
+function triggerInputs(graph: NodeWorkflow): WorkflowInputDecl[] {
+  const trigger = graph.nodes.find((n) => n.kind === "trigger")
+  const inputs = trigger && "inputs" in trigger ? trigger.inputs : undefined
+  return (inputs as WorkflowInputDecl[] | undefined) ?? []
+}
+
 /**
  * Node run start (BL-093): the graph is read from `workflow.yaml`, frozen
  * by the engine. `values.text` is the run input text (`input/text.md`).
@@ -68,7 +82,8 @@ function startNodeRoute(
   engine: Engine,
   dir: string,
   workflowId: string,
-  body: StartRunBody
+  body: StartRunBody,
+  files: ManualFilePart[]
 ): Response {
   const parsed = parseNodeWorkflowYaml(
     readFileSync(join(dir, "workflow.yaml"), "utf8")
@@ -81,12 +96,20 @@ function startNodeRoute(
       parsed.errors[0]?.message ?? "invalid workflow"
     )
   }
+  const decls = triggerInputs(parsed.workflow)
+  const validated = validateStartInput(c, decls, body.values, files)
+  if (validated instanceof Response) return validated
   const linked = resolveStartWorkItem(c, engine, body.workItemId, "")
   if (linked instanceof Response) return linked
+  const withInputs = decls.length > 0 || files.length > 0
   try {
     const handle = engine.startNodeRun({
       graph: parsed.workflow,
-      inputText: body.values?.text,
+      // Without declared inputs the whole start text is `input/text.md`.
+      inputText: decls.length === 0 ? body.values?.text : undefined,
+      ...(withInputs
+        ? { inputs: { decls, values: validated.values, files } }
+        : {}),
       workItemId: linked.workItemId,
     })
     void handle.wait().catch(() => undefined)
@@ -124,7 +147,7 @@ export function createRunControls({
 
         if (nodesEnabled()) {
           return withIdempotency(c, idempotency, body.requestId, () =>
-            startNodeRoute(c, engine, dir, workflowId, body)
+            startNodeRoute(c, engine, dir, workflowId, body, files)
           )
         }
 
@@ -135,7 +158,12 @@ export function createRunControls({
           } catch (err) {
             return mapEngineError(c, err)
           }
-          const validated = validateStartInput(c, workflow, body.values, files)
+          const validated = validateStartInput(
+            c,
+            workflow.inputs ?? [],
+            body.values,
+            files
+          )
           if (validated instanceof Response) return validated
           const linked = resolveStartWorkItem(
             c,
@@ -210,7 +238,12 @@ export function createRunControls({
         } catch (err) {
           return mapEngineError(c, err)
         }
-        const validated = validateStartInput(c, workflow, body.values, files)
+        const validated = validateStartInput(
+            c,
+            workflow.inputs ?? [],
+            body.values,
+            files
+          )
         if (validated instanceof Response) return validated
         // Keep the original workItemId even if the item was trashed (BL-039).
         const workItemId = state.workItemId
