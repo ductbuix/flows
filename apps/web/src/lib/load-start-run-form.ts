@@ -12,6 +12,9 @@ export type StartRunTarget =
 export type StartRunDraft = {
   values: Record<string, string>
   files: { field: string; file: File }[]
+  /** Chosen in the dialog; the gate falls back to the target's workflow. */
+  workflowId?: string
+  workItemId?: string | null
 }
 
 export type StartRunFormData = {

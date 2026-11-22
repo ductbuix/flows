@@ -25,14 +25,13 @@ Schema and writing rules: `docs/README.md`.
   Ad hoc / Library / Rally source Badge);
   `/connections` (Connections/Library tabs, size warning at 80%) and
   `/connections/:id` (sign-in, MCP allow, local data, used by, refresh,
-  policy); Settings lists allowed MCP servers for revoke;
-  `/workflows` and `/runs` (grouped by work item); Start picks work item
-  or None; Home Needs you (incl. publish + connection), expired
+  policy); Settings lists allowed MCP servers;
+  `/workflows` and `/runs` (grouped by work item); one Start run dialog
+  from work item and workflow headers, Allow agent CLI dialog; Home Needs you (incl. publish + connection), expired
   sign-ins, Work items; Impact/Freshness/Policy on `/dev/kit`;
   Overview (Connections + impact)/Editor (Connections FieldSet with
   Propose, publish node + Cloud badge)/Runs; run view summary
-  Cards + Tasks/Changes/Library pins tabs; connection
-  policy Select; Settings.
+  Cards + Tasks/Changes/Library pins tabs; connection policy Select.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET

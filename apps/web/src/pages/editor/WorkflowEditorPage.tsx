@@ -14,6 +14,7 @@ import {
   AlertTitle,
 } from "@workspace/ui/components/alert"
 import { Page } from "@/components/page"
+import { WorkflowStartButton } from "@/components/WorkflowStartButton"
 import { WorkflowHeading } from "@/pages/WorkflowHeading"
 import { ConflictDialog } from "./ConflictDialog"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
@@ -61,6 +62,7 @@ export function WorkflowEditorPage() {
       >
         Add publish
       </Button>
+      <WorkflowStartButton workflowId={workflowId} />
       <Button
         data-testid="save-button"
         disabled={!state.dirty || state.errors.length > 0}

@@ -41,14 +41,13 @@ test.describe("work items pages (BL-040 / J2)", () => {
     await expect(page.getByTestId("work-item-page")).toBeVisible()
     await expect(page.getByTestId("work-item-source")).toHaveText("Ad hoc")
     await expect(page.getByTestId("work-item-context-empty")).toBeVisible()
-    await expect(page.getByTestId("work-item-start-workflow")).toContainText(
-      "diamond"
-    )
     await expect(page.getByTestId("work-item-notes")).toHaveValue(
       "Initial notes"
     )
     await screenshotThemes(page, "work-item-page")
 
+    await page.getByTestId("work-item-start").click()
+    await expect(page.getByTestId("start-run-workflow")).toHaveValue("diamond")
     await page.getByTestId("start-run-submit").click()
     const runRow = page.locator('[data-testid^="work-item-run-"]').first()
     await expect(runRow).toBeVisible({ timeout: 30_000 })

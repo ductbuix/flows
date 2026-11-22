@@ -172,6 +172,7 @@ reversed, keep the row and add a new one that says so.
 | 2026-11-22 | Create asks for Name; the folder id is its slug, editable   | people type a name, not a folder; id stays the stable key      | DES-027, BL-073 |
 | 2026-11-22 | Run label is the work item title, else "Ad hoc run"         | runs have no name of their own; UUID stays in IdText           | DES-029, BL-059 |
 | 2026-11-22 | AI Element files carry a shadcn source comment; env vars live in `components/data/` | shadcn demos are chat-wired; ours are app-specific adaptations | DES-027, BL-060 |
+| 2026-11-22 | One Start dialog everywhere; preflight returns `clis` | trust copy names Cursor or Claude Code; one path to start | DES-029, BL-064 |
 
 ## Docs and tooling
 

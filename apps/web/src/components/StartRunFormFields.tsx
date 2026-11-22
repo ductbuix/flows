@@ -9,6 +9,18 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
+import { Button } from "@workspace/ui/components/button"
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@workspace/ui/components/attachment"
+import { FileText, Paperclip, X } from "lucide-react"
+import { useRef } from "react"
 
 type FilePart = { field: string; file: File }
 
@@ -24,6 +36,78 @@ type Props = {
 
 function fileByField(files: FilePart[], field: string): File | undefined {
   return files.find((f) => f.field === field)?.file
+}
+
+type PickerProps = {
+  id: string
+  testId: string
+  multiple?: boolean
+  files: File[]
+  addLabel: string
+  onPick: (files: File[]) => void
+  onRemove: (index: number) => void
+}
+
+/** "Add files" Button plus Attachment chips; the input stays hidden. */
+function FilePicker({
+  id,
+  testId,
+  multiple,
+  files,
+  addLabel,
+  onPick,
+  onRemove,
+}: PickerProps) {
+  const ref = useRef<HTMLInputElement>(null)
+  return (
+    <div className="flex flex-col gap-2">
+      <input
+        ref={ref}
+        id={id}
+        data-testid={testId}
+        type="file"
+        multiple={multiple}
+        className="sr-only"
+        tabIndex={-1}
+        onChange={(e) => {
+          onPick(e.target.files ? Array.from(e.target.files) : [])
+          e.target.value = ""
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        onClick={() => ref.current?.click()}
+      >
+        <Paperclip data-icon="inline-start" />
+        {addLabel}
+      </Button>
+      {files.length > 0 && (
+        <AttachmentGroup className="flex-wrap overflow-visible">
+          {files.map((file, i) => (
+            <Attachment key={`${file.name}-${i}`} size="sm">
+              <AttachmentMedia>
+                <FileText />
+              </AttachmentMedia>
+              <AttachmentContent>
+                <AttachmentTitle>{file.name}</AttachmentTitle>
+              </AttachmentContent>
+              <AttachmentActions>
+                <AttachmentAction
+                  aria-label={`Remove ${file.name}`}
+                  onClick={() => onRemove(i)}
+                >
+                  <X />
+                </AttachmentAction>
+              </AttachmentActions>
+            </Attachment>
+          ))}
+        </AttachmentGroup>
+      )}
+    </div>
+  )
 }
 
 export function StartRunFormFields({
@@ -72,19 +156,14 @@ export function StartRunFormFields({
               />
             )}
             {decl.type === "file" && (
-              <>
-                <Input
-                  id={`start-run-field-${decl.name}`}
-                  data-testid={`start-run-field-${decl.name}`}
-                  type="file"
-                  onChange={(e) => onChangeFile(decl.name, e.target.files?.[0])}
-                />
-                {fileByField(files, decl.name) && (
-                  <FieldDescription>
-                    {fileByField(files, decl.name)!.name}
-                  </FieldDescription>
-                )}
-              </>
+              <FilePicker
+                id={`start-run-field-${decl.name}`}
+                testId={`start-run-field-${decl.name}`}
+                files={fileByField(files, decl.name) ? [fileByField(files, decl.name)!] : []}
+                addLabel="Add file"
+                onPick={(list) => onChangeFile(decl.name, list[0])}
+                onRemove={() => onChangeFile(decl.name, undefined)}
+              />
             )}
             {errors[decl.name] && (
               <FieldError
@@ -100,21 +179,17 @@ export function StartRunFormFields({
             <FieldLabel htmlFor="start-run-attach">
               Attach files (optional)
             </FieldLabel>
-            <Input
+            <FilePicker
               id="start-run-attach"
-              data-testid="start-run-attach"
-              type="file"
+              testId="start-run-attach"
               multiple
-              onChange={(e) => {
-                const list = e.target.files ? Array.from(e.target.files) : []
-                onChangeAttach(list)
-              }}
+              files={attach}
+              addLabel="Add files"
+              onPick={(list) => onChangeAttach([...attach, ...list])}
+              onRemove={(i) =>
+                onChangeAttach(attach.filter((_, idx) => idx !== i))
+              }
             />
-            {attach.length > 0 && (
-              <FieldDescription>
-                {attach.map((f) => f.name).join(", ")}
-              </FieldDescription>
-            )}
           </Field>
         )}
       </FieldGroup>

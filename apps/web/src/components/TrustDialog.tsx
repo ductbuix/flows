@@ -5,58 +5,68 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { Item, ItemContent, ItemGroup } from "@workspace/ui/components/item"
-import { ScrollArea } from "@workspace/ui/components/scroll-area"
-import { ShieldCheck, TriangleAlert } from "lucide-react"
-import { Confirmation } from "@/components/ai-elements/confirmation"
+import { TriangleAlert } from "lucide-react"
+import { TechnicalChecks } from "@/components/TechnicalChecks"
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   trust: TrustDecision
   checks: TrustCheck[]
+  /** Agent CLIs the run may launch; names the dialog title. */
+  clis?: ("claude" | "cursor")[]
   pending?: boolean
   onTrustOnce: () => void
   onTrustAlways: () => void
   onRun: () => void
 }
 
-/** Pre-run trust + warn-only checks (DES-019). */
+const CLI_NAME = { claude: "Claude Code", cursor: "Cursor" } as const
+
+/** "Cursor", "Claude Code and Cursor", or "Agents" when unknown. */
+export function cliLabel(clis: ("claude" | "cursor")[] = []): string {
+  const names = clis.map((id) => CLI_NAME[id])
+  return names.length > 0 ? names.join(" and ") : "Agents"
+}
+
+/** Allow an agent CLI to run on this Mac, in plain words (DES-029, DES-019). */
 export function TrustDialog({
   open,
   onOpenChange,
   trust,
   checks,
+  clis,
   pending,
   onTrustOnce,
   onTrustAlways,
   onRun,
 }: Props) {
   const needsGrant = trust === "none"
+  const who = cliLabel(clis)
+  const warnings = checks.filter((c) => c.status !== "pass").length
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="trust-dialog" className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {needsGrant ? "Trust agent CLIs?" : "Pre-run check"}
+            {needsGrant ? `Allow ${who} to run on this Mac?` : "Start this run?"}
           </DialogTitle>
           <DialogDescription>
             {needsGrant
-              ? "This run may launch Claude Code or Cursor agent. Trust covers all of FLOWAPP_HOME. Cursor --force auto-approves tool actions. Double check warnings before continuing."
-              : "Always-trust is on. Review warnings before running."}
+              ? `${who} runs your agent tasks. It can change files only in this workflow's folder.`
+              : "Agents are already allowed. Open Technical checks to review the warnings."}
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-60">
+        <TechnicalChecks warnings={warnings} data-testid="trust-technical">
           <ItemGroup>
             {checks.map((check) => (
-              <Item
-                key={check.id}
-                data-testid={`trust-check-${check.id}`}
-              >
+              <Item key={check.id} data-testid={`trust-check-${check.id}`}>
                 <ItemContent className="flex-row flex-wrap items-center gap-2">
                   {check.status === "pass" ? (
                     <span className="shrink-0 text-muted-foreground">pass</span>
@@ -71,46 +81,51 @@ export function TrustDialog({
               </Item>
             ))}
           </ItemGroup>
-        </ScrollArea>
+          {needsGrant && (
+            <p className="text-muted-foreground">
+              Allowing covers all of FLOWAPP_HOME. Cursor runs with --force, which
+              auto-approves tool actions.
+            </p>
+          )}
+        </TechnicalChecks>
 
-        {needsGrant ? (
-          <div className="flex flex-col gap-2">
-            <Confirmation
-              data-testid="trust-confirmation"
-              icon={<ShieldCheck />}
-              title="Trust agent CLIs for this run?"
-              description="Deny cancels. Approve trusts once for this start."
-              approveLabel="Trust once"
-              denyLabel="Cancel"
-              approveTestId="trust-once"
-              denyTestId="trust-cancel"
-              pending={pending}
-              onApprove={onTrustOnce}
-              onDeny={() => onOpenChange(false)}
-            />
+        <DialogFooter className="gap-2 sm:justify-end">
+          <Button
+            variant="outline"
+            data-testid="trust-cancel"
+            disabled={pending}
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          {needsGrant ? (
+            <>
+              <Button
+                variant="outline"
+                data-testid="trust-always"
+                disabled={pending}
+                onClick={onTrustAlways}
+              >
+                Always allow
+              </Button>
+              <Button
+                data-testid="trust-once"
+                disabled={pending}
+                onClick={onTrustOnce}
+              >
+                Allow and start
+              </Button>
+            </>
+          ) : (
             <Button
-              data-testid="trust-always"
+              data-testid="trust-run"
               disabled={pending}
-              onClick={onTrustAlways}
+              onClick={onRun}
             >
-              Always trust
+              Run
             </Button>
-          </div>
-        ) : (
-          <Confirmation
-            data-testid="trust-confirmation"
-            icon={<ShieldCheck />}
-            title="Start this run?"
-            description="Warnings above are informational."
-            approveLabel="Run"
-            denyLabel="Cancel"
-            approveTestId="trust-run"
-            denyTestId="trust-cancel"
-            pending={pending}
-            onApprove={onRun}
-            onDeny={() => onOpenChange(false)}
-          />
-        )}
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

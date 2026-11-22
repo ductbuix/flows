@@ -40,7 +40,7 @@ import {
 } from "./library-retention.ts"
 import { decideTrust } from "./trust-policy.ts"
 import { assertValidGraph, loadWorkflowFile } from "./workflow.ts"
-import { runNeedsAgentCli } from "./workflow-agents.ts"
+import { runNeedsAgentCli, workflowAgentClis } from "./workflow-agents.ts"
 
 export type CreateEngineOptions = {
   home?: string
@@ -140,6 +140,7 @@ export class Engine {
       trust: this.trustDecision(),
       checks: await runPreflightChecks(input),
       needsAgentCli: runNeedsAgentCli(this.home, workflow),
+      clis: workflowAgentClis(workflow, this.home),
     }
   }
 

@@ -216,7 +216,8 @@ HTTP (zod in `packages/shared`):
 - `PUT /api/trust` with `{ grant: "always" | "none" }` to store or
   revoke always-trust
 - `POST /api/workflows/:workflowId/runs/preflight` returns
-  `{ trust, checks }` for the workflow about to run
+  `{ trust, checks, needsAgentCli, clis }` for the workflow about to run
+  (`clis` names the agent CLIs for the Allow dialog title)
 - `POST /api/workflows/:workflowId/runs` accepts
   `{ trustGrant?: "once" | "always" }` and returns `409` with
   `trust_required` plus checks when the policy is `none`

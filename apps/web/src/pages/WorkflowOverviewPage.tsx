@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useWorkflowLabel } from "@/lib/workflows-context"
-import { useNavigate, useParams } from "react-router"
+import { useParams } from "react-router"
 import { workflowDetailSchema, type Workflow } from "@workspace/shared"
 import {
   Alert,
@@ -11,15 +11,13 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Page } from "@/components/page"
 import { WorkflowHeading } from "@/pages/WorkflowHeading"
 import { api } from "@/lib/api"
-import { runPath } from "@/lib/paths"
 import { OverviewConnectionsSection } from "@/pages/OverviewConnectionsSection"
 import { OverviewInputsSection } from "@/pages/OverviewInputsSection"
 import { OverviewTasksSection } from "@/pages/OverviewTasksSection"
-import { WorkflowStartCard } from "@/pages/WorkflowStartCard"
+import { WorkflowStartButton } from "@/components/WorkflowStartButton"
 
 export function WorkflowOverviewPage() {
   const { workflowId } = useParams() as { workflowId: string }
-  const navigate = useNavigate()
   const [workflow, setWorkflow] = useState<Workflow | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -58,7 +56,11 @@ export function WorkflowOverviewPage() {
   ] as const
 
   return (
-    <Page crumbs={[...crumbs]} data-testid="workflow-overview">
+    <Page
+      crumbs={[...crumbs]}
+      actions={workflow ? <WorkflowStartButton workflowId={workflowId} /> : null}
+      data-testid="workflow-overview"
+    >
       <WorkflowHeading
         workflowId={workflowId}
         tab="overview"
@@ -79,12 +81,6 @@ export function WorkflowOverviewPage() {
           <OverviewTasksSection workflow={workflow} />
           <OverviewConnectionsSection workflow={workflow} />
           <OverviewInputsSection inputs={workflow.inputs ?? []} />
-          <WorkflowStartCard
-            workflowId={workflowId}
-            onStarted={(runId) => {
-              void navigate(runPath(runId))
-            }}
-          />
         </>
       ) : (
         <Alert variant="destructive">

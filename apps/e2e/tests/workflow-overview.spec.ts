@@ -11,8 +11,7 @@ test.describe("workflow overview (BL-037)", () => {
     await expect(page.getByTestId("workflow-detail-tabs")).toBeVisible()
     await expect(page.getByTestId("overview-tasks")).toBeVisible()
     await expect(page.getByTestId("overview-inputs")).toBeVisible()
-    await expect(page.getByTestId("workflow-start-card")).toBeVisible()
-    await expect(page.getByTestId("start-run-submit")).toBeVisible()
+    await expect(page.getByTestId("run-start")).toBeVisible()
 
     await page.screenshot({
       path: "test-results/workflow-overview-light.png",
