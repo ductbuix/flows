@@ -14,6 +14,7 @@ import {
   parseNodeWorkflowYaml,
   type NodeWorkflowDetail,
 } from "@workspace/shared"
+import { moveLayoutIds } from "./layout-files.ts"
 import { hashContent } from "./hash.ts"
 import { orphanTaskFolderIds, trashStamp, uniqueTrashDir } from "./task-trash.ts"
 import { workflowYamlPath } from "./workflow-files.ts"
@@ -91,6 +92,7 @@ export function writeNodeWorkflowYaml(
     (r) => diskIds.has(r.from) && !newIds.has(r.from) && newIds.has(r.to)
   )
   const renamedFrom = new Set(moves.map((r) => r.from))
+  moveLayoutIds(engine, workflowId, moves)
 
   writeFileSync(path, yaml, "utf8")
   const written = detailOf(workflowId, yaml)

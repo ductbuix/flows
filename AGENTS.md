@@ -36,7 +36,7 @@ Schema and writing rules: `docs/README.md`.
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
   `/cli/:cli/models`, connections CRUD/check/sign-in,
-  `GET/PUT /mcp-trust`, `FLOWS_NODES=1` node GET/PUT, `GET /connectors`,
+  `GET/PUT /mcp-trust`, `FLOWS_NODES=1` node GET/PUT and `/layout`, `GET /connectors`,
   library GET/pull/clear (usage + retention), work item CRUD, run REST (list/start/cancel/
   rerun/retry/approve/reject/delete, changes), run input/files, log/
   summary/out, websocket snapshots, `runs_changed`, log chunks and

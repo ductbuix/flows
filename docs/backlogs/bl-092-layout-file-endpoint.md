@@ -2,7 +2,7 @@
 id: BL-092
 title: "Server: layout file endpoint"
 type: backlog
-status: todo
+status: done
 summary: Read and write workflow.layout.json atomically, drop orphan ids, never touch workflow.yaml; rename moves the entry.
 tags: [server, api, layout]
 related: [DES-033]
@@ -19,7 +19,7 @@ Behind `FLOWS_NODES` (DES-037 Rollout): with the flag off, the app behaves exact
 
 ## Done when
 
-- [ ] GET and PUT `/api/workflows/:id/layout` read and write `workflow.layout.json` atomically.
-- [ ] Orphan ids are dropped on write; a node rename in BL-076's PUT moves its entry.
-- [ ] Layout writes never change `workflow.yaml` or its hash.
-- [ ] Test: `apps/server/src/layout-routes.test.ts`: round trip, orphans dropped, YAML hash unchanged, missing file reads as empty.
+- [x] GET and PUT `/api/workflows/:id/layout` read and write `workflow.layout.json` atomically.
+- [x] Orphan ids are dropped on write; a node rename in BL-076's PUT moves its entry.
+- [x] Layout writes never change `workflow.yaml` or its hash.
+- [x] Test: `apps/server/src/layout-routes.test.ts`: round trip, orphans dropped, YAML hash unchanged, missing file reads as empty.

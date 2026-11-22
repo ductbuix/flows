@@ -413,3 +413,4 @@ export {
   type ParsedNodeWorkflowYaml,
 } from "./nodes/parse.ts"
 export { NODE_KINDS } from "./nodes/index.ts"
+export { layoutFileSchema, type LayoutFile } from "./nodes/layout.ts"
