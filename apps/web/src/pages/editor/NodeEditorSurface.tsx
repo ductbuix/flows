@@ -42,6 +42,8 @@ import { AddNodeList } from "./AddNodeList"
 import { AddNodeMenu } from "./AddNodeMenu"
 import { NodeCanvas } from "./NodeCanvas"
 import { NodeSheet } from "./NodeSheet"
+import { PastRunCanvas } from "./PastRunCanvas"
+import { RunHistoryCard } from "./RunHistoryCard"
 import { NodeEmpty } from "./NodeEmpty"
 import { kindsForWire, type WireSide } from "./node-add"
 import { isEditorTypingTarget } from "./editor-typing"
@@ -59,6 +61,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
   const [drop, setDrop] = useState<Drop | null>(null)
   const [sheetId, setSheetId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [pastRunId, setPastRunId] = useState<string | null>(null)
   const workflow = editor.workflow
   const nodeRun = useNodeRun()
   const { runId, follow } = nodeRun
@@ -269,8 +272,14 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
           </Alert>
         </div>
       ) : null}
-      <div data-bleed className="min-h-0 flex-1 border-t">
-        {workflow.nodes.length === 0 ? (
+      <div data-bleed className="relative min-h-0 flex-1 border-t">
+        {pastRunId ? (
+          <PastRunCanvas
+            key={pastRunId}
+            runId={pastRunId}
+            onBack={() => setPastRunId(null)}
+          />
+        ) : workflow.nodes.length === 0 ? (
           <NodeEmpty
             onAddTrigger={() => addAtSlot("trigger")}
             onSample={() => editor.addSample(current())}
@@ -289,6 +298,11 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
             />
           </NodeRunContext.Provider>
         )}
+        <RunHistoryCard
+          workflowId={workflow.id}
+          pickedId={pastRunId}
+          onPick={setPastRunId}
+        />
       </div>
       {sheetNode ? (
         <NodeSheet

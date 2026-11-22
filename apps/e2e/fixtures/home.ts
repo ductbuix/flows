@@ -340,6 +340,12 @@ export function createE2eHome(): string {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, "echo stepped"))
   }
+  // Run history for node-run-history.spec.ts (BL-103); each test owns one.
+  for (const id of ["node-history-light", "node-history-dark"]) {
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, "echo history"))
+  }
   // Trigger inputs for node-start.spec.ts (BL-104); each test owns one.
   for (const id of ["node-start-light", "node-start-dark", "node-start-run"]) {
     const dir = join(home, "workflows", id)
