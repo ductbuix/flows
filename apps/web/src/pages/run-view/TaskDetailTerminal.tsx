@@ -70,12 +70,15 @@ export function TaskDetailTerminal({ run, task, attempt, attemptN }: Props) {
   }
 
   return (
-    <Terminal
-      title={title}
-      output={logText}
-      status={status}
-      defaultOpen
-      data-testid="task-terminal"
-    />
+    <div className="min-h-0 flex-1 overflow-auto">
+      <Terminal
+        title={title}
+        output={logText}
+        status={status}
+        defaultOpen
+        fill
+        data-testid="task-terminal"
+      />
+    </div>
   )
 }

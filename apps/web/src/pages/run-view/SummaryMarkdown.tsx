@@ -5,6 +5,14 @@ import {
   CodeBlock,
   CodeBlockContent,
 } from "@workspace/ui/components/code-block"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/table"
 import { mono } from "@/components/data/mono"
 
 type Props = {
@@ -28,6 +36,32 @@ function fenceText(children: unknown): string {
 }
 
 const components: Components = {
+  h1: ({ children }) => (
+    <h1 className="mt-4 mb-2 font-heading text-xl font-medium first:mt-0">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="mt-4 mb-2 font-heading text-base font-medium first:mt-0">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="mt-3 mb-1 text-sm font-medium">{children}</h3>
+  ),
+  p: ({ children }) => <p className="my-2 text-sm">{children}</p>,
+  ul: ({ children }) => (
+    <ul className="my-2 list-disc pl-5 text-sm">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="my-2 list-decimal pl-5 text-sm">{children}</ol>
+  ),
+  table: ({ children }) => <Table className="my-2">{children}</Table>,
+  thead: ({ children }) => <TableHeader>{children}</TableHeader>,
+  tbody: ({ children }) => <TableBody>{children}</TableBody>,
+  tr: ({ children }) => <TableRow>{children}</TableRow>,
+  th: ({ children }) => <TableHead>{children}</TableHead>,
+  td: ({ children }) => <TableCell>{children}</TableCell>,
   a: ({ href, children, ...props }) => {
     if (href?.toLowerCase().startsWith("javascript:")) {
       return <span>{children}</span>
@@ -66,7 +100,7 @@ export function SummaryMarkdown({ text }: Props) {
   return (
     <div
       data-testid="summary-markdown"
-      className="prose prose-sm dark:prose-invert max-w-none"
+      className="max-w-none"
     >
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {text}

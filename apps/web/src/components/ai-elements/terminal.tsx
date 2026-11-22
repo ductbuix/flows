@@ -22,6 +22,8 @@ type Props = {
   output: string
   status?: "running" | "error"
   defaultOpen?: boolean
+  /** Fill the parent height instead of capping the log at max-h-64. */
+  fill?: boolean
   "data-testid"?: string
 }
 
@@ -31,6 +33,7 @@ export function Terminal({
   output,
   status,
   defaultOpen,
+  fill,
   "data-testid": testId,
 }: Props) {
   const openWhileRunning = status === "running" && output.length > 0
@@ -49,7 +52,7 @@ export function Terminal({
           <CodeBlock size="sm">
             <CodeBlockContent
               wrap
-              className="max-h-64"
+              className={fill ? "max-h-none" : "max-h-64"}
               data-testid="log-output"
             >
               {output}
