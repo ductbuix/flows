@@ -188,3 +188,29 @@ export function createE2eHome(): string {
   )
   return home
 }
+
+const nodeCanvasYaml = `id: node-canvas
+goal: e2e node canvas
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: write
+    kind: agent
+    cli: claude
+  - id: done
+    kind: output
+    target: folder
+edges:
+  - { from: start, to: write }
+  - { from: write, to: done }
+`
+
+/** Temp FLOWAPP_HOME for the FLOWS_NODES=1 server (node workflow fixtures). */
+export function createNodesE2eHome(): string {
+  const home = mkdtempSync(join(tmpdir(), "flowapp-e2e-nodes-"))
+  const dir = join(home, "workflows", "node-canvas")
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
+  return home
+}
