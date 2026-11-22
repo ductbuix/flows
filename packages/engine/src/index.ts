@@ -18,7 +18,7 @@ export {
   type TaskState,
   type AttemptState,
 } from "./fold.ts"
-export type { ManualFilePart } from "./source-manual.ts"
+export type { ManualFilePart, ManualItem } from "./source-manual.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
 export {
   resolveAppHome,

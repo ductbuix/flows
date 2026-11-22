@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator"
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import {
   getCliAdapter,
@@ -11,6 +11,7 @@ import {
 import {
   cliModelCatalogSchema,
   cliStatusSchema,
+  parseNodeWorkflowYaml,
   preflightResponseSchema,
   putTrustBodySchema,
   trustStatusSchema,
@@ -86,14 +87,24 @@ export function trustRoutes(engine: Engine) {
         if (!existsSync(join(dir, "workflow.yaml"))) {
           return errorJson(c, 404, "not_found", "workflow not found")
         }
-        // Node workflows (BL-086) have no tasks to check; the node start
-        // route does not gate on trust yet.
+        // Node workflows have no tasks to check; the CLIs are those of the
+        // Agent nodes. The node start route does not gate on trust yet.
         if (nodesEnabled()) {
+          const parsed = parseNodeWorkflowYaml(
+            readFileSync(join(dir, "workflow.yaml"), "utf8")
+          )
+          const clis = [
+            ...new Set(
+              (parsed.workflow?.nodes ?? []).flatMap((n) =>
+                n.kind === "agent" ? [n.cli] : []
+              )
+            ),
+          ].sort()
           const body: PreflightResponse = {
             trust: engine.trustDecision(),
             checks: [],
-            needsAgentCli: false,
-            clis: [],
+            needsAgentCli: clis.length > 0,
+            clis,
           }
           return c.json(preflightResponseSchema.parse(body), 200)
         }
