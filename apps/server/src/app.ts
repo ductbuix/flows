@@ -38,6 +38,11 @@ import {
   readWorkflowDetail,
   writeWorkflowYaml,
 } from "./workflow-files.ts"
+import {
+  nodesEnabled,
+  readNodeWorkflowDetail,
+  writeNodeWorkflowYaml,
+} from "./node-workflow-files.ts"
 import { connectionRoutes } from "./connection-routes.ts"
 import { libraryRoutes } from "./library-routes.ts"
 import { fileRoutes } from "./file-routes.ts"
@@ -102,6 +107,11 @@ export function createApp({ engine }: { engine: Engine }) {
     })
     .get("/workflows/:workflowId", zValidator("param", idParam), (c) => {
       const { workflowId } = c.req.valid("param")
+      if (nodesEnabled()) {
+        const nodeDetail = readNodeWorkflowDetail(engine, workflowId)
+        if (!nodeDetail) return c.json({ message: "workflow not found" }, 404)
+        return c.json(nodeDetail as unknown as WorkflowDetail, 200)
+      }
       const detail = readWorkflowDetail(engine, workflowId)
       if (!detail) return c.json({ message: "workflow not found" }, 404)
       return c.json(
@@ -116,12 +126,15 @@ export function createApp({ engine }: { engine: Engine }) {
       (c) => {
         const { workflowId } = c.req.valid("param")
         const body = c.req.valid("json")
-        const result = writeWorkflowYaml(
-          engine,
-          workflowId,
-          body.yaml,
-          body.baseHash
-        )
+        const result = nodesEnabled()
+          ? writeNodeWorkflowYaml(
+              engine,
+              workflowId,
+              body.yaml,
+              body.baseHash,
+              body.renames
+            )
+          : writeWorkflowYaml(engine, workflowId, body.yaml, body.baseHash)
         if (result.ok === false && result.kind === "not_found") {
           return c.json({ message: "workflow not found" }, 404)
         }
@@ -136,10 +149,7 @@ export function createApp({ engine }: { engine: Engine }) {
           )
         }
         if (result.ok === false && result.kind === "invalid") {
-          return c.json(
-            workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
-            400
-          )
+          return c.json(result.detail as WorkflowDetail, 400)
         }
         if (result.ok === false && result.kind === "task_in_live_run") {
           return c.json(
@@ -162,10 +172,7 @@ export function createApp({ engine }: { engine: Engine }) {
         }
         hub.files.noteWrite(workflowId, "workflow.yaml", result.detail.hash)
         hub.files.watch(workflowId)
-        return c.json(
-          workflowDetailSchema.parse(result.detail) satisfies WorkflowDetail,
-          200
-        )
+        return c.json(result.detail as WorkflowDetail, 200)
       }
     )
     .get("/workflows/:workflowId/runs", zValidator("param", idParam), (c) => {
