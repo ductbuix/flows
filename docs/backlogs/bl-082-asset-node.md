@@ -1,32 +1,23 @@
 ---
 id: BL-082
-title: Asset node for library resources
+title: Asset node with read access
 type: backlog
 status: todo
-summary: Asset node lists chosen GitHub repos and pulled Confluence pages, pins them at start, and feeds them to wired steps.
-tags: [engine, shared, web, nodes, library, connections]
-related: [DES-032, DES-026, DES-035]
+summary: Asset kind listing library resources; pulled and pinned at run start; emits pinned folders and an index; read access only.
+tags: [engine, nodes, library]
+related: [DES-032, DES-026]
 updated: 2026-11-22
 priority: P1
-depends: [BL-075, BL-078]
+depends: [BL-096]
 ---
 
-# Asset node for library resources
+# Asset node with read access
 
-Design: [DES-032](../designs/des-032-node-catalog.md) (Asset),
-[DES-026](../designs/des-026-work-items-library-connections.md).
+Design: [DES-032](../designs/des-032-node-catalog.md) (Asset), [DES-026](../designs/des-026-work-items-library-connections.md). Resources are edited in YAML and the node Sheet as a plain list here; the picker is BL-099.
 
 ## Done when
 
-- [ ] Kind `asset` with `resources` (`connection`, `entity`, `id`) and
-      `access` (`read` or `propose`); sources come from the connectors
-      registry.
-- [ ] Run start pulls and pins every Asset resource with the work
-      item's links, as DES-026 pinning does.
-- [ ] The step emits the pinned folders on `file` and an index on
-      `text`; wired steps get `RESOURCE_<ID>`; `propose` uses the work
-      copy.
-- [ ] The card has a picker grouped by connection with search, chips
-      for chosen resources, and freshness.
-- [ ] Tests with the GitHub and Confluence connectors' fixtures;
-      Playwright video and light and dark screenshots.
+- [ ] Kind `asset` with `resources` (`connection`, `entity`, `id`) and `access: read`.
+- [ ] Run start pulls and pins every Asset resource with the work item's links, as DES-026 pinning does.
+- [ ] The step emits pinned folders on `file` and an index on `text`; wired steps get `RESOURCE_<ID>`.
+- [ ] Test: `packages/engine/src/nodes/asset.test.ts` with the fake connector (`FLOWAPP_FAKE_CONNECTOR`) and the GitHub and Confluence fixtures. Playwright video plus light and dark screenshots of the changed screens; BL-061 layout baselines refreshed in the same change.

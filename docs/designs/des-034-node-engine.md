@@ -183,6 +183,13 @@ has no kind branches.
 - Publish keeps its `publish_started` and `publish_finished` ledger,
   so a crash between them shows as uncertain, as today.
 
+## Rollout
+
+The node path is built next to the task path and switched on in one
+step (DES-037 Rollout). Until BL-098, `events.ts` holds both the
+`task_*` and the `step_*` types, and the code below still exists,
+unused after BL-096.
+
 ## Removed code
 
 - Spawn: `spawn.ts`, `spawn-parse.ts`, `spawn-validate.ts`,

@@ -49,7 +49,8 @@ writes, the sandbox and trust checks, connections and the library stay.
 | DES-036 | canvas editor and run view, tied to the DES-027 spec sheet    |
 | DES-037 | delivery: slices, verification, risks                         |
 
-Backlogs BL-074 to BL-087 hold the work, one verifiable slice each.
+Backlogs BL-074 to BL-104 hold the work, one small verifiable change
+each; DES-037 has the build order.
 
 ## Decisions (pootato, 2026-11-22)
 
@@ -155,7 +156,7 @@ Each of these docs carries a note that points here.
 The skills and rules draft (worktree `flows-des-025`, branch
 `docs/des-025-skills-rules`, not merged) uses ids that are taken on
 `develop` (DES-025, BL-031 to BL-034). It must be renumbered after this
-plan (DES-038 and BL-088 onward). Its library of skill and rule sources
+plan (DES-038 and BL-105 onward). Its library of skill and rule sources
 fits as Asset sources or as Agent node settings, and its examples use
 `tasks:` and spawn, which this plan removes (open question 6).
 

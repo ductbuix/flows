@@ -1,35 +1,27 @@
 ---
 id: BL-078
-title: "Node cards with settings on the node, and the node Sheet"
+title: "Node cards: shared frame and settings on the node"
 type: backlog
 status: todo
-summary: Shared NodeFrame, per-kind Body on the card (task, pills, target), node Sheet for the rest; replaces BL-066.
-tags: [ui, web, editor, canvas, ai-elements]
-related: [DES-036, DES-035, DES-027, DES-023]
+summary: Web node registry, the shared NodeFrame, and cards with inline settings for trigger, prompt, agent, command and output.
+tags: [web, editor, nodes, registry]
+related: [DES-036, DES-035]
 updated: 2026-11-22
-priority: P1
-depends: [BL-077, BL-060]
+priority: P0
+depends: [BL-094, BL-060]
 ---
 
-# Node cards with settings on the node, and the node Sheet
+# Node cards: shared frame and settings on the node
 
-Design: [DES-036](../designs/des-036-canvas-editor-run-view.md)
-(Nodes). Supersedes BL-066.
+Design: [DES-036](../designs/des-036-canvas-editor-run-view.md) (Nodes), [DES-035](../designs/des-035-node-registry.md) (Web). Supersedes the card part of BL-066. Layer: web only.
+
+Behind `FLOWS_NODES` (DES-037 Rollout): with the flag off, the app behaves exactly as today.
 
 ## Done when
 
-- [ ] `apps/web/src/nodes/` has `defineNodeView` files for the kinds of
-      BL-074; a shared `NodeFrame` renders header, ports, status slot,
-      timer slot, result slot, Run step and Retry.
-- [ ] Cards use `Card size="sm"`, `w-72` for steps and `w-60` for inputs
-      and flow; dense controls inside are `sm`.
-- [ ] Agent shows CLI and model pills (Model Selector) and the task
-      Textarea; Prompt shows its text; Output shows its target Select.
-- [ ] Edits write YAML through the shared helpers and node files
-      through the PUT; undo and redo cover them.
-- [ ] Clicking a node's settings button opens the 384px node Sheet:
-      name, timeout, retry, memory Combobox, Delete node; Esc returns
-      focus to the node.
-- [ ] Trigger's Sheet holds the run inputs that BL-067 used to hold.
-- [ ] Playwright video, light and dark screenshots, refreshed
-      baselines.
+- [ ] `apps/web/src/nodes/` has `defineNodeView` files for the five kinds; `NodeFrame` renders header, ports, status, timer and result slots, Run step and Retry.
+- [ ] Cards use `Card size="sm"`, `w-72` for steps and `w-60` for inputs and flow.
+- [ ] Agent shows CLI and model pills and the task Textarea; Prompt shows its text; Command shows `run`; Output shows its target.
+- [ ] Edits write YAML through the BL-088 helpers and node files through the PUT; undo and redo cover them.
+- [ ] The registry test now checks all three layers.
+- [ ] Test: `apps/e2e/tests/node-cards.spec.ts` edits an Agent task on the card, saves, and finds it in `nodes/<id>/prompt.md`. Playwright video plus light and dark screenshots of the changed screens; BL-061 layout baselines refreshed in the same change.

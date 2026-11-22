@@ -1,38 +1,26 @@
 ---
 id: BL-077
-title: "Canvas editor: drag, saved positions, Add node, empty state"
+title: "Canvas: show node workflows with saved positions and drag"
 type: backlog
 status: todo
-summary: Free canvas with saved positions, Add node menu grouped Inputs, Steps, Flow with search, drag from a port to add, teaching empty state.
-tags: [ui, web, editor, canvas]
-related: [DES-036, DES-035, DES-027]
+summary: Behind the flag, the editor canvas renders nodes and edges, places new nodes with dagre, and saves positions on drag end.
+tags: [web, editor, canvas, layout]
+related: [DES-036, DES-033]
 updated: 2026-11-22
 priority: P0
-depends: [BL-065, BL-076]
+depends: [BL-065, BL-092]
 ---
 
-# Canvas editor: drag, saved positions, Add node, empty state
+# Canvas: show node workflows with saved positions and drag
 
-Design: [DES-036](../designs/des-036-canvas-editor-run-view.md)
-(Empty state, Add node menu, Nodes). Replaces the "Add task by kind"
-and publish parts of BL-065.
+Design: [DES-036](../designs/des-036-canvas-editor-run-view.md) (Editor frame, Nodes). Layer: web only.
+
+Behind `FLOWS_NODES` (DES-037 Rollout): with the flag off, the app behaves exactly as today.
 
 ## Done when
 
-- [ ] Nodes drag freely; positions save on drag end through the layout
-      endpoint without marking the editor dirty; reload keeps them.
-- [ ] Nodes with no saved position are placed by dagre next to their
-      inputs.
-- [ ] "Add node" (`outline`, 32px) opens a `Popover` with a `Command`
-      list (add shadcn `command`): search, then Inputs, Steps, Flow,
-      from the web registry.
-- [ ] Dropping a wire on empty canvas opens "Add a connected node",
-      filtered by port, and wires the new node.
-- [ ] Bad wires are refused with a toast naming the reason.
-- [ ] An empty workflow shows the teaching `Empty` with the static
-      diagram, three lines of our own copy, "Add a trigger" and "Start
-      from a sample".
-- [ ] Loop edges draw curved with a loop Badge; Judge edges show Yes
-      or No.
-- [ ] Playwright video, light and dark screenshots, and refreshed
-      BL-061 layout baselines.
+- [ ] With the flag on, the editor reads nodes and edges and draws them with a plain card per node (full cards come in BL-078).
+- [ ] Nodes drag freely; positions save on drag end (debounced) through the layout endpoint without marking the editor dirty.
+- [ ] Nodes with no saved position are placed by dagre next to their inputs.
+- [ ] With the flag off, the task editor is unchanged and its e2e specs pass.
+- [ ] Test: `apps/e2e/tests/node-canvas.spec.ts` drags a node, reloads, and sees it in place. Playwright video plus light and dark screenshots of the changed screens; BL-061 layout baselines refreshed in the same change.
