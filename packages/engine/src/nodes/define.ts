@@ -37,6 +37,8 @@ export type ExecResult = {
   outputs: string[]
   branch?: string
   answer?: Record<string, unknown>
+  /** The step fails with this reason instead of settling (Judge: `unclear`). */
+  failed?: "unclear"
 }
 
 /**

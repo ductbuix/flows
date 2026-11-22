@@ -43,7 +43,9 @@ export type CliAdapter = {
   buildJudgeCommand: (
     judge: AgentJudge,
     instructionsAbsPath: string,
-    resolved: ResolvedModelEffort
+    resolved: ResolvedModelEffort,
+    /** Replaces the exit-code prompt, e.g. for a Judge node (DES-032). */
+    prompt?: string
   ) => string
   prepareTrust: (homePath: string, workflowDir?: string) => void
   cleanupTrust: (homePath: string, workflowDir?: string) => void
@@ -67,8 +69,8 @@ const claudeAdapter: CliAdapter = {
     const flags = flagsToShell(this.composeFlags(resolved))
     return `claude --print --permission-mode dontAsk${flags} --add-dir ${wf} -- ${prompt}`
   },
-  buildJudgeCommand(_judge, instructionsAbsPath, resolved) {
-    const prompt = shellSingleQuote(judgePrompt(instructionsAbsPath))
+  buildJudgeCommand(_judge, instructionsAbsPath, resolved, text) {
+    const prompt = shellSingleQuote(text ?? judgePrompt(instructionsAbsPath))
     const flags = flagsToShell(this.composeFlags(resolved))
     return `claude --print --permission-mode dontAsk${flags} -- ${prompt}`
   },
@@ -103,8 +105,8 @@ const cursorAdapter: CliAdapter = {
     const flags = flagsToShell(this.composeFlags(resolved))
     return `agent -p --force --trust${flags} --workspace ${attempt} --add-dir ${wf} -- ${prompt}`
   },
-  buildJudgeCommand(_judge, instructionsAbsPath, resolved) {
-    const prompt = shellSingleQuote(judgePrompt(instructionsAbsPath))
+  buildJudgeCommand(_judge, instructionsAbsPath, resolved, text) {
+    const prompt = shellSingleQuote(text ?? judgePrompt(instructionsAbsPath))
     const flags = flagsToShell(this.composeFlags(resolved))
     return `agent -p --force --trust${flags} -- ${prompt}`
   },

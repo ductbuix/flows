@@ -18,6 +18,8 @@ process.env.FLOWAPP_HOME = FLOWAPP_HOME
 process.env.FLOWAPP_CURSOR_PROJECTS =
   process.env.FLOWAPP_CURSOR_PROJECTS ?? `${FLOWAPP_HOME}/.cursor-projects`
 process.env.PW_API_BASE = API
+// The stub `claude` that answers yes (fixtures/home.ts) comes first on PATH.
+process.env.PATH = `${FLOWAPP_HOME}/bin:${process.env.PATH ?? ""}`
 
 const stringEnv = (): Record<string, string> =>
   Object.fromEntries(

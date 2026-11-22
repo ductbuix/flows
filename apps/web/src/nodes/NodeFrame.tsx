@@ -19,6 +19,11 @@ const STATUS_LABEL: Record<NodeStatus, string> = {
   cancelled: "Cancelled",
 }
 
+/** "yes" shows as "Yes". */
+export function branchLabel(branch: string): string {
+  return `${branch.charAt(0).toUpperCase()}${branch.slice(1)}`
+}
+
 export type NodeFrameProps = {
   id: string
   name: string
@@ -30,6 +35,10 @@ export type NodeFrameProps = {
   status?: NodeStatus
   timer?: string
   result?: string
+  /** Branch a Judge took, as shown: "Yes" or "No". */
+  verdict?: string
+  /** Out branches (Judge): one labelled handle each, instead of one output. */
+  branches?: readonly string[]
   onRun?: () => void
   onRetry?: () => void
   /** Opens the node Sheet (BL-095). */
@@ -47,6 +56,8 @@ export function NodeFrame({
   status,
   timer,
   result,
+  verdict,
+  branches,
   onRun,
   onRetry,
   onSettings,
@@ -78,6 +89,11 @@ export function NodeFrame({
           >
             {status === "running" ? <Spinner data-icon="inline-start" /> : null}
             {STATUS_LABEL[status]}
+          </Badge>
+        ) : null}
+        {verdict ? (
+          <Badge variant="secondary" data-testid={`node-verdict-${id}`}>
+            {verdict}
           </Badge>
         ) : null}
         {timer ? (
@@ -138,12 +154,34 @@ export function NodeFrame({
           ) : null}
         </div>
       ) : null}
-      <Handle
-        type="source"
-        position={Position.Right}
-        title="Output"
-        data-testid={`port-${id}-out`}
-      />
+      {branches ? (
+        branches.map((branch, i) => (
+          <div
+            key={branch}
+            className="absolute right-0 flex translate-x-full items-center"
+            style={{ top: `${((i + 1) * 100) / (branches.length + 1)}%` }}
+          >
+            <Handle
+              id={branch}
+              type="source"
+              position={Position.Right}
+              title={branchLabel(branch)}
+              data-testid={`port-${id}-${branch}`}
+              style={{ top: "50%" }}
+            />
+            <span className="pointer-events-none absolute left-3 text-xs text-muted-foreground">
+              {branchLabel(branch)}
+            </span>
+          </div>
+        ))
+      ) : (
+        <Handle
+          type="source"
+          position={Position.Right}
+          title="Output"
+          data-testid={`port-${id}-out`}
+        />
+      )}
     </Card>
   )
 }

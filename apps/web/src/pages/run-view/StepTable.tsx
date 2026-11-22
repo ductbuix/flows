@@ -13,6 +13,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { mono } from "@/components/data/mono"
 import { formatDuration } from "@/lib/labels"
 import { viewOf } from "@/nodes"
+import { branchLabel } from "@/nodes/NodeFrame"
 
 type Props = {
   run: RunDetail
@@ -34,6 +35,7 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
             <TableHead>Pass</TableHead>
             <TableHead>Attempt</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Verdict</TableHead>
             <TableHead>Duration</TableHead>
           </TableRow>
         </TableHeader>
@@ -74,6 +76,13 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
                   >
                     {step.status}
                   </Badge>
+                </TableCell>
+                <TableCell data-testid={`step-verdict-${key}`}>
+                  {step.branch
+                    ? branchLabel(step.branch)
+                    : step.kind === "judge" && step.failReason
+                      ? step.failReason
+                      : "-"}
                 </TableCell>
                 <TableCell className="tabular-nums">
                   {step.startedAt

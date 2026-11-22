@@ -13,6 +13,8 @@ export type WireSide = {
   id: string
   /** `source`: the new node takes the wire's output; `target`: its input. */
   handle: "source" | "target"
+  /** Judge branch of the dragged handle (`yes` or `no`). */
+  branch?: string
 }
 
 /** Smallest valid node of a kind; the user edits the rest in the node. */
@@ -24,6 +26,8 @@ export function defaultNode(
     case "trigger":
       return { id, kind, type: "manual" }
     case "agent":
+      return { id, kind, cli: "claude" }
+    case "judge":
       return { id, kind, cli: "claude" }
     case "command":
       return { id, kind, run: 'echo "hello"' }
@@ -71,7 +75,7 @@ export function yamlAfterAddNode(
   if (wire) {
     const edge: WorkflowEdge =
       wire.handle === "source"
-        ? { from: wire.id, to: id }
+        ? { from: wire.id, to: id, ...(wire.branch ? { branch: wire.branch } : {}) }
         : { from: id, to: wire.id }
     next = addEdge(next, edgeSchema.parse(edge))
   }

@@ -33,3 +33,12 @@ export function judgePrompt(instructionsAbsPath: string): string {
     `condition passes, or a non-zero code if it fails.`
   )
 }
+
+/** Prompt for a Judge node: answer yes or no about this attempt's input (DES-032). */
+export function judgeAnswerPrompt(ruleAbsPath: string): string {
+  return (
+    `Read the rule at ${ruleAbsPath}. Judge the input in input/text.md ` +
+    `(and any files under input/files/) against that rule. Your first ` +
+    `word must be yes or no. Add a short reason after it if you like.`
+  )
+}

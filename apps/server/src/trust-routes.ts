@@ -88,7 +88,7 @@ export function trustRoutes(engine: Engine) {
           return errorJson(c, 404, "not_found", "workflow not found")
         }
         // Node workflows have no tasks to check; the CLIs are those of the
-        // Agent nodes. The node start route does not gate on trust yet.
+        // Agent and Judge nodes. The node start route does not gate on trust yet.
         if (nodesEnabled()) {
           const parsed = parseNodeWorkflowYaml(
             readFileSync(join(dir, "workflow.yaml"), "utf8")
@@ -96,7 +96,7 @@ export function trustRoutes(engine: Engine) {
           const clis = [
             ...new Set(
               (parsed.workflow?.nodes ?? []).flatMap((n) =>
-                n.kind === "agent" ? [n.cli] : []
+                n.kind === "agent" || n.kind === "judge" ? [n.cli] : []
               )
             ),
           ].sort()

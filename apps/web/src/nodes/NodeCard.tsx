@@ -1,9 +1,9 @@
 import { createContext, useContext, type ComponentType } from "react"
 import type { NodeRunView } from "@/pages/editor/node-run"
-import type { WorkflowNode } from "@workspace/shared"
+import { PORT_TABLE, type WorkflowNode } from "@workspace/shared"
 import type { Node, NodeProps } from "@xyflow/react"
 import type { NodeBodyProps } from "./define"
-import { NodeFrame } from "./NodeFrame"
+import { NodeFrame, branchLabel } from "./NodeFrame"
 import { isStepKind, viewOf } from "./index"
 
 export type NodeCardData = { node: WorkflowNode; text: string }
@@ -56,6 +56,8 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       status={live?.status}
       timer={live?.timer}
       result={live?.result}
+      verdict={live?.verdict ? branchLabel(live.verdict) : undefined}
+      branches={PORT_TABLE[data.node.kind]?.branches}
       onRetry={run.readOnly ? undefined : () => run.retry(id)}
       onSettings={run.readOnly ? undefined : () => edits.openSettings(id)}
     >

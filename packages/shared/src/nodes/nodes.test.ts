@@ -115,3 +115,35 @@ describe("node workflow schema", () => {
     expect(msgs[0]).toContain('"tasks"')
   })
 })
+
+describe("judge kind", () => {
+  const wf = (edges: unknown[]) => ({
+    id: "wf",
+    nodes: [
+      { id: "t", kind: "trigger", type: "manual" },
+      { id: "j", kind: "judge", cli: "claude", effort: "low" },
+      { id: "a", kind: "command", run: "echo a" },
+    ],
+    edges,
+  })
+
+  it("has yes and no branches and a required rule file", () => {
+    expect(PORT_TABLE.judge?.branches).toEqual(["yes", "no"])
+    expect(NODE_KINDS.find((k) => k.kind === "judge")?.files).toEqual([
+      { path: "rule.md", required: true },
+    ])
+  })
+
+  it("accepts edges with a branch and refuses ones without", () => {
+    const ok = nodeWorkflowSchema.safeParse(
+      wf([
+        { from: "t", to: "j" },
+        { from: "j", to: "a", branch: "yes" },
+      ])
+    )
+    expect(ok.success).toBe(true)
+    const bad = nodeWorkflowSchema.safeParse(wf([{ from: "j", to: "a" }]))
+    expect(bad.success).toBe(false)
+    expect(JSON.stringify(bad.error?.issues)).toContain("needs branch yes or no")
+  })
+})

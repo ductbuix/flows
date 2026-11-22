@@ -67,7 +67,7 @@ function readStderr(attemptRoot: string): string {
 
 function cliOf(graph: NodeWorkflow, nodeId: string): "claude" | "cursor" | undefined {
   const node = graph.nodes.find((n) => n.id === nodeId)
-  return node?.kind === "agent" ? node.cli : undefined
+  return node?.kind === "agent" || node?.kind === "judge" ? node.cli : undefined
 }
 
 function isCliKind(graph: NodeWorkflow, nodeId: string): boolean {

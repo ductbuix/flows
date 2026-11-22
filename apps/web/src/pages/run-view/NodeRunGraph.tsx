@@ -4,8 +4,9 @@ import { Background, Controls, ReactFlow, type Edge, type Node } from "@xyflow/r
 import "@xyflow/react/dist/style.css"
 import { api } from "@/lib/api"
 import { NodeCard, NodeRunContext, type NodeCardData } from "@/nodes/NodeCard"
+import { branchLabel } from "@/nodes/NodeFrame"
 import { nodeTextPath } from "@/nodes"
-import { formatElapsed, nodeStatus, type NodeRunView } from "@/pages/editor/node-run"
+import { formatElapsed, nodeStatus, verdictsOf, type NodeRunView } from "@/pages/editor/node-run"
 import { placeNodes } from "@/pages/editor/node-canvas-layout"
 
 const nodeTypes = { nodeCard: NodeCard }
@@ -55,19 +56,22 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
         id: `edge-${i}-${e.from}-${e.to}`,
         source: e.from,
         target: e.to,
-        label: e.branch,
+        sourceHandle: e.branch,
+        label: e.branch ? branchLabel(e.branch) : undefined,
       })),
     [canvas]
   )
 
   const state = useMemo(() => {
     const views: Record<string, NodeRunView> = {}
+    const verdicts = verdictsOf(run.steps)
     for (const s of run.steps ?? []) {
       const status = nodeStatus(s.status)
       if (!status) continue
       const end = s.endedAt ? Date.parse(s.endedAt) : Date.now()
       views[s.nodeId] = {
         status,
+        ...(verdicts[s.nodeId] ? { verdict: verdicts[s.nodeId] } : {}),
         ...(s.startedAt
           ? { timer: formatElapsed(end - Date.parse(s.startedAt)) }
           : {}),

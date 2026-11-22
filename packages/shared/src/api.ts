@@ -123,6 +123,10 @@ export const runStepSchema = z.object({
   /** Attempts started in this pass. */
   attempts: z.number().int().nonnegative(),
   status: taskStatusSchema,
+  /** Branch a Judge took: `yes` or `no`. */
+  branch: z.string().min(1).optional(),
+  /** Why the step failed, as the engine wrote it (`unclear` for a Judge). */
+  failReason: z.string().min(1).optional(),
   startedAt: z.string().optional(),
   endedAt: z.string().optional(),
 })
