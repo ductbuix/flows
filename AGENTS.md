@@ -36,7 +36,7 @@ Schema and writing rules: `docs/README.md`.
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, promote, trust GET/PUT and preflight, GET
   `/cli/:cli/models`, connections CRUD/check/sign-in,
-  `GET/PUT /mcp-trust`, `FLOWS_NODES=1` node GET/PUT and `/layout`, `GET /connectors`,
+  `GET/PUT /mcp-trust`, `FLOWS_NODES=1` node GET/PUT, `/layout` and node runs, `GET /connectors`,
   library GET/pull/clear (usage + retention), work item CRUD, run REST (list/start/cancel/
   rerun/retry/approve/reject/delete, changes), run input/files, log/
   summary/out, websocket snapshots, `runs_changed`, log chunks and
@@ -53,7 +53,7 @@ Schema and writing rules: `docs/README.md`.
   effort resolve and preflight, trust markers, spawn, resume,
   approval, cancel, retry, repeat, `agents` limits, run deletion,
   frozen `RUN_INPUT`, queued runs, summary cache, port leases,
-  `<workflow>/.cache`; `nodes/` (node walk, executors, `tickNodes`, unwired).
+  `<workflow>/.cache`; `nodes/` (walk, executors, `tickNodes`, cancel, retry; `startNodeRun`).
 - `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
   websocket, workflow (incl. `kind: publish`), `connection.yaml`, library list/pull/clear/
   usage, `resources.json`, `config.yaml` `library.maxBytes`, events

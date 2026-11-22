@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator"
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { workflowDir, workItemItemKey, type Engine } from "@workspace/engine"
 import {
@@ -8,10 +8,12 @@ import {
   startRunResponseSchema,
   trustRequiredErrorSchema,
   type OkResponse,
+  type StartRunBody,
   type StartRunResponse,
   type TrustRequiredError,
 } from "@workspace/shared"
-import { Hono } from "hono"
+import { parseNodeWorkflowYaml } from "@workspace/shared"
+import { Hono, type Context } from "hono"
 import { z } from "zod"
 import {
   errorJson,
@@ -19,6 +21,7 @@ import {
   withIdempotency,
 } from "./control-helpers.ts"
 import type { IdempotencyStore } from "./idempotency.ts"
+import { nodesEnabled } from "./node-workflow-files.ts"
 import {
   duplicateInputResponse,
   parseStartRequest,
@@ -56,6 +59,47 @@ function isTrustRequired(err: unknown): boolean {
   return err instanceof Error && err.message === "trust_required"
 }
 
+/**
+ * Node run start (BL-093): the graph is read from `workflow.yaml`, frozen
+ * by the engine. `values.text` is the run input text (`input/text.md`).
+ */
+function startNodeRoute(
+  c: Context,
+  engine: Engine,
+  dir: string,
+  workflowId: string,
+  body: StartRunBody
+): Response {
+  const parsed = parseNodeWorkflowYaml(
+    readFileSync(join(dir, "workflow.yaml"), "utf8")
+  )
+  if (!parsed.workflow || parsed.errors.length > 0) {
+    return errorJson(
+      c,
+      400,
+      "bad_request",
+      parsed.errors[0]?.message ?? "invalid workflow"
+    )
+  }
+  const linked = resolveStartWorkItem(c, engine, body.workItemId, "")
+  if (linked instanceof Response) return linked
+  try {
+    const handle = engine.startNodeRun({
+      graph: parsed.workflow,
+      inputText: body.values?.text,
+      workItemId: linked.workItemId,
+    })
+    void handle.wait().catch(() => undefined)
+    const resBody: StartRunResponse = {
+      runId: handle.runId,
+      status: handle.status,
+    }
+    return c.json(startRunResponseSchema.parse(resBody), 200)
+  } catch (err) {
+    return mapEngineError(c, err)
+  }
+}
+
 /** Mutating run-control routes (DES-011 / BL-012 / DES-019 / DES-021). */
 export function createRunControls({
   engine,
@@ -77,6 +121,12 @@ export function createRunControls({
         const parsed = await parseStartRequest(c)
         if (parsed instanceof Response) return parsed
         const { body, files } = parsed
+
+        if (nodesEnabled()) {
+          return withIdempotency(c, idempotency, body.requestId, () =>
+            startNodeRoute(c, engine, dir, workflowId, body)
+          )
+        }
 
         return withIdempotency(c, idempotency, body.requestId, async () => {
           let workflow
