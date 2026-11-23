@@ -53,6 +53,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `<workflow>/.cache`; `nodes/` (walk, loops, executors incl. `publish.ts`,
   `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
+- `packages/core`: UI-free engine kernel (`EngineError`, `Result`, `Clock`,
+  `Ids`, `Logger`); in-memory fakes under `src/testing/`; no Node I/O imports.
 - `packages/contracts` (`packages/shared` re-export shim): zod for API
   (`runSummarySchema`, `workItemSchema`), websocket, node workflow
   (`workflowSchema`), `connection.yaml`, library list/pull/clear/usage,
