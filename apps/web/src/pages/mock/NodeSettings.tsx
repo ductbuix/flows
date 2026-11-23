@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import { Separator } from "@workspace/ui/components/separator"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { KIND_LABEL, type FlowData, type FlowNode } from "./flow-data"
 import { ConnectorList, SkillList } from "./StepConnectors"
@@ -53,6 +54,18 @@ function Text({ label, value, placeholder, onChange }: { label: string; value?: 
   )
 }
 
+function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex flex-col">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      </div>
+      {children}
+    </section>
+  )
+}
+
 type Props = {
   node: FlowNode
   inputs: string[]
@@ -76,14 +89,15 @@ export function NodeSettings({ node, inputs, onInputs, onChange, onClose }: Prop
           {node.type === "llm" ? (
             <>
               <Choice label="Output format" value={d.format} options={FORMAT} onChange={(format) => onChange({ format })} />
-              <Field>
-                <FieldLabel>Connectors</FieldLabel>
-                <ConnectorList value={d.connectors ?? []} onChange={(connectors) => onChange({ connectors })} />
-              </Field>
-              <Field>
-                <FieldLabel>Skills</FieldLabel>
-                <SkillList value={d.skills ?? []} onChange={(skills) => onChange({ skills })} />
-              </Field>
+              <Separator className="my-1" />
+              <div className="flex flex-col gap-4">
+                <Section title="Connectors" hint="Systems this step may read or change.">
+                  <ConnectorList value={d.connectors ?? []} onChange={(connectors) => onChange({ connectors })} />
+                </Section>
+                <Section title="Skills" hint="Instructions the step may follow.">
+                  <SkillList value={d.skills ?? []} onChange={(skills) => onChange({ skills })} />
+                </Section>
+              </div>
             </>
           ) : (
             <Choice label="If unsure" value={d.ifUnsure} options={UNSURE} onChange={(ifUnsure) => onChange({ ifUnsure })} />

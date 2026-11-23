@@ -1,10 +1,9 @@
-import { Link } from "react-router"
 import { Plug, Sparkles } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
-import { Switch } from "@workspace/ui/components/switch"
 import { accessOf } from "./connector-parts"
 import type { Connector } from "./connectors-data"
 import { useConnectors } from "./connectors-store"
+import { MultiPick } from "./MultiPick"
 import { useFlow } from "./flow-context"
 import { readers, useSkills } from "./skills-store"
 
@@ -30,55 +29,18 @@ export function ConnectorCount({ id, ids, skills = [] }: { id: string; ids: stri
 
 /** In node settings: which systems this step may use, within what each connector allows. */
 export function ConnectorList({ value, onChange }: { value: string[]; onChange: (ids: string[]) => void }) {
-  const all = useConnectors()
-  const toggle = (id: string, on: boolean) => onChange(on ? [...value, id] : value.filter((v) => v !== id))
-  return (
-    <div className="flex flex-col gap-1" data-testid="step-connector-list">
-      {all.map((c) => (
-        <div key={c.id} className="flex min-h-10 items-center gap-3 rounded-lg px-2 hover:bg-muted" data-testid={`step-connector-${c.id}`}>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm">{c.name}</span>
-            <span className="truncate text-xs text-muted-foreground">
-              {problem(c) ? (
-                <>
-                  {problem(c)} ·{" "}
-                  <Link to={`/mock/connectors?connector=${c.id}`} className="underline">
-                    Fix
-                  </Link>
-                </>
-              ) : (
-                accessOf(c)
-              )}
-            </span>
-          </div>
-          <Switch checked={value.includes(c.id)} onCheckedChange={(v) => toggle(c.id, v)} aria-label={`Use ${c.name}`} />
-        </div>
-      ))}
-    </div>
-  )
+  const options = useConnectors().map((c) => ({ value: c.id, label: c.name, hint: problem(c) ?? accessOf(c) }))
+  return <MultiPick options={options} value={value} onChange={onChange} label="Connectors" placeholder="Search connectors" empty="No connector matches" />
 }
 
 /** In node settings: skills the step may follow. Invalid ones are not offered. */
 export function SkillList({ value, onChange }: { value: string[]; onChange: (slugs: string[]) => void }) {
   const all = useSkills()
-  const shown = all.filter((s, i) => !s.problem && all.findIndex((o) => o.slug === s.slug && !o.problem) === i)
-  const toggle = (slug: string, on: boolean) => onChange(on ? [...value, slug] : value.filter((v) => v !== slug))
-  return (
-    <div className="flex flex-col gap-1" data-testid="step-skill-list">
-      {shown.map((s) => {
-        const r = readers(s, all)
-        return (
-          <div key={s.slug} className="flex min-h-10 items-center gap-3 rounded-lg px-2 hover:bg-muted" data-testid={`step-skill-${s.slug}`}>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm">{s.slug}</span>
-              <span className="truncate text-xs text-muted-foreground">
-                {r.cursor && r.claude ? "Cursor and Claude Code" : r.cursor ? "Cursor only" : "Claude Code only"}
-              </span>
-            </div>
-            <Switch checked={value.includes(s.slug)} onCheckedChange={(v) => toggle(s.slug, v)} aria-label={`Use ${s.slug}`} />
-          </div>
-        )
-      })}
-    </div>
-  )
+  const options = all
+    .filter((s, i) => !s.problem && all.findIndex((o) => o.slug === s.slug && !o.problem) === i)
+    .map((s) => {
+      const r = readers(s, all)
+      return { value: s.slug, label: s.slug, hint: r.cursor && r.claude ? "Cursor and Claude Code" : r.cursor ? "Cursor only" : "Claude Code only" }
+    })
+  return <MultiPick options={options} value={value} onChange={onChange} label="Skills" placeholder="Search skills" empty="No skill matches" />
 }
