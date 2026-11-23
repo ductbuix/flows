@@ -34,7 +34,6 @@ export function RunHistoryCard({
   const recent = runs?.slice(0, SHOWN) ?? []
   return (
     <Card
-      size="sm"
       className="absolute right-3 bottom-3 z-10 w-72 gap-2"
       data-testid="run-history"
     >
@@ -46,7 +45,10 @@ export function RunHistoryCard({
       </CardHeader>
       <CardContent>
         {recent.length === 0 ? (
-          <p className="text-xs text-muted-foreground" data-testid="run-history-empty">
+          <p
+            className="text-xs text-muted-foreground"
+            data-testid="run-history-empty"
+          >
             {runs ? "No runs yet" : "Loading runs"}
           </p>
         ) : (
@@ -54,7 +56,6 @@ export function RunHistoryCard({
             {recent.map((run) => (
               <Item
                 key={run.id}
-                size="xs"
                 variant={run.id === pickedId ? "muted" : "outline"}
                 render={<button type="button" />}
                 data-testid={`run-history-${run.id}`}

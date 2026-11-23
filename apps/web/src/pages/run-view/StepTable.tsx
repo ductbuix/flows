@@ -1,3 +1,4 @@
+import { createElement } from "react"
 import type { RunDetail } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
@@ -11,6 +12,7 @@ import {
 } from "@workspace/ui/components/table"
 import { cn } from "@workspace/ui/lib/utils"
 import { mono } from "@/components/data/mono"
+import { useTickingNow } from "@/hooks/use-ticking-now"
 import { formatDuration } from "@/lib/labels"
 import { viewOf } from "@/nodes"
 import { branchLabel } from "@/nodes/NodeFrame"
@@ -26,6 +28,8 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
   const names = new Map(
     run.graph.nodes.map((n) => [n.id, n.name ?? n.id] as const)
   )
+  const stepsLive = (run.steps ?? []).some((s) => !!s.startedAt && !s.endedAt)
+  const now = useTickingNow(stepsLive)
   return (
     <ScrollArea className="h-full">
       <Table data-testid="step-table">
@@ -43,7 +47,7 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
           {(run.steps ?? []).map((step) => {
             const Icon = viewOf(step.kind)?.icon
             const key = `${step.nodeId}-${step.pass}`
-            const end = step.endedAt ? Date.parse(step.endedAt) : Date.now()
+            const end = step.endedAt ? Date.parse(step.endedAt) : now
             return (
               <TableRow
                 key={key}
@@ -56,12 +60,12 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
               >
                 <TableCell>
                   <span className="flex items-center gap-2">
-                    {Icon ? (
-                      <Icon
-                        className="size-4 shrink-0 text-muted-foreground"
-                        aria-label={step.kind}
-                      />
-                    ) : null}
+                    {Icon
+                      ? createElement(Icon, {
+                          className: "size-4 shrink-0 text-muted-foreground",
+                          "aria-label": step.kind,
+                        })
+                      : null}
                     <span className={`${mono} text-sm`}>
                       {names.get(step.nodeId) ?? step.nodeId}
                     </span>
@@ -71,7 +75,9 @@ export function StepTable({ run, selectedTaskId, onSelectTask }: Props) {
                 <TableCell>{step.attempts}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={step.status === "failed" ? "destructive" : "outline"}
+                    variant={
+                      step.status === "failed" ? "destructive" : "outline"
+                    }
                     data-testid={`step-state-${key}`}
                   >
                     {step.status}

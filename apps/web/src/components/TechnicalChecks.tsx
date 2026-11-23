@@ -25,13 +25,7 @@ export function TechnicalChecks({
   return (
     <Collapsible data-testid={testId} className="flex flex-col gap-2">
       <CollapsibleTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="group/tech w-fit px-1.5"
-          />
-        }
+        render={<Button variant="ghost" className="group/tech w-fit px-1.5" />}
       >
         <ChevronRight
           data-icon="inline-start"

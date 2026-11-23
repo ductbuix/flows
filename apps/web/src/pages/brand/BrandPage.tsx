@@ -33,7 +33,7 @@ export function BrandPage() {
                   data-testid={`brand-card-${m.id}`}
                   className="group flex h-full rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  <Card size="sm" className="h-full w-full pt-0">
+                  <Card className="w-full flex-1 pt-0">
                     <div
                       aria-hidden
                       className="pointer-events-none flex h-28 shrink-0 items-start justify-center overflow-hidden border-b bg-muted/60 bg-dot-grid p-2"

@@ -1,5 +1,4 @@
 import { Link } from "react-router"
-import { RelativeTime } from "@/components/data/RelativeTime"
 import { useLabels } from "@/hooks/use-labels"
 import type { RunSummary } from "@workspace/shared"
 import { Button } from "@workspace/ui/components/button"

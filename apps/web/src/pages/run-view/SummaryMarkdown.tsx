@@ -73,7 +73,7 @@ const components: Components = {
     )
   },
   pre: ({ children }) => (
-    <CodeBlock size="sm" className="my-2">
+    <CodeBlock className="my-2">
       <CodeBlockContent wrap>{fenceText(children)}</CodeBlockContent>
     </CodeBlock>
   ),
@@ -98,10 +98,7 @@ const components: Components = {
 
 export function SummaryMarkdown({ text }: Props) {
   return (
-    <div
-      data-testid="summary-markdown"
-      className="max-w-none"
-    >
+    <div data-testid="summary-markdown" className="max-w-none">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {text}
       </ReactMarkdown>

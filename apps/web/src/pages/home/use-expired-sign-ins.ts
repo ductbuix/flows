@@ -11,10 +11,7 @@ export function useExpiredSignIns(enabled: boolean): ExpiredSignIn[] {
   const [items, setItems] = useState<ExpiredSignIn[]>([])
 
   useEffect(() => {
-    if (!enabled) {
-      setItems([])
-      return
-    }
+    if (!enabled) return
     let cancelled = false
     void (async () => {
       try {
@@ -52,5 +49,5 @@ export function useExpiredSignIns(enabled: boolean): ExpiredSignIn[] {
     }
   }, [enabled])
 
-  return items
+  return enabled ? items : []
 }
