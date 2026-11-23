@@ -1,7 +1,7 @@
 import {
-  defineMethod,
   FCP_VERSION,
   initializeMethod,
+  pingMethod,
   subscribeMethod,
 } from "@workspace/contracts"
 import {
@@ -11,7 +11,6 @@ import {
   RpcPeer,
 } from "@workspace/protocol"
 import { describe, expect, it } from "vitest"
-import { z } from "zod"
 import { bindEngine, defineBinding } from "./bind.ts"
 import { bindInitialize, createFcpConnection } from "./initialize.ts"
 
@@ -24,13 +23,6 @@ const initOpts = {
   engineInfo: { name: "flows-engine", version: "0.0.0-test" },
   workspace: { home: "/tmp/flowapp", id: "ws-1" },
 }
-
-const pingMethod = defineMethod({
-  name: "ping",
-  params: z.object({}),
-  result: z.object({ ok: z.literal(true) }),
-  kind: "query",
-})
 
 function bindLifecycle(
   server: RpcPeer

@@ -53,9 +53,21 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.6
         version: 0.7.6(hono@4.13.19)(zod@4.6.7)
+      '@workspace/adapters-node':
+        specifier: workspace:*
+        version: link:../../packages/adapters-node
+      '@workspace/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@workspace/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@workspace/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@workspace/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
       '@workspace/shared':
         specifier: workspace:*
         version: link:../../packages/shared

@@ -53,6 +53,7 @@ export {
   indexedLinkSchema,
   type WireCardFace,
 } from "./docket.ts"
+export { pingMethod, pingParamsSchema, pingResultSchema } from "./ping.ts"
 export {
   RUN_LIGHT_KINDS,
   subscribeMethod,

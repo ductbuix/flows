@@ -11,11 +11,13 @@ import {
   docketUpdateNotification,
 } from "./docket.ts"
 import { initializeMethod } from "./initialize.ts"
+import { pingMethod } from "./ping.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
 
 /** All FCP request methods; populated as namespaces land (BL-111+). */
 export const fcpMethodTable = {
   initialize: initializeMethod,
+  ping: pingMethod,
   subscribe: subscribeMethod,
   unsubscribe: unsubscribeMethod,
   "docket/get_board": docketGetBoardMethod,

@@ -2,7 +2,7 @@
 id: BL-118
 title: Daemon serves FCP on /fcp
 type: backlog
-status: todo
+status: done
 summary: The server accepts WebSocket connections on /fcp, checks Origin and the lock token, and binds an FCP peer per socket.
 tags: [server, protocol, fcp]
 related: [DES-040, DES-039]
@@ -19,6 +19,6 @@ Open the new door next to the REST API. Nothing in the web uses it yet.
 
 ## Done when
 
-- [ ] `/fcp` on `127.0.0.1:8787`; wrong Origin or token closes with 4401.
-- [ ] The index page served by the daemon exposes the token to same-origin scripts only.
-- [ ] Integration test: a Node client connects, initializes and calls `ping`.
+- [x] `/fcp` on `127.0.0.1:8787`; wrong Origin or token closes with 4401.
+- [x] The index page served by the daemon exposes the token to same-origin scripts only.
+- [x] Integration test: a Node client connects, initializes and calls `ping`.
