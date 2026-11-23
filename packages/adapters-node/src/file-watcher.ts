@@ -32,11 +32,13 @@ class NodeFileWatcher implements FileWatcher {
   private readonly listeners = new Set<Listener>()
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>()
   private fsWatcher: FSWatcher | undefined
+  private readonly root: string
+  private readonly debounceMs: number
 
-  constructor(
-    private readonly root: string,
-    private readonly debounceMs: number
-  ) {}
+  constructor(root: string, debounceMs: number) {
+    this.root = root
+    this.debounceMs = debounceMs
+  }
 
   watch(
     globs: readonly string[],
