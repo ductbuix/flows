@@ -381,3 +381,18 @@ export {
 } from "./nodes/judge.ts"
 export { layoutFileSchema, type LayoutFile } from "./nodes/layout.ts"
 export { findLoopEdges, loopWarnings } from "./nodes/loops.ts"
+export {
+  defineMethod,
+  defineNotification,
+  ErrorCode,
+  FCP_VERSION,
+  fcpMethodTable,
+  fcpNotificationTable,
+  jsonRpcCodeFor,
+  type FcpMethodDef,
+  type FcpMethodParams,
+  type FcpMethodResult,
+  type FcpNotificationDef,
+  type FcpNotificationParams,
+  type MethodKind,
+} from "./fcp/index.ts"
