@@ -254,6 +254,14 @@ private socket, passes the permission chain, then runs through
 Why: one choke point for audit (each call is a run event), and every
 connector transport looks the same to every agent.
 
+Server half (BL-165): launch with `--tools <spec.json> --socket <path>`.
+The tools JSON is `{ tools: [{ name, description?, inputSchema }] }`.
+The process speaks MCP over stdio (`initialize`, `tools/list`,
+`tools/call`) and forwards each call as JSON-RPC `gateway/call`
+`{ name, arguments }` over the unix socket (ndjson via
+`@workspace/protocol`). The package holds no secrets and no connector
+code; the engine side of the socket is BL-166.
+
 ## Inbox
 
 A projection, not a store: items come from run events
