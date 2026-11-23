@@ -2,7 +2,7 @@
 id: BL-160
 title: Connector files and CRUD
 type: backlog
-status: todo
+status: done
 summary: connectors/<id>.yaml (transport, how, auth kind, capabilities with write flags) and connector/list, get, save, remove, set_capability.
 tags: [connectors, fcp]
 related: [DES-041, DES-040]
@@ -19,6 +19,6 @@ Back the Connectors mockup's model: transport x auth x capabilities. Secrets nev
 
 ## Done when
 
-- [ ] Schema allows only the transport and auth pairs of the mockup (`AUTH_FOR`).
-- [ ] Write capabilities default off.
-- [ ] Protocol tests; a secret value in the YAML is rejected.
+- [x] Schema allows only the transport and auth pairs of the mockup (`AUTH_FOR`).
+- [x] Write capabilities default off.
+- [x] Protocol tests; a secret value in the YAML is rejected.

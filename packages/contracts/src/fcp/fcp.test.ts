@@ -62,4 +62,12 @@ describe("FCP helpers", () => {
       id: "demo",
     })
   })
+
+  it("declares connector list/get as queries and save/remove/set_capability as commands", () => {
+    expect(fcpMethodTable["connector/list"].kind).toBe("query")
+    expect(fcpMethodTable["connector/get"].kind).toBe("query")
+    expect(fcpMethodTable["connector/save"].kind).toBe("command")
+    expect(fcpMethodTable["connector/remove"].kind).toBe("command")
+    expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
+  })
 })

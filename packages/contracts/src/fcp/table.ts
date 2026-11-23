@@ -1,5 +1,12 @@
 import type { FcpMethodDef, FcpNotificationDef } from "./define.ts"
 import {
+  connectorGetMethod,
+  connectorListMethod,
+  connectorRemoveMethod,
+  connectorSaveMethod,
+  connectorSetCapabilityMethod,
+} from "./connector.ts"
+import {
   docketCreateCardMethod,
   docketDeleteCardMethod,
   docketGetBoardMethod,
@@ -30,6 +37,11 @@ export const fcpMethodTable = {
   "docket/move_card": docketMoveCardMethod,
   "docket/delete_card": docketDeleteCardMethod,
   "docket/save_board": docketSaveBoardMethod,
+  "connector/list": connectorListMethod,
+  "connector/get": connectorGetMethod,
+  "connector/save": connectorSaveMethod,
+  "connector/remove": connectorRemoveMethod,
+  "connector/set_capability": connectorSetCapabilityMethod,
   "workflow/list": workflowListMethod,
   "workflow/get": workflowGetMethod,
   "run/list": runListMethod,

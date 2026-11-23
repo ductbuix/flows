@@ -79,6 +79,19 @@ export {
   type DocketWriteBindings,
   type DocketWriteDeps,
 } from "./docket/write.ts"
+export {
+  CONNECTORS_GLOB,
+  connectorIdFromPath,
+  connectorPath,
+  createConnectorBindings,
+  createConnectorService,
+  ConnectorService,
+  isCapabilityAllowed,
+  setCapabilityAllowed,
+  type ConnectorBindings,
+  type ConnectorRecord,
+  type ConnectorServiceDeps,
+} from "./connectors/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,

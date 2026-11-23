@@ -82,3 +82,20 @@ export {
   workflowListParamsSchema,
   workflowListResultSchema,
 } from "./workflow.ts"
+export {
+  connectorGetMethod,
+  connectorGetParamsSchema,
+  connectorGetResultSchema,
+  connectorListMethod,
+  connectorListParamsSchema,
+  connectorListResultSchema,
+  connectorRemoveMethod,
+  connectorRemoveParamsSchema,
+  connectorRemoveResultSchema,
+  connectorSaveMethod,
+  connectorSaveParamsSchema,
+  connectorSaveResultSchema,
+  connectorSetCapabilityMethod,
+  connectorSetCapabilityParamsSchema,
+  connectorSetCapabilityResultSchema,
+} from "./connector.ts"
