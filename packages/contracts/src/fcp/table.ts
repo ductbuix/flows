@@ -1,8 +1,13 @@
 import type { FcpMethodDef, FcpNotificationDef } from "./define.ts"
 import {
+  docketCreateCardMethod,
+  docketDeleteCardMethod,
   docketGetBoardMethod,
   docketGetCardMethod,
   docketListCardsMethod,
+  docketSaveBoardMethod,
+  docketUpdateCardMethod,
+  docketUpdateNotification,
 } from "./docket.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
 
@@ -13,10 +18,13 @@ export const fcpMethodTable = {
   "docket/get_board": docketGetBoardMethod,
   "docket/list_cards": docketListCardsMethod,
   "docket/get_card": docketGetCardMethod,
+  "docket/create_card": docketCreateCardMethod,
+  "docket/update_card": docketUpdateCardMethod,
+  "docket/delete_card": docketDeleteCardMethod,
+  "docket/save_board": docketSaveBoardMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */
-export const fcpNotificationTable = {} as const satisfies Record<
-  string,
-  FcpNotificationDef
->
+export const fcpNotificationTable = {
+  "docket/update": docketUpdateNotification,
+} as const satisfies Record<string, FcpNotificationDef>

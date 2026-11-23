@@ -56,6 +56,11 @@ export {
   type DocketReadBindings,
   type DocketReadDeps,
 } from "./docket/read.ts"
+export {
+  createDocketWriteBindings,
+  type DocketWriteBindings,
+  type DocketWriteDeps,
+} from "./docket/write.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,

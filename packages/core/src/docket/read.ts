@@ -9,6 +9,7 @@ import { engineError } from "../kernel/engine-error.ts"
 import { defineBinding, type MethodBindings } from "../rpc/bind.ts"
 import type { CardFace, DocketIndex } from "./index.ts"
 import type { DocketStore } from "./store.ts"
+import { toWireFace } from "./wire-face.ts"
 
 const DEFAULT_LIST_LIMIT = 100
 
@@ -72,24 +73,4 @@ function listCardFaces(
   const next =
     hasMore && page.length > 0 ? page[page.length - 1]!.id : undefined
   return { items: page, next }
-}
-
-function toWireFace(face: CardFace): WireCardFace {
-  return {
-    id: face.id,
-    path: face.path,
-    hash: face.hash,
-    title: face.title,
-    status: face.status,
-    columnId: face.columnId,
-    rank: face.rank,
-    start: face.start,
-    due: face.due,
-    done: face.done,
-    refs: face.refs,
-    linkCount: face.linkCount,
-    assetCount: face.assetCount,
-    missingLinkedAssetCount: face.missingLinkedAssetCount,
-    warnings: face.warnings,
-  }
 }

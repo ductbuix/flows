@@ -57,6 +57,10 @@ export function createDocketStore(deps: DocketStoreDeps) {
 export class DocketStore {
   constructor(private readonly deps: DocketStoreDeps) {}
 
+  nowIso(): string {
+    return new Date(this.deps.clock.now()).toISOString()
+  }
+
   readBoard(): BoardFile | null {
     const disk = this.deps.docs.read(DOCKET_BOARD_PATH)
     if (!disk) return null
@@ -103,6 +107,10 @@ export class DocketStore {
     baseHash?: string
   ): DocumentWriteResult {
     return this.deps.docs.write(cardPath(cardId), text, { baseHash })
+  }
+
+  deleteCard(cardId: string) {
+    return this.deps.docs.remove(cardPath(cardId))
   }
 
   saveCard(

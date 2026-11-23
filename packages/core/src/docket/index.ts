@@ -4,6 +4,7 @@ import {
   DOCKET_BOARD_PATH,
   DOCKET_CARDS_GLOB,
   cardIdFromPath,
+  cardPath,
   type CardFile,
   type DocketStore,
 } from "./store.ts"
@@ -105,6 +106,16 @@ export class DocketIndex {
 
   getBoard(): Board | null {
     return this.board
+  }
+
+  /** Re-read board.yaml into the index after a hash-checked write. */
+  refreshBoard(): void {
+    this.applyChange(DOCKET_BOARD_PATH)
+  }
+
+  /** Re-read one card.md into the index after a hash-checked write. */
+  refreshCard(cardId: string): void {
+    this.applyChange(cardPath(cardId))
   }
 
   private applyChange(path: string): void {

@@ -8,7 +8,9 @@ import {
   cardLinkSchema,
   refSchema,
 } from "../docket/schemas.ts"
-import { defineMethod } from "./define.ts"
+import { defineMethod, defineNotification } from "./define.ts"
+
+const fcpRequestKeySchema = z.string().uuid().optional()
 
 export const cursorPageParamsSchema = z.object({
   cursor: cardIdSchema.optional(),
@@ -92,4 +94,119 @@ export const docketGetCardMethod = defineMethod({
   params: z.object({ id: cardIdSchema }),
   result: docketGetCardResultSchema,
   kind: "query",
+})
+
+export const docketCardPatchSchema = z
+  .object({
+    title: z.string().min(1).optional(),
+    status: z.string().optional(),
+    body: z.string().optional(),
+    rank: z.string().optional(),
+    start: z.string().optional(),
+    due: z.string().optional(),
+    done: z.union([z.string(), z.null()]).optional(),
+    refs: z.array(refSchema).optional(),
+    assets: z.array(assetSchema).optional(),
+    links: z.array(cardLinkSchema).optional(),
+    fields: z.record(z.string(), z.unknown()).optional(),
+  })
+  .strict()
+
+export const docketCreateCardParamsSchema = z.object({
+  id: cardIdSchema,
+  title: z.string().min(1),
+  status: z.string().optional(),
+  body: z.string().optional(),
+  refs: z.array(refSchema).optional(),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const docketCreateCardResultSchema = z.object({
+  hash: z.string(),
+  rank: z.string(),
+})
+
+export const docketUpdateCardParamsSchema = z.object({
+  id: cardIdSchema,
+  baseHash: z.string(),
+  patch: docketCardPatchSchema,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const docketUpdateCardResultSchema = z.object({
+  hash: z.string(),
+})
+
+export const docketDeleteCardParamsSchema = z.object({
+  id: cardIdSchema,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const docketDeleteCardResultSchema = z.object({})
+
+export const docketSaveBoardParamsSchema = z.object({
+  baseHash: z.string(),
+  board: boardSchema,
+  /** Rewrites cards in removed columns to this status (DES-038). */
+  migrateStatus: z.string().optional(),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const docketSaveBoardResultSchema = z.object({
+  hash: z.string(),
+  migratedCardIds: z.array(cardIdSchema).optional(),
+})
+
+export const docketConflictCardSchema = docketGetCardResultSchema
+
+export const docketConflictBoardSchema = docketGetBoardResultSchema
+
+export const docketCreateCardMethod = defineMethod({
+  name: "docket/create_card",
+  params: docketCreateCardParamsSchema,
+  result: docketCreateCardResultSchema,
+  kind: "command",
+})
+
+export const docketUpdateCardMethod = defineMethod({
+  name: "docket/update_card",
+  params: docketUpdateCardParamsSchema,
+  result: docketUpdateCardResultSchema,
+  kind: "command",
+})
+
+export const docketDeleteCardMethod = defineMethod({
+  name: "docket/delete_card",
+  params: docketDeleteCardParamsSchema,
+  result: docketDeleteCardResultSchema,
+  kind: "command",
+})
+
+export const docketSaveBoardMethod = defineMethod({
+  name: "docket/save_board",
+  params: docketSaveBoardParamsSchema,
+  result: docketSaveBoardResultSchema,
+  kind: "command",
+})
+
+export const docketUpdateNotification = defineNotification({
+  name: "docket/update",
+  params: z.discriminatedUnion("kind", [
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("card_changed"),
+      card: cardFaceSchema,
+    }),
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("card_removed"),
+      cardId: cardIdSchema,
+    }),
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("board_changed"),
+      hash: z.string(),
+      board: boardSchema,
+    }),
+  ]),
 })
