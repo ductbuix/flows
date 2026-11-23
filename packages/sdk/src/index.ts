@@ -3,6 +3,8 @@ export {
   type ClientEventMap,
   type CreateClientOptions,
   type FlowsClient,
+  type FcpCallParams,
+  type FcpCallResult,
   type FcpMethodName,
   type FcpNotificationName,
 } from "./client.ts"

@@ -16,6 +16,15 @@ import type {
 export type FcpMethodName = keyof typeof fcpMethodTable
 export type FcpNotificationName = keyof typeof fcpNotificationTable
 
+/** Params for `client.call(method, params)` / `useQuery(method, params, …)`. */
+export type FcpCallParams<M extends FcpMethodName> = FcpMethodParams<
+  (typeof fcpMethodTable)[M]
+>
+/** Result of `client.call(method, params)` / `useQuery` data. */
+export type FcpCallResult<M extends FcpMethodName> = FcpMethodResult<
+  (typeof fcpMethodTable)[M]
+>
+
 export type CreateClientOptions = CreateClientConnectOptions & {
   readonly token?: string
   readonly capabilities?: ClientCapabilities
@@ -32,8 +41,8 @@ export type FlowsClient = {
   readonly ready: Promise<InitializeResult>
   call<M extends FcpMethodName>(
     method: M,
-    params: FcpMethodParams<(typeof fcpMethodTable)[M]>
-  ): Promise<FcpMethodResult<(typeof fcpMethodTable)[M]>>
+    params: FcpCallParams<M>
+  ): Promise<FcpCallResult<M>>
   onNotification<M extends FcpNotificationName>(
     method: M,
     handler: (

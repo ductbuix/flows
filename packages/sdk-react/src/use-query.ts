@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react"
-import { type FcpMethodName, type FlowsClient } from "@workspace/sdk"
+import {
+  type FcpCallParams,
+  type FcpCallResult,
+  type FcpMethodName,
+} from "@workspace/sdk"
 import { useFlowsClient } from "./client-context.tsx"
 import {
   acquireTopics,
@@ -7,41 +11,39 @@ import {
   topicToNotification,
 } from "./topics.ts"
 
-type CallParams = Parameters<FlowsClient["call"]>[1]
-type CallResult = Awaited<ReturnType<FlowsClient["call"]>>
-
 export type UseQueryOptions = {
   readonly topics: readonly string[]
 }
 
-export type UseQueryResult<T = CallResult> = {
+export type UseQueryResult<T> = {
   data: T | undefined
   error: unknown
   loading: boolean
 }
 
 /** Fetch once, then refetch when a listed topic updates or resyncs. */
-export function useQuery(
-  method: FcpMethodName,
-  params: CallParams,
+export function useQuery<M extends FcpMethodName>(
+  method: M,
+  params: FcpCallParams<M>,
   options: UseQueryOptions
-): UseQueryResult {
+): UseQueryResult<FcpCallResult<M>> {
   const client = useFlowsClient()
-  const [data, setData] = useState<CallResult | undefined>(undefined)
+  const [data, setData] = useState<FcpCallResult<M> | undefined>(undefined)
   const [error, setError] = useState<unknown>(null)
   const [loading, setLoading] = useState(true)
 
   const paramsKey = JSON.stringify(params)
   const topicsKey = options.topics.join("\0")
-  const topics = options.topics
 
   useEffect(() => {
+    const topics = topicsKey.length === 0 ? [] : topicsKey.split("\0")
     return acquireTopics(client, topics)
-  }, [client, topicsKey, topics])
+  }, [client, topicsKey])
 
   useEffect(() => {
     let alive = true
     let seq = 0
+    const topics = topicsKey.length === 0 ? [] : topicsKey.split("\0")
 
     async function fetchOnce(): Promise<void> {
       const mine = ++seq

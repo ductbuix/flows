@@ -1,9 +1,10 @@
 import { cleanup, renderHook, waitFor } from "@testing-library/react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest"
 import type { ReactNode } from "react"
+import type { FcpCallParams, FcpCallResult } from "@workspace/sdk"
 import { FlowsClientProvider } from "./client-context.tsx"
 import { createFakeClient } from "./fake-client.ts"
-import { useQuery } from "./use-query.ts"
+import { useQuery, type UseQueryResult } from "./use-query.ts"
 import { useSubscription } from "./use-subscription.ts"
 
 afterEach(cleanup)
@@ -99,6 +100,51 @@ describe("useQuery", () => {
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.data).toBeUndefined()
     expect(result.current.error).toEqual(new Error("boom"))
+  })
+
+  it("does not resubscribe when topics array identity changes but contents match", async () => {
+    const client = createFakeClient({
+      call: async (method) => {
+        if (method === "subscribe" || method === "unsubscribe") return {}
+        return { id: "c1" }
+      },
+    })
+
+    const { rerender } = renderHook(
+      ({ topics }: { topics: string[] }) =>
+        useQuery("docket/get_card", { id: "c1" }, { topics }),
+      {
+        wrapper: wrapperFor(client),
+        initialProps: { topics: ["docket"] },
+      }
+    )
+    await waitFor(() =>
+      expect(client.calls.some((c) => c.method === "subscribe")).toBe(true)
+    )
+    const subscribeCount = client.calls.filter(
+      (c) => c.method === "subscribe"
+    ).length
+    const unsubscribeCount = client.calls.filter(
+      (c) => c.method === "unsubscribe"
+    ).length
+
+    rerender({ topics: ["docket"] })
+
+    expect(client.calls.filter((c) => c.method === "subscribe").length).toBe(
+      subscribeCount
+    )
+    expect(client.calls.filter((c) => c.method === "unsubscribe").length).toBe(
+      unsubscribeCount
+    )
+  })
+
+  it("types params and data for docket/get_card", () => {
+    expectTypeOf(useQuery<"docket/get_card">)
+      .parameter(1)
+      .toEqualTypeOf<FcpCallParams<"docket/get_card">>()
+    expectTypeOf(useQuery<"docket/get_card">).returns.toEqualTypeOf<
+      UseQueryResult<FcpCallResult<"docket/get_card">>
+    >()
   })
 })
 
