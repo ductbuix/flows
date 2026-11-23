@@ -2,7 +2,7 @@
 id: BL-120
 title: packages/sdk FlowsClient
 type: backlog
-status: todo
+status: done
 summary: "Typed client generated from the method table: connect, initialize, call, notifications, reconnect with backoff."
 tags: [sdk, protocol]
 related: [DES-039, DES-040]
@@ -19,6 +19,6 @@ One client every UI uses. `client.call('docket/get_card', params)` is typed from
 
 ## Done when
 
-- [ ] `createClient({ transport | url, token, capabilities })`; calls before ready are queued.
-- [ ] Reconnect with capped exponential backoff; pending calls fail with a retryable error on drop.
-- [ ] Unit tests over linked transports with a fake engine.
+- [x] `createClient({ transport | url, token, capabilities })`; calls before ready are queued.
+- [x] Reconnect with capped exponential backoff; pending calls fail with a retryable error on drop.
+- [x] Unit tests over linked transports with a fake engine.
