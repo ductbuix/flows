@@ -55,6 +55,15 @@ export {
 } from "./docket.ts"
 export { pingMethod, pingParamsSchema, pingResultSchema } from "./ping.ts"
 export {
+  runGetMethod,
+  runGetParamsSchema,
+  runGetResultSchema,
+  runListMethod,
+  runListParamsSchema,
+  runListResultSchema,
+  runUpdateNotification,
+} from "./run.ts"
+export {
   RUN_LIGHT_KINDS,
   subscribeMethod,
   subscribeParamsSchema,

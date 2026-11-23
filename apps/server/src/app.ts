@@ -1,5 +1,6 @@
 import { upgradeWebSocket } from "@hono/node-server"
 import { zValidator } from "@hono/zod-validator"
+import { UpdateBus } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
 import {
   putWorkflowBodySchema,
@@ -62,7 +63,8 @@ export function createApp({
   fcpToken = "test-fcp-token",
   port = Number(process.env.PORT ?? 8787),
 }: CreateAppOptions) {
-  const hub = new WsHub(engine)
+  const bus = new UpdateBus()
+  const hub = new WsHub(engine, bus)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
 
@@ -174,7 +176,7 @@ export function createApp({
 
   return new Hono()
     .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
-    .get("/fcp", fcpUpgrade(engine, fcpToken, port))
+    .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus))
     .route("/api", api)
 }
 

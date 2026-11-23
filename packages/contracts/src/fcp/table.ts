@@ -12,6 +12,7 @@ import {
 } from "./docket.ts"
 import { initializeMethod } from "./initialize.ts"
 import { pingMethod } from "./ping.ts"
+import { runGetMethod, runListMethod, runUpdateNotification } from "./run.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
 import { workflowGetMethod, workflowListMethod } from "./workflow.ts"
 
@@ -31,9 +32,12 @@ export const fcpMethodTable = {
   "docket/save_board": docketSaveBoardMethod,
   "workflow/list": workflowListMethod,
   "workflow/get": workflowGetMethod,
+  "run/list": runListMethod,
+  "run/get": runGetMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */
 export const fcpNotificationTable = {
   "docket/update": docketUpdateNotification,
+  "run/update": runUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>

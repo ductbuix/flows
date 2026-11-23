@@ -3,16 +3,19 @@ import {
   bindEngine,
   bindInitialize,
   createFcpConnection,
+  createSubscribeBindings,
   defineBinding,
+  type UpdateBus,
 } from "@workspace/core"
 import { pingMethod } from "@workspace/contracts"
 import type { Engine } from "@workspace/engine"
 import { RpcPeer, wsTransport, type WsLike } from "@workspace/protocol"
-import { timingSafeEqual } from "node:crypto"
+import { randomUUID, timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
 import { fcpIndexHtml } from "./fcp-index.ts"
 import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
+import { createRunReadBindings } from "./fcp-run-read.ts"
 
 export const FCP_AUTH_CLOSE = 4401
 export const FCP_DEV_ORIGIN_PORT = 5173
@@ -72,12 +75,18 @@ function fcpWsUrl(c: Context, port: number): string {
   return `ws://${host}/fcp`
 }
 
-function bindFcpPeer(raw: WsLike, engine: Engine): void {
+function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
   const transport = wsTransport(raw)
   const peer = new RpcPeer(transport)
   const connection = createFcpConnection()
   const ac = new AbortController()
-  transport.onClose(() => ac.abort())
+  const peerId = randomUUID()
+  const { bindings: subBindings, dispose: subDispose } =
+    createSubscribeBindings(bus, peer, peerId)
+  transport.onClose(() => {
+    ac.abort()
+    subDispose.dispose()
+  })
 
   bindInitialize(peer, connection, {
     engineInfo,
@@ -88,6 +97,8 @@ function bindFcpPeer(raw: WsLike, engine: Engine): void {
     {
       ping: defineBinding(pingMethod, () => ({ ok: true as const })),
       ...createWorkflowReadBindings(engine),
+      ...subBindings,
+      ...createRunReadBindings(engine),
     },
     { signal: ac.signal },
     { connection }
@@ -98,7 +109,8 @@ function fcpEvents(
   c: Context,
   engine: Engine,
   token: string,
-  port: number
+  port: number,
+  bus: UpdateBus
 ): WSEvents {
   if (!fcpAuthorized(c, token, port)) {
     return {
@@ -115,7 +127,7 @@ function fcpEvents(
         ws.close(1011, "no websocket")
         return
       }
-      bindFcpPeer(raw as WsLike, engine)
+      bindFcpPeer(raw as WsLike, engine, bus)
     },
   }
 }
@@ -131,6 +143,11 @@ export function fcpIndexResponse(
   return c.html(fcpIndexHtml({ token, url: fcpWsUrl(c, port) }))
 }
 
-export function fcpUpgrade(engine: Engine, token: string, port: number) {
-  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port))
+export function fcpUpgrade(
+  engine: Engine,
+  token: string,
+  port: number,
+  bus: UpdateBus
+) {
+  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port, bus))
 }

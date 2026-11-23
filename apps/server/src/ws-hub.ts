@@ -1,3 +1,4 @@
+import type { UpdateBus } from "@workspace/core"
 import type { Engine, StoredEvent } from "@workspace/engine"
 import {
   engineEventSchema,
@@ -22,7 +23,10 @@ export class WsHub {
   private readonly workflowWatchers = new Map<string, Set<WSContext>>()
   readonly files: WorkflowWatcher
 
-  constructor(private readonly engine: Engine) {
+  constructor(
+    private readonly engine: Engine,
+    private readonly bus: UpdateBus
+  ) {
     this.files = new WorkflowWatcher(engine, (change) =>
       this.broadcastFileChange(change)
     )
@@ -137,12 +141,18 @@ export class WsHub {
   }
 
   private broadcastRunsChanged(runId: string) {
+    const summary = this.engine.getRunSummary(runId)
     const message: WsServerMessage = {
       type: "runs_changed",
       runId,
-      summary: this.engine.getRunSummary(runId),
+      summary,
     }
     for (const ws of this.sockets.keys()) this.send(ws, message)
+    this.bus.publish("run/update", {
+      kind: "run_changed",
+      runId,
+      summary,
+    })
   }
 
   private subscribeRun(ws: WSContext, runId: string, afterSeq: number) {
