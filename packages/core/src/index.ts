@@ -20,3 +20,4 @@ export {
   ok,
   unwrapOr,
 } from "./kernel/index.ts"
+export { rankBetween } from "./docket/index.ts"

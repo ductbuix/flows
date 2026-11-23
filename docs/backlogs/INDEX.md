@@ -157,7 +157,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-149 | todo | P2 | BL-141 | [Cursor todos and subagent traces](bl-149-cursor-todos-task.md) | cursor/update_todos becomes a todos run update; cursor/task adds a subagent trace row under the step. | cursor, acp, runs |
 | BL-150 | todo | P2 | BL-137 | [Generic ACP profile](bl-150-acp-generic-profile.md) | A profile that uses only spec ACP methods, configured by command and args, so any ACP agent can run. | acp, agents |
 | BL-151 | todo | P1 | BL-110 | [Docket schemas](bl-151-docket-schemas.md) | cardSchema, refSchema, assetSchema, linkSchema and boardSchema in contracts, loose with passthrough as DES-038 specifies. | docket, contracts |
-| BL-152 | todo | P1 | - | [Fractional rank](bl-152-docket-rank.md) | rank.ts: a key between two keys, lexicographic, short strings, for one-file card moves. | docket, core |
+| BL-152 | done | P1 | - | [Fractional rank](bl-152-docket-rank.md) | rank.ts: a key between two keys, lexicographic, short strings, for one-file card moves. | docket, core |
 | BL-153 | todo | P1 | BL-151, BL-126 | [Docket card store](bl-153-docket-store.md) | Read and write card.md and board.yaml: tolerant parse with warnings, hash-checked writes, YAML that keeps comments and unknown keys. | docket, core, files |
 | BL-154 | todo | P1 | BL-153, BL-127 | [Docket index projection](bl-154-docket-index.md) | In-memory index of card faces, backlinks and missing linked assets, rebuilt from files and kept live by the watcher. | docket, core |
 | BL-155 | todo | P1 | BL-154, BL-115 | [Docket read methods](bl-155-fcp-docket-read.md) | docket/get_board, docket/list_cards (faces) and docket/get_card (body, hash, backlinks, asset states) over FCP. | docket, fcp |

@@ -2,7 +2,7 @@
 id: BL-152
 title: Fractional rank
 type: backlog
-status: todo
+status: done
 summary: "rank.ts: a key between two keys, lexicographic, short strings, for one-file card moves."
 tags: [docket, core]
 related: [DES-038]
@@ -19,5 +19,5 @@ Moves rewrite one card only.
 
 ## Done when
 
-- [ ] `rankBetween(a?, b?)` always returns a key strictly between; keys stay short over many inserts.
-- [ ] Property test with 10 000 random inserts.
+- [x] `rankBetween(a?, b?)` always returns a key strictly between; keys stay short over many inserts.
+- [x] Property test with 10 000 random inserts.
