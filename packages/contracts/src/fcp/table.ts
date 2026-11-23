@@ -17,6 +17,13 @@ import {
   docketUpdateCardMethod,
   docketUpdateNotification,
 } from "./docket.ts"
+import {
+  fileListMethod,
+  fileReadTextMethod,
+  fileRevealMethod,
+  fileStatMethod,
+  fileWriteTextMethod,
+} from "./file.ts"
 import { initializeMethod } from "./initialize.ts"
 import {
   libraryListProvidersMethod,
@@ -59,6 +66,11 @@ export const fcpMethodTable = {
   "run/get": runGetMethod,
   "skill/list": skillListMethod,
   "skill/get": skillGetMethod,
+  "file/list": fileListMethod,
+  "file/stat": fileStatMethod,
+  "file/read_text": fileReadTextMethod,
+  "file/write_text": fileWriteTextMethod,
+  "file/reveal": fileRevealMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */

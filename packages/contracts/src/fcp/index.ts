@@ -91,6 +91,25 @@ export {
 } from "./subscribe.ts"
 export { fcpMethodTable, fcpNotificationTable } from "./table.ts"
 export {
+  fileEntrySchema,
+  fileKindSchema,
+  fileListMethod,
+  fileListParamsSchema,
+  fileListResultSchema,
+  fileReadTextMethod,
+  fileReadTextParamsSchema,
+  fileReadTextResultSchema,
+  fileRevealMethod,
+  fileRevealParamsSchema,
+  fileRevealResultSchema,
+  fileStatMethod,
+  fileStatParamsSchema,
+  fileStatResultSchema,
+  fileWriteTextMethod,
+  fileWriteTextParamsSchema,
+  fileWriteTextResultSchema,
+} from "./file.ts"
+export {
   workflowGetMethod,
   workflowGetParamsSchema,
   workflowGetResultSchema,

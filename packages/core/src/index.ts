@@ -123,6 +123,13 @@ export {
   type SkillScope,
   type SkillSummary,
 } from "./skills/index.ts"
+  confineToRoots,
+  createFileBindings,
+  isUnderStoreRoot,
+  normalizeStorePath,
+  type FileBindings,
+  type FileServiceDeps,
+} from "./files/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,

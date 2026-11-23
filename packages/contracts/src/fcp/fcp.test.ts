@@ -12,6 +12,11 @@ import {
   skillGetMethod,
   skillListMethod,
   skillUpdateNotification,
+  fileListMethod,
+  fileReadTextMethod,
+  fileRevealMethod,
+  fileStatMethod,
+  fileWriteTextMethod,
   workflowGetMethod,
   workflowListMethod,
 } from "./index.ts"
@@ -88,5 +93,16 @@ describe("FCP helpers", () => {
       skillGetMethod.params.parse({ slug: "write-tests", scope: "workspace" })
     ).toEqual({ slug: "write-tests", scope: "workspace" })
     expect(skillUpdateNotification.name).toBe("skill/update")
+  })
+
+  it("declares file/* methods", () => {
+    expect(fcpMethodTable["file/list"]).toBe(fileListMethod)
+    expect(fcpMethodTable["file/stat"]).toBe(fileStatMethod)
+    expect(fcpMethodTable["file/read_text"]).toBe(fileReadTextMethod)
+    expect(fcpMethodTable["file/write_text"]).toBe(fileWriteTextMethod)
+    expect(fcpMethodTable["file/reveal"]).toBe(fileRevealMethod)
+    expect(fileListMethod.kind).toBe("query")
+    expect(fileWriteTextMethod.kind).toBe("command")
+    expect(fileRevealMethod.kind).toBe("command")
   })
 })
