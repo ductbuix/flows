@@ -25,26 +25,31 @@ export function BrandPage() {
         if (items.length === 0) return null
         return (
           <PageSection key={group} title={group}>
-            <div className="grid gap-4 @3xl/main:grid-cols-2 @6xl/main:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 @xl/main:grid-cols-2 @3xl/main:grid-cols-3 @5xl/main:grid-cols-4">
               {items.map((m) => (
                 <Link
                   key={m.id}
                   to={`/brand/${m.id}`}
                   data-testid={`brand-card-${m.id}`}
-                  className="group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="group flex h-full rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  <Card className="pt-0 transition-shadow group-hover:shadow-md">
+                  <Card
+                    size="sm"
+                    className="h-full w-full pt-0 transition-shadow group-hover:shadow-md"
+                  >
                     <div
                       aria-hidden
-                      className="pointer-events-none flex max-h-72 min-h-40 shrink-0 items-start justify-center overflow-hidden border-b bg-muted/60 bg-dot-grid p-4"
+                      className="pointer-events-none flex h-28 shrink-0 items-start justify-center overflow-hidden border-b bg-muted/60 bg-dot-grid p-2"
                     >
-                      <div className="origin-top scale-75">
+                      <div className="origin-top scale-50">
                         <m.Component />
                       </div>
                     </div>
-                    <CardHeader>
+                    <CardHeader className="flex-1">
                       <CardTitle>{m.title}</CardTitle>
-                      <CardDescription>{m.summary}</CardDescription>
+                      <CardDescription className="line-clamp-2">
+                        {m.summary}
+                      </CardDescription>
                       <CardAction>
                         <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                       </CardAction>
