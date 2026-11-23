@@ -23,6 +23,7 @@ updated: 2026-11-23
 # Architecture
 
 > Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): spawn in the data flow and failure modes is removed; the engine walks nodes ([DES-034](des-034-node-engine.md)).
+> Target v2 shape (engine library + protocol, ACP agents, Electron host): [DES-039](des-039-system-architecture-v2.md).
 
 High-level map. Details live in the linked designs; entities are in
 [DES-001](des-001-overview.md).
