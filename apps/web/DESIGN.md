@@ -74,10 +74,30 @@ Map tones in one place: `TONE_CLASS` and `TONE_TEXT` in
 
 ### Shape and depth
 
-Radius and height come from the shadcn parts; never override them (lint).
-Two-layer surfaces are a `Card className="bg-muted"` holding a plain inner
-`Card`. Board lanes and the canvas are the only hand-rolled surfaces
-(`rounded-2xl bg-muted`, no shadcn part exists). Pills: `Badge` and
+Theme through shadcn CSS variables in
+`packages/ui/src/styles/globals.css`
+([theming](https://ui.shadcn.com/docs/theming.md)). Radius and control
+heights come from the shadcn parts; never override them (lint).
+
+| Rule            | Choice          | How                                                                                                                |
+| --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Radius          | Soft            | `--radius: 0.75rem` (scale `sm`…`4xl` derived)                                                                     |
+| Base color      | Neutral         | default token set; no Stone/Zinc undertone                                                                         |
+| Surfaces        | Ring-only       | `ring-1 ring-foreground/10` on Card, Item `outline`, floating toolbars, section `Empty`. No hard border for chrome |
+| Inputs          | Outline         | Input, Textarea, Select keep `border-input`                                                                        |
+| Depth           | Flat            | no card / hover shadows                                                                                            |
+| Nesting         | Two-layer       | outer `Card className="bg-muted"` (or lane `rounded-2xl bg-muted`), plain inner `Card`                             |
+| Primary         | Near-black      | default `--primary` / `--primary-foreground`                                                                       |
+| Mode            | Light default   | `d` toggles dark; system stays available                                                                           |
+| Sidebar         | Slightly tinted | `--sidebar` (redesign later)                                                                                       |
+| Focus           | Subtle gray     | `--ring`                                                                                                           |
+| Status / charts | Keep            | existing `--success` / `--info` / `--warning` / `--destructive`; neutral `chart-*`                                 |
+
+Structural dividers stay (`border-t` / `border-b`, `Separator`, page
+header). Status tint recipe still uses a soft border (`/25`) on pills.
+Canvas wires and branch forks may use border edges as drawing, not
+chrome. Board lanes and the canvas stage are the only hand-rolled
+surfaces (`rounded-2xl`, no shadcn part). Pills: `Badge` and
 `Button size="pill"`. Never `p-6` outside the page frame (lint).
 
 ### Icons
@@ -99,26 +119,26 @@ Before you write markup, find the part in this order (DES-008):
 4. Custom code only when none fits, built from the parts above, and listed
    in the table below with the reason.
 
-| Need                                  | Use                                                                                 |
-| ------------------------------------- | ----------------------------------------------------------------------------------- |
-| Any card, panel, form shell           | `Card` + `CardHeader/Title/Description/Action/Content/Footer`                       |
-| Card on a board, fact row, list row   | `Item` (`ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemFooter`) |
-| State label, count, chip, edge label  | `Badge` (tints via `StatusPill`)                                                    |
-| Object icon                           | `Avatar` (via `KindAvatar`)                                                         |
-| Agent steps, a run, parallel branches | AI Elements `Task` on `Trace` (`ai-elements/task.tsx`)                              |
-| Agent plan / todo list                | AI Elements `Plan`, `Queue`                                                         |
-| Approval before an action             | AI Elements `Confirmation`                                                          |
-| Failed tool call, command output      | AI Elements `StackTrace`, `Terminal`                                                |
-| Changed files                         | AI Elements `FileTree`                                                              |
-| Model and effort pick                 | AI Elements `ModelSelector`                                                         |
-| One-click example prompts             | AI Elements `Suggestion` (`ai-elements/suggestion.tsx`)                             |
-| Label + control rows, toggles         | `Field` (`orientation="horizontal"`), `FieldSet`, `FieldLegend`, `Switch`           |
-| Multi-select chips                    | `ToggleGroup multiple variant="outline"`                                            |
-| Path / back trail                     | `Breadcrumb`                                                                        |
-| Icon input                            | `InputGroup` + `InputGroupAddon`                                                    |
-| Detail on the side                    | `Sheet`; confirm with `AlertDialog` / `ConfirmDialog`                               |
-| Empty / loading                       | `Empty`, `Skeleton`, `Spinner`                                                      |
-| Canvas, node, edge, controls          | `@xyflow/react` + `Card` + `ButtonGroup` (AI Elements has no pattern)               |
+| Need                                  | Use                                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| Any card, panel, form shell           | `Card` + `CardHeader/Title/Description/Action/Content/Footer`                        |
+| Card on a board, fact row, list row   | `Item` (`ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemFooter`)  |
+| State label, count, chip, edge label  | `Badge` (tints via `StatusPill`)                                                     |
+| Object icon                           | `Avatar` (via `KindAvatar`)                                                          |
+| Agent steps, a run, parallel branches | AI Elements `Task` on `Trace` (`ai-elements/task.tsx`)                               |
+| Agent plan / todo list                | AI Elements `Plan`, `Queue`                                                          |
+| Approval before an action             | AI Elements `Confirmation`                                                           |
+| Failed tool call, command output      | AI Elements `StackTrace`, `Terminal`                                                 |
+| Changed files                         | AI Elements `FileTree`                                                               |
+| Model and effort pick                 | AI Elements `ModelSelector`                                                          |
+| One-click example prompts             | AI Elements `Suggestion` (`ai-elements/suggestion.tsx`)                              |
+| Label + control rows, toggles         | `Field` (`orientation="horizontal"`), `FieldSet`, `FieldLegend`, `Switch`            |
+| Multi-select chips                    | `ToggleGroup multiple variant="outline"`                                             |
+| Path / back trail                     | `Breadcrumb`                                                                         |
+| Icon input                            | `InputGroup` + `InputGroupAddon`                                                     |
+| Detail on the side                    | `Sheet`; confirm with `AlertDialog` / `ConfirmDialog`                                |
+| Empty / loading                       | `Empty` (section: `ring-1 ring-foreground/10`; page: no ring), `Skeleton`, `Spinner` |
+| Canvas, node, edge, controls          | `@xyflow/react` + `Card` + `ButtonGroup` (AI Elements has no pattern)                |
 
 **Allowed custom code** (`apps/web/src/components/brand/`), nothing else:
 
@@ -142,7 +162,7 @@ Each has a mockup at `/brand/<id>`; the registry spec there is the detail.
   `ToggleGroup`, Cancel + one primary named for the result. Max five fields.
 - **Work items board** (`kanban`). Lanes Inbox, Running, Needs you, Done.
   The lane follows the latest run; users drag only Inbox ↔ Done. Card =
-  `Item variant="outline"`: title, source line, footer with workflow + pill. Needs you cards get a warning border.
+  `Item variant="outline"`: title, source line, footer with workflow + pill. Needs you cards get a warning ring.
 - **Workflow canvas** (`canvas`). Top to bottom on a dot grid. Edge labels
   (`Badge`: When this happens, Do this, Pass/Fail). Node = `Card size="sm"`
   with `KindAvatar`, verb-phrase name, one muted line, optional inset. Floating toolbar bottom center.

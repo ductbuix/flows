@@ -18,8 +18,8 @@ function BoardItem({ card }: { card: BoardCard }) {
     <Item
       variant="outline"
       className={cn(
-        "cursor-grab bg-background shadow-xs",
-        card.status?.tone === "attention" && "border-warning/50"
+        "cursor-grab bg-background",
+        card.status?.tone === "attention" && "ring-warning/50"
       )}
       data-testid="kanban-card"
     >
@@ -57,7 +57,11 @@ export function KanbanMockup() {
             <span className="text-sm font-medium">{col.title}</span>
             <Badge variant="secondary">{col.cards.length}</Badge>
             <span className="flex-1" />
-            <Button variant="ghost" size="icon" aria-label={`Add to ${col.title}`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Add to ${col.title}`}
+            >
               <Plus />
             </Button>
           </div>
@@ -79,13 +83,13 @@ export const kanbanMockup: Mockup = {
   usedIn: ["/work-items (the page itself)"],
   anatomy: [
     "Page header: title, one line, New work item button",
-    "Lane: muted rounded column (no shadcn part), name, count Badge, ghost + Button",
-    "Card: Item variant=outline: ItemTitle, ItemDescription (source line), ItemFooter with workflow + status pill",
+    "Lane: muted rounded-2xl column (no shadcn part), name, count Badge, ghost + Button",
+    "Card: Item variant=outline (ring-only): ItemTitle, ItemDescription (source line), ItemFooter with workflow + status pill",
   ],
   states: [
     "Inbox: no workflow yet, no pill",
     "Running: info pill with the live step (Step 2 of 4)",
-    "Needs you: warning border + attention pill (Approve publish, Needs sign-in)",
+    "Needs you: warning ring + attention pill (Approve publish, Needs sign-in)",
     "Done: success pill; Failed stays in Running with a failed pill",
     "Empty column: lane stays, a muted line says what lands here",
   ],

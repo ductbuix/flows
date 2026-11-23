@@ -29,7 +29,7 @@ export function RunEffectsTable({ run }: Props) {
   return (
     <PageSection title="Effects">
       {effects.length === 0 ? (
-        <Empty className="border" data-testid="run-effects-empty">
+        <Empty className="ring-1 ring-foreground/10" data-testid="run-effects-empty">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Zap />

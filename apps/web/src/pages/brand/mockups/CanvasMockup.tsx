@@ -26,7 +26,7 @@ export function CanvasMockup() {
   const [view, setView] = useState<string[]>(["outline"])
   return (
     <div
-      className="relative flex w-full max-w-3xl flex-col items-center rounded-2xl border bg-background bg-dot-grid px-4 pt-8 pb-20"
+      className="relative flex w-full max-w-3xl flex-col items-center rounded-2xl bg-background bg-dot-grid px-4 pt-8 pb-20 ring-1 ring-foreground/10"
       data-testid="mockup-canvas"
     >
       <div className="flex flex-col items-center gap-1.5">
@@ -85,7 +85,7 @@ export function CanvasMockup() {
           />
         </div>
       </div>
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border bg-background p-1 shadow-sm">
+      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl bg-background p-1 ring-1 ring-foreground/10">
         <ToggleGroup value={view} onValueChange={setView}>
           <ToggleGroupItem value="outline">Outline</ToggleGroupItem>
           <ToggleGroupItem value="details">Details</ToggleGroupItem>
@@ -121,7 +121,7 @@ export const canvasMockup: Mockup = {
     "Edge label: ui Badge outline above the first node (When this happens) and actions (Do this)",
     "Node: ui Card size=sm with KindAvatar, CardTitle, CardDescription, optional muted inset",
     "Branches: elbow split, each branch topped by its label (Pass / Fail)",
-    "Floating toolbar bottom center: Outline/Details, zoom, fit",
+    "Floating toolbar bottom center (ring-only, flat): Outline/Details, zoom, fit",
   ],
   states: [
     "Selected: ring-info/40; the detail panel opens on the right",

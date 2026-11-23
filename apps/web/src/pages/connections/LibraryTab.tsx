@@ -161,7 +161,7 @@ export function LibraryTab() {
             <Skeleton className="h-40 w-full" />
           </div>
         ) : entities.length === 0 ? (
-          <Empty className="border" data-testid="library-empty">
+          <Empty className="ring-1 ring-foreground/10" data-testid="library-empty">
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <Library />
