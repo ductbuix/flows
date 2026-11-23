@@ -52,6 +52,8 @@ export async function runGit(args: string[]): Promise<string> {
     return stdout ?? ""
   } catch (err) {
     const e = err as { stderr?: string; message?: string }
-    throw new Error(e.stderr?.trim() || e.message || "git failed")
+    throw new Error(e.stderr?.trim() || e.message || "git failed", {
+      cause: err,
+    })
   }
 }

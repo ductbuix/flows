@@ -43,10 +43,7 @@ export function attemptKey(nodeId: string, pass: number, attempt: number) {
   return `${nodeId}:${pass}:${attempt}`
 }
 
-export function attemptRootOf(
-  stepDir: string,
-  attempt: number
-): string {
+export function attemptRootOf(stepDir: string, attempt: number): string {
   return join(stepDir, `attempt-${attempt}`)
 }
 
@@ -67,9 +64,14 @@ function readStderr(attemptRoot: string): string {
   }
 }
 
-function cliOf(graph: Workflow, nodeId: string): "claude" | "cursor" | undefined {
+function cliOf(
+  graph: Workflow,
+  nodeId: string
+): "claude" | "cursor" | undefined {
   const node = graph.nodes.find((n) => n.id === nodeId)
-  return node?.kind === "agent" || node?.kind === "judge" || node?.kind === "llm"
+  return node?.kind === "agent" ||
+    node?.kind === "judge" ||
+    node?.kind === "llm"
     ? node.cli
     : undefined
 }
@@ -350,7 +352,7 @@ export function launchAttempt(
     graph
   )
   let child: ChildProcess
-  let sandboxed = false
+  let sandboxed: boolean
   try {
     const launched = spawnWrapped(
       cmd.shell,
