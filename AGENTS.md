@@ -11,9 +11,9 @@ A task runs a command, script or AI agent CLI as its own process.
 ## Direction
 
 Start at `docs/INDEX.md`. Vision, architecture, decision log and roadmap are
-DES-014 to DES-017. Add a row to DES-016 when a decision lands. Find a doc
-from the index, then a section index; never read whole folders.
-Schema and writing rules: `docs/README.md`.
+DES-014 to DES-017; add a DES-016 row when a decision lands. Find a doc from
+the index, then a section index; never read whole folders. Schema and writing
+rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 
 ## Layout
 
