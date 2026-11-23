@@ -6,3 +6,9 @@ export {
   describeDocumentStoreContract,
   type DocumentStoreFactory,
 } from "./document-store.contract.ts"
+export { createFakeFileWatcher, FakeFileWatcher } from "./fake-file-watcher.ts"
+export {
+  describeFileWatcherContract,
+  type FileWatcherFactory,
+  type FileWatcherTestCtx,
+} from "./file-watcher.contract.ts"
