@@ -1,37 +1,24 @@
-import { fcpMethodTable } from "@workspace/contracts"
-import {
-  RpcPeer,
-  TransportClosedError,
-  type Transport,
-} from "@workspace/protocol"
+import { type RpcPeer, type Transport } from "@workspace/protocol"
 import { createBackoff, sleep } from "./backoff.ts"
+import { createClientCalls } from "./calls.ts"
 import { resolveConnect } from "./connect.ts"
-import {
-  asRetryable,
-  ProtocolVersionError,
-  RetryableConnectionError,
-} from "./errors.ts"
+import { ProtocolVersionError, RetryableConnectionError } from "./errors.ts"
 import type { ClientInfo, InitializeResult } from "./initialize.ts"
-import { openSession } from "./session.ts"
+import { deliverNotification, openSession } from "./session.ts"
+import { createSubscriptionTracker } from "./subscriptions.ts"
 import type {
+  ClientEventMap,
   CreateClientOptions,
   FlowsClient,
-  FcpMethodName,
 } from "./types.ts"
 
 export type {
+  ClientEventMap,
   CreateClientOptions,
   FlowsClient,
   FcpMethodName,
   FcpNotificationName,
 } from "./types.ts"
-
-type QueuedCall = {
-  method: string
-  params: unknown
-  resolve: (value: unknown) => void
-  reject: (err: unknown) => void
-}
 
 const DEFAULT_CLIENT_INFO: ClientInfo = {
   name: "@workspace/sdk",
@@ -50,9 +37,28 @@ export function createClient(options: CreateClientOptions): FlowsClient {
   let closedByUser = false
   let settledReady = false
   let reconnecting = false
-  const queue: QueuedCall[] = []
   const notificationHandlers = new Map<string, Set<(params: unknown) => void>>()
+  const resyncHandlers = new Set<(topic: string) => void>()
   const abortReconnect = new AbortController()
+  const subscriptions = createSubscriptionTracker((topic) => {
+    for (const handler of resyncHandlers) handler(topic)
+  })
+  const calls = createClientCalls(
+    { getPeer: () => peer, isReady: () => sessionReady },
+    subscriptions
+  )
+  const sessionHooks = {
+    notificationHandlers,
+    onNotify(_method: string, params: unknown) {
+      subscriptions.noteParamsSeq(params)
+    },
+    onDrop: () => {
+      peer = undefined
+      transport = undefined
+      sessionReady = false
+      void ensureReconnect()
+    },
+  }
 
   let resolveReady!: (value: InitializeResult) => void
   let rejectReady!: (err: unknown) => void
@@ -73,51 +79,20 @@ export function createClient(options: CreateClientOptions): FlowsClient {
     rejectReady(err)
   }
 
-  async function dispatch(method: string, params: unknown): Promise<unknown> {
-    if (!peer || !sessionReady) {
-      return new Promise((resolve, reject) => {
-        queue.push({ method, params, resolve, reject })
-      })
-    }
-    const def = fcpMethodTable[method as FcpMethodName]
-    const parsed = def.params.safeParse(params ?? {})
-    if (!parsed.success) throw parsed.error
-    try {
-      return def.result.parse(await peer.request(method, parsed.data))
-    } catch (err) {
-      if (err instanceof TransportClosedError) throw asRetryable(err)
-      throw err
-    }
-  }
-
-  function flushQueue(): void {
-    const pending = queue.splice(0, queue.length)
-    for (const item of pending) {
-      void dispatch(item.method, item.params).then(item.resolve, item.reject)
-    }
-  }
-
   async function startSession(): Promise<InitializeResult> {
     const session = await openSession(
       connect,
       clientInfo,
       capabilities,
-      {
-        notificationHandlers,
-        onDrop: () => {
-          peer = undefined
-          transport = undefined
-          sessionReady = false
-          void ensureReconnect()
-        },
-      },
+      sessionHooks,
       () => closedByUser
     )
     peer = session.peer
     transport = session.transport
     sessionReady = true
     backoff.reset()
-    flushQueue()
+    await calls.resubscribe()
+    calls.flushQueue()
     return session.initialize
   }
 
@@ -158,7 +133,7 @@ export function createClient(options: CreateClientOptions): FlowsClient {
   return {
     ready: readyPromise,
     call(method, params) {
-      return dispatch(method, params) as Promise<never>
+      return calls.dispatch(method, params) as Promise<never>
     },
     onNotification(method, handler) {
       let set = notificationHandlers.get(method)
@@ -166,7 +141,7 @@ export function createClient(options: CreateClientOptions): FlowsClient {
         set = new Set()
         notificationHandlers.set(method, set)
         peer?.onNotification(method, (params) => {
-          for (const h of notificationHandlers.get(method) ?? []) h(params)
+          deliverNotification(sessionHooks, method, params)
         })
       }
       const wrapped = handler as (params: unknown) => void
@@ -175,14 +150,21 @@ export function createClient(options: CreateClientOptions): FlowsClient {
         set?.delete(wrapped)
       }
     },
+    on(event, handler) {
+      if (event !== "resync") {
+        throw new Error(`unknown client event: ${String(event)}`)
+      }
+      const h = handler as ClientEventMap["resync"]
+      resyncHandlers.add(h)
+      return () => {
+        resyncHandlers.delete(h)
+      }
+    },
     close() {
       closedByUser = true
       abortReconnect.abort()
       sessionReady = false
-      for (const item of queue) {
-        item.reject(new RetryableConnectionError("client closed"))
-      }
-      queue.length = 0
+      calls.rejectQueue(new RetryableConnectionError("client closed"))
       failReady(new RetryableConnectionError("client closed"))
       peer?.dispose()
       peer = undefined

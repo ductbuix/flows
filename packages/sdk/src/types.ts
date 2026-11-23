@@ -23,6 +23,11 @@ export type CreateClientOptions = CreateClientConnectOptions & {
   readonly backoff?: BackoffOptions
 }
 
+/** Client-local events (not FCP notifications). */
+export type ClientEventMap = {
+  resync: (topic: string) => void
+}
+
 export type FlowsClient = {
   readonly ready: Promise<InitializeResult>
   call<M extends FcpMethodName>(
@@ -34,6 +39,10 @@ export type FlowsClient = {
     handler: (
       params: FcpNotificationParams<(typeof fcpNotificationTable)[M]>
     ) => void
+  ): () => void
+  on<E extends keyof ClientEventMap>(
+    event: E,
+    handler: ClientEventMap[E]
   ): () => void
   close(): void
 }

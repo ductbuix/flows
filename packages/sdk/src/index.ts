@@ -1,5 +1,6 @@
 export {
   createClient,
+  type ClientEventMap,
   type CreateClientOptions,
   type FlowsClient,
   type FcpMethodName,

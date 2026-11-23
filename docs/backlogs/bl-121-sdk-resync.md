@@ -2,7 +2,7 @@
 id: BL-121
 title: sdk resubscribe and resync
 type: backlog
-status: todo
+status: done
 summary: On reconnect the sdk resubscribes with its last seq and emits resync events so callers refetch.
 tags: [sdk, protocol]
 related: [DES-040]
@@ -19,6 +19,6 @@ Make reconnect invisible to pages except for a refetch.
 
 ## Done when
 
-- [ ] The client tracks the highest `seq` per connection and sends it on resubscribe.
-- [ ] `client.on('resync', topic)` fires for each topic the engine lists.
-- [ ] Unit test: drop the transport mid-stream, reconnect, receive replayed updates in order.
+- [x] The client tracks the highest `seq` per connection and sends it on resubscribe.
+- [x] `client.on('resync', topic)` fires for each topic the engine lists.
+- [x] Unit test: drop the transport mid-stream, reconnect, receive replayed updates in order.

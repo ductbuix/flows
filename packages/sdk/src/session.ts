@@ -12,12 +12,24 @@ import {
 export type SessionHooks = {
   readonly onDrop: (err?: Error) => void
   readonly notificationHandlers: Map<string, Set<(params: unknown) => void>>
+  readonly onNotify?: (method: string, params: unknown) => void
 }
 
 export type OpenSessionResult = {
   readonly peer: RpcPeer
   readonly transport: Transport
   readonly initialize: InitializeResult
+}
+
+export function deliverNotification(
+  hooks: Pick<SessionHooks, "notificationHandlers" | "onNotify">,
+  method: string,
+  params: unknown
+): void {
+  hooks.onNotify?.(method, params)
+  for (const handler of hooks.notificationHandlers.get(method) ?? []) {
+    handler(params)
+  }
 }
 
 export async function openSession(
@@ -31,9 +43,7 @@ export async function openSession(
   const peer = new RpcPeer(transport)
   for (const method of hooks.notificationHandlers.keys()) {
     peer.onNotification(method, (params) => {
-      for (const handler of hooks.notificationHandlers.get(method) ?? []) {
-        handler(params)
-      }
+      deliverNotification(hooks, method, params)
     })
   }
   transport.onClose((err) => {
