@@ -55,7 +55,7 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `protocol`; no Node I/O.
 - `packages/adapters-node`: Node port adapters (`DocumentStore` fs + atomic
   write); contract tests against core fakes.
-- `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`.
+- `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`, `wsTransport`.
 - `packages/contracts` (`packages/shared` re-export shim): zod for API
   (`runSummarySchema`, `workItemSchema`), websocket, node workflow
   (`workflowSchema`), `connection.yaml`, library list/pull/clear/usage,

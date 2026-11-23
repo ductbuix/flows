@@ -2,7 +2,7 @@
 id: BL-108
 title: WebSocket transport
 type: backlog
-status: todo
+status: done
 summary: Transport for one WebSocket, usable from the browser and from Node, one JSON text frame per message.
 tags: [protocol, websocket]
 related: [DES-040]
@@ -19,6 +19,6 @@ Add `wsTransport(socket)` that takes any object with the standard WebSocket shap
 
 ## Done when
 
-- [ ] Text frames parse to messages; binary frames are rejected with a logged error.
-- [ ] Close and error events reach `onClose`.
-- [ ] Unit test against a local `ws` server on `127.0.0.1` with a random port.
+- [x] Text frames parse to messages; binary frames are rejected with a logged error.
+- [x] Close and error events reach `onClose`.
+- [x] Unit test against a local `ws` server on `127.0.0.1` with a random port.

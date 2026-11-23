@@ -26,3 +26,4 @@ export {
 } from "./rpc-peer.ts"
 export type { Transport } from "./transport.ts"
 export { createLinkedTransports } from "./linked.ts"
+export { wsTransport, type WsLike } from "./ws-transport.ts"
