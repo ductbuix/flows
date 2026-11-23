@@ -8,3 +8,10 @@ export {
   type MethodBindings,
   type MethodHandler,
 } from "./bind.ts"
+export {
+  bindInitialize,
+  createFcpConnection,
+  invalidRequestError,
+  type BindInitializeOptions,
+  type FcpConnection,
+} from "./initialize.ts"

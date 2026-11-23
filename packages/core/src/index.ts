@@ -30,10 +30,15 @@ export {
 } from "./updates/index.ts"
 export {
   bindEngine,
+  bindInitialize,
+  createFcpConnection,
   defineBinding,
+  invalidRequestError,
   type BindEngineOptions,
+  type BindInitializeOptions,
   type ClientContext,
   type ClientInfo,
+  type FcpConnection,
   type MethodBinding,
   type MethodBindings,
   type MethodHandler,

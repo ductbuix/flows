@@ -2,7 +2,7 @@
 id: BL-116
 title: FCP initialize and capabilities
 type: backlog
-status: todo
+status: done
 summary: initialize handshake with protocolVersion, client and engine info and capabilities; calls before initialize are rejected.
 tags: [protocol, fcp]
 related: [DES-040]
@@ -19,6 +19,6 @@ Implement the DES-040 lifecycle step 1-2 so every host negotiates the same way.
 
 ## Done when
 
-- [ ] `initialize` schema in contracts; engine answers with `engineCapabilities` (agents and nodeKinds empty for now).
-- [ ] Any other method before `initialize` fails with `invalid_request`.
-- [ ] Unit tests: version match, older client version, call before initialize.
+- [x] `initialize` schema in contracts; engine answers with `engineCapabilities` (agents and nodeKinds empty for now).
+- [x] Any other method before `initialize` fails with `invalid_request`.
+- [x] Unit tests: version match, older client version, call before initialize.

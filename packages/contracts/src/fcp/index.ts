@@ -11,6 +11,16 @@ export {
 export { ErrorCode, jsonRpcCodeFor } from "./errors.ts"
 export { FCP_VERSION } from "./version.ts"
 export {
+  agentInfoSchema,
+  clientCapabilitiesSchema,
+  engineCapabilitiesSchema,
+  fcpClientInfoSchema,
+  fcpWorkspaceSchema,
+  initializeMethod,
+  initializeParamsSchema,
+  initializeResultSchema,
+} from "./initialize.ts"
+export {
   cardBacklinkSchema,
   cardFaceSchema,
   cursorPageParamsSchema,

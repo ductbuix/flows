@@ -7,6 +7,8 @@ import { JsonRpcResponseError, RpcPeer } from "@workspace/protocol"
 import type { Logger } from "../kernel/logger.ts"
 import type { Disposable } from "../ports/file-watcher.ts"
 import type { ClientContext } from "./context.ts"
+import type { FcpConnection } from "./initialize.ts"
+import { invalidRequestError } from "./initialize.ts"
 import {
   engineErrorToJsonRpc,
   internalError,
@@ -39,6 +41,8 @@ export type BindEngineOptions = {
   readonly logger?: Logger
   /** Default: validate when `NODE_ENV` is not `production`. */
   readonly validateResults?: boolean
+  /** When set, rejects all methods until `bindInitialize` completes. */
+  readonly connection?: FcpConnection
 }
 
 function nodeEnv(): string | undefined {
@@ -65,6 +69,9 @@ export function bindEngine(
     const { method, handler } = binding
     unsubs.push(
       peer.onRequest(name, async (raw) => {
+        if (options?.connection && !options.connection.initialized) {
+          throw invalidRequestError("Initialize required")
+        }
         const parsed = method.params.safeParse(raw ?? {})
         if (!parsed.success) {
           throw invalidParamsError(parsed.error)

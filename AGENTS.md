@@ -51,7 +51,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
 - `packages/core`: UI-free kernel (`EngineError`, ports, `bindEngine`, testing
-  fakes); `contracts` + `protocol`; no Node I/O.
+  fakes); `bindInitialize` gates FCP until handshake; `contracts` +
+  `protocol`; no Node I/O.
 - `packages/adapters-node`: Node port adapters (`DocumentStore` fs + atomic
   write); contract tests against core fakes.
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`.
