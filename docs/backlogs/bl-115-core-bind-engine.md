@@ -2,7 +2,7 @@
 id: BL-115
 title: "bindEngine: serve a method table on a peer"
 type: backlog
-status: todo
+status: done
 summary: bindEngine wires FCP method handlers to a peer with zod validation and EngineError to JSON-RPC error mapping.
 tags: [core, protocol]
 related: [DES-040, DES-041]
@@ -19,6 +19,6 @@ Make the binding generic: given handlers keyed by method name, it validates para
 
 ## Done when
 
-- [ ] Invalid params return `invalid_params` with zod issue paths.
-- [ ] `EngineError` maps to its code; any other throw maps to `internal` and is logged.
-- [ ] Unit tests over linked transports with a two-method sample table.
+- [x] Invalid params return `invalid_params` with zod issue paths.
+- [x] `EngineError` maps to its code; any other throw maps to `internal` and is logged.
+- [x] Unit tests over linked transports with a two-method sample table.

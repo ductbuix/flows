@@ -1,7 +1,6 @@
 # AGENTS.md
 
-Keep this file under **100 lines**. Update the layout when you add, remove or
-rename a package, command or feature.
+Keep this file under **100 lines**. Update layout when packages or commands change.
 
 ## What this is
 
@@ -29,9 +28,7 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   (grouped by work item); one Start run dialog from work item and workflow
   headers, Allow agent CLI dialog; Home Needs you (incl. publish +
   connection), expired sign-ins, Work items; Impact/Freshness/Policy on
-  `/dev/kit`; Overview (nodes, inputs)/Editor (node
-  canvas, drag saves layout, loop edges curved; publish node + Cloud badge)/Runs; canvas (Add node, Run step + menu, run history Card, wires); run view summary Cards + Tasks (step table)/Changes/Library
-  pins tabs; connection policy Select.
+  `/dev/kit`; workflow Overview/Editor/Runs; run view Tasks/Changes/Library tabs.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
   create/rename/delete (409 while live), GET/PUT (hash, 409), memory
   CRUD, file GET/PUT, trust GET/PUT and preflight (CLIs of the nodes), GET
@@ -53,9 +50,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `<workflow>/.cache`; `nodes/` (walk, loops, executors incl. `publish.ts`,
   `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
-- `packages/core`: UI-free engine kernel (`EngineError`, `Result`, `Clock`,
-  `Ids`, `Logger`); ports under `src/ports/`; in-memory fakes under
-  `src/testing/`; no Node I/O imports.
+- `packages/core`: UI-free kernel (`EngineError`, ports, `bindEngine`, testing
+  fakes); `contracts` + `protocol`; no Node I/O.
 - `packages/adapters-node`: Node port adapters (`DocumentStore` fs + atomic
   write); contract tests against core fakes.
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`.
@@ -76,21 +72,18 @@ Run from the repo root with pnpm:
 
 ```sh
 pnpm install
-pnpm dev            # server and web
-pnpm build          # typecheck and build web
+pnpm dev # server and web
+pnpm build # typecheck and build web
 pnpm typecheck
 pnpm lint           # eslint, then docs:check
 pnpm lint:fix
 pnpm format
 pnpm format:check
-pnpm test           # vitest
-pnpm test:e2e       # playwright
+pnpm test # vitest
+pnpm test:e2e # playwright
 pnpm docs:index
 pnpm docs:check
 ```
-
-One package: `pnpm --filter server test`. Install the Playwright browser
-once with `pnpm --filter e2e exec playwright install chromium`.
 
 ## Done means
 
