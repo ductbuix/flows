@@ -6,6 +6,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { useFlow } from "./flow-context"
 import type { FlowNode } from "./flow-data"
 import { ModelRow } from "./ModelRow"
+import { ConnectorCount } from "./StepConnectors"
 import { BARE_INPUT, FIELD, NodeShell, PortHandle } from "./NodeShell"
 
 function RunButton({ id }: { id: string }) {
@@ -46,6 +47,7 @@ export function LlmNode({ id, data, selected }: NodeProps<FlowNode>) {
         />
         <ModelRow data={data} onChange={(p) => update(id, p)} />
       </div>
+      <ConnectorCount id={id} ids={data.connectors ?? []} skills={data.skills ?? []} />
       <Result text={data.result} />
       <RunButton id={id} />
       <PortHandle io="out" port="text" />

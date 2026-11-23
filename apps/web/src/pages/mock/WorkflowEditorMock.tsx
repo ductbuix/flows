@@ -51,7 +51,7 @@ function Editor({ id }: { id: string }) {
   }, [viewing, nodes, edges])
   useEffect(() => saveFlow(id, { nodes, edges }), [id, nodes, edges])
   const [settingsId, setSettingsId] = useState<string | null>(null)
-  const editing = nodes.find((n) => n.id === settingsId)
+  const editing = nodes.find((n) => n.id === settingsId && n.selected)
   const ops = useEditorOps(nodes, edges, setNodes, setEdges, !viewing)
   const seq = useRef(1)
   const nodesRef = useRef(nodes)
@@ -157,6 +157,8 @@ function Editor({ id }: { id: string }) {
             panOnScroll
             zoomOnScroll={false}
             selectionMode={SelectionMode.Partial}
+            // Settings follow the selection: deselecting the node hides the panel.
+            onSelectionChange={({ nodes: sel }) => setSettingsId((cur) => (cur && sel.some((n) => n.id === cur) ? cur : null))}
             onPaneContextMenu={(e) => e.preventDefault()}
             defaultViewport={{ x: 120, y: 150, zoom: 0.7 }}
             minZoom={0.2}

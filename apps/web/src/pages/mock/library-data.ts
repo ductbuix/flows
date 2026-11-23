@@ -28,6 +28,27 @@ const REMOTE_ITEMS: LibItem[] = [
     usedBy: ["refactor-auth-session", "release-notes-v0-4"],
   },
   {
+    id: "repo-team-skills",
+    kind: "repo",
+    title: "team-skills",
+    source: "github",
+    remoteId: "costory/team-skills",
+    remoteUrl: "https://github.com/costory/team-skills",
+    tags: ["repo:team-skills", "type:skills", "team:platform"],
+    assets: [
+      { name: "repo/README.md", kind: "md", size: "1 KB" },
+      { name: "repo/skills/write-tests/SKILL.md", kind: "md", size: "2 KB" },
+      { name: "repo/skills/review-pr/SKILL.md", kind: "md", size: "2 KB" },
+      { name: "repo/skills/release-notes/SKILL.md", kind: "md", size: "1 KB" },
+    ],
+    versions: [
+      v(2, "2026-11-20 10:15", "Sharper test-writing rules", "180 KB"),
+      v(1, "2026-11-08 16:40", "First clone", "150 KB"),
+    ],
+    current: 2,
+    usedBy: [],
+  },
+  {
     id: "repo-auth-service",
     kind: "repo",
     title: "auth-service",

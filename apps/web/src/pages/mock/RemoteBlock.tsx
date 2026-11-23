@@ -7,10 +7,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
+import { Link } from "react-router"
 import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { mono } from "@/components/data/mono"
 import type { LibItem } from "./library-data"
+import { connectorFor, useConnectors } from "./connectors-store"
 import { fetchItem, linkRemote, pushItem, unlinkRemote, useProviders } from "./library-store"
 import { DetectCard, LinkInput, useLinkField } from "./ProviderDetect"
 
@@ -21,6 +23,8 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
   const provider = useProviders().find((p) => p.id === item.source)
   const writable = provider?.access === "readwrite"
   const linked = item.source !== "local"
+  const conn = connectorFor(useConnectors(), item.source)
+  const blocked = !!conn && conn.status !== "connected"
 
   function run(action: (id: string) => void) {
     setBusy(true)
@@ -98,18 +102,27 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
           <Link2 className="mr-1.5 inline text-success" />
           Linked to {provider?.label ?? item.source} <span className={mono}>{item.remoteId}</span>
         </p>
-        <Button disabled={busy || !provider} onClick={() => run(fetchItem)} data-testid="library-fetch">
+        <Button disabled={busy || !provider || blocked} onClick={() => run(fetchItem)} data-testid="library-fetch">
           {busy ? <Spinner /> : <RefreshCw />}
           {busy ? "Working…" : "Fetch"}
         </Button>
         {menu}
       </div>
       <p className="text-xs text-muted-foreground">
-        {!provider
-          ? "Its provider was removed. Add it back under Providers to fetch."
-          : writable
-            ? `Last fetched ${item.versions[0]?.at.slice(0, 10)}. Fetch pulls down; Push (menu) sends local edits back.`
-            : `Last fetched ${item.versions[0]?.at.slice(0, 10)}. Read-only: nothing is written back.`}
+        {!provider ? (
+          "Its provider was removed. Add it back under Providers to fetch."
+        ) : blocked && conn ? (
+          <>
+            {conn.name} sign-in {conn.status === "expired" ? "expired" : "is off"}.{" "}
+            <Link to={`/mock/connectors?connector=${conn.id}`} className="underline" data-testid="library-sign-in">
+              Sign in to fetch
+            </Link>
+          </>
+        ) : writable ? (
+          `Last fetched ${item.versions[0]?.at.slice(0, 10)}. Fetch pulls down; Push (menu) sends local edits back.`
+        ) : (
+          `Last fetched ${item.versions[0]?.at.slice(0, 10)}. Read-only: nothing is written back.`
+        )}
       </p>
     </div>
   )

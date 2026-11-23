@@ -15,6 +15,18 @@ function subscribe(fn: () => void) {
 export const getWorkflows = () => list
 export const useWorkflows = () => useSyncExternalStore(subscribe, getWorkflows)
 
+let flowsVersion = 0
+const flowListeners = new Set<() => void>()
+/** Changes whenever any canvas is saved; for views derived from the canvases. */
+export const useFlowsVersion = () =>
+  useSyncExternalStore(
+    (fn) => {
+      flowListeners.add(fn)
+      return () => flowListeners.delete(fn)
+    },
+    () => flowsVersion
+  )
+
 export function getFlow(id: string): Flow {
   return flows.get(id) ?? flowFor(id)
 }
@@ -28,6 +40,8 @@ export function saveFlow(id: string, flow: Flow) {
       data: { ...n.data, state: undefined, result: undefined },
     })),
   })
+  flowsVersion++
+  flowListeners.forEach((fn) => fn())
 }
 
 function slug(name: string): string {

@@ -36,9 +36,6 @@ export type Capability = {
   allowed: boolean
 }
 
-/** Something that calls the connector: an agent step or a script step of a workflow. */
-export type Consumer = { workflowId: string; step: string; by: "agent" | "script" }
-
 export type Connector = {
   id: string
   name: string
@@ -50,7 +47,6 @@ export type Connector = {
   account?: string
   checked: string
   capabilities: Capability[]
-  consumers: Consumer[]
   /** Library provider that fetches through this connector. */
   providerId?: string
 }
@@ -67,10 +63,6 @@ export const CONNECTORS: Connector[] = [
       cap("pr create", "Open a draft pull request", true, true),
       cap("pr merge", "Merge a pull request", true, false),
     ],
-    consumers: [
-      { workflowId: "fix-flaky-test", step: "Open draft PR", by: "script" },
-      { workflowId: "release-notes", step: "Read merged PRs", by: "agent" },
-    ],
   },
   {
     id: "confluence", name: "Confluence", transport: "api", how: "https://wiki.costory.studio/rest/api", auth: "cookies",
@@ -80,10 +72,6 @@ export const CONNECTORS: Connector[] = [
       cap("search", "Search spaces"),
       cap("page update", "Edit a page's body", true, true),
     ],
-    consumers: [
-      { workflowId: "weekly-report", step: "Publish summary", by: "script" },
-      { workflowId: "release-notes", step: "Read the release page", by: "agent" },
-    ],
   },
   {
     id: "rally", name: "Rally", transport: "api", how: "https://rally1.rallydev.com/slm/webservice", auth: "cookies",
@@ -92,7 +80,6 @@ export const CONNECTORS: Connector[] = [
       cap("artifact read", "Read stories, defects, features, epics"),
       cap("artifact update", "Change state or add a comment", true, false),
     ],
-    consumers: [{ workflowId: "triage-inbox", step: "Read new tickets", by: "agent" }],
   },
   {
     id: "jenkins", name: "Jenkins", transport: "api", how: "https://ci.costory.studio", auth: "pat",
@@ -101,12 +88,10 @@ export const CONNECTORS: Connector[] = [
       cap("job read", "Read builds and console logs"),
       cap("build trigger", "Start a build", true, false),
     ],
-    consumers: [{ workflowId: "fix-flaky-test", step: "Read failing build log", by: "script" }],
   },
   {
     id: "opensearch", name: "OpenSearch logs", transport: "mcp", how: "npx -y opensearch-mcp", auth: "pat",
     status: "off", checked: "never",
     capabilities: [cap("search logs", "Query indices, read only")],
-    consumers: [],
   },
 ]

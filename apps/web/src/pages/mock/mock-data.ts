@@ -8,6 +8,8 @@ export const MOCK_CHANGES = [
   { to: "/mock/inbox", label: "Inbox", badge: "A" },
   { to: "/mock/files", label: "Files", badge: "A" },
   { to: "/mock/library", label: "Library", badge: "A" },
+  { to: "/mock/skills", label: "Skills", badge: "A" },
+  { to: "/mock/connectors", label: "Connectors", badge: "A" },
 ] as const
 
 /** Mirrors the real app home (the whole folder, not a subset). */

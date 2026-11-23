@@ -43,7 +43,6 @@ export function addConnector(name: string, transport: Transport, how: string, au
       status: auth === "none" ? "connected" : "off",
       checked: "never",
       capabilities: [{ name: "read", desc: "Read data (discovered on first connect)", write: false, allowed: true }],
-      consumers: [],
     },
   ])
   return id
