@@ -18,8 +18,8 @@ updated: 2026-11-23
 - shadcn initialised with preset `b1HvWXNDFK`, Vite template, monorepo
   layout. Style `base-nova` on Base UI (not Radix), base color `neutral`,
   lucide icons.
-- Tailwind 4. Theme tokens (light and `.dark`) and fonts (Geist for text,
-  Figtree for headings) live in `packages/ui/src/styles/globals.css`.
+- Tailwind 4. Theme tokens (light and `.dark`) and fonts (Google Sans for
+  text and headings) live in `packages/ui/src/styles/globals.css`.
   Use the tokens (`bg-background`, `text-muted-foreground`, ...), not raw
   colors.
 - `ThemeProvider` in `apps/web/src/components/theme-provider.tsx` handles

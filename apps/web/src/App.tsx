@@ -9,6 +9,14 @@ import { DevKitPage } from "@/pages/DevKitPage"
 import { HomePage } from "@/pages/HomePage"
 import { ConnectionPage } from "@/pages/connections/ConnectionPage"
 import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
+import { DocketPage } from "@/pages/mock/DocketPage"
+import { FilesPage } from "@/pages/mock/FilesPage"
+import { LibraryPage } from "@/pages/mock/LibraryPage"
+import { InboxPage } from "@/pages/mock/InboxPage"
+import { MockBlankPage } from "@/pages/mock/MockBlankPage"
+import { MockShell } from "@/pages/mock/MockShell"
+import { WorkflowEditorMock } from "@/pages/mock/WorkflowEditorMock"
+import { WorkflowsMockPage } from "@/pages/mock/WorkflowsMockPage"
 import { RunsPage } from "@/pages/RunsPage"
 import { SettingsPage } from "@/pages/SettingsPage"
 import {
@@ -38,6 +46,15 @@ function AppShell() {
 export function App() {
   return (
     <Routes>
+      <Route path="mock" element={<MockShell />}>
+        <Route index element={<MockBlankPage />} />
+        <Route path="docket" element={<DocketPage />} />
+        <Route path="workflows" element={<WorkflowsMockPage />} />
+        <Route path="inbox" element={<InboxPage />} />
+        <Route path="files" element={<FilesPage />} />
+        <Route path="library" element={<LibraryPage />} />
+        <Route path="workflows/:id" element={<WorkflowEditorMock />} />
+      </Route>
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
         <Route path="settings" element={<SettingsPage />} />

@@ -65,7 +65,7 @@ Map tones in one place: `TONE_CLASS` and `TONE_TEXT` in
 
 ### Type
 
-- Headings `font-heading` (Figtree), weight medium. Body Inter.
+- Headings `font-heading` (Google Sans), weight medium. Body Google Sans.
 - Page title `text-xl`, `CardTitle` `text-base`, body `text-sm`, meta
   `text-xs text-muted-foreground`.
 - Numbers that change (durations, counts, tokens) use `mono` from
