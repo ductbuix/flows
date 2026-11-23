@@ -54,7 +54,10 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
 - `packages/core`: UI-free engine kernel (`EngineError`, `Result`, `Clock`,
-  `Ids`, `Logger`); in-memory fakes under `src/testing/`; no Node I/O imports.
+  `Ids`, `Logger`); ports under `src/ports/`; in-memory fakes under
+  `src/testing/`; no Node I/O imports.
+- `packages/adapters-node`: Node port adapters (`DocumentStore` fs + atomic
+  write); contract tests against core fakes.
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`.
 - `packages/contracts` (`packages/shared` re-export shim): zod for API
   (`runSummarySchema`, `workItemSchema`), websocket, node workflow

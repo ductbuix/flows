@@ -2,7 +2,7 @@
 id: BL-126
 title: DocumentStore port, fake and adapter
 type: backlog
-status: todo
+status: done
 summary: DocumentStore port in core with an in-memory fake, one contract suite, and the Node adapter in adapters-node passing it.
 tags: [core, ports, adapters]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Move file reads and hash-checked writes behind the `DocumentStore` port (DES-041
 
 ## Done when
 
-- [ ] `DocumentStore` interface: `read -> { text, hash }`, `write(path, text, { baseHash })` with `conflict`, `list(glob)`, `remove`; atomic writes.
-- [ ] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
-- [ ] file reads and hash-checked writes lives in `packages/adapters-node` and passes the suite.
+- [x] `DocumentStore` interface: `read -> { text, hash }`, `write(path, text, { baseHash })` with `conflict`, `list(glob)`, `remove`; atomic writes.
+- [x] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
+- [x] file reads and hash-checked writes lives in `packages/adapters-node` and passes the suite.

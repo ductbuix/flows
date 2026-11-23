@@ -21,3 +21,11 @@ export {
   unwrapOr,
 } from "./kernel/index.ts"
 export { rankBetween } from "./docket/index.ts"
+export { hashUtf8Text } from "./kernel/hash.ts"
+export type {
+  DocumentRead,
+  DocumentRemoveResult,
+  DocumentStore,
+  DocumentWriteOptions,
+  DocumentWriteResult,
+} from "./ports/index.ts"

@@ -2,7 +2,6 @@ import {
   existsSync,
   mkdirSync,
   readdirSync,
-  readFileSync,
   statSync,
   unlinkSync,
 } from "node:fs"
@@ -11,6 +10,7 @@ import {
   attachmentNameSchema,
   type WorkItemAttachment,
 } from "@workspace/shared"
+import { getDocumentStore } from "./document-store.ts"
 import {
   hashText,
   workItemAttachmentsDir,
@@ -25,8 +25,9 @@ export function readWorkItemNotes(
 ): { content: string; hash: string } | null {
   if (!existsSync(workItemYamlPath(home, id))) return null
   const path = workItemNotesPath(home, id)
-  const content = existsSync(path) ? readFileSync(path, "utf8") : ""
-  return { content, hash: hashText(content) }
+  const disk = getDocumentStore().read(path)
+  const content = disk?.text ?? ""
+  return { content, hash: disk?.hash ?? hashText("") }
 }
 
 export type WriteNotesResult =
@@ -43,13 +44,16 @@ export function writeWorkItemNotes(
   if (!existsSync(workItemYamlPath(home, id)))
     return { ok: false, kind: "not_found" }
   const path = workItemNotesPath(home, id)
-  const disk = existsSync(path) ? readFileSync(path, "utf8") : ""
-  const diskHash = hashText(disk)
-  if (baseHash !== undefined && diskHash !== baseHash) {
-    return { ok: false, kind: "conflict", content: disk, hash: diskHash }
+  const written = getDocumentStore().write(path, content, { baseHash })
+  if (!written.ok) {
+    return {
+      ok: false,
+      kind: "conflict",
+      content: written.text,
+      hash: written.hash,
+    }
   }
-  writeAtomic(path, content)
-  return { ok: true, content, hash: hashText(content) }
+  return { ok: true, content: written.text, hash: written.hash }
 }
 
 export function listWorkItemAttachments(
