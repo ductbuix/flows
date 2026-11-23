@@ -45,6 +45,19 @@ export {
 } from "./rpc/index.ts"
 export { rankBetween } from "./docket/rank.ts"
 export {
+  allowAlwaysSettingsKey,
+  decidePermission,
+  normalizePermissionPath,
+  parseAllowAlwaysTools,
+  serializeAllowAlwaysTools,
+  withAllowAlwaysTool,
+  type PermissionContext,
+  type PermissionDecision,
+  type PermissionOutcome,
+  type PermissionRequest,
+  type PermissionRule,
+} from "./agents/index.ts"
+export {
   createDocketIndex,
   DocketIndex,
   UNSORTED_COLUMN_ID,
