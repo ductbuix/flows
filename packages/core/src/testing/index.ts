@@ -12,3 +12,14 @@ export {
   type FileWatcherFactory,
   type FileWatcherTestCtx,
 } from "./file-watcher.contract.ts"
+export {
+  createFakeProcessRunner,
+  FakeProcessRunner,
+  type FakeProcessHandler,
+  type FakeProcessResult,
+} from "./fake-process-runner.ts"
+export {
+  describeProcessRunnerContract,
+  type ProcessRunnerFactory,
+  type ProcessRunnerTestCtx,
+} from "./process-runner.contract.ts"

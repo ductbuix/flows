@@ -10,3 +10,9 @@ export type {
   FileWatchChange,
   FileWatcher,
 } from "./file-watcher.ts"
+export type {
+  ProcessRunner,
+  ProcessSandboxProfile,
+  ProcessSpawnSpec,
+  RunningProcess,
+} from "./process-runner.ts"

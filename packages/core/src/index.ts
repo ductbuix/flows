@@ -76,4 +76,8 @@ export type {
   DocumentWriteResult,
   FileWatchChange,
   FileWatcher,
+  ProcessRunner,
+  ProcessSandboxProfile,
+  ProcessSpawnSpec,
+  RunningProcess,
 } from "./ports/index.ts"

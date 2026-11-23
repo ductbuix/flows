@@ -14,7 +14,8 @@
     "./kernel/hash": "./src/kernel/hash.ts",
     "./testing": "./src/testing/index.ts",
     "./testing/document-store.contract": "./src/testing/document-store.contract.ts",
-    "./testing/file-watcher.contract": "./src/testing/file-watcher.contract.ts"
+    "./testing/file-watcher.contract": "./src/testing/file-watcher.contract.ts",
+    "./testing/process-runner.contract": "./src/testing/process-runner.contract.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
