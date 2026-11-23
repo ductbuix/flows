@@ -18,6 +18,10 @@ import {
   docketUpdateNotification,
 } from "./docket.ts"
 import { initializeMethod } from "./initialize.ts"
+import {
+  libraryListProvidersMethod,
+  librarySaveProviderMethod,
+} from "./library.ts"
 import { pingMethod } from "./ping.ts"
 import { runGetMethod, runListMethod, runUpdateNotification } from "./run.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
@@ -42,6 +46,8 @@ export const fcpMethodTable = {
   "connector/save": connectorSaveMethod,
   "connector/remove": connectorRemoveMethod,
   "connector/set_capability": connectorSetCapabilityMethod,
+  "library/list_providers": libraryListProvidersMethod,
+  "library/save_provider": librarySaveProviderMethod,
   "workflow/list": workflowListMethod,
   "workflow/get": workflowGetMethod,
   "run/list": runListMethod,

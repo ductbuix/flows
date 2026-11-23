@@ -96,6 +96,24 @@ export {
   type LibraryClearBody,
   type LibraryClearResult,
 } from "./library.ts"
+export {
+  assertProviderPattern,
+  DEFAULT_PROVIDERS,
+  detect,
+  parseProviderYaml,
+  providerAccessSchema,
+  providerDescriptorSchema,
+  providerIconSchema,
+  providerIdSchema,
+  providerPatternSchema,
+  providerToYaml,
+  safeParseProviderYaml,
+  tagsOf,
+  type ProviderAccess,
+  type ProviderDescriptor,
+  type ProviderIcon,
+  type ProviderMatch,
+} from "./provider.ts"
 export { healthSchema, type Health } from "./health.ts"
 export {
   agentJudgeSchema,
@@ -520,6 +538,12 @@ export {
   connectorSetCapabilityMethod,
   connectorSetCapabilityParamsSchema,
   connectorSetCapabilityResultSchema,
+  libraryListProvidersMethod,
+  libraryListProvidersParamsSchema,
+  libraryListProvidersResultSchema,
+  librarySaveProviderMethod,
+  librarySaveProviderParamsSchema,
+  librarySaveProviderResultSchema,
   type FcpMethodDef,
   type FcpMethodParams,
   type FcpMethodResult,

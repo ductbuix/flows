@@ -92,6 +92,16 @@ export {
   type ConnectorRecord,
   type ConnectorServiceDeps,
 } from "./connectors/index.ts"
+export {
+  PROVIDERS_GLOB,
+  createLibraryProviderBindings,
+  createProviderService,
+  providerIdFromPath,
+  providerPath,
+  ProviderService,
+  type LibraryProviderBindings,
+  type ProviderServiceDeps,
+} from "./library/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,

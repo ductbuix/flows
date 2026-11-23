@@ -99,3 +99,11 @@ export {
   connectorSetCapabilityParamsSchema,
   connectorSetCapabilityResultSchema,
 } from "./connector.ts"
+export {
+  libraryListProvidersMethod,
+  libraryListProvidersParamsSchema,
+  libraryListProvidersResultSchema,
+  librarySaveProviderMethod,
+  librarySaveProviderParamsSchema,
+  librarySaveProviderResultSchema,
+} from "./library.ts"

@@ -70,4 +70,9 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["connector/remove"].kind).toBe("command")
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
   })
+
+  it("declares library/list_providers as a query and library/save_provider as a command", () => {
+    expect(fcpMethodTable["library/list_providers"].kind).toBe("query")
+    expect(fcpMethodTable["library/save_provider"].kind).toBe("command")
+  })
 })
