@@ -51,6 +51,11 @@ export {
   type IndexedLink,
   type PathExists,
 } from "./docket/index.ts"
+export {
+  createDocketReadBindings,
+  type DocketReadBindings,
+  type DocketReadDeps,
+} from "./docket/read.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,

@@ -2,7 +2,7 @@
 id: BL-155
 title: Docket read methods
 type: backlog
-status: todo
+status: done
 summary: docket/get_board, docket/list_cards (faces) and docket/get_card (body, hash, backlinks, asset states) over FCP.
 tags: [docket, fcp]
 related: [DES-038, DES-040]
@@ -19,5 +19,5 @@ Read side of the Docket page.
 
 ## Done when
 
-- [ ] Lists page by cursor; faces carry no body.
-- [ ] Protocol test over linked transports with fixture cards.
+- [x] Lists page by cursor; faces carry no body.
+- [x] Protocol test over linked transports with fixture cards.
