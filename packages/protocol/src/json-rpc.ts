@@ -41,6 +41,8 @@ export const JSONRPC_INVALID_REQUEST = -32600
 export const JSONRPC_METHOD_NOT_FOUND = -32601
 export const JSONRPC_INVALID_PARAMS = -32602
 export const JSONRPC_INTERNAL_ERROR = -32603
+/** Request cancelled by `$/cancel_request` (DES-040). */
+export const JSONRPC_REQUEST_CANCELLED = -32800
 
 export function isJsonRpcRequest(msg: JsonRpcMessage): msg is JsonRpcRequest {
   return (

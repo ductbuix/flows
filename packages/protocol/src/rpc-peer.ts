@@ -1,22 +1,24 @@
 import {
-  JSONRPC_METHOD_NOT_FOUND,
+  CANCEL_REQUEST_METHOD,
+  cancelledErrorObject,
+  type RequestOptions,
+} from "./cancel.ts"
+import {
   JSONRPC_VERSION,
-  isJsonRpcNotification,
-  isJsonRpcRequest,
-  isJsonRpcResponse,
   type JsonRpcId,
   type JsonRpcMessage,
 } from "./json-rpc.ts"
+import { JsonRpcResponseError, TransportClosedError } from "./errors.ts"
 import {
-  JsonRpcResponseError,
-  TransportClosedError,
-  toJsonRpcError,
-} from "./errors.ts"
+  handleInboundMessage,
+  type Inflight,
+  type InboundState,
+} from "./rpc-inbound.ts"
+import type { NotificationHandler, RequestHandler } from "./rpc-peer-types.ts"
 import type { Transport } from "./transport.ts"
 
-export type RequestHandler = (params: unknown) => unknown | Promise<unknown>
-
-export type NotificationHandler = (params: unknown) => void | Promise<void>
+export type { RequestContext, RequestOptions } from "./cancel.ts"
+export type { NotificationHandler, RequestHandler } from "./rpc-peer-types.ts"
 
 export class RpcPeer {
   private nextId = 1
@@ -27,15 +29,26 @@ export class RpcPeer {
       reject: (error: Error) => void
     }
   >()
+  private readonly inflight = new Map<JsonRpcId, Inflight>()
+  private readonly cancelledIds = new Set<JsonRpcId>()
   private readonly requestHandlers = new Map<string, RequestHandler>()
   private readonly notificationHandlers = new Map<string, NotificationHandler>()
   private readonly unsubs: (() => void)[] = []
+  private readonly inbound: InboundState
   private closed = false
 
   constructor(private readonly transport: Transport) {
+    this.inbound = {
+      transport,
+      requestHandlers: this.requestHandlers,
+      notificationHandlers: this.notificationHandlers,
+      inflight: this.inflight,
+      cancelledIds: this.cancelledIds,
+      pending: this.pending,
+    }
     this.unsubs.push(
       transport.onMessage((msg) => {
-        void this.handleMessage(msg)
+        void handleInboundMessage(this.inbound, msg)
       })
     )
     this.unsubs.push(
@@ -46,7 +59,11 @@ export class RpcPeer {
     )
   }
 
-  request(method: string, params?: unknown): Promise<unknown> {
+  request(
+    method: string,
+    params?: unknown,
+    options?: RequestOptions
+  ): Promise<unknown> {
     if (this.closed) {
       return Promise.reject(new TransportClosedError())
     }
@@ -58,7 +75,42 @@ export class RpcPeer {
       id,
     }
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject })
+      const signal = options?.signal
+      let onAbort: (() => void) | undefined
+
+      const clearAbort = () => {
+        if (onAbort && signal) signal.removeEventListener("abort", onAbort)
+        onAbort = undefined
+      }
+
+      this.pending.set(id, {
+        resolve: (value) => {
+          clearAbort()
+          resolve(value)
+        },
+        reject: (error) => {
+          clearAbort()
+          reject(error)
+        },
+      })
+
+      onAbort = () => {
+        this.notify(CANCEL_REQUEST_METHOD, { id })
+        const wait = this.pending.get(id)
+        if (!wait) return
+        this.pending.delete(id)
+        wait.reject(new JsonRpcResponseError(cancelledErrorObject()))
+      }
+
+      if (signal) {
+        if (signal.aborted) {
+          this.transport.send(msg)
+          onAbort()
+          return
+        }
+        signal.addEventListener("abort", onAbort)
+      }
+
       this.transport.send(msg)
     })
   }
@@ -97,6 +149,11 @@ export class RpcPeer {
     this.unsubs.length = 0
     this.requestHandlers.clear()
     this.notificationHandlers.clear()
+    for (const entry of this.inflight.values()) {
+      entry.controller.abort()
+    }
+    this.inflight.clear()
+    this.cancelledIds.clear()
     this.rejectPending(new TransportClosedError())
   }
 
@@ -106,61 +163,5 @@ export class RpcPeer {
     }
     this.pending.clear()
     this.closed = true
-  }
-
-  private async handleMessage(msg: JsonRpcMessage): Promise<void> {
-    if (isJsonRpcResponse(msg)) {
-      const wait = msg.id !== null ? this.pending.get(msg.id) : undefined
-      if (!wait) return
-      this.pending.delete(msg.id as JsonRpcId)
-      if ("error" in msg && msg.error) {
-        wait.reject(new JsonRpcResponseError(msg.error))
-        return
-      }
-      if ("result" in msg) {
-        wait.resolve(msg.result)
-      }
-      return
-    }
-
-    if (isJsonRpcRequest(msg)) {
-      const handler = this.requestHandlers.get(msg.method)
-      if (!handler) {
-        this.transport.send({
-          jsonrpc: JSONRPC_VERSION,
-          error: {
-            code: JSONRPC_METHOD_NOT_FOUND,
-            message: `Method not found: ${msg.method}`,
-          },
-          id: msg.id,
-        })
-        return
-      }
-      try {
-        const result = await handler(msg.params)
-        this.transport.send({
-          jsonrpc: JSONRPC_VERSION,
-          result: result ?? null,
-          id: msg.id,
-        })
-      } catch (thrown) {
-        this.transport.send({
-          jsonrpc: JSONRPC_VERSION,
-          error: toJsonRpcError(thrown),
-          id: msg.id,
-        })
-      }
-      return
-    }
-
-    if (isJsonRpcNotification(msg)) {
-      const handler = this.notificationHandlers.get(msg.method)
-      if (!handler) return
-      try {
-        await handler(msg.params)
-      } catch {
-        // Notifications have no response; swallow handler errors.
-      }
-    }
   }
 }

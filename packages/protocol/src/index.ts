@@ -16,8 +16,15 @@ export {
   JSONRPC_INVALID_REQUEST,
   JSONRPC_METHOD_NOT_FOUND,
   JSONRPC_PARSE_ERROR,
+  JSONRPC_REQUEST_CANCELLED,
   JSONRPC_VERSION,
 } from "./json-rpc.ts"
+export {
+  CANCEL_REQUEST_METHOD,
+  cancelledErrorObject,
+  type RequestContext,
+  type RequestOptions,
+} from "./cancel.ts"
 export { JsonRpcResponseError, TransportClosedError } from "./errors.ts"
 export {
   RpcPeer,
