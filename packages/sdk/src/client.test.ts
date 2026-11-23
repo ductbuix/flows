@@ -12,7 +12,7 @@ import type { InitializeResult } from "./initialize.ts"
 const INIT_RESULT: InitializeResult = {
   protocolVersion: FCP_VERSION,
   engineInfo: { name: "fake-engine", version: "0.0.0" },
-  engineCapabilities: {},
+  engineCapabilities: { agents: [], nodeKinds: [] },
   workspace: { home: "/tmp/flowapp", id: "ws-1" },
 }
 

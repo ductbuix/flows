@@ -1,3 +1,4 @@
+import { initializeMethod } from "@workspace/contracts"
 import { RpcPeer, type Transport } from "@workspace/protocol"
 import { ProtocolVersionError } from "./errors.ts"
 import {
@@ -43,7 +44,7 @@ export async function openSession(
     "initialize",
     buildInitializeParams(clientInfo, capabilities)
   )
-  const initialize = raw as InitializeResult
+  const initialize = initializeMethod.result.parse(raw)
   if (!isSupportedProtocolVersion(initialize.protocolVersion)) {
     peer.dispose()
     transport.close()
