@@ -20,3 +20,10 @@ export {
   tolerantParseBoard,
   type TolerantParseResult,
 } from "./parse.ts"
+export {
+  patchYamlMapping,
+  splitCardMd,
+  joinCardMd,
+  patchCardMd,
+  yamlMappingToJs,
+} from "./yaml-edit.ts"
