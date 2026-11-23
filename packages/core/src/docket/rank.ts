@@ -1,5 +1,24 @@
 /** Lexicographic fractional ranks for docket card ordering (base 62). */
 
+export type RankSortable = { rank: string; id: string }
+
+/** Code-unit rank order with id tie-break (matches `rankBetween` bounds). */
+export function compareRank(a: RankSortable, b: RankSortable): number {
+  if (a.rank < b.rank) return -1
+  if (a.rank > b.rank) return 1
+  if (a.id < b.id) return -1
+  if (a.id > b.id) return 1
+  return 0
+}
+
+export function compareRankKey(
+  rank: string,
+  id: string,
+  other: RankSortable
+): number {
+  return compareRank({ rank, id }, other)
+}
+
 export const RANK_DIGITS =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 

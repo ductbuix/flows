@@ -100,6 +100,15 @@ describe("docket write FCP", () => {
     )
     expect(created.hash).toBeTruthy()
     expect(created.rank).toBeTruthy()
+    expect(created.rank > "m").toBe(true)
+
+    const second = docketCreateCardResultSchema.parse(
+      await rpc.request("docket/create_card", {
+        id: "another-card",
+        title: "Second",
+      })
+    )
+    expect(second.rank > created.rank).toBe(true)
 
     const before = await rpc.request("docket/get_card", { id: "alpha" })
     const updated = await rpc.request("docket/update_card", {
@@ -128,12 +137,15 @@ describe("docket write FCP", () => {
     expect(saved.hash).toBeTruthy()
 
     await rpc.request("docket/delete_card", { id: "new-card" })
+    await rpc.request("docket/delete_card", { id: "another-card" })
 
     const kinds = updates.map((u) => (u as { kind: string }).kind)
     expect(kinds).toEqual([
       "card_changed",
       "card_changed",
+      "card_changed",
       "board_changed",
+      "card_removed",
       "card_removed",
     ])
     expect((updates[0] as { card: { id: string } }).card.id).toBe("new-card")

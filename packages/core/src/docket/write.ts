@@ -9,7 +9,7 @@ import { engineError } from "../kernel/engine-error.ts"
 import { defineBinding, type MethodBindings } from "../rpc/bind.ts"
 import { toWireFace } from "./wire-face.ts"
 import { bindDocketMoveCard } from "./move-fcp.ts"
-import { rankBetween } from "./rank.ts"
+import { rankAtColumnEnd } from "./move.ts"
 import {
   currentBoardPayload,
   loadCurrentCard,
@@ -37,7 +37,7 @@ export function createDocketWriteBindings(
         throw engineError("invalid_params", `Card already exists: ${params.id}`)
       }
       const status = params.status ?? defaultStatus(deps.index.getBoard())
-      const rank = rankBetween()
+      const rank = rankAtColumnEnd(deps.index.listFaces(), status)
       const created = deps.store.nowIso()
       const written = deps.store.saveCard(
         params.id,
