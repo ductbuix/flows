@@ -98,11 +98,12 @@ export function FileTree({
 
 /** Build a folder tree from flat relative paths. */
 export function pathsToFileTree(paths: string[]): FileNode[] {
+  type MutableFile = { type: "file"; name: string; path: string }
   type MutableFolder = {
     type: "folder"
     name: string
     path: string
-    children: Map<string, MutableFolder | FileNode>
+    children: Map<string, MutableFolder | MutableFile>
   }
 
   const root: MutableFolder = {

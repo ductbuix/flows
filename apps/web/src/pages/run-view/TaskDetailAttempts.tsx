@@ -5,9 +5,9 @@ import {
   EmptyDescription,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { Plan } from "@/components/ai-elements/plan"
-import { StackTrace } from "@/components/ai-elements/stack-trace"
-import { Task } from "@/components/ai-elements/task"
+import { Plan } from "@workspace/ui/components/plan"
+import { StackTrace } from "@workspace/ui/components/stack-trace"
+import { Task } from "@workspace/ui/components/task"
 import { AttemptKindBadge } from "./AttemptKindBadge"
 
 type Props = {

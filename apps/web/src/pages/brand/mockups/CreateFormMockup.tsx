@@ -31,7 +31,7 @@ import {
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
 import { ArrowLeft, Workflow } from "lucide-react"
-import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion"
+import { Suggestion, Suggestions } from "@workspace/ui/components/suggestion"
 import type { Mockup } from "../types"
 
 const EXAMPLES = [
@@ -131,7 +131,7 @@ export const createFormMockup: Mockup = {
     "CardHeader: back Button + ui Breadcrumb (Workflows › New workflow)",
     "Name: InputGroup with an icon InputGroupAddon",
     "Question-style label for the goal (What should it do?) and a Textarea",
-    "Examples: AI Elements Suggestions; clicking one fills the goal",
+    "Examples: ui Suggestions; clicking one fills the goal",
     "It can use: ToggleGroup multiple, variant=outline",
     "CardFooter: Cancel (ghost) and one primary action named for the result",
   ],
@@ -155,7 +155,7 @@ export const createFormMockup: Mockup = {
   parts: [
     "ui Field, FieldGroup, FieldLabel, FieldDescription",
     "ui Card, Breadcrumb, InputGroup, Textarea, ToggleGroup, Button",
-    "ai-elements Suggestions / Suggestion",
+    "ui Suggestions / Suggestion",
   ],
   Component: CreateFormMockup,
 }

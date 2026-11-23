@@ -20,7 +20,7 @@ related:
     BL-072,
     BL-073,
   ]
-updated: 2026-11-22
+updated: 2026-11-23
 ---
 
 # UI renovation: journeys and developer experience
@@ -120,7 +120,8 @@ developer detail lives in fixed tabs and places, always one step away.
 | `packages/ui/src/components/`          | shadcn generated files only; never edited by hand                                           |
 | `apps/web/src/components/page/`        | `Page`, `PageHeader`, `PageTitle`, `PageSection`, `PageToolbar`                             |
 | `apps/web/src/components/data/`        | `IdText`, `RelativeTime`, `Duration`, every status `Badge` mapping                          |
-| `apps/web/src/components/ai-elements/` | AI Elements copied from shadcn examples, one file per pattern                               |
+| `packages/ui/src/components/`          | shadcn parts and domain-free AI Element patterns (`Task`, `Suggestion`, …)                  |
+| `apps/web/src/components/ai-elements/` | Flows-bound AI adaptations only (e.g. `ModelSelector` on shared types)                      |
 | `apps/web/src/lib/labels.ts`           | `workflowLabel` (`name`, else humanized id), `runLabel`, `formatRelative`, `formatDuration` |
 | `apps/web/src/pages/<area>/`           | home, work-items, workflows, editor, runs, run-view, connections, settings                  |
 
@@ -193,7 +194,8 @@ In `apps/web/eslint-tailwind-guard.js`, next to the three existing rules
 2. `pnpm dlx shadcn@latest add <name> -c apps/web --dry-run`, then
    without `--dry-run`. Never edit the generated file; to update, re-run
    with `--overwrite` and review the diff.
-3. For an AI Element, copy the Base UI example into `ai-elements/` with
-   the source comment.
+3. For an AI Element, copy the Base UI example into
+   `packages/ui/src/components/` when domain-free (source comment); put
+   Flows-bound adaptations under `apps/web/.../ai-elements/`.
 4. Add it to `/dev/kit` in light and dark, and to the layout check if it
    is a control.

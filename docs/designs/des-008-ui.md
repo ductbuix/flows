@@ -6,7 +6,7 @@ status: active
 summary: UI system (shadcn preset on Base UI), component sourcing order, API access, test ids and evidence.
 tags: [ui, web, shadcn, ai-elements, testing]
 related: [DES-001, DES-009, DES-010, DES-024, DES-027, DES-030]
-updated: 2026-11-22
+updated: 2026-11-23
 ---
 
 # UI instructions
@@ -34,7 +34,8 @@ updated: 2026-11-22
 
 Use the first that fits, and compose before writing custom UI:
 
-1. Components already in `packages/ui/src/components`.
+1. Components already in `packages/ui/src/components` (shadcn parts and
+   domain-free AI Element patterns).
 2. shadcn components: https://ui.shadcn.com/docs/components.md
 3. AI Elements patterns for agent UI (chat, reasoning, tool calls, plan,
    task, terminal, test results, file tree, subagent):
@@ -47,12 +48,14 @@ pnpm dlx shadcn@latest add <name> -c apps/web --dry-run   # preview
 pnpm dlx shadcn@latest add <name> -c apps/web
 ```
 
-Primitives land in `packages/ui/src/components` (import as
-`@workspace/ui/components/<name>`); some items also add hooks or libs in
-`apps/web/src`. AI Elements have no package: add the parts they build on
-(for example `trace code-block`), then copy the pattern from
-`https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md` into
-`apps/web/src/components/ai-elements/`.
+Primitives and domain-free AI Element patterns land in
+`packages/ui/src/components` (import as `@workspace/ui/components/<name>`);
+some items also add hooks or libs in `apps/web/src`. For AI Elements: add
+the parts they build on (for example `trace code-block`), then copy the
+pattern from `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`
+into `packages/ui/src/components/` when it imports nothing from
+`@workspace/shared`. Flows-bound adaptations (today `ModelSelector`) stay
+in `apps/web/src/components/ai-elements/`.
 
 ## Data
 
