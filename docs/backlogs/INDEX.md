@@ -179,7 +179,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-171 | done | P2 | BL-115 | [Library provider descriptors](bl-171-library-providers.md) | Providers are data (pattern, layout, tags, access, fetch) with library/list_providers and save_provider over FCP. | library, fcp |
 | BL-172 | todo | P2 | BL-171, BL-161, BL-130 | [Library pull as a job with versions](bl-172-library-pull-job.md) | library/pull runs a provider fetch through a connector and writes an immutable v<n> folder; job_progress and job_finished updates. | library, connectors |
 | BL-173 | todo | P2 | BL-172 | [Library pins and tags](bl-173-library-pins-tags.md) | library/pin_version, set_tags, remove and list by tag over FCP. | library, fcp |
-| BL-174 | todo | P2 | BL-126, BL-115 | [File methods](bl-174-fcp-files.md) | file/list, stat, read_text, write_text (baseHash) and reveal over FCP for workspace folders. | files, fcp |
+| BL-174 | done | P2 | BL-126, BL-115 | [File methods](bl-174-fcp-files.md) | file/list, stat, read_text, write_text (baseHash) and reveal over FCP for workspace folders. | files, fcp |
 | BL-175 | todo | P1 | BL-123 | [Workflow writes over FCP](bl-175-fcp-workflow-write.md) | workflow/create, save (baseHash), rename, delete (busy while live), save_layout and validate over FCP. | workflows, fcp |
 | BL-176 | todo | P1 | BL-124 | [Run commands over FCP](bl-176-fcp-run-commands.md) | run/start (requestKey), cancel, rerun, retry_step, delete, get_log and get_changes over FCP. | runs, fcp |
 | BL-177 | todo | P2 | BL-122, BL-157 | [Docket page on the sdk](bl-177-web-docket-sdk.md) | The Docket page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
