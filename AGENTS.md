@@ -58,10 +58,11 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   contract tests against core fakes.
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`, `wsTransport`.
 - `packages/contracts` (`packages/shared` re-export shim): zod for API
-  (`runSummarySchema`, `workItemSchema`), websocket, node workflow
-  (`workflowSchema`), `connection.yaml`, library list/pull/clear/usage,
-  `resources.json`, `config.yaml` `library.maxBytes`, events, `findLoopEdges`,
-  YAML edits that keep comments and key order.
+  (`runSummarySchema`, `workItemSchema`), branded ids (`CardId`, `RunId`,
+  `WorkflowId`, `StepId`, `ConnectorId`, `SkillSlug`, `LibItemId`),
+  websocket, node workflow (`workflowSchema`), `connection.yaml`, library
+  list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
+  events, `findLoopEdges`, YAML edits that keep comments and key order.
 - `packages/ui`: shadcn, domain-free AI Element patterns, `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
   (`layout.spec.ts` baselines, `node-*.spec.ts`).
