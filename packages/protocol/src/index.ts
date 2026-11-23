@@ -34,3 +34,7 @@ export {
 export type { Transport } from "./transport.ts"
 export { createLinkedTransports } from "./linked.ts"
 export { wsTransport, type WsLike } from "./ws-transport.ts"
+export {
+  messagePortTransport,
+  type MessagePortLike,
+} from "./message-port-transport.ts"
