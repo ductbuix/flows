@@ -391,6 +391,7 @@ export {
   boardColumnSchema,
   boardSchema,
   tolerantParseCard,
+  tolerantParseBoard,
   type DocketRef,
   type DocketAsset,
   type CardLink,

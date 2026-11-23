@@ -15,4 +15,8 @@ export {
   type BoardColumn,
   type Board,
 } from "./schemas.ts"
-export { tolerantParseCard, type TolerantParseResult } from "./parse.ts"
+export {
+  tolerantParseCard,
+  tolerantParseBoard,
+  type TolerantParseResult,
+} from "./parse.ts"

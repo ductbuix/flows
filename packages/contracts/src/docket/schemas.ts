@@ -23,7 +23,7 @@ export const refSchema = z
     syncedAt: z.string().optional(),
     snapshot: z.string().optional(),
   })
-  .strict()
+  .passthrough()
 
 export type DocketRef = z.infer<typeof refSchema>
 
@@ -36,7 +36,7 @@ export const assetSchema = z
     label: z.string().optional(),
     scope: assetScopeSchema.optional(),
   })
-  .strict()
+  .passthrough()
 
 export type DocketAsset = z.infer<typeof assetSchema>
 
@@ -46,7 +46,7 @@ export const cardLinkSchema = z
     to: cardIdSchema,
     rel: cardLinkRelSchema,
   })
-  .strict()
+  .passthrough()
 
 export type CardLink = z.infer<typeof cardLinkSchema>
 
@@ -80,7 +80,7 @@ export const boardColumnSchema = z
     label: z.string().min(1),
     done: z.boolean().optional(),
   })
-  .strict()
+  .passthrough()
 
 export type BoardColumn = z.infer<typeof boardColumnSchema>
 
@@ -89,8 +89,8 @@ export const boardSchema = z
   .object({
     version: z.literal(1),
     columns: z.array(boardColumnSchema).min(1),
-    face: z.array(z.string().min(1)).max(2),
+    face: z.array(z.string().min(1)).max(2).optional().default([]),
   })
-  .strict()
+  .passthrough()
 
 export type Board = z.infer<typeof boardSchema>

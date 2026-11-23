@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { tolerantParseCard } from "./parse.ts"
-import { boardSchema, cardSchema } from "./schemas.ts"
+import { tolerantParseBoard, tolerantParseCard } from "./parse.ts"
+import { boardSchema, cardSchema, refSchema } from "./schemas.ts"
 
 const minimalCard = {
   id: "fix-flaky-login",
@@ -24,6 +24,16 @@ describe("cardSchema", () => {
   })
 })
 
+describe("refSchema", () => {
+  it("keeps unknown keys on a ref", () => {
+    const ref = refSchema.parse({
+      system: "rally",
+      xRally: { iteration: "Sprint 42" },
+    })
+    expect(ref.xRally).toEqual({ iteration: "Sprint 42" })
+  })
+})
+
 describe("tolerantParseCard", () => {
   it("parses a minimal card without warnings", () => {
     const result = tolerantParseCard(minimalCard)
@@ -41,10 +51,44 @@ describe("tolerantParseCard", () => {
     expect(result.data?.created).toBe("not-a-date")
     expect(result.warnings.some((w) => w.includes("created"))).toBe(true)
   })
+
+  it("drops a bad ref and keeps a good one", () => {
+    const result = tolerantParseCard({
+      ...minimalCard,
+      refs: [{ system: "rally", kind: "story", id: "US1" }, { kind: "story" }],
+    })
+    expect(result.data).not.toBeNull()
+    expect(result.data?.refs).toHaveLength(1)
+    expect(result.data?.refs?.[0]?.id).toBe("US1")
+    expect(result.warnings.some((w) => w.startsWith("refs[1]"))).toBe(true)
+  })
+
+  it("returns null when a required key is missing", () => {
+    const rest = { ...minimalCard }
+    delete (rest as { id?: string }).id
+    const result = tolerantParseCard(rest)
+    expect(result.data).toBeNull()
+    expect(result.warnings.some((w) => w.includes("id"))).toBe(true)
+  })
+
+  it("omits non-object fields with a warning", () => {
+    const result = tolerantParseCard({
+      ...minimalCard,
+      fields: "nope",
+    })
+    expect(result.data?.fields).toBeUndefined()
+    expect(result.warnings).toContain("fields: expected object")
+  })
 })
 
 describe("boardSchema", () => {
-  it("allows at most two face keys", () => {
+  it("defaults face to none and allows at most two face keys", () => {
+    const bare = boardSchema.parse({
+      version: 1,
+      columns: [{ id: "todo", label: "Todo" }],
+    })
+    expect(bare.face).toEqual([])
+
     expect(
       boardSchema.safeParse({
         version: 1,
@@ -59,5 +103,17 @@ describe("boardSchema", () => {
         face: ["due", "fields.assignee", "rank"],
       }).success
     ).toBe(false)
+  })
+})
+
+describe("tolerantParseBoard", () => {
+  it("drops a bad column and keeps valid ones", () => {
+    const result = tolerantParseBoard({
+      version: 1,
+      columns: [{ id: "todo", label: "Todo" }, { label: "No id" }],
+    })
+    expect(result.data?.columns).toHaveLength(1)
+    expect(result.data?.columns[0]?.id).toBe("todo")
+    expect(result.warnings.some((w) => w.startsWith("columns[1]"))).toBe(true)
   })
 })
