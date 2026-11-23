@@ -5,6 +5,7 @@ import {
   docketGetBoardMethod,
   docketGetCardMethod,
   docketListCardsMethod,
+  docketMoveCardMethod,
   docketSaveBoardMethod,
   docketUpdateCardMethod,
   docketUpdateNotification,
@@ -20,6 +21,7 @@ export const fcpMethodTable = {
   "docket/get_card": docketGetCardMethod,
   "docket/create_card": docketCreateCardMethod,
   "docket/update_card": docketUpdateCardMethod,
+  "docket/move_card": docketMoveCardMethod,
   "docket/delete_card": docketDeleteCardMethod,
   "docket/save_board": docketSaveBoardMethod,
 } as const satisfies Record<string, FcpMethodDef>

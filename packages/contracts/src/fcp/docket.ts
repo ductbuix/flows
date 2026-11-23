@@ -189,6 +189,26 @@ export const docketSaveBoardMethod = defineMethod({
   kind: "command",
 })
 
+export const docketMoveCardParamsSchema = z.object({
+  id: cardIdSchema,
+  status: z.string().min(1),
+  beforeId: z.union([cardIdSchema, z.null()]).optional(),
+  baseHash: z.string(),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const docketMoveCardResultSchema = z.object({
+  hash: z.string(),
+  rank: z.string(),
+})
+
+export const docketMoveCardMethod = defineMethod({
+  name: "docket/move_card",
+  params: docketMoveCardParamsSchema,
+  result: docketMoveCardResultSchema,
+  kind: "command",
+})
+
 export const docketUpdateNotification = defineNotification({
   name: "docket/update",
   params: z.discriminatedUnion("kind", [

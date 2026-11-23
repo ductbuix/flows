@@ -1,5 +1,6 @@
 import {
   docketCreateCardResultSchema,
+  docketMoveCardResultSchema,
   docketSaveBoardResultSchema,
   ErrorCode,
 } from "@workspace/contracts"
@@ -28,10 +29,11 @@ columns:
   - { id: doing, label: Doing }
 `
 
-const cardMd = (id: string, status = "todo") => `---
+const cardMd = (id: string, status = "todo", rank = "m") => `---
 id: ${id}
 title: Title ${id}
 status: ${status}
+rank: ${rank}
 created: 2026-11-20T09:12:00Z
 updated: 2026-11-20T09:12:00Z
 ---
@@ -218,6 +220,124 @@ describe("docket write FCP", () => {
     expect((busy as { status: string }).status).toBe("todo")
 
     dispose()
+    rpcDispose()
+  })
+
+  it("move_card sets done when entering a done column and clears on leave", async () => {
+    const docs = createFakeDocumentStore()
+    docs.write(
+      DOCKET_BOARD_PATH,
+      `version: 1
+columns:
+  - { id: todo, label: Todo }
+  - { id: done, label: Done, done: true }
+`
+    )
+    docs.write(cardPath("alpha"), cardMd("alpha", "todo", "a"))
+    const store = createDocketStore({
+      docs,
+      clock: createFakeClock(Date.parse("2026-11-24T10:00:00.000Z")),
+    })
+    const index = createDocketIndex({
+      store,
+      watcher: createFakeFileWatcher(),
+      exists: () => true,
+    })
+    index.start()
+    const bus = new UpdateBus()
+    const read = createDocketReadBindings({ index, store })
+    const write = createDocketWriteBindings({ index, store, bus })
+    const { client: rpc, dispose: rpcDispose } = linkedBindings(
+      { ...read, ...write },
+      bus
+    )
+
+    const alpha = (await rpc.request("docket/get_card", { id: "alpha" })) as {
+      hash: string
+      done?: string | null
+    }
+    const moved = docketMoveCardResultSchema.parse(
+      await rpc.request("docket/move_card", {
+        id: "alpha",
+        status: "done",
+        beforeId: null,
+        baseHash: alpha.hash,
+      })
+    )
+    expect(moved.rank).toBeTruthy()
+
+    const afterDone = (await rpc.request("docket/get_card", {
+      id: "alpha",
+    })) as { status: string; done?: string | null; hash: string; rank: string }
+    expect(afterDone.status).toBe("done")
+    expect(afterDone.done).toBe("2026-11-24T10:00:00.000Z")
+
+    await rpc.request("docket/move_card", {
+      id: "alpha",
+      status: "todo",
+      baseHash: afterDone.hash,
+    })
+    const afterTodo = (await rpc.request("docket/get_card", {
+      id: "alpha",
+    })) as { done?: string | null }
+    expect(afterTodo.done).toBeNull()
+
+    index.dispose()
+    rpcDispose()
+  })
+
+  it("two concurrent moves of different cards both succeed", async () => {
+    const docs = createFakeDocumentStore()
+    docs.write(DOCKET_BOARD_PATH, boardYaml)
+    docs.write(cardPath("alpha"), cardMd("alpha", "todo", "a"))
+    docs.write(cardPath("beta"), cardMd("beta", "todo", "m"))
+    const store = createDocketStore({ docs, clock: createFakeClock() })
+    const index = createDocketIndex({
+      store,
+      watcher: createFakeFileWatcher(),
+      exists: () => true,
+    })
+    index.start()
+    const bus = new UpdateBus()
+    const read = createDocketReadBindings({ index, store })
+    const write = createDocketWriteBindings({ index, store, bus })
+    const { client: rpc, dispose: rpcDispose } = linkedBindings(
+      { ...read, ...write },
+      bus
+    )
+
+    const [alpha, beta] = await Promise.all([
+      rpc.request("docket/get_card", { id: "alpha" }),
+      rpc.request("docket/get_card", { id: "beta" }),
+    ])
+    const results = await Promise.all([
+      rpc.request("docket/move_card", {
+        id: "alpha",
+        status: "doing",
+        beforeId: null,
+        baseHash: (alpha as { hash: string }).hash,
+      }),
+      rpc.request("docket/move_card", {
+        id: "beta",
+        status: "doing",
+        beforeId: null,
+        baseHash: (beta as { hash: string }).hash,
+      }),
+    ])
+    expect(
+      results.every((r) => docketMoveCardResultSchema.safeParse(r).success)
+    ).toBe(true)
+
+    const busyAlpha = (await rpc.request("docket/get_card", {
+      id: "alpha",
+    })) as { status: string }
+    const busyBeta = (await rpc.request("docket/get_card", {
+      id: "beta",
+    })) as { status: string }
+    expect(busyAlpha.status).toBe("doing")
+    expect(busyBeta.status).toBe("doing")
+
+    index.dispose()
     rpcDispose()
   })
 })
