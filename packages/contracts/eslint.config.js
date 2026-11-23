@@ -2,6 +2,10 @@ import js from "@eslint/js"
 import globals from "globals"
 import tseslint from "typescript-eslint"
 import { defineConfig, globalIgnores } from "eslint/config"
+import {
+  contractsRestrictedImports,
+  noCycleBlock,
+} from "../../eslint-dependency-guards.mjs"
 
 export default defineConfig([
   globalIgnores(["dist"]),
@@ -12,10 +16,11 @@ export default defineConfig([
       globals: globals.node,
     },
   },
-  // Soft limit per code file (clean-code.mdc): split by responsibility.
+  noCycleBlock,
   {
     files: ["**/*.{ts,tsx}"],
     rules: {
+      ...contractsRestrictedImports,
       "max-lines": [
         "warn",
         { max: 200, skipBlankLines: true, skipComments: true },

@@ -4,9 +4,11 @@ import reactHooks from "eslint-plugin-react-hooks"
 import reactRefresh from "eslint-plugin-react-refresh"
 import tseslint from "typescript-eslint"
 import { defineConfig, globalIgnores } from "eslint/config"
+import { noCycleBlock } from "../../eslint-dependency-guards.mjs"
 
 export default defineConfig([
   globalIgnores(["dist"]),
+  noCycleBlock,
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
