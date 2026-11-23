@@ -48,7 +48,8 @@ describe("node workflow schema", () => {
   it("parses the sample and defaults loopPasses", () => {
     const r = workflowSchema.parse(sample)
     expect(r.nodes).toHaveLength(5)
-    const { limits: _l, ...rest } = sample
+    const { limits, ...rest } = sample
+    void limits
     expect(workflowSchema.parse(rest).limits).toBeUndefined()
     expect(
       workflowSchema.parse({ ...rest, limits: { agents: 1 } }).limits
@@ -61,7 +62,7 @@ describe("node workflow schema", () => {
   })
 
   it("rejects strict-setting typos and unknown kinds", () => {
-    const bad = (n: object) => ({ ...sample, nodes: [n] , edges: [] })
+    const bad = (n: object) => ({ ...sample, nodes: [n], edges: [] })
     expect(
       messages(bad({ id: "a", kind: "agent", cli: "claude", mdoel: "x" }))
     ).not.toEqual([])
@@ -74,9 +75,9 @@ describe("node workflow schema", () => {
   it("rejects bad edges", () => {
     const m = (e: object[]) => messages(withEdges(e)).join("|")
     expect(m([{ from: "node-1a2b3c4d", to: "nope" }])).toContain("unknown node")
-    expect(m([{ from: "node-3c4d5e6f", to: "node-5a", port: "file" }])).toContain(
-      "no out port file"
-    )
+    expect(
+      m([{ from: "node-3c4d5e6f", to: "node-5a", port: "file" }])
+    ).toContain("no out port file")
     expect(m([{ from: "node-4d5e6f70", to: "node-1a2b3c4d" }])).toContain(
       "no in port text"
     )
@@ -96,8 +97,11 @@ describe("node workflow schema", () => {
 
   it("rejects duplicate node ids", () => {
     expect(
-      messages({ ...sample, nodes: [sample.nodes[1], sample.nodes[1]], edges: [] })
-        .join("|")
+      messages({
+        ...sample,
+        nodes: [sample.nodes[1], sample.nodes[1]],
+        edges: [],
+      }).join("|")
     ).toContain("duplicate node id")
   })
 
@@ -144,13 +148,18 @@ describe("judge kind", () => {
     expect(ok.success).toBe(true)
     const bad = workflowSchema.safeParse(wf([{ from: "j", to: "a" }]))
     expect(bad.success).toBe(false)
-    expect(JSON.stringify(bad.error?.issues)).toContain("needs branch yes or no")
+    expect(JSON.stringify(bad.error?.issues)).toContain(
+      "needs branch yes or no"
+    )
   })
 })
 
 describe("llm kind", () => {
   it("has text out only and a required prompt with an optional system file", () => {
-    expect(PORT_TABLE.llm).toMatchObject({ in: ["text", "file"], out: ["text"] })
+    expect(PORT_TABLE.llm).toMatchObject({
+      in: ["text", "file"],
+      out: ["text"],
+    })
     expect(NODE_KINDS.find((k) => k.kind === "llm")?.files).toEqual([
       { path: "prompt.md", required: true },
       { path: "system.md", required: false },
@@ -166,7 +175,9 @@ describe("llm kind", () => {
       ],
       edges: [edge],
     })
-    expect(workflowSchema.safeParse(wf({ from: "l", to: "o" })).success).toBe(true)
+    expect(workflowSchema.safeParse(wf({ from: "l", to: "o" })).success).toBe(
+      true
+    )
     expect(
       workflowSchema.safeParse(wf({ from: "l", to: "o", port: "file" })).success
     ).toBe(false)

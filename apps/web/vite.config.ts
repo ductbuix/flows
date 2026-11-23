@@ -12,6 +12,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "./src"),
+      "@workspace/contracts": resolve(
+        import.meta.dirname,
+        "../../packages/contracts/src/index.ts"
+      ),
+      "@workspace/shared": resolve(
+        import.meta.dirname,
+        "../../packages/shared/src/index.ts"
+      ),
     },
   },
   server: {

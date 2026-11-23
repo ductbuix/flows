@@ -1,0 +1,34 @@
+import js from "@eslint/js"
+import globals from "globals"
+import tseslint from "typescript-eslint"
+import { defineConfig, globalIgnores } from "eslint/config"
+
+export default defineConfig([
+  globalIgnores(["dist"]),
+  {
+    files: ["**/*.ts"],
+    extends: [js.configs.recommended, tseslint.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  // Soft limit per code file (clean-code.mdc): split by responsibility.
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "max-lines": [
+        "warn",
+        { max: 200, skipBlankLines: true, skipComments: true },
+      ],
+    },
+  },
+  {
+    files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    rules: {
+      "max-lines": [
+        "warn",
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
+    },
+  },
+])

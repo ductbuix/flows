@@ -53,10 +53,11 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `<workflow>/.cache`; `nodes/` (walk, loops, executors incl. `publish.ts`,
   `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
-- `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
-  websocket, node workflow (`workflowSchema`), `connection.yaml`, library
-  list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
-  events, `findLoopEdges`, YAML edits that keep comments and key order.
+- `packages/contracts` (`packages/shared` re-export shim): zod for API
+  (`runSummarySchema`, `workItemSchema`), websocket, node workflow
+  (`workflowSchema`), `connection.yaml`, library list/pull/clear/usage,
+  `resources.json`, `config.yaml` `library.maxBytes`, events, `findLoopEdges`,
+  YAML edits that keep comments and key order.
 - `packages/ui`: shadcn, domain-free AI Element patterns, `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
   (`layout.spec.ts` baselines, `node-*.spec.ts`).
