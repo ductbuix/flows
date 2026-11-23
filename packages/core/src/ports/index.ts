@@ -22,3 +22,4 @@ export type {
   ProcessSpawnSpec,
   RunningProcess,
 } from "./process-runner.ts"
+export type { SecretStore } from "./secret-store.ts"

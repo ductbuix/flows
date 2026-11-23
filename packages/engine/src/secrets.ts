@@ -1,18 +1,9 @@
-import { randomBytes } from "node:crypto"
-import {
-  chmodSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs"
-import { dirname, join } from "node:path"
+import { chmodSync, existsSync, mkdirSync, rmSync } from "node:fs"
+import { join } from "node:path"
 import { secretsDir, secretsRoot } from "./paths.ts"
+import { getSecretStore } from "./secret-store.ts"
 
 const DIR_MODE = 0o700
-const FILE_MODE = 0o600
 
 /** Cookie shape stored under secrets/<id>/cookies.json (DES-026 / BL-053). */
 export type StoredCookie = {
@@ -44,18 +35,6 @@ export function ensureSecretsDir(home: string, connectionId?: string): string {
   mkdirSync(dir, { recursive: true })
   chmodSync(dir, DIR_MODE)
   return dir
-}
-
-function writeAtomicMode(path: string, data: string, mode: number): void {
-  mkdirSync(dirname(path), { recursive: true })
-  chmodSync(dirname(path), DIR_MODE)
-  const tmp = join(
-    dirname(path),
-    `.${Date.now()}-${randomBytes(4).toString("hex")}.tmp`
-  )
-  writeFileSync(tmp, data, { mode })
-  renameSync(tmp, path)
-  chmodSync(path, mode)
 }
 
 function parseCookies(raw: unknown): StoredCookie[] | undefined {
@@ -94,10 +73,10 @@ export function readCookies(
   home: string,
   connectionId: string
 ): StoredCookie[] | undefined {
-  const path = cookiesPath(home, connectionId)
-  if (!existsSync(path)) return undefined
+  const raw = getSecretStore().get(cookiesPath(home, connectionId))
+  if (raw === null) return undefined
   try {
-    return parseCookies(JSON.parse(readFileSync(path, "utf8")) as unknown)
+    return parseCookies(JSON.parse(raw) as unknown)
   } catch {
     return undefined
   }
@@ -121,10 +100,9 @@ export function writeCookies(
   const parsed = parseCookies(cookies)
   if (!parsed) throw new Error("invalid cookies")
   ensureSecretsDir(home, connectionId)
-  writeAtomicMode(
+  getSecretStore().set(
     cookiesPath(home, connectionId),
-    `${JSON.stringify(parsed, null, 2)}\n`,
-    FILE_MODE
+    `${JSON.stringify(parsed, null, 2)}\n`
   )
 }
 
@@ -133,6 +111,7 @@ export function writeCookies(
  * untouched. Marks the connection signed out (DES-026).
  */
 export function removeSignIn(home: string, connectionId: string): void {
+  getSecretStore().delete(cookiesPath(home, connectionId))
   const dir = secretsDir(home, connectionId)
   if (!existsSync(dir)) return
   rmSync(dir, { recursive: true, force: true })

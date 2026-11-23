@@ -23,6 +23,7 @@ export {
   wrapCommandWithExitCode,
   type LaunchResult,
 } from "./runner.ts"
+export { createNodeSecretStore } from "./secrets.ts"
 export {
   acquireLock,
   releaseLock,

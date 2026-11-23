@@ -28,3 +28,8 @@ export {
   type ProcessRunnerFactory,
   type ProcessRunnerTestCtx,
 } from "./process-runner.contract.ts"
+export { createFakeSecretStore } from "./fake-secret-store.ts"
+export {
+  describeSecretStoreContract,
+  type SecretStoreFactory,
+} from "./secret-store.contract.ts"

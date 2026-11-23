@@ -97,6 +97,7 @@ export type {
   ProcessSpawnSpec,
   RunningProcess,
   StoredEvent,
+  SecretStore,
 } from "./ports/index.ts"
 
 export {
