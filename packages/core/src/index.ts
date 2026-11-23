@@ -102,6 +102,27 @@ export {
   type LibraryProviderBindings,
   type ProviderServiceDeps,
 } from "./library/index.ts"
+export {
+  createSkillCatalog,
+  createSkillReadBindings,
+  SkillCatalog,
+  SKILL_DIRS,
+  SKILL_GLOBS,
+  parseSkillKey,
+  parseSkillMd,
+  skillDirFromPath,
+  skillKey,
+  skillSlugFromPath,
+  type ParsedSkillMd,
+  type SkillCatalogDeps,
+  type SkillDetail,
+  type SkillDir,
+  type SkillReadBindings,
+  type SkillReadDeps,
+  type SkillRoot,
+  type SkillScope,
+  type SkillSummary,
+} from "./skills/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,

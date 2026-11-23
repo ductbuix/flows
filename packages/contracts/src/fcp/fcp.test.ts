@@ -9,6 +9,9 @@ import {
   type FcpMethodResult,
   type FcpNotificationParams,
   jsonRpcCodeFor,
+  skillGetMethod,
+  skillListMethod,
+  skillUpdateNotification,
   workflowGetMethod,
   workflowListMethod,
 } from "./index.ts"
@@ -74,5 +77,16 @@ describe("FCP helpers", () => {
   it("declares library/list_providers as a query and library/save_provider as a command", () => {
     expect(fcpMethodTable["library/list_providers"].kind).toBe("query")
     expect(fcpMethodTable["library/save_provider"].kind).toBe("command")
+  })
+
+  it("declares skill/list and skill/get as queries", () => {
+    expect(fcpMethodTable["skill/list"]).toBe(skillListMethod)
+    expect(fcpMethodTable["skill/get"]).toBe(skillGetMethod)
+    expect(skillListMethod.kind).toBe("query")
+    expect(skillGetMethod.kind).toBe("query")
+    expect(
+      skillGetMethod.params.parse({ slug: "write-tests", scope: "workspace" })
+    ).toEqual({ slug: "write-tests", scope: "workspace" })
+    expect(skillUpdateNotification.name).toBe("skill/update")
   })
 })

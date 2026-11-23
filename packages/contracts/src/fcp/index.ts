@@ -64,6 +64,22 @@ export {
   runUpdateNotification,
 } from "./run.ts"
 export {
+  skillDetailSchema,
+  skillDirSchema,
+  skillFromSchema,
+  skillGetMethod,
+  skillGetParamsSchema,
+  skillGetResultSchema,
+  skillListMethod,
+  skillListParamsSchema,
+  skillListResultSchema,
+  skillScopeSchema,
+  skillSummarySchema,
+  skillUpdateNotification,
+  type WireSkillDetail,
+  type WireSkillSummary,
+} from "./skill.ts"
+export {
   RUN_LIGHT_KINDS,
   subscribeMethod,
   subscribeParamsSchema,

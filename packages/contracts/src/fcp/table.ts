@@ -24,6 +24,11 @@ import {
 } from "./library.ts"
 import { pingMethod } from "./ping.ts"
 import { runGetMethod, runListMethod, runUpdateNotification } from "./run.ts"
+import {
+  skillGetMethod,
+  skillListMethod,
+  skillUpdateNotification,
+} from "./skill.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
 import { workflowGetMethod, workflowListMethod } from "./workflow.ts"
 
@@ -52,10 +57,13 @@ export const fcpMethodTable = {
   "workflow/get": workflowGetMethod,
   "run/list": runListMethod,
   "run/get": runGetMethod,
+  "skill/list": skillListMethod,
+  "skill/get": skillGetMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */
 export const fcpNotificationTable = {
   "docket/update": docketUpdateNotification,
   "run/update": runUpdateNotification,
+  "skill/update": skillUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>
