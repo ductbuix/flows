@@ -31,7 +31,7 @@ if ("attachTo" in lock) {
   process.exit(1)
 }
 
-const app = createApp({ engine, fcpToken })
+const app = createApp({ engine, fcpToken, port })
 
 const server = serve(
   {

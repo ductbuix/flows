@@ -8,33 +8,66 @@ import {
 import { pingMethod } from "@workspace/contracts"
 import type { Engine } from "@workspace/engine"
 import { RpcPeer, wsTransport, type WsLike } from "@workspace/protocol"
+import { timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
 import { fcpIndexHtml } from "./fcp-index.ts"
 
 export const FCP_AUTH_CLOSE = 4401
+export const FCP_DEV_ORIGIN_PORT = 5173
 
 const engineInfo = { name: "flows", version: "0.0.1" }
 
-/** True when Origin is absent (CLI) or matches this request's Host. */
-export function fcpOriginAllowed(c: Context): boolean {
+export function fcpAllowedHosts(port: number): Set<string> {
+  return new Set([`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`])
+}
+
+export function fcpAllowedOrigins(port: number): Set<string> {
+  return new Set([
+    `http://127.0.0.1:${port}`,
+    `http://localhost:${port}`,
+    `http://127.0.0.1:${FCP_DEV_ORIGIN_PORT}`,
+    `http://localhost:${FCP_DEV_ORIGIN_PORT}`,
+  ])
+}
+
+/** True when Host is a loopback name on the daemon port. */
+export function fcpHostAllowed(c: Context, port: number): boolean {
+  const host = c.req.header("host")
+  if (host == null || host === "") return false
+  return fcpAllowedHosts(port).has(host.toLowerCase())
+}
+
+/** True when Origin is absent (CLI) or on the loopback Origin allowlist. */
+export function fcpOriginAllowed(c: Context, port: number): boolean {
   const origin = c.req.header("origin")
   if (origin == null || origin === "") return true
-  const host = c.req.header("host")
-  if (!host) return false
-  return origin === `http://${host}`
+  return fcpAllowedOrigins(port).has(origin)
 }
 
 export function fcpTokenMatches(c: Context, expected: string): boolean {
-  return c.req.query("token") === expected
+  const provided = c.req.query("token")
+  if (provided == null) return false
+  const a = Buffer.from(provided)
+  const b = Buffer.from(expected)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
 }
 
-export function fcpAuthorized(c: Context, expectedToken: string): boolean {
-  return fcpOriginAllowed(c) && fcpTokenMatches(c, expectedToken)
+export function fcpAuthorized(
+  c: Context,
+  expectedToken: string,
+  port: number
+): boolean {
+  return (
+    fcpHostAllowed(c, port) &&
+    fcpOriginAllowed(c, port) &&
+    fcpTokenMatches(c, expectedToken)
+  )
 }
 
-function fcpWsUrl(c: Context): string {
-  const host = c.req.header("host") ?? "127.0.0.1:8787"
+function fcpWsUrl(c: Context, port: number): string {
+  const host = c.req.header("host") ?? `127.0.0.1:${port}`
   return `ws://${host}/fcp`
 }
 
@@ -59,8 +92,13 @@ function bindFcpPeer(raw: WsLike, engine: Engine): void {
   )
 }
 
-function fcpEvents(c: Context, engine: Engine, token: string): WSEvents {
-  if (!fcpAuthorized(c, token)) {
+function fcpEvents(
+  c: Context,
+  engine: Engine,
+  token: string,
+  port: number
+): WSEvents {
+  if (!fcpAuthorized(c, token, port)) {
     return {
       onOpen(_evt, ws) {
         ws.close(FCP_AUTH_CLOSE, "unauthorized")
@@ -80,10 +118,17 @@ function fcpEvents(c: Context, engine: Engine, token: string): WSEvents {
   }
 }
 
-export function fcpIndexResponse(c: Context, token: string): Response {
-  return c.html(fcpIndexHtml({ token, url: fcpWsUrl(c) }))
+export function fcpIndexResponse(
+  c: Context,
+  token: string,
+  port: number
+): Response {
+  if (!fcpHostAllowed(c, port)) {
+    return c.text("Forbidden", 403)
+  }
+  return c.html(fcpIndexHtml({ token, url: fcpWsUrl(c, port) }))
 }
 
-export function fcpUpgrade(engine: Engine, token: string) {
-  return upgradeWebSocket((c) => fcpEvents(c, engine, token))
+export function fcpUpgrade(engine: Engine, token: string, port: number) {
+  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port))
 }

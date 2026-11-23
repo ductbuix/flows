@@ -53,11 +53,14 @@ export type CreateAppOptions = {
   engine: Engine
   /** Per-launch lock token; defaults for API-only tests. */
   fcpToken?: string
+  /** Daemon listen port; used for FCP Host/Origin allowlists. */
+  port?: number
 }
 
 export function createApp({
   engine,
   fcpToken = "test-fcp-token",
+  port = Number(process.env.PORT ?? 8787),
 }: CreateAppOptions) {
   const hub = new WsHub(engine)
   const idempotency = new IdempotencyStore()
@@ -170,8 +173,8 @@ export function createApp({
     )
 
   return new Hono()
-    .get("/", (c) => fcpIndexResponse(c, fcpToken))
-    .get("/fcp", fcpUpgrade(engine, fcpToken))
+    .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
+    .get("/fcp", fcpUpgrade(engine, fcpToken, port))
     .route("/api", api)
 }
 
