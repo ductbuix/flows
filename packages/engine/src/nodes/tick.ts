@@ -212,6 +212,8 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
   const { log, home, runId } = opts
   for (;;) {
     const events = log.listByRun(runId).map((s) => s.event)
+    // Closed log (test teardown) or a wiped run: stop the pump cleanly.
+    if (events.length === 0) return { steps: {}, ended: true }
     const { graph, trigger, only } = runStarted(events)
     const runRoot = runDir(workflowDir(home, graph.id), runId)
     const steps = foldSteps(events)

@@ -235,6 +235,9 @@ importers:
 
   packages/adapters-node:
     dependencies:
+      '@workspace/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@workspace/core':
         specifier: workspace:*
         version: link:../core

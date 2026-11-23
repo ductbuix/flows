@@ -6,6 +6,11 @@ export {
   describeDocumentStoreContract,
   type DocumentStoreFactory,
 } from "./document-store.contract.ts"
+export { createFakeEventStore } from "./fake-event-store.ts"
+export {
+  describeEventStoreContract,
+  type EventStoreFactory,
+} from "./event-store.contract.ts"
 export { createFakeFileWatcher, FakeFileWatcher } from "./fake-file-watcher.ts"
 export {
   describeFileWatcherContract,

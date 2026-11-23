@@ -6,6 +6,12 @@ export type {
   DocumentWriteResult,
 } from "./document-store.ts"
 export type {
+  EventAppendOptions,
+  EventAppendResult,
+  EventStore,
+  StoredEvent,
+} from "./event-store.ts"
+export type {
   Disposable,
   FileWatchChange,
   FileWatcher,

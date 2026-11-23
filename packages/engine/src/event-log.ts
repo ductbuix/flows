@@ -1,6 +1,8 @@
 import { mkdirSync } from "node:fs"
 import { dirname } from "node:path"
 import { DatabaseSync } from "node:sqlite"
+import { openNodeEventStore } from "@workspace/adapters-node"
+import type { EventStore, StoredEvent } from "@workspace/core/ports"
 import {
   engineEventSchema,
   type EngineEvent,
@@ -21,39 +23,24 @@ import {
   type CliTrustValue,
 } from "./settings.ts"
 
-export type StoredEvent = {
-  seq: number
-  event: EngineEvent
-}
+export type { StoredEvent }
 
 /**
- * Rows written by the task engine (old event types, a task graph) no longer
- * parse. They are skipped, so such a run does not fold and the log still
- * opens (DES-034, Old runs).
+ * App db: EventStore for run events; settings and notices share the file.
+ * Unparseable old rows are skipped on read (DES-034, Old runs).
  */
-function parseStored(payload: string): EngineEvent | null {
-  const parsed = engineEventSchema.safeParse(JSON.parse(payload))
-  return parsed.success ? parsed.data : null
-}
-
 export class EventLog {
   private readonly db: DatabaseSync
+  private readonly store: EventStore
   private readonly listeners = new Set<(stored: StoredEvent) => void>()
+  /** Last seq per run for expectSeq without an extra SELECT on each append. */
+  private readonly lastSeq = new Map<string, number>()
   private closed = false
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
     this.db = new DatabaseSync(dbPath)
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS events (
-        seq INTEGER PRIMARY KEY AUTOINCREMENT,
-        run_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        at TEXT NOT NULL,
-        payload TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS events_run_id ON events (run_id);
-    `)
+    this.store = openNodeEventStore(this.db)
     ensureSettingsTable(this.db)
     ensureNoticesTable(this.db)
   }
@@ -91,43 +78,32 @@ export class EventLog {
     }
   }
 
-  /** Append an event in a write transaction; returns its sequence number. */
+  /** Append an event via EventStore; returns its sequence number. */
   append(event: EngineEvent): number {
     if (this.closed) throw new Error("event log is closed")
     const parsed = engineEventSchema.parse(event)
-    const insert = this.db.prepare(
-      `INSERT INTO events (run_id, type, at, payload) VALUES (?, ?, ?, ?)`
-    )
-    this.db.exec("BEGIN")
-    try {
-      insert.run(parsed.runId, parsed.type, parsed.at, JSON.stringify(parsed))
-      const row = this.db
-        .prepare(`SELECT last_insert_rowid() AS seq`)
-        .get() as { seq: number | bigint }
-      this.db.exec("COMMIT")
-      const seq = Number(row.seq)
-      const stored: StoredEvent = { seq, event: parsed }
+    let expectSeq = this.lastSeq.get(parsed.runId) ?? 0
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const result = this.store.append(parsed.runId, [parsed], { expectSeq })
+      if (!result.ok) {
+        expectSeq = result.lastSeq
+        this.lastSeq.set(parsed.runId, expectSeq)
+        continue
+      }
+      const stored = result.appended[0]!
+      this.lastSeq.set(parsed.runId, stored.seq)
       for (const listener of this.listeners) listener(stored)
-      return seq
-    } catch (error) {
-      this.db.exec("ROLLBACK")
-      throw error
+      return stored.seq
     }
+    throw new Error(`event append conflict for ${parsed.runId}`)
   }
 
   listByRun(runId: string): StoredEvent[] {
     if (this.closed) return []
-    const rows = this.db
-      .prepare(
-        `SELECT seq, payload FROM events WHERE run_id = ? ORDER BY seq ASC`
-      )
-      .all(runId) as Array<{ seq: number | bigint; payload: string }>
-    const out: StoredEvent[] = []
-    for (const row of rows) {
-      const event = parseStored(row.payload)
-      if (event) out.push({ seq: Number(row.seq), event })
-    }
-    return out
+    const stored = this.store.read(runId)
+    const last = stored[stored.length - 1]
+    if (last) this.lastSeq.set(runId, last.seq)
+    return stored
   }
 
   /** Distinct run ids in log order of first appearance. */

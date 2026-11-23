@@ -1,4 +1,9 @@
 export { createNodeDocumentStore } from "./document-store.ts"
+export {
+  createNodeEventStore,
+  openNodeEventStore,
+  type NodeEventStore,
+} from "./event-store.ts"
 export { createNodeFileWatcher } from "./file-watcher.ts"
 export { createNodeProcessRunner } from "./process-runner.ts"
 export { isPidAlive, killProcessGroup, waitForPid } from "./pid.ts"
