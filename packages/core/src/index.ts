@@ -123,6 +123,7 @@ export {
   type SkillScope,
   type SkillSummary,
 } from "./skills/index.ts"
+export {
   confineToRoots,
   createFileBindings,
   isUnderStoreRoot,
