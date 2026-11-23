@@ -81,6 +81,7 @@ export function NodeFrame({
 }: NodeFrameProps) {
   return (
     <Card
+      size="sm"
       data-testid={`node-${id}`}
       className={cn(
         "overflow-visible shadow-sm",

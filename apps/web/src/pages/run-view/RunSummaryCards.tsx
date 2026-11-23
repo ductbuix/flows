@@ -44,7 +44,7 @@ export function RunSummaryCards({ run, workItemTitle }: Props) {
       className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4"
       data-testid="run-summary-cards"
     >
-      <Card>
+      <Card size="sm">
         <CardHeader>
           <CardDescription>Tasks</CardDescription>
           <CardTitle className={VALUE}>
@@ -55,7 +55,7 @@ export function RunSummaryCards({ run, workItemTitle }: Props) {
           <Progress value={pct} />
         </div>
       </Card>
-      <Card>
+      <Card size="sm">
         <CardHeader>
           <CardDescription>Duration</CardDescription>
           <CardTitle className={VALUE} data-testid="run-duration">
@@ -63,7 +63,7 @@ export function RunSummaryCards({ run, workItemTitle }: Props) {
           </CardTitle>
         </CardHeader>
       </Card>
-      <Card>
+      <Card size="sm">
         <CardHeader>
           <CardDescription>Work item</CardDescription>
           <CardTitle className="truncate text-base">
@@ -81,7 +81,7 @@ export function RunSummaryCards({ run, workItemTitle }: Props) {
           </CardTitle>
         </CardHeader>
       </Card>
-      <Card>
+      <Card size="sm">
         <CardHeader>
           <CardDescription>Inputs</CardDescription>
           <RunInputFiles runId={run.id} files={run.inputFiles} />
