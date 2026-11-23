@@ -16,7 +16,7 @@ import {
   TraceTitle,
 } from "@workspace/ui/components/trace"
 import { CircleCheck, CircleDot, GitFork, ScanSearch } from "lucide-react"
-import { Task } from "@/components/ai-elements/task"
+import { Task } from "@workspace/ui/components/task"
 import { KindAvatar } from "@/components/brand/KindAvatar"
 import { StatRow } from "@/components/brand/StatRow"
 import { StatusPill } from "@/components/brand/StatusPill"
@@ -140,7 +140,7 @@ export const runCardMockup: Mockup = {
   },
   parts: [
     "ui Card (Header, Title, Description, Action, Content, Footer)",
-    "ai-elements Task, ui Trace",
+    "ui Task, ui Trace",
     "ui Avatar via components/brand/KindAvatar",
     "components/brand/StatusPill, StatRow; ui Button size=pill",
   ],

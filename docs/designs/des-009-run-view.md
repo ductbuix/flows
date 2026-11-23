@@ -21,7 +21,7 @@ related:
     DES-025,
     DES-029,
   ]
-updated: 2026-11-22
+updated: 2026-11-23
 ---
 
 # UI: run view
@@ -136,9 +136,10 @@ shadcn components (add with `pnpm dlx shadcn@latest add <name> -c apps/web`):
 | Attempt metadata rows                     | Item                     |
 | Fenced code in `SUMMARY.md`               | Code Block               |
 
-AI Elements patterns live in `apps/web/src/components/ai-elements/`
+Domain-free AI Element patterns live in `packages/ui/src/components`
 (copy from `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`;
 drop chat and AI SDK wiring). Base: `shadcn add trace code-block`.
+Flows-bound adaptations stay under `apps/web/src/components/ai-elements/`.
 
 | Need                              | Pattern         | Builds on         |
 | --------------------------------- | --------------- | ----------------- |

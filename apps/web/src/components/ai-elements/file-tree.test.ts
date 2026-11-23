@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { pathsToFileTree } from "./file-tree"
+import { pathsToFileTree } from "@workspace/ui/components/file-tree"
 
 describe("pathsToFileTree", () => {
   it("nests folders and sorts folders before files", () => {

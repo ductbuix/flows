@@ -10,7 +10,7 @@ import {
   AlertTitle,
 } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
-import { Confirmation } from "@/components/ai-elements/confirmation"
+import { Confirmation } from "@workspace/ui/components/confirmation"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { approveTask, rejectTask } from "@/lib/run-actions"
 import { runTaskPath, workflowPath } from "@/lib/paths"

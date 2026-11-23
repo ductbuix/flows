@@ -1,5 +1,5 @@
 import { FileText, Search, Tag } from "lucide-react"
-import type { TaskStep } from "@/components/ai-elements/task"
+import type { TaskStep } from "@workspace/ui/components/task"
 
 export type Branch = {
   title: string

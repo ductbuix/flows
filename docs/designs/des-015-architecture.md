@@ -17,7 +17,7 @@ related:
     DES-019,
     DES-031,
   ]
-updated: 2026-11-22
+updated: 2026-11-23
 ---
 
 # Architecture
@@ -69,7 +69,7 @@ flowchart LR
 | `packages/engine`     | event log, state fold, scheduler, process runner, spawn    | `shared`              |
 | `apps/server`         | HTTP and websocket routes, request validation, file access | `engine`, `shared`    |
 | `apps/web`            | screens and client state; talks to the server only         | `shared`, `ui`, types |
-| `packages/ui`         | shadcn components and styles                               | nothing in the repo   |
+| `packages/ui`         | shadcn components, styles, domain-free AI Element patterns | nothing in the repo   |
 | `packages/docs-tools` | docs index generator and checker                           | nothing in the repo   |
 | `apps/e2e`            | Playwright tests against server and web                    | nothing (HTTP only)   |
 

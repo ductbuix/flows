@@ -110,12 +110,16 @@ lucide only, `size-4` inline. Objects (a run, node kind, agent, app) get a
 
 Before you write markup, find the part in this order (DES-008):
 
-1. `packages/ui/src/components` (already installed).
+1. `packages/ui/src/components` (already installed: shadcn parts and
+   domain-free AI Element patterns).
 2. shadcn components, https://ui.shadcn.com/docs/components.md. Add with
    `pnpm dlx shadcn@latest add <name> -c apps/web --dry-run` first; the CLI
    can rewrite `globals.css` and fonts, so review its diff.
-3. AI Elements patterns, https://ui.shadcn.com/docs/ai-elements.md. Copy the
-   Base UI version into `src/components/ai-elements/`.
+3. AI Elements patterns, https://ui.shadcn.com/docs/ai-elements.md. Add
+   base parts with the CLI, then copy the Base UI pattern into
+   `packages/ui/src/components/` when it stays domain-free (no
+   `@workspace/shared`). Flows-bound adaptations (e.g. `ModelSelector`
+   on CLI catalog types) live in `apps/web/src/components/ai-elements/`.
 4. Custom code only when none fits, built from the parts above, and listed
    in the table below with the reason.
 
@@ -125,13 +129,13 @@ Before you write markup, find the part in this order (DES-008):
 | Card on a board, fact row, list row   | `Item` (`ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemFooter`)  |
 | State label, count, chip, edge label  | `Badge` (tints via `StatusPill`)                                                     |
 | Object icon                           | `Avatar` (via `KindAvatar`)                                                          |
-| Agent steps, a run, parallel branches | AI Elements `Task` on `Trace` (`ai-elements/task.tsx`)                               |
-| Agent plan / todo list                | AI Elements `Plan`, `Queue`                                                          |
-| Approval before an action             | AI Elements `Confirmation`                                                           |
-| Failed tool call, command output      | AI Elements `StackTrace`, `Terminal`                                                 |
-| Changed files                         | AI Elements `FileTree`                                                               |
-| Model and effort pick                 | AI Elements `ModelSelector`                                                          |
-| One-click example prompts             | AI Elements `Suggestion` (`ai-elements/suggestion.tsx`)                              |
+| Agent steps, a run, parallel branches | `Task` on `Trace` (`@workspace/ui/components/task`)                                  |
+| Agent plan / todo list                | `Plan`, `Queue` (`@workspace/ui`)                                                    |
+| Approval before an action             | `Confirmation` (`@workspace/ui/components/confirmation`)                             |
+| Failed tool call, command output      | `StackTrace`, `Terminal` (`@workspace/ui`)                                           |
+| Changed files                         | `FileTree` (`@workspace/ui/components/file-tree`)                                    |
+| Model and effort pick                 | `ModelSelector` in `apps/web/.../ai-elements` (binds `@workspace/shared` types)      |
+| One-click example prompts             | `Suggestion` (`@workspace/ui/components/suggestion`)                                 |
 | Label + control rows, toggles         | `Field` (`orientation="horizontal"`), `FieldSet`, `FieldLegend`, `Switch`            |
 | Multi-select chips                    | `ToggleGroup multiple variant="outline"`                                             |
 | Path / back trail                     | `Breadcrumb`                                                                         |

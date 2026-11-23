@@ -5,7 +5,7 @@ import {
   EmptyDescription,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { Terminal } from "@/components/ai-elements/terminal"
+import { Terminal } from "@workspace/ui/components/terminal"
 import { taskCommandLine } from "./task-env"
 import { useTaskLog } from "./useTaskLog"
 

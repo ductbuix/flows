@@ -14,7 +14,7 @@ import {
   EmptyDescription,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { FileTree, pathsToFileTree } from "@/components/ai-elements/file-tree"
+import { FileTree, pathsToFileTree } from "@workspace/ui/components/file-tree"
 import { mono } from "@/components/data/mono"
 import { api } from "@/lib/api"
 

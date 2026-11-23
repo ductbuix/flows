@@ -5,7 +5,8 @@ alwaysApply: false
 ---
 
 - Prefer existing components over custom UI. Check, in order:
-  1. Components already in `packages/ui/src/components`.
+  1. Components already in `packages/ui/src/components` (shadcn parts and
+     domain-free AI Element patterns such as Task, Suggestion, Terminal).
   2. shadcn components: https://ui.shadcn.com/docs/components.md
   3. AI Elements patterns for agent UI (chat, reasoning, tool calls, plan,
      task, terminal, test results, file tree, subagent and more):
@@ -17,12 +18,13 @@ alwaysApply: false
   `@workspace/ui/components/<name>`. Some items also add hooks or libs
   under `apps/web/src`. Preview with `--dry-run` first. Do not hand-copy
   component code.
-- AI Elements have no package. Add the base components they build on,
-  e.g. `pnpm dlx shadcn@latest add trace code-block -c apps/web`, then
-  copy the pattern from its Base UI page,
-  `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md`, into
-  `apps/web/src/components/ai-elements/`. Add any other components the
-  page lists the same way.
+- AI Elements: add the base components they build on (e.g.
+  `pnpm dlx shadcn@latest add trace code-block -c apps/web`), then copy
+  the Base UI pattern from
+  `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md` into
+  `packages/ui/src/components/` when it stays domain-free. Patterns that
+  bind `@workspace/shared` (e.g. `ModelSelector`) stay in
+  `apps/web/src/components/ai-elements/`.
 - This project uses Base UI (style `base-nova`), not Radix. Use the Base UI
   variant of docs and examples.
 - Style with Tailwind 4 and the theme tokens in
