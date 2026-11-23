@@ -62,21 +62,21 @@ Checked in the generated files on `develop` (`df3dad3`). A dry run
 of `shadcn add` for all 28 components reports 18 identical and 10
 that differ only by a `"use client"` line, so the kit is unedited.
 
-| Part          | base-nova default                                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Radius        | `--radius: 0.625rem`; controls `rounded-lg`, cards, dialogs and empty states `rounded-xl`, menu items `rounded-md`, badge `rounded-4xl`     |
-| Button        | `default` h-8 px-2.5 gap-1.5; `xs` h-6; `sm` h-7 text-[0.8rem]; `lg` h-9; `icon` size-8 (`icon-xs` 6, `icon-sm` 7, `icon-lg` 9); svg size-4 |
-| Input, Select | h-8 (`sm` select h-7), `rounded-lg`, px-2.5, `text-sm` from md                                                                              |
-| Textarea      | min-h-16, px-2.5 py-2, `rounded-lg`                                                                                                         |
-| Badge         | h-5 px-2 `text-xs`, svg size-3                                                                                                              |
-| Card          | `--card-spacing` 4 (gap and padding), `rounded-xl`, `text-sm`; `size="sm"` variant; title `font-heading text-base font-medium`              |
-| Dialog        | p-4 gap-4 `rounded-xl`, `sm:max-w-sm`; title `font-heading text-base font-medium`; footer p-4 on `bg-muted/50`                              |
-| Table         | head h-10 px-2, cell p-2, `text-sm`                                                                                                         |
-| Empty         | p-6 gap-4 `rounded-xl` dashed; media size-8; title `font-heading text-sm`                                                                   |
-| Field         | group gap-5, set gap-4, label and description `text-sm`                                                                                     |
-| Alert         | px-2.5 py-2 `rounded-lg`, `default` and `destructive`                                                                                       |
-| Progress      | h-1                                                                                                                                         |
-| Fonts         | Geist (`font-sans`), Figtree (`font-heading`)                                                                                               |
+| Part          | base-nova default                                                                                                                                           |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Radius        | `--radius: 0.75rem` (soft; was 0.625rem); controls `rounded-lg`, cards, dialogs and empty states `rounded-xl`, menu items `rounded-md`, badge `rounded-4xl` |
+| Button        | `default` h-8 px-2.5 gap-1.5; `xs` h-6; `sm` h-7 text-[0.8rem]; `lg` h-9; `icon` size-8 (`icon-xs` 6, `icon-sm` 7, `icon-lg` 9); svg size-4                 |
+| Input, Select | h-8 (`sm` select h-7), `rounded-lg`, px-2.5, `text-sm` from md                                                                                              |
+| Textarea      | min-h-16, px-2.5 py-2, `rounded-lg`                                                                                                                         |
+| Badge         | h-5 px-2 `text-xs`, svg size-3                                                                                                                              |
+| Card          | `--card-spacing` 4 (gap and padding), `rounded-xl`, `text-sm`; `size="sm"` variant; title `font-heading text-base font-medium`                              |
+| Dialog        | p-4 gap-4 `rounded-xl`, `sm:max-w-sm`; title `font-heading text-base font-medium`; footer p-4 on `bg-muted/50`                                              |
+| Table         | head h-10 px-2, cell p-2, `text-sm`                                                                                                                         |
+| Empty         | p-6 gap-4 `rounded-xl`; section empty adds `ring-1 ring-foreground/10`; media size-8; title `font-heading text-sm`                                          |
+| Field         | group gap-5, set gap-4, label and description `text-sm`                                                                                                     |
+| Alert         | px-2.5 py-2 `rounded-lg`, `default` and `destructive`                                                                                                       |
+| Progress      | h-1                                                                                                                                                         |
+| Fonts         | Geist (`font-sans`), Figtree (`font-heading`)                                                                                                               |
 
 `shadcn add sidebar --dry-run` resolves for `base-nova`: it adds
 `sidebar`, `sheet` and `hooks/use-mobile`, and the other files it

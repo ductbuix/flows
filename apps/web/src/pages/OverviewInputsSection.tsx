@@ -24,7 +24,7 @@ export function OverviewInputsSection({ inputs }: Props) {
   if (inputs.length === 0) {
     return (
       <PageSection title="Inputs">
-        <Empty className="border" data-testid="overview-inputs-empty">
+        <Empty className="ring-1 ring-foreground/10" data-testid="overview-inputs-empty">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <SlidersHorizontal />

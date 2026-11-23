@@ -104,7 +104,7 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
           <Skeleton className="h-40 w-full" />
         </div>
       ) : rows.length === 0 ? (
-        <Empty className="border" data-testid="connections-empty">
+        <Empty className="ring-1 ring-foreground/10" data-testid="connections-empty">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Plug />

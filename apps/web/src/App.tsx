@@ -3,6 +3,8 @@ import { Toaster } from "@workspace/ui/components/sonner"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { WorkflowsProvider } from "@/lib/workflows-context"
+import { BrandMockupPage } from "@/pages/brand/BrandMockupPage"
+import { BrandPage } from "@/pages/brand/BrandPage"
 import { DevKitPage } from "@/pages/DevKitPage"
 import { HomePage } from "@/pages/HomePage"
 import { ConnectionPage } from "@/pages/connections/ConnectionPage"
@@ -42,6 +44,8 @@ export function App() {
         {import.meta.env.DEV ? (
           <Route path="dev/kit" element={<DevKitPage />} />
         ) : null}
+        <Route path="brand" element={<BrandPage />} />
+        <Route path="brand/:mockupId" element={<BrandMockupPage />} />
         <Route path="work-items" element={<WorkItemsPage />} />
         <Route path="work-items/:workItemId" element={<WorkItemPage />} />
         <Route path="connections" element={<ConnectionsPage />} />

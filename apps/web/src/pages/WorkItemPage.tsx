@@ -94,90 +94,90 @@ export function WorkItemPage() {
   return (
     <TrustStartGate onStarted={(_wf, runId) => onStarted(runId)}>
       {({ begin, pending }) => (
-    <Page
-      crumbs={[...crumbs]}
-      actions={
-        item ? (
-          <ActionButton
-            data-testid="work-item-start"
-            pending={pending}
-            onClick={() =>
-              begin({
-                mode: "start",
-                workItemId,
-                ...(item.workflowId ? { workflowId: item.workflowId } : {}),
-              })
-            }
-          >
-            Start run
-          </ActionButton>
-        ) : null
-      }
-      data-testid="work-item-page"
-    >
-      {error ? (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      ) : loading || !item || !hash ? (
-        <div className="space-y-3" data-testid="work-item-loading">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      ) : (
-        <>
-          <PageTitle
-            title={item.title}
-            description="Context, runs and notes."
-            badge={<WorkItemSourceBadge source={item.source} />}
-          />
-
-          <WorkItemContextSection
-            workItemId={workItemId}
-            item={item}
-            hash={hash}
-            onUpdated={(next, nextHash) => {
-              setItem(next)
-              setHash(nextHash)
-            }}
-          />
-
-          <WorkItemRunsSection workItemId={workItemId} />
-
-          <WorkItemNotesSection workItemId={workItemId} />
-
-          <PageSection title="Attachments">
-            {!attachments || attachments.length === 0 ? (
-              <Empty
-                className="border"
-                data-testid="work-item-attachments-empty"
+        <Page
+          crumbs={[...crumbs]}
+          actions={
+            item ? (
+              <ActionButton
+                data-testid="work-item-start"
+                pending={pending}
+                onClick={() =>
+                  begin({
+                    mode: "start",
+                    workItemId,
+                    ...(item.workflowId ? { workflowId: item.workflowId } : {}),
+                  })
+                }
               >
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Paperclip />
-                  </EmptyMedia>
-                  <EmptyTitle>No attachments</EmptyTitle>
-                  <EmptyDescription>
-                    Files attached to this work item will list here.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <ItemGroup data-testid="work-item-attachments">
-                {attachments.map((file) => (
-                  <Item key={file.name} variant="outline">
-                    <ItemContent>
-                      <ItemTitle className={mono}>{file.name}</ItemTitle>
-                    </ItemContent>
-                  </Item>
-                ))}
-              </ItemGroup>
-            )}
-          </PageSection>
-        </>
-      )}
-    </Page>
+                Start run
+              </ActionButton>
+            ) : null
+          }
+          data-testid="work-item-page"
+        >
+          {error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : loading || !item || !hash ? (
+            <div className="space-y-3" data-testid="work-item-loading">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-40 w-full" />
+            </div>
+          ) : (
+            <>
+              <PageTitle
+                title={item.title}
+                description="Context, runs and notes."
+                badge={<WorkItemSourceBadge source={item.source} />}
+              />
+
+              <WorkItemContextSection
+                workItemId={workItemId}
+                item={item}
+                hash={hash}
+                onUpdated={(next, nextHash) => {
+                  setItem(next)
+                  setHash(nextHash)
+                }}
+              />
+
+              <WorkItemRunsSection workItemId={workItemId} />
+
+              <WorkItemNotesSection workItemId={workItemId} />
+
+              <PageSection title="Attachments">
+                {!attachments || attachments.length === 0 ? (
+                  <Empty
+                    className="ring-1 ring-foreground/10"
+                    data-testid="work-item-attachments-empty"
+                  >
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Paperclip />
+                      </EmptyMedia>
+                      <EmptyTitle>No attachments</EmptyTitle>
+                      <EmptyDescription>
+                        Files attached to this work item will list here.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                ) : (
+                  <ItemGroup data-testid="work-item-attachments">
+                    {attachments.map((file) => (
+                      <Item key={file.name} variant="outline">
+                        <ItemContent>
+                          <ItemTitle className={mono}>{file.name}</ItemTitle>
+                        </ItemContent>
+                      </Item>
+                    ))}
+                  </ItemGroup>
+                )}
+              </PageSection>
+            </>
+          )}
+        </Page>
       )}
     </TrustStartGate>
   )

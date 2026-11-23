@@ -25,7 +25,7 @@ export function RunLibraryPins({ pins }: Props) {
   return (
     <PageSection title="Library pins">
       {pins.length === 0 ? (
-        <Empty className="border" data-testid="run-pins-empty">
+        <Empty className="ring-1 ring-foreground/10" data-testid="run-pins-empty">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Pin />

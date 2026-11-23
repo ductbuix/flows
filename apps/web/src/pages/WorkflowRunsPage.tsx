@@ -153,7 +153,7 @@ export function WorkflowRunsPage() {
             description={RUNS_DESCRIPTION}
           />
           {runs.length === 0 ? (
-            <Empty className="border" data-testid="run-list">
+            <Empty className="ring-1 ring-foreground/10" data-testid="run-list">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Play />

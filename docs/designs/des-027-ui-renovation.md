@@ -83,7 +83,7 @@ below (S1 to S16) are cited by the screen docs; `#NN` is a screen number.
 | S5  | 107 of 198 buttons are 28px `sm` beside 32px inputs; header actions 28px or 32px            |
 | S6  | Radii mixed in one row: 8px `sm` buttons next to 10px inputs                                |
 | S7  | Table rows 37, 38 (Badge), 45 (row button), 53 and 81px (wrapping mono ids)                 |
-| S8  | Empty states 99 to 224px with border in sections, borderless in the sidebar                 |
+| S8  | Empty states 99 to 224px with ring in sections, no ring on page / sidebar empties           |
 | S9  | Dialogs 384, 512 and 672px with no rule; Rename uses an AlertDialog 470px tall              |
 | S10 | Mono dialog titles; SUMMARY.md `# Report` renders 14px/400                                  |
 | S11 | Raw UUIDs and mono workflow ids as main labels                                              |
@@ -153,7 +153,7 @@ component default is used as is.
 | Table row       | `TableCell` `p-2`; cells that hold a Badge, Checkbox or button add `py-0`                         | 37 always    | R/table; this doc                                        | S7    |
 | Row action      | `Button variant="ghost" size="icon-sm"` + `DropdownMenu align="end"`, last column                 | 28           | R/dashboard-01 data-table                                | S7    |
 | Long cell text  | `truncate` inside `max-w-xs`; full text in `Tooltip`, ids in `HoverCard`                          | 320 max      | R/table `whitespace-nowrap`                              | S7    |
-| Empty table     | no Table; an `Empty` with `border` in its place                                                   | -            | R/empty                                                  | S8    |
+| Empty table     | no Table; an `Empty` with `ring-1 ring-foreground/10` in its place                                | -            | R/empty                                                  | S8    |
 | Dialog, confirm | `DialogContent` no class (`sm:max-w-sm`), `p-4 gap-4 rounded-xl`                                  | 384          | R/dialog                                                 | S9    |
 | Dialog, form    | `DialogContent className="sm:max-w-md"`                                                           | 448          | REPO examples/base/dialog-close-button.tsx               | S9    |
 | Dialog, editor  | `DialogContent className="sm:max-w-xl"` (prompt, memory, file)                                    | 576          | REPO registry/bases/base/examples/code-block-example.tsx | S9    |
@@ -161,8 +161,8 @@ component default is used as is.
 | Dialog title    | `DialogTitle` no class (`text-base font-medium`), never mono; paths go in the description as mono | 16           | R/dialog                                                 | S10   |
 | Sheet           | `SheetContent side="right"` no class (`w-3/4 sm:max-w-sm`)                                        | 384          | R/sheet                                                  | -     |
 | Sheet parts     | header `p-4 gap-0.5`; body `flex-1 overflow-y-auto px-4`; footer `p-4 gap-2`                      | 16           | R/sheet                                                  | -     |
-| Empty, section  | `Empty className="border"` (`p-6 gap-4 rounded-xl border-dashed`), `EmptyMedia variant="icon"`    | 24 pad, 14r  | R/empty                                                  | S8    |
-| Empty, page     | `Empty` without border, `flex-1`, centered                                                        | 24 pad       | R/empty                                                  | S8    |
+| Empty, section  | `Empty className="ring-1 ring-foreground/10"`, `EmptyMedia variant="icon"`                        | 24 pad, 14r  | R/empty                                                  | S8    |
+| Empty, page     | `Empty` without ring, `flex-1`, centered                                                          | 24 pad       | R/empty                                                  | S8    |
 | Empty action    | `EmptyContent` with default Buttons                                                               | 32           | R/empty; size decision                                   | S5    |
 | Code block      | `CodeBlock size="sm"`; in a task tab it fills (`min-h-0 flex-1`), in lists `max-h-64`             | 12 text, 256 | R/code-block; REPO terminal                              | -     |
 

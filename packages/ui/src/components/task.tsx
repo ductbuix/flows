@@ -2,6 +2,7 @@
  * Adapted from shadcn apps/v4/examples/base/task-demo.tsx (shadcn-ui/ui@bfa64ff).
  * Changed base-rhea to base-nova: imports use @workspace/ui/components/*, not @/styles/base-rhea/ui/*; chat demo wiring (useChat, Bubble, Message) removed.
  */
+import type { ReactNode } from "react"
 import {
   CircleAlertIcon,
   CircleCheckIcon,
@@ -12,6 +13,7 @@ import {
   TraceCollapsible,
   TraceCollapsibleContent,
   TraceCollapsibleTrigger,
+  TraceDescription,
   TraceIcon,
   TraceLine,
   TraceTitle,
@@ -20,6 +22,8 @@ import {
 export type TaskStep = {
   title: string
   status?: "running" | "error"
+  /** Replaces the status icon (e.g. a search icon for a live action). */
+  icon?: ReactNode
   "data-testid"?: string
 }
 
@@ -27,6 +31,8 @@ type Props = {
   title: string
   status?: "running" | "error"
   steps: TaskStep[]
+  /** Right of the title, e.g. a duration. */
+  description?: ReactNode
   defaultOpen?: boolean
   "data-testid"?: string
 }
@@ -43,6 +49,7 @@ export function Task({
   title,
   status,
   steps,
+  description,
   defaultOpen,
   "data-testid": testId,
 }: Props) {
@@ -55,6 +62,9 @@ export function Task({
               <StatusIcon status={status} />
             </TraceIcon>
             <TraceTitle>{title}</TraceTitle>
+            {description ? (
+              <TraceDescription>{description}</TraceDescription>
+            ) : null}
           </TraceLine>
         </TraceCollapsibleTrigger>
         <TraceCollapsibleContent keepMounted>
@@ -66,7 +76,7 @@ export function Task({
                 data-testid={step["data-testid"]}
               >
                 <TraceIcon>
-                  <StatusIcon status={step.status} />
+                  {step.icon ?? <StatusIcon status={step.status} />}
                 </TraceIcon>
                 <TraceTitle>{step.title}</TraceTitle>
               </TraceLine>
