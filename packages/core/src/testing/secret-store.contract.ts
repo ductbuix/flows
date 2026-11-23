@@ -47,5 +47,17 @@ export function describeSecretStoreContract(
       expect(store.get("a")).toBeNull()
       expect(store.get("b")).toBe("2")
     })
+
+    it("rejects absolute keys", () => {
+      expect(() => store.get("/etc/passwd")).toThrow(/invalid secret key/)
+      expect(() => store.set("/abs/path", "x")).toThrow(/invalid secret key/)
+      expect(() => store.delete("/abs/path")).toThrow(/invalid secret key/)
+    })
+
+    it("rejects keys with ..", () => {
+      expect(() => store.get("a/../b")).toThrow(/invalid secret key/)
+      expect(() => store.set("../escape", "x")).toThrow(/invalid secret key/)
+      expect(() => store.delete("x/../../y")).toThrow(/invalid secret key/)
+    })
   })
 }

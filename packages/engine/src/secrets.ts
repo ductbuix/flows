@@ -1,7 +1,8 @@
+import { createNodeSecretStore } from "@workspace/adapters-node"
+import type { SecretStore } from "@workspace/core/ports"
 import { chmodSync, existsSync, mkdirSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { secretsDir, secretsRoot } from "./paths.ts"
-import { getSecretStore } from "./secret-store.ts"
 
 const DIR_MODE = 0o700
 
@@ -17,8 +18,18 @@ export type StoredCookie = {
   sameSite?: "Strict" | "Lax" | "None"
 }
 
+/** Absolute on-disk path; unchanged for callers that inspect the file. */
 export function cookiesPath(home: string, connectionId: string): string {
   return join(secretsDir(home, connectionId), "cookies.json")
+}
+
+/** Logical SecretStore key relative to FLOWAPP_HOME/secrets. */
+function cookiesKey(connectionId: string): string {
+  return `${connectionId}/cookies.json`
+}
+
+function secretStoreFor(home: string): SecretStore {
+  return createNodeSecretStore({ root: secretsRoot(home) })
 }
 
 export function profileDir(home: string, connectionId: string): string {
@@ -73,7 +84,7 @@ export function readCookies(
   home: string,
   connectionId: string
 ): StoredCookie[] | undefined {
-  const raw = getSecretStore().get(cookiesPath(home, connectionId))
+  const raw = secretStoreFor(home).get(cookiesKey(connectionId))
   if (raw === null) return undefined
   try {
     return parseCookies(JSON.parse(raw) as unknown)
@@ -100,8 +111,8 @@ export function writeCookies(
   const parsed = parseCookies(cookies)
   if (!parsed) throw new Error("invalid cookies")
   ensureSecretsDir(home, connectionId)
-  getSecretStore().set(
-    cookiesPath(home, connectionId),
+  secretStoreFor(home).set(
+    cookiesKey(connectionId),
     `${JSON.stringify(parsed, null, 2)}\n`
   )
 }
@@ -111,7 +122,7 @@ export function writeCookies(
  * untouched. Marks the connection signed out (DES-026).
  */
 export function removeSignIn(home: string, connectionId: string): void {
-  getSecretStore().delete(cookiesPath(home, connectionId))
+  secretStoreFor(home).delete(cookiesKey(connectionId))
   const dir = secretsDir(home, connectionId)
   if (!existsSync(dir)) return
   rmSync(dir, { recursive: true, force: true })
