@@ -21,6 +21,14 @@ export {
   unwrapOr,
 } from "./kernel/index.ts"
 export {
+  createSubscribeBindings,
+  UpdateBus,
+  updateMatchesTopic,
+  type BufferedUpdate,
+  type UpdateBusOptions,
+  type UpdateNotifyPeer,
+} from "./updates/index.ts"
+export {
   bindEngine,
   defineBinding,
   type BindEngineOptions,
