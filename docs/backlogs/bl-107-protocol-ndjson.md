@@ -2,7 +2,7 @@
 id: BL-107
 title: Newline-delimited JSON transport over streams
 type: backlog
-status: todo
+status: done
 summary: A Transport over a readable and writable stream pair, one JSON message per line, for stdio peers (ACP agents, flows --stdio).
 tags: [protocol, stdio]
 related: [DES-040, DES-041]
@@ -19,6 +19,6 @@ Add `ndjsonTransport(readable, writable)` under a Node-only entry point (`protoc
 
 ## Done when
 
-- [ ] Splits on `\n`, handles messages split across chunks and several messages in one chunk.
-- [ ] A malformed line is reported through `onError` and skipped, the stream keeps working.
-- [ ] Unit tests with `PassThrough` streams; the default entry has no `node:` import (lint).
+- [x] Splits on `\n`, handles messages split across chunks and several messages in one chunk.
+- [x] A malformed line is reported through `onError` and skipped, the stream keeps working.
+- [x] Unit tests with `PassThrough` streams; the default entry has no `node:` import (lint).

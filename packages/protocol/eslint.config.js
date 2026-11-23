@@ -22,6 +22,25 @@ export default defineConfig([
     },
   },
   {
+    // Default entry must stay browser-safe; Node stream transports live under ./node.
+    files: ["src/**/*.ts"],
+    ignores: ["src/node.ts", "src/ndjson-transport.ts", "src/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["node:*"],
+              message:
+                "default protocol entry must not import node:*; use @workspace/protocol/node",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     rules: {
       "max-lines": [

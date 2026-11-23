@@ -9,10 +9,12 @@
     "test": "vitest run"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
     "@types/ws": "^8.18.2",
     "eslint": "^10.15.0",
     "globals": "^17.14.0",
