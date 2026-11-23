@@ -380,6 +380,25 @@ export {
   type JudgeCheck,
 } from "./nodes/judge.ts"
 export { layoutFileSchema, type LayoutFile } from "./nodes/layout.ts"
+export {
+  cardIdSchema,
+  cardLinkRelSchema,
+  refSchema,
+  assetScopeSchema,
+  assetSchema,
+  cardLinkSchema,
+  cardSchema,
+  boardColumnSchema,
+  boardSchema,
+  tolerantParseCard,
+  type DocketRef,
+  type DocketAsset,
+  type CardLink,
+  type Card,
+  type BoardColumn,
+  type Board,
+  type TolerantParseResult,
+} from "./docket/index.ts"
 export { findLoopEdges, loopWarnings } from "./nodes/loops.ts"
 export {
   defineMethod,
