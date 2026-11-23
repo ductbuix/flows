@@ -55,6 +55,7 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `run-state.ts` = the run fold).
 - `packages/core`: UI-free engine kernel (`EngineError`, `Result`, `Clock`,
   `Ids`, `Logger`); in-memory fakes under `src/testing/`; no Node I/O imports.
+- `packages/protocol`: JSON-RPC 2.0 `RpcPeer`, `Transport`, `createLinkedTransports()`.
 - `packages/contracts` (`packages/shared` re-export shim): zod for API
   (`runSummarySchema`, `workItemSchema`), websocket, node workflow
   (`workflowSchema`), `connection.yaml`, library list/pull/clear/usage,
