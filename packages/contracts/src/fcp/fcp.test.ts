@@ -4,10 +4,13 @@ import {
   defineMethod,
   defineNotification,
   ErrorCode,
+  fcpMethodTable,
   type FcpMethodParams,
   type FcpMethodResult,
   type FcpNotificationParams,
   jsonRpcCodeFor,
+  workflowGetMethod,
+  workflowListMethod,
 } from "./index.ts"
 
 describe("FCP helpers", () => {
@@ -47,5 +50,16 @@ describe("FCP helpers", () => {
     expect(new Set(numbers).size).toBe(numbers.length)
     expect(jsonRpcCodeFor("invalid_params")).toBe(-32602)
     expect(jsonRpcCodeFor("internal")).toBe(-32603)
+  })
+
+  it("declares workflow/list and workflow/get as queries", () => {
+    expect(fcpMethodTable["workflow/list"]).toBe(workflowListMethod)
+    expect(fcpMethodTable["workflow/get"]).toBe(workflowGetMethod)
+    expect(workflowListMethod.kind).toBe("query")
+    expect(workflowGetMethod.kind).toBe("query")
+    expect(workflowListMethod.params.parse({})).toEqual({})
+    expect(workflowGetMethod.params.parse({ id: "demo" })).toEqual({
+      id: "demo",
+    })
   })
 })

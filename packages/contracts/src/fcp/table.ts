@@ -13,6 +13,7 @@ import {
 import { initializeMethod } from "./initialize.ts"
 import { pingMethod } from "./ping.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
+import { workflowGetMethod, workflowListMethod } from "./workflow.ts"
 
 /** All FCP request methods; populated as namespaces land (BL-111+). */
 export const fcpMethodTable = {
@@ -28,6 +29,8 @@ export const fcpMethodTable = {
   "docket/move_card": docketMoveCardMethod,
   "docket/delete_card": docketDeleteCardMethod,
   "docket/save_board": docketSaveBoardMethod,
+  "workflow/list": workflowListMethod,
+  "workflow/get": workflowGetMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */

@@ -2,7 +2,7 @@
 id: BL-123
 title: workflow/list and workflow/get over FCP
 type: backlog
-status: todo
+status: done
 summary: "First real methods: list and get workflows through FCP, backed by today's engine functions."
 tags: [fcp, workflows]
 related: [DES-040, DES-039]
@@ -19,6 +19,6 @@ Prove the path end to end with read-only calls. Handlers call the same functions
 
 ## Done when
 
-- [ ] Method declarations in contracts; handlers registered in the daemon.
-- [ ] Results match the REST responses for the same workflow (test compares them).
-- [ ] Integration test over `/fcp` with a temp `FLOWAPP_HOME`.
+- [x] Method declarations in contracts; handlers registered in the daemon.
+- [x] Results match the REST responses for the same workflow (test compares them).
+- [x] Integration test over `/fcp` with a temp `FLOWAPP_HOME`.

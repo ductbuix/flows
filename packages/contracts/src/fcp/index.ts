@@ -65,3 +65,11 @@ export {
   fcpTopicSchema,
 } from "./subscribe.ts"
 export { fcpMethodTable, fcpNotificationTable } from "./table.ts"
+export {
+  workflowGetMethod,
+  workflowGetParamsSchema,
+  workflowGetResultSchema,
+  workflowListMethod,
+  workflowListParamsSchema,
+  workflowListResultSchema,
+} from "./workflow.ts"

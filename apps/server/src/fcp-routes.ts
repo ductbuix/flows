@@ -12,6 +12,7 @@ import { timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
 import { fcpIndexHtml } from "./fcp-index.ts"
+import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
 
 export const FCP_AUTH_CLOSE = 4401
 export const FCP_DEV_ORIGIN_PORT = 5173
@@ -86,6 +87,7 @@ function bindFcpPeer(raw: WsLike, engine: Engine): void {
     peer,
     {
       ping: defineBinding(pingMethod, () => ({ ok: true as const })),
+      ...createWorkflowReadBindings(engine),
     },
     { signal: ac.signal },
     { connection }
