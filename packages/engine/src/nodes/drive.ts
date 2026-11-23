@@ -23,6 +23,7 @@ function drive(
       if (done) return
       done = true
       for (const t of timers) clearTimeout(t)
+      timers.clear()
       fn()
     }
     const pump = (step: (process: ProcessHost) => StepsState) => {
@@ -35,6 +36,7 @@ function drive(
       }
     }
     const later = (ms: number) => {
+      if (done) return
       const t = setTimeout(() => {
         timers.delete(t)
         pump(again)
@@ -45,6 +47,8 @@ function drive(
       watching: new Set(),
       wake: () => later(0),
       later,
+      // Engine.close / test teardown: drop wake timers without reading the log.
+      stop: () => finish(() => resolve({ steps: {}, ended: true })),
     }
     onHost?.(host)
     pump(first)

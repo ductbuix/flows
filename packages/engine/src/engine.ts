@@ -306,7 +306,10 @@ export class Engine {
     const earlier = this.listRunsForWorkflow(graph.id)
       .filter((r) => r.graph && !r.deleted && r.runId !== runId)
       .map((r) => r.runId)
-    if (request.baseRunId !== undefined && !earlier.includes(request.baseRunId)) {
+    if (
+      request.baseRunId !== undefined &&
+      !earlier.includes(request.baseRunId)
+    ) {
       throw new Error(`unknown base run ${request.baseRunId}`)
     }
     const partial: PartialRun = {
@@ -336,18 +339,20 @@ export class Engine {
   }
 
   private trackNodeRun(runId: string, done: Promise<StepsState>): RunHandle {
-    const tracked = this.recordLocalEffects(runId, done).catch((error: unknown) => {
-      // A broken graph or a crash in the tick must not leave a run open.
-      const state = this.fold(runId)
-      if (state && state.status === "running") {
-        this.log.append({
-          type: "run_failed",
-          runId,
-          at: new Date().toISOString(),
-        })
+    const tracked = this.recordLocalEffects(runId, done).catch(
+      (error: unknown) => {
+        // A broken graph or a crash in the tick must not leave a run open.
+        const state = this.fold(runId)
+        if (state && state.status === "running") {
+          this.log.append({
+            type: "run_failed",
+            runId,
+            at: new Date().toISOString(),
+          })
+        }
+        throw error
       }
-      throw error
-    })
+    )
     this.nodeRuns.set(runId, tracked)
     const clear = () => {
       if (this.nodeRuns.get(runId) === tracked) {
@@ -397,7 +402,10 @@ export class Engine {
       return
     }
     this.nodeRuns.delete(runId)
-    this.trackNodeRun(runId, resumeNodes(this.nodeOpts(runId), this.hostSink(runId)))
+    this.trackNodeRun(
+      runId,
+      resumeNodes(this.nodeOpts(runId), this.hostSink(runId))
+    )
   }
 
   private hostSink(runId: string): (host: ProcessHost) => void {
@@ -505,6 +513,10 @@ export class Engine {
       clearInterval(this.retentionTimer)
       this.retentionTimer = undefined
     }
+    // Stop node pumps before closing the log (same idea as old Scheduler.dispose).
+    for (const host of this.nodeHosts.values()) host.stop()
+    this.nodeHosts.clear()
+    this.nodeRuns.clear()
     this.log.close()
   }
 

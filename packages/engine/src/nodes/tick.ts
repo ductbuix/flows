@@ -35,7 +35,11 @@ import { executorFor } from "./registry.ts"
 import { frozenDir, stepDir } from "./step-paths.ts"
 import { nextActions } from "./walk.ts"
 import { cancelRequested, finishNodeCancel } from "./cancel.ts"
-import { assertPartialReady, seedPartialRun, type PartialRun } from "./partial.ts"
+import {
+  assertPartialReady,
+  seedPartialRun,
+  type PartialRun,
+} from "./partial.ts"
 
 export type NodeRunOptions = {
   log: EventLog
@@ -212,8 +216,6 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
   const { log, home, runId } = opts
   for (;;) {
     const events = log.listByRun(runId).map((s) => s.event)
-    // Closed log (test teardown) or a wiped run: stop the pump cleanly.
-    if (events.length === 0) return { steps: {}, ended: true }
     const { graph, trigger, only } = runStarted(events)
     const runRoot = runDir(workflowDir(home, graph.id), runId)
     const steps = foldSteps(events)
@@ -234,15 +236,10 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         runRoot,
         stepDir: stepDir(runRoot, nodeId, pass),
         workflowRoot: workflowDir(home, graph.id),
-        answers: resolveAnswerValues(
-          graph.nodes,
-          graph.edges,
-          nodeId,
-          (id) => {
-            const s = latestStep(steps, id)
-            return s?.status === "done" ? s.answer : undefined
-          }
-        ),
+        answers: resolveAnswerValues(graph.nodes, graph.edges, nodeId, (id) => {
+          const s = latestStep(steps, id)
+          return s?.status === "done" ? s.answer : undefined
+        }),
         inputs: activeInputs(graph, steps, runRoot, nodeId),
         frozenFile: (name) => {
           const p = join(frozenDir(runRoot, nodeId), name)
@@ -256,7 +253,11 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     const settle = (
       nodeId: string,
       pass: number,
-      result: { outputs: string[]; branch?: string; answer?: Record<string, unknown> }
+      result: {
+        outputs: string[]
+        branch?: string
+        answer?: Record<string, unknown>
+      }
     ) => {
       opts.crashAt?.("after_act", nodeId)
       log.append({
@@ -401,11 +402,8 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     // Re-attach to attempts left open by a restart (DES-034).
     if (opts.process) {
       const before = events.length
-      reattachAttempts(
-        { ...opts, runId },
-        graph,
-        steps,
-        (nodeId, pass) => stepDir(runRoot, nodeId, pass)
+      reattachAttempts({ ...opts, runId }, graph, steps, (nodeId, pass) =>
+        stepDir(runRoot, nodeId, pass)
       )
       if (log.listByRun(runId).length !== before) continue
     }
@@ -444,7 +442,11 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
 
     const actions = nextActions(
       graph,
-      { trigger: only ?? trigger ?? "", only, loopPasses: graph.limits?.loopPasses },
+      {
+        trigger: only ?? trigger ?? "",
+        only,
+        loopPasses: graph.limits?.loopPasses,
+      },
       steps
     )
     for (const a of actions) {
@@ -486,7 +488,11 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
     if (progressed) continue
 
     const after = foldSteps(log.listByRun(runId).map((s) => s.event))
-    if (Object.values(after.steps).flat().some((s) => isOpen(s.status))) {
+    if (
+      Object.values(after.steps)
+        .flat()
+        .some((s) => isOpen(s.status))
+    ) {
       return after // a process step is still open
     }
     const failed = Object.values(after.steps)

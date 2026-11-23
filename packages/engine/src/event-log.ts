@@ -99,7 +99,7 @@ export class EventLog {
   }
 
   listByRun(runId: string): StoredEvent[] {
-    if (this.closed) return []
+    if (this.closed) throw new Error("event log is closed")
     const stored = this.store.read(runId)
     const last = stored[stored.length - 1]
     if (last) this.lastSeq.set(runId, last.seq)

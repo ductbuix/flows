@@ -34,6 +34,8 @@ export type ProcessHost = {
   wake(): void
   /** Ask for another tick after `ms` (retry backoff). */
   later(ms: number): void
+  /** Stop the driver: clear wake timers so close does not race a tick. */
+  stop(): void
 }
 
 const now = () => new Date().toISOString()
