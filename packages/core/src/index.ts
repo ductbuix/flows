@@ -38,7 +38,19 @@ export {
   type MethodBindings,
   type MethodHandler,
 } from "./rpc/index.ts"
-export { rankBetween } from "./docket/index.ts"
+export { rankBetween } from "./docket/rank.ts"
+export {
+  createDocketIndex,
+  DocketIndex,
+  UNSORTED_COLUMN_ID,
+  type CardBacklink,
+  type CardDetailIndex,
+  type CardFace,
+  type DocketIndexDeps,
+  type IndexedAsset,
+  type IndexedLink,
+  type PathExists,
+} from "./docket/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
   Disposable,
