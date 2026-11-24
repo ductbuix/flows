@@ -15,7 +15,7 @@ depends: [BL-201, BL-197]
 
 Design: [DES-043](../designs/des-043-v2-completion-plan.md). Layer: apps/web.
 
-Use `workflow/rename`, `workflow/update` and `run/list`. Add run history on the canvas and past-run view with `run/get`, `run/get_log` and `run/retry_step`.
+Use `workflow/rename`, `workflow/save` for inputs, and `run/list`. Add run history on the canvas and past-run view with `run/get`, `run/get_log` and `run/retry_step`.
 
 ## Done when
 

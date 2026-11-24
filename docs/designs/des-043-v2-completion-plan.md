@@ -46,14 +46,14 @@ in-memory stores (`*-store.ts`, `*-data.ts`).
 
 ### B. Mock features missing from the app
 
-Backend methods exist for most of these (FCP has 25 methods the web never
+Backend methods exist for most of these (FCP has 21 request methods the web never
 calls). The gap is mainly UI. The old mock components are still in
 `pages/mock/` but no route reaches them.
 
 | Area       | In the mock                                                                                                                                                                                                                                                                         | In the app now                                                                                                      |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Docket     | Card panel with `RefsSection`, `PropertiesSection`, `LinksSection`, `AssetsSection`, `RefDataSection`, `CardRunsSection`, item files, run bar                                                                                                                                       | Card panel edits title and body only. `docket/add_asset`, `remove_asset`, `update` are never called.                |
-| Workflows  | Node canvas editor: `FlowNodes`, `FlowNodesIO`, `AddNodeMenu` (search nodes), `NodeSettings` (system prompt, output format, time limit, if it fails, if unsure, auto-reject), `NodeShell`, `FlowToolbar` (undo, redo, fit view, run), `StepConnectors`, `TriggerInputs`, `ModelRow` | `WorkflowEditorPage` is a YAML textarea. `workflow/save_layout`, `validate`, `rename`, `update` are never called.   |
+| Docket     | Card panel with `RefsSection`, `PropertiesSection`, `LinksSection`, `AssetsSection`, `RefDataSection`, `CardRunsSection`, item files, run bar                                                                                                                                       | Card panel edits title and body only. `docket/add_asset` and `docket/remove_asset` are never called.                |
+| Workflows  | Node canvas editor: `FlowNodes`, `FlowNodesIO`, `AddNodeMenu` (search nodes), `NodeSettings` (system prompt, output format, time limit, if it fails, if unsure, auto-reject), `NodeShell`, `FlowToolbar` (undo, redo, fit view, run), `StepConnectors`, `TriggerInputs`, `ModelRow` | `WorkflowEditorPage` is a YAML textarea. `workflow/save_layout`, `validate` and `rename` are never called.          |
 | Runs       | Run for a card (`RunWorkflowDialog`, `RunBar`), runs list on the card and on the workflow sheet                                                                                                                                                                                     | A separate Runs page; no run entry on a card, none on the canvas.                                                   |
 | Library    | `LibrarySheet`, `LibraryVersions`, `AddLibraryDialog`, `LibraryViews`, `LibraryTags`, `ProviderDetect`, `RemoteBlock`, `LibraryFilePicker`                                                                                                                                          | Table plus providers dialog. `library/pull`, `pin_version`, `set_tags`, `get`, `remove`, `update` are never called. |
 | Skills     | `SkillSources` (add a skill source), `SkillSheet`, usage by node                                                                                                                                                                                                                    | Table and sheet. `skill/update` is never called.                                                                    |
@@ -97,7 +97,7 @@ Phases continue the numbering of DES-017. Each phase ends with
 | 41    | Retire the old engine        | Delete `packages/engine`, `packages/shared` shim, `work-item`, `connection` and `api*.ts` contracts. Move what is still needed into core or adapters.                                                          | no import of `@workspace/engine`; `pnpm build` and e2e pass                            |
 | 42    | Verify                       | Run the checklist end to end in the desktop app and the web dev server. Refresh e2e and `layout.spec.ts` baselines to the mock screens.                                                                        | every checklist row passes; docs and roadmap match the code                            |
 
-Order: 37 first. 38 and 39 can run in parallel (different packages). 40
+Order: 37 first. 38 and the 39 items that need no run (BL-198, BL-199, BL-201, BL-202, BL-204 to BL-208) can run in parallel; BL-200 and BL-203 wait for BL-197. 40
 needs 39 so no screen is lost. 41 needs 38 and 40.
 
 ## Risks
