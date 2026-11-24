@@ -229,6 +229,10 @@ export {
   effectAttemptKey,
   pendingEffects,
   createScheduler,
+  COALESCE_CHUNK_KINDS,
+  COALESCE_WINDOW_MS,
+  mapAgentEventToRunUpdate,
+  createRunUpdateCoalescer,
   type AttemptInfo,
   type DecideInput,
   type DecideOutput,
@@ -247,6 +251,11 @@ export {
   type WalkAction,
   type WalkGraph,
   type WalkScope,
+  type AgentRunUpdate,
+  type AgentUpdateContext,
+  type RunUpdateCoalescer,
+  type RunUpdateCoalescerOptions,
+  type ScheduleFn,
 } from "./runs/index.ts"
 export {
   AskPending,

@@ -7,6 +7,7 @@ import type {
   SessionSpec,
 } from "@workspace/core"
 import { engineError } from "@workspace/core"
+import type { AcpLogSink } from "./acp-log.ts"
 import { cursorProfile } from "./profiles/cursor.ts"
 import type { AgentProfile } from "./profiles/types.ts"
 import { openAcpSession } from "./session.ts"
@@ -19,6 +20,10 @@ export type CreateAcpRuntimeOptions = {
   clientInfo?: { name: string; version: string }
   /** Extra env merged into every spawn (e.g. PATH overrides in tests). */
   env?: Readonly<Record<string, string | undefined>>
+  /** When set, every ACP JSON-RPC message is appended (secrets redacted). */
+  acpLog?: AcpLogSink
+  /** Secret values to redact in the ACP log. */
+  secrets?: readonly string[]
 }
 
 /**
@@ -90,7 +95,10 @@ export function createAcpRuntime(
         procCtl.signal
       )
 
-      const peer = peerFromProcess(proc)
+      const peer = peerFromProcess(proc, {
+        acpLog: options.acpLog,
+        secrets: options.secrets,
+      })
       try {
         const session = await openAcpSession(peer, {
           cwd: spec.cwd,

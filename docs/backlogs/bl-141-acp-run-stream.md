@@ -2,7 +2,7 @@
 id: BL-141
 title: Agent stream in run updates and acp.ndjson
 type: backlog
-status: todo
+status: done
 summary: Agent events become run/update kinds on run:<id>, coalesced per 50 ms, and every ACP message is logged to acp.ndjson.
 tags: [acp, runs, fcp]
 related: [DES-040, DES-041, DES-042]
@@ -19,6 +19,6 @@ Make agent work visible live and replayable later.
 
 ## Done when
 
-- [ ] Chunk kinds are merged per run per 50 ms; tool calls and plans are never dropped.
-- [ ] `runs/<id>/steps/<step>/acp.ndjson` holds every message with secrets redacted.
-- [ ] Test: a scripted session yields the expected update sequence.
+- [x] Chunk kinds are merged per run per 50 ms; tool calls and plans are never dropped.
+- [x] `runs/<id>/steps/<step>/acp.ndjson` holds every message with secrets redacted.
+- [x] Test: a scripted session yields the expected update sequence.

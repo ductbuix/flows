@@ -21,6 +21,15 @@ export {
 } from "./map-update.ts"
 export { createAcpRuntime, type CreateAcpRuntimeOptions } from "./runtime.ts"
 export {
+  REDACTED,
+  documentStoreAcpSink,
+  logAcpMessage,
+  loggingTransport,
+  redactSecrets,
+  type AcpLogSink,
+} from "./acp-log.ts"
+export { peerFromProcess, type PeerFromProcessOptions } from "./streams.ts"
+export {
   CURSOR_AUTH_METHOD,
   CURSOR_MODES,
   cursorCommand,

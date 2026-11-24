@@ -2,6 +2,19 @@ export { decide } from "./decide.ts"
 export { RunActor, type RunActorDeps } from "./actor.ts"
 export { effectAttemptKey, pendingEffects } from "./pending-effects.ts"
 export {
+  COALESCE_CHUNK_KINDS,
+  mapAgentEventToRunUpdate,
+  type AgentRunUpdate,
+  type AgentUpdateContext,
+} from "./agent-update.ts"
+export {
+  COALESCE_WINDOW_MS,
+  createRunUpdateCoalescer,
+  type RunUpdateCoalescer,
+  type RunUpdateCoalescerOptions,
+  type ScheduleFn,
+} from "./coalesce.ts"
+export {
   createScheduler,
   type Scheduler,
   type SchedulerGrant,
