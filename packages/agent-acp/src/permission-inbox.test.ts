@@ -13,10 +13,7 @@ import {
   UpdateBus,
   type PermissionContext,
 } from "@workspace/core"
-import {
-  createFakeClock,
-  createFakeEventStore,
-} from "@workspace/core/testing"
+import { createFakeClock, createFakeEventStore } from "@workspace/core/testing"
 import { createLinkedTransports, RpcPeer } from "@workspace/protocol"
 import { ndjsonTransport } from "@workspace/protocol/node"
 import { describe, expect, it } from "vitest"

@@ -38,4 +38,6 @@ await Promise.all([
   }),
 ])
 
-console.log("desktop: built dist/main.js, dist/engine-host.cjs, dist/preload.cjs")
+console.log(
+  "desktop: built dist/main.js, dist/engine-host.cjs, dist/preload.cjs"
+)

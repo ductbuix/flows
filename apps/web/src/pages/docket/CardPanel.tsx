@@ -116,11 +116,7 @@ function CardPanelBody({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Card actions"
-                />
+                <Button variant="ghost" size="icon" aria-label="Card actions" />
               }
             >
               <MoreHorizontal />
