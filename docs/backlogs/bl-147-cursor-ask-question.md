@@ -2,7 +2,7 @@
 id: BL-147
 title: cursor/ask_question as an Inbox question
 type: backlog
-status: todo
+status: done
 summary: The Cursor extension ask_question creates an Inbox question item; the answer returns answered or skipped.
 tags: [cursor, acp, inbox]
 related: [DES-041]
@@ -19,6 +19,6 @@ Agents can ask a person mid-step without failing the step.
 
 ## Done when
 
-- [ ] Questions and options shown as one item; multi-select honoured.
-- [ ] Cancel of the run answers `cancelled`.
-- [ ] Fake agent test.
+- [x] Questions and options shown as one item; multi-select honoured.
+- [x] Cancel of the run answers `cancelled`.
+- [x] Fake agent test.

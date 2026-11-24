@@ -8,6 +8,7 @@ export type {
   Money,
   PlanEntry,
   SessionSpec,
+  TodoEntry,
 } from "./agent-runtime.ts"
 export type {
   DocumentRead,

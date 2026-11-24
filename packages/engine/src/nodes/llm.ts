@@ -65,6 +65,9 @@ export const llmExecutor = defineExecutor({
           modelFields,
           ...(node.model !== undefined ? { model: node.model } : {}),
           ...(node.effort !== undefined ? { effort: node.effort } : {}),
+          ...(node.planReview !== undefined
+            ? { planReview: node.planReview }
+            : {}),
         },
       }
     }

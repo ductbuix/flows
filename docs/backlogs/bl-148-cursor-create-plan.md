@@ -2,7 +2,7 @@
 id: BL-148
 title: cursor/create_plan with plan review
 type: backlog
-status: todo
+status: done
 summary: "Node setting planReview: auto accepts a Cursor plan, ask turns it into an Inbox item."
 tags: [cursor, acp, inbox]
 related: [DES-041]
@@ -19,6 +19,6 @@ Let a person approve the agent's plan before it acts, when the node asks for it.
 
 ## Done when
 
-- [ ] `planReview: auto | ask` in the llm node settings (default auto).
-- [ ] Plan and todos visible in the item; accepted or rejected goes back to the agent.
-- [ ] Fake agent tests for both modes.
+- [x] `planReview: auto | ask` in the llm node settings (default auto).
+- [x] Plan and todos visible in the item; accepted or rejected goes back to the agent.
+- [x] Fake agent tests for both modes.

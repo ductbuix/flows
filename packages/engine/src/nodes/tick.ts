@@ -6,6 +6,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join } from "node:path"
+import type { AcpInboxGates } from "@workspace/core"
 import {
   workflowSchema,
   resolveAnswerValues,
@@ -47,6 +48,8 @@ export type NodeRunOptions = {
   log: EventLog
   home: string
   runId: string
+  /** Live ACP Inbox gates for mid-step asks (BL-192). */
+  acpAsks?: AcpInboxGates
   /** Test hook: throw to simulate a crash at a point (DES-034). */
   crashAt?: (
     point:

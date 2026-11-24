@@ -183,6 +183,22 @@ export {
 } from "./run-inputs.ts"
 export { isSafeTaskId, upstreamEnvName } from "./task-ids.ts"
 export {
+  cursorAskAnswerSchema,
+  cursorAskOptionSchema,
+  cursorAskQuestionSchema,
+  type CursorAskAnswer,
+  type CursorAskOption,
+  type CursorAskQuestion,
+} from "./cursor-question.ts"
+export {
+  cursorPlanPhaseSchema,
+  cursorPlanTodoSchema,
+  cursorPlanTodoStatusSchema,
+  type CursorPlanPhase,
+  type CursorPlanTodo,
+  type CursorPlanTodoStatus,
+} from "./cursor-plan.ts"
+export {
   taskStatusSchema,
   runStatusSchema,
   engineEventSchema,
@@ -195,6 +211,10 @@ export {
   approvalRequestedEventSchema,
   permissionRequestedEventSchema,
   permissionAnsweredEventSchema,
+  questionAskedEventSchema,
+  questionAnsweredEventSchema,
+  planReviewRequestedEventSchema,
+  planReviewAnsweredEventSchema,
   cancelRequestedEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,
@@ -692,6 +712,10 @@ export {
   inboxListResultSchema,
   inboxPermissionItemSchema,
   inboxPermissionOptionIdSchema,
+  inboxPlanReviewItemSchema,
+  inboxPlanReviewOptionIdSchema,
+  inboxQuestionItemSchema,
+  inboxQuestionOptionIdSchema,
   inboxSignInItemSchema,
   inboxUpdateNotification,
   type WireInboxItem,

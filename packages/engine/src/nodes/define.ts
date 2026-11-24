@@ -83,6 +83,8 @@ export type AcpLaunchSpec = {
   modelFields?: LaunchSpec["modelFields"]
   model?: string
   effort?: string
+  /** Cursor create_plan review mode (BL-148 / BL-192). */
+  planReview?: "auto" | "ask"
 }
 
 export type AcpPlan = { acp: AcpLaunchSpec }

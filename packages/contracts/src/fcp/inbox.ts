@@ -1,5 +1,10 @@
 import { z } from "zod"
 import { connectorFileIdSchema } from "../connector.ts"
+import {
+  cursorAskAnswerSchema,
+  cursorAskQuestionSchema,
+} from "../cursor-question.ts"
+import { cursorPlanTodoSchema } from "../cursor-plan.ts"
 import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
@@ -15,9 +20,17 @@ export const inboxPermissionOptionIdSchema = z.enum([
   "reject-once",
 ])
 
+/** Cursor ask_question outcomes returned via inbox/answer (BL-147). */
+export const inboxQuestionOptionIdSchema = z.enum(["answered", "skipped"])
+
+/** Cursor create_plan review outcomes via inbox/answer (BL-148). */
+export const inboxPlanReviewOptionIdSchema = z.enum(["accepted", "rejected"])
+
 export const inboxItemOptionIdSchema = z.union([
   inboxApprovalOptionIdSchema,
   inboxPermissionOptionIdSchema,
+  inboxQuestionOptionIdSchema,
+  inboxPlanReviewOptionIdSchema,
 ])
 
 const inboxItemBase = {
@@ -45,6 +58,27 @@ export const inboxPermissionItemSchema = z.object({
   decision: inboxPermissionOptionIdSchema.optional(),
 })
 
+export const inboxQuestionItemSchema = z.object({
+  ...inboxItemBase,
+  kind: z.literal("question"),
+  requestId: z.string().min(1),
+  title: z.string().min(1).optional(),
+  questions: z.array(cursorAskQuestionSchema).min(1),
+  decision: inboxQuestionOptionIdSchema.optional(),
+  answers: z.array(cursorAskAnswerSchema).optional(),
+})
+
+export const inboxPlanReviewItemSchema = z.object({
+  ...inboxItemBase,
+  kind: z.literal("plan_review"),
+  requestId: z.string().min(1),
+  name: z.string().min(1).optional(),
+  overview: z.string().min(1).optional(),
+  plan: z.string().min(1),
+  todos: z.array(cursorPlanTodoSchema),
+  decision: inboxPlanReviewOptionIdSchema.optional(),
+})
+
 /** Expired connector sign-in (DES-041 / BL-164). No run; resolved by check. */
 export const inboxSignInItemSchema = z.object({
   id: z.string().min(1),
@@ -58,10 +92,18 @@ export const inboxSignInItemSchema = z.object({
 export const inboxItemSchema = z.discriminatedUnion("kind", [
   inboxApprovalItemSchema,
   inboxPermissionItemSchema,
+  inboxQuestionItemSchema,
+  inboxPlanReviewItemSchema,
   inboxSignInItemSchema,
 ])
 
-export const inboxItemKindSchema = z.enum(["approval", "permission", "sign_in"])
+export const inboxItemKindSchema = z.enum([
+  "approval",
+  "permission",
+  "question",
+  "plan_review",
+  "sign_in",
+])
 
 export type WireInboxItem = z.infer<typeof inboxItemSchema>
 
@@ -85,6 +127,8 @@ export const inboxListMethod = defineMethod({
 export const inboxAnswerParamsSchema = z.object({
   itemId: z.string().min(1),
   optionId: z.string().min(1),
+  /** Required when optionId is `answered` for a question item (BL-147). */
+  answers: z.array(cursorAskAnswerSchema).optional(),
   requestKey: fcpRequestKeySchema,
 })
 

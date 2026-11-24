@@ -1,8 +1,4 @@
-import {
-  inboxApprovalOptionIdSchema,
-  inboxPermissionOptionIdSchema,
-  type WireInboxItem,
-} from "@workspace/contracts"
+import type { CursorAskAnswer, WireInboxItem } from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
 import { engineError } from "../kernel/engine-error.ts"
 import type { EventStore, StoredEvent } from "../ports/event-store.ts"
@@ -19,17 +15,22 @@ import {
   applySignInStatus,
   type SignInStatusInput,
 } from "./projection-sign-in.ts"
+import { answerInboxItem, dismissOptionId } from "./service-answer.ts"
+
+type RunInboxItem = Exclude<InboxItem, { kind: "sign_in" }>
 
 export type InboxAnswerPush = (input: {
   runId: string
   at: string
   nodeId: string
   pass: number
-  /** Approval or permission option id. */
+  /** Approval, permission, question, or plan_review option id. */
   optionId: InboxDecision
-  /** Set for permission items (DES-041). */
+  /** Set for permission, question, and plan_review items (DES-041). */
   requestId?: string
-  kind: Extract<InboxItem, { kind: "approval" | "permission" }>["kind"]
+  /** Selected options when answering a question (BL-147). */
+  answers?: CursorAskAnswer[]
+  kind: RunInboxItem["kind"]
 }) => Promise<void>
 
 export type InboxServiceDeps = {
@@ -141,33 +142,15 @@ export class InboxService {
     }
   }
 
-  async answer(itemId: string, optionId: string): Promise<void> {
+  async answer(
+    itemId: string,
+    optionId: string,
+    answers?: readonly CursorAskAnswer[]
+  ): Promise<void> {
     const item = this.requireOpen(itemId)
-    if (item.kind === "sign_in") {
-      throw engineError(
-        "failed_precondition",
-        "Sign-in items resolve when the connector is connected"
-      )
-    }
-    if (item.kind === "approval") {
-      const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
-      if (!parsed.success) {
-        throw engineError(
-          "invalid_params",
-          `Unknown optionId for approval: ${optionId}`
-        )
-      }
-      await this.route(item, parsed.data)
-      return
-    }
-    const parsed = inboxPermissionOptionIdSchema.safeParse(optionId)
-    if (!parsed.success) {
-      throw engineError(
-        "invalid_params",
-        `Unknown optionId for permission: ${optionId}`
-      )
-    }
-    await this.route(item, parsed.data)
+    await answerInboxItem(item, optionId, answers, (i, o, a) =>
+      this.route(i, o, a)
+    )
   }
 
   /** Dismiss rejects so the run does not stay parked. Sign-in resolves here. */
@@ -182,11 +165,7 @@ export class InboxService {
       })
       return
     }
-    if (item.kind === "approval") {
-      await this.route(item, "rejected")
-      return
-    }
-    await this.route(item, "reject-once")
+    await this.route(item, dismissOptionId(item))
   }
 
   private requireOpen(itemId: string): InboxItem {
@@ -198,8 +177,9 @@ export class InboxService {
   }
 
   private async route(
-    item: Extract<InboxItem, { kind: "approval" | "permission" }>,
-    optionId: InboxDecision
+    item: RunInboxItem,
+    optionId: InboxDecision,
+    answers?: CursorAskAnswer[]
   ): Promise<void> {
     const at = new Date(this.deps.clock.now()).toISOString()
     await this.deps.pushAnswer({
@@ -209,7 +189,12 @@ export class InboxService {
       pass: item.pass,
       kind: item.kind,
       optionId,
-      ...(item.kind === "permission" ? { requestId: item.requestId } : {}),
+      ...(item.kind === "permission" ||
+      item.kind === "question" ||
+      item.kind === "plan_review"
+        ? { requestId: item.requestId }
+        : {}),
+      ...(answers ? { answers } : {}),
     })
     this.syncRun(item.runId)
   }

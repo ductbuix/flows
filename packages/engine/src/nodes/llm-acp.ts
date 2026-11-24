@@ -1,14 +1,12 @@
-import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, rmSync } from "node:fs"
 import { dirname, join } from "node:path"
-import { createAcpRuntime } from "@workspace/agent-acp"
-import { llmContentBlocks, llmProfileId, llmPromptText } from "@workspace/core"
+import type { AcpInboxGates } from "@workspace/core"
 import { effectiveLimit, loadAppConfig } from "../config.ts"
-import { getProcessRunner } from "../process-runner.ts"
 import { resolveAttemptTimeout } from "../timeout.ts"
-import { filledFile } from "./answers.ts"
 import type { AcpLaunchSpec, ExecContext } from "./define.ts"
 import type { StepsState } from "./fold-steps.ts"
-import { inputsAsStepInputs, writeAttemptInputs } from "./llm-acp-inputs.ts"
+import { writeAttemptInputs } from "./llm-acp-inputs.ts"
+import { runAcpSession } from "./llm-acp-run.ts"
 import { attemptKey, attemptRootOf, type ProcessHost } from "./process.ts"
 
 const now = () => new Date().toISOString()
@@ -18,6 +16,8 @@ type Run = {
   runId: string
   home: string
   process?: ProcessHost
+  /** Live ACP Inbox gates (BL-192). */
+  acpAsks?: AcpInboxGates
   crashAt?: (
     point:
       | "after_step_started"
@@ -58,19 +58,12 @@ function appendFinished(
   } as never)
 }
 
-/**
- * ACP llm attempt: session prompt with resource blocks, stdout.log for
- * finish(), then wake the tick (BL-142).
- */
-export function launchAcpAttempt(
+function underCaps(
   run: Run,
-  ctx: ExecContext,
   spec: AcpLaunchSpec,
-  steps: StepsState
+  steps: StepsState,
+  graph: ExecContext["graph"]
 ): boolean {
-  const host = run.process
-  if (!host) throw new Error("ACP steps need a process host")
-  const { graph, node, pass } = ctx
   const cfg = loadAppConfig(run.home)
   const caps = {
     concurrency: effectiveLimit(cfg.limits, graph.limits, "concurrency"),
@@ -85,11 +78,29 @@ export function launchAcpAttempt(
       openAgents += 1
     }
   }
-  if (caps.concurrency !== undefined && openAll >= caps.concurrency)
+  if (caps.concurrency !== undefined && openAll >= caps.concurrency) {
     return false
+  }
   if (spec.agent && caps.agents !== undefined && openAgents >= caps.agents) {
     return false
   }
+  return true
+}
+
+/**
+ * ACP llm attempt: session prompt with resource blocks, stdout.log for
+ * finish(), then wake the tick (BL-142 / BL-192).
+ */
+export function launchAcpAttempt(
+  run: Run,
+  ctx: ExecContext,
+  spec: AcpLaunchSpec,
+  steps: StepsState
+): boolean {
+  const host = run.process
+  if (!host) throw new Error("ACP steps need a process host")
+  const { graph, node, pass } = ctx
+  if (!underCaps(run, spec, steps, graph)) return false
 
   const step = steps.steps[node.id]?.find((s) => s.pass === pass)
   const attempt = (step?.attempts ?? 0) + 1
@@ -157,62 +168,21 @@ export function launchAcpAttempt(
       ? setTimeout(() => ac.abort(), timeoutSec * 1000)
       : undefined
 
-  const blocks = llmContentBlocks(
-    llmPromptText({
-      system: filledFile(ctx, "system.md") || undefined,
-      prompt: filledFile(ctx, "prompt.md") ?? "",
-    }),
-    inputsAsStepInputs(ctx)
-  )
-  const profileId = spec.profileId || llmProfileId(spec.cli ?? "cursor")
-
-  void (async () => {
-    try {
-      const runtime = createAcpRuntime({
-        processRunner: getProcessRunner(),
-      })
-      const session = await runtime.open(
-        {
-          profileId,
-          cwd: attemptRoot,
-          mode: spec.mode,
-          ...(spec.model !== undefined ? { model: spec.model } : {}),
-          ...(spec.effort !== undefined ? { effort: spec.effort } : {}),
-        },
-        ac.signal
-      )
-      let text = ""
-      try {
-        if (session.setMode) await session.setMode(spec.mode)
-        for await (const event of session.prompt(blocks, ac.signal)) {
-          if (event.kind === "message_chunk") text += event.text
-        }
-      } finally {
-        await session.close()
-      }
-      writeFileSync(join(attemptRoot, "stdout.log"), text)
-      writeFileSync(join(attemptRoot, "exit.code"), "0\n")
-      appendFinished(run, node.id, pass, attempt, 0)
-    } catch (err) {
-      writeFileSync(
-        join(attemptRoot, "stderr.log"),
-        err instanceof Error ? err.message : String(err)
-      )
-      writeFileSync(join(attemptRoot, "exit.code"), "1\n")
-      appendFinished(
-        run,
-        node.id,
-        pass,
-        attempt,
-        1,
-        err instanceof Error ? err.message : "acp_failed"
-      )
-    } finally {
-      if (timer) clearTimeout(timer)
-      host.watching.delete(key)
-      host.wake()
-    }
-  })()
+  void runAcpSession({
+    run,
+    ctx,
+    spec,
+    attemptRoot,
+    pass,
+    attempt,
+    signal: ac.signal,
+    appendFinished: (exitCode, reason) =>
+      appendFinished(run, node.id, pass, attempt, exitCode, reason),
+  }).finally(() => {
+    if (timer) clearTimeout(timer)
+    host.watching.delete(key)
+    host.wake()
+  })
 
   return true
 }

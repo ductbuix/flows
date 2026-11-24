@@ -3,17 +3,35 @@ import type {
   AgentSession,
   ContentBlock,
   Logger,
+  TodoEntry,
 } from "@workspace/core"
 import type { RpcPeer } from "@workspace/protocol"
+import { CURSOR_ASK_QUESTION_METHOD } from "./ask-question.ts"
 import { authenticateIfRequired } from "./authenticate.ts"
 import {
-  cancelPendingPermissions,
+  CANCELLED_ASK_QUESTION_RESULT,
+  CANCELLED_CREATE_PLAN_RESULT,
+  CANCELLED_PERMISSION_RESULT,
+  cancelPendingRequests,
   DEFAULT_CANCEL_GRACE_MS,
   scheduleCancelKill,
-  type PendingPermission,
+  type PendingClientRequest,
 } from "./cancel.ts"
+import { CURSOR_CREATE_PLAN_METHOD } from "./create-plan.ts"
+import { attachCursorStreamExtensions } from "./cursor-stream-extensions.ts"
 import { attachFsHandlers } from "./fs.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
+import { CURSOR_TASK_METHOD } from "./task.ts"
+import { CURSOR_UPDATE_TODOS_METHOD } from "./update-todos.ts"
+
+/** `undefined` keeps Cursor handlers; empty/false skips (generic, BL-150). */
+function extensionEnabled(
+  extensions: Readonly<Record<string, unknown>> | undefined,
+  method: string
+): boolean {
+  if (extensions === undefined) return true
+  return Boolean(extensions[method])
+}
 
 /** Client capabilities advertised on `initialize` (DES-041). */
 export const ACP_CLIENT_CAPABILITIES = {
@@ -45,6 +63,21 @@ export type OpenAcpSessionOptions = {
    * until `session/cancel` answers `cancelled`.
    */
   handlePermission?: (params: unknown) => Promise<unknown>
+  /**
+   * Resolve Cursor `cursor/ask_question` (BL-147). Without this, asks
+   * park until cancel answers `cancelled`.
+   */
+  handleAskQuestion?: (params: unknown) => Promise<unknown>
+  /**
+   * Resolve Cursor `cursor/create_plan` (BL-148). Without this, plans
+   * park until cancel answers `cancelled`.
+   */
+  handleCreatePlan?: (params: unknown) => Promise<unknown>
+  /**
+   * Profile extension flags (DES-041). `undefined` keeps Cursor
+   * handlers (direct session tests); `{}` attaches none (generic).
+   */
+  extensions?: Readonly<Record<string, unknown>>
 }
 
 type QueueWaiter = {
@@ -110,12 +143,19 @@ export async function openAcpSession(
 
 class AcpSession implements AgentSession {
   private closed = false
-  private readonly pendingPermissions = new Set<PendingPermission>()
+  private readonly pending = new Set<PendingClientRequest>()
   private readonly cancelGraceMs: number
   private readonly kill?: () => void
   private readonly logger?: Logger
   private readonly handlePermission?: (params: unknown) => Promise<unknown>
+  private readonly handleAskQuestion?: (params: unknown) => Promise<unknown>
+  private readonly handleCreatePlan?: (params: unknown) => Promise<unknown>
+  private todos: TodoEntry[] = []
+  private emitEvent?: (event: AgentEvent) => void
   private unsubPermission?: () => void
+  private unsubAskQuestion?: () => void
+  private unsubCreatePlan?: () => void
+  private unsubStreamExt?: () => void
   private unsubFs?: () => void
 
   constructor(
@@ -127,10 +167,54 @@ class AcpSession implements AgentSession {
     this.kill = options.kill
     this.logger = options.logger
     this.handlePermission = options.handlePermission
+    this.handleAskQuestion = options.handleAskQuestion
+    this.handleCreatePlan = options.handleCreatePlan
     this.unsubPermission = peer.onRequest(
       "session/request_permission",
-      (params) => this.onPermission(params)
+      (params) =>
+        this.onClientRequest(
+          params,
+          this.handlePermission,
+          CANCELLED_PERMISSION_RESULT,
+          "session/request_permission"
+        )
     )
+    if (extensionEnabled(options.extensions, CURSOR_ASK_QUESTION_METHOD)) {
+      this.unsubAskQuestion = peer.onRequest(
+        CURSOR_ASK_QUESTION_METHOD,
+        (params) =>
+          this.onClientRequest(
+            params,
+            this.handleAskQuestion,
+            CANCELLED_ASK_QUESTION_RESULT,
+            CURSOR_ASK_QUESTION_METHOD
+          )
+      )
+    }
+    if (extensionEnabled(options.extensions, CURSOR_CREATE_PLAN_METHOD)) {
+      this.unsubCreatePlan = peer.onRequest(
+        CURSOR_CREATE_PLAN_METHOD,
+        (params) =>
+          this.onClientRequest(
+            params,
+            this.handleCreatePlan,
+            CANCELLED_CREATE_PLAN_RESULT,
+            CURSOR_CREATE_PLAN_METHOD
+          )
+      )
+    }
+    if (
+      extensionEnabled(options.extensions, CURSOR_UPDATE_TODOS_METHOD) ||
+      extensionEnabled(options.extensions, CURSOR_TASK_METHOD)
+    ) {
+      this.unsubStreamExt = attachCursorStreamExtensions(peer, {
+        getTodos: () => this.todos,
+        setTodos: (todos) => {
+          this.todos = todos
+        },
+        emit: (event) => this.emitEvent?.(event),
+      })
+    }
     this.unsubFs = attachFsHandlers(peer, {
       sessionId: id,
       allowedRoots: options.allowedRoots ?? [options.cwd],
@@ -150,39 +234,50 @@ class AcpSession implements AgentSession {
   async close(): Promise<void> {
     if (this.closed) return
     this.closed = true
-    cancelPendingPermissions(this.pendingPermissions)
+    cancelPendingRequests(this.pending)
     this.unsubPermission?.()
     this.unsubPermission = undefined
+    this.unsubAskQuestion?.()
+    this.unsubAskQuestion = undefined
+    this.unsubCreatePlan?.()
+    this.unsubCreatePlan = undefined
+    this.unsubStreamExt?.()
+    this.unsubStreamExt = undefined
     this.unsubFs?.()
     this.unsubFs = undefined
     this.peer.close()
   }
 
-  private onPermission(params: unknown): Promise<unknown> {
+  private onClientRequest(
+    params: unknown,
+    handler: ((params: unknown) => Promise<unknown>) | undefined,
+    cancelledResult: unknown,
+    method: string
+  ): Promise<unknown> {
     if (
       params &&
       typeof params === "object" &&
       "sessionId" in params &&
       (params as { sessionId: unknown }).sessionId !== this.id
     ) {
-      return Promise.reject(
-        new Error("session/request_permission wrong session")
-      )
+      return Promise.reject(new Error(`${method} wrong session`))
     }
     return new Promise((resolve, reject) => {
-      const entry: PendingPermission = { resolve }
-      this.pendingPermissions.add(entry)
-      const handler = this.handlePermission
+      const entry: PendingClientRequest = {
+        resolve,
+        cancelledResult,
+      }
+      this.pending.add(entry)
       if (!handler) return
       void handler(params).then(
         (result) => {
-          if (!this.pendingPermissions.has(entry)) return
-          this.pendingPermissions.delete(entry)
+          if (!this.pending.has(entry)) return
+          this.pending.delete(entry)
           resolve(result)
         },
         (err: unknown) => {
-          if (!this.pendingPermissions.has(entry)) return
-          this.pendingPermissions.delete(entry)
+          if (!this.pending.has(entry)) return
+          this.pending.delete(entry)
           reject(err)
         }
       )
@@ -207,11 +302,17 @@ class AcpSession implements AgentSession {
       w?.resolve()
     }
 
+    const pushEvent = (event: AgentEvent) => {
+      queue.push(event)
+      wake()
+    }
+    this.emitEvent = pushEvent
+
     const onAbort = () => {
       if (cancelStarted) return
       cancelStarted = true
       this.peer.notify("session/cancel", { sessionId: this.id })
-      cancelPendingPermissions(this.pendingPermissions)
+      cancelPendingRequests(this.pending)
       clearKill = scheduleCancelKill(
         this.cancelGraceMs,
         () => settled,
@@ -234,8 +335,7 @@ class AcpSession implements AgentSession {
       }
       const event = mapSessionUpdate(params, this.logger)
       if (!event) return
-      queue.push(event)
-      wake()
+      pushEvent(event)
     })
 
     // Do not pass `signal`: ACP cancel is `session/cancel`, not `$/cancel_request`.
@@ -285,6 +385,7 @@ class AcpSession implements AgentSession {
     } finally {
       signal.removeEventListener("abort", onAbort)
       clearKill?.()
+      if (this.emitEvent === pushEvent) this.emitEvent = undefined
       unsub()
     }
   }

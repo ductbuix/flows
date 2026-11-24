@@ -19,7 +19,11 @@ function mapErr(err: unknown): InboxActionResult {
 
 export async function answerInboxItem(
   client: FlowsClient,
-  params: { itemId: string; optionId: string }
+  params: {
+    itemId: string
+    optionId: string
+    answers?: { questionId: string; selectedOptionIds: string[] }[]
+  }
 ): Promise<InboxActionResult> {
   try {
     await client.call("inbox/answer", params)

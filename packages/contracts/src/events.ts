@@ -1,5 +1,10 @@
 import { z } from "zod"
 import { connectionIdSchema } from "./connection.ts"
+import {
+  cursorAskAnswerSchema,
+  cursorAskQuestionSchema,
+} from "./cursor-question.ts"
+import { cursorPlanTodoSchema } from "./cursor-plan.ts"
 import { effortSchema } from "./model-effort.ts"
 import { workflowSchema } from "./nodes/index.ts"
 
@@ -146,6 +151,55 @@ export const permissionAnsweredEventSchema = z.object({
   pass: z.number().int().positive(),
   requestId: z.string().min(1),
   optionId: z.enum(["allow-once", "allow-always", "reject-once"]),
+})
+
+/** Cursor `cursor/ask_question` parked as an Inbox question (DES-041 / BL-147). */
+export const questionAskedEventSchema = z.object({
+  type: z.literal("question_asked"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  /** ACP `toolCallId`. */
+  requestId: z.string().min(1),
+  title: z.string().min(1).optional(),
+  questions: z.array(cursorAskQuestionSchema).min(1),
+})
+
+/** Person answered or skipped an Inbox question (cancel is ACP-only). */
+export const questionAnsweredEventSchema = z.object({
+  type: z.literal("question_answered"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  requestId: z.string().min(1),
+  outcome: z.enum(["answered", "skipped"]),
+  answers: z.array(cursorAskAnswerSchema).optional(),
+  reason: z.string().min(1).optional(),
+})
+
+/** Cursor `cursor/create_plan` parked for Inbox review (DES-041 / BL-148). */
+export const planReviewRequestedEventSchema = z.object({
+  type: z.literal("plan_review_requested"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  /** ACP `toolCallId`. */
+  requestId: z.string().min(1),
+  name: z.string().min(1).optional(),
+  overview: z.string().min(1).optional(),
+  plan: z.string().min(1),
+  todos: z.array(cursorPlanTodoSchema),
+})
+
+/** Person accepted or rejected a plan review (cancel is ACP-only). */
+export const planReviewAnsweredEventSchema = z.object({
+  type: z.literal("plan_review_answered"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  requestId: z.string().min(1),
+  outcome: z.enum(["accepted", "rejected"]),
+  reason: z.string().min(1).optional(),
 })
 
 export const cancelRequestedEventSchema = z.object({
@@ -320,6 +374,10 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   approvalRequestedEventSchema,
   permissionRequestedEventSchema,
   permissionAnsweredEventSchema,
+  questionAskedEventSchema,
+  questionAnsweredEventSchema,
+  planReviewRequestedEventSchema,
+  planReviewAnsweredEventSchema,
   cancelRequestedEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,

@@ -1,3 +1,4 @@
+import { resolveAnswerValues } from "@workspace/contracts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
 import { latestStep } from "../runs/model.ts"
@@ -9,16 +10,20 @@ import {
 } from "./registry.ts"
 import { approvalKind } from "./kinds/approval.ts"
 import { assetKind } from "./kinds/asset.ts"
+import { conditionKind } from "./kinds/condition.ts"
+import { judgeCheckKind } from "./kinds/judge-check.ts"
 import { llmKind } from "./kinds/llm.ts"
 import { notifyKind } from "./kinds/notify.ts"
 import { triggerKind } from "./kinds/trigger.ts"
 import { isAskPending, type NodeKind, type StepEvent } from "./types.ts"
 
-/** Built-in kinds ported in BL-134 / BL-135 / BL-142. */
+/** Built-in kinds ported in BL-134 / BL-135 / BL-142 / BL-143. */
 export const CORE_NODE_KINDS: readonly NodeKind[] = [
   triggerKind,
   assetKind,
   llmKind,
+  conditionKind,
+  judgeCheckKind,
   approvalKind,
   notifyKind,
 ]
@@ -47,7 +52,7 @@ export type NodeEffectRunnerDeps = {
   /** Optional notice sink for the `notify` effect. */
   postNotice?: (n: NoticePost) => void
   now?: () => string
-  /** Absolute cwd resolver for agent sessions (llm). */
+  /** Absolute cwd resolver for agent sessions (llm / condition). */
   agentCwdOf?: (state: RunState, nodeId: string, pass: number) => string
   agentRuntime?: import("../ports/agent-runtime.ts").AgentRuntime
 }
@@ -161,6 +166,13 @@ export function createNodeEffectRunner(
     })
     if (!parsed.success) return { ok: false, reason: "exit" }
 
+    const answers = resolveAnswerValues(
+      state.graph.nodes,
+      state.graph.edges,
+      effect.nodeId,
+      (id) => latestStep(state.steps, id)?.answer
+    )
+
     const ctx = createStepContext({
       docs: deps.docs,
       runDir,
@@ -168,6 +180,7 @@ export function createNodeEffectRunner(
       pass: effect.pass,
       settings: parsed.data,
       inputs,
+      answers,
       decision: step?.decision,
       graph: { id: state.graph.id, name: state.graph.name },
       nodeName: node.name,

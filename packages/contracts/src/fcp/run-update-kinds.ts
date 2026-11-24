@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { logChunkSchema } from "../api.ts"
+import { cursorPlanTodoSchema } from "../cursor-plan.ts"
 
 const seqRun = {
   seq: z.number().int().nonnegative(),
@@ -19,7 +20,7 @@ const moneySchema = z.object({
   currency: z.string(),
 })
 
-/** Agent / log stream kinds on `run/update` (DES-040, BL-141). */
+/** Agent / log stream kinds on `run/update` (DES-040, BL-141, BL-149). */
 export const runUpdateAgentKinds = [
   z.object({
     ...seqRun,
@@ -60,7 +61,16 @@ export const runUpdateAgentKinds = [
     ...seqRun,
     kind: z.literal("todos"),
     stepId,
-    entries: z.array(planEntrySchema),
+    entries: z.array(cursorPlanTodoSchema),
+  }),
+  z.object({
+    ...seqRun,
+    kind: z.literal("subagent"),
+    stepId,
+    id: z.string().min(1),
+    description: z.string().min(1),
+    subagentType: z.string().min(1),
+    durationMs: z.number().nonnegative().optional(),
   }),
   z.object({
     ...seqRun,

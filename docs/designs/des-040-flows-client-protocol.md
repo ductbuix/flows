@@ -121,16 +121,16 @@ Rules:
 One notification per namespace, payload discriminated by `kind`, the way
 ACP uses `session/update` with `sessionUpdate`.
 
-| Notification       | `kind` values                                                                                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docket/update`    | `card_changed` (face), `card_removed`, `board_changed`                                                                                                                      |
-| `workflow/update`  | `workflow_changed`, `workflow_removed`, `layout_changed`                                                                                                                    |
-| `run/update`       | `run_changed` (summary), `step_state`, `agent_message_chunk`, `agent_thought_chunk`, `tool_call`, `tool_call_update`, `plan`, `todos`, `usage`, `log_chunk`, `run_finished` |
-| `inbox/update`     | `item_added`, `item_resolved`                                                                                                                                               |
-| `library/update`   | `item_changed`, `job_progress`, `job_finished`                                                                                                                              |
-| `connector/update` | `status_changed`                                                                                                                                                            |
-| `skill/update`     | `skills_changed`                                                                                                                                                            |
-| `file/update`      | `changed` (watched paths only)                                                                                                                                              |
+| Notification       | `kind` values                                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docket/update`    | `card_changed` (face), `card_removed`, `board_changed`                                                                                                                                  |
+| `workflow/update`  | `workflow_changed`, `workflow_removed`, `layout_changed`                                                                                                                                |
+| `run/update`       | `run_changed` (summary), `step_state`, `agent_message_chunk`, `agent_thought_chunk`, `tool_call`, `tool_call_update`, `plan`, `todos`, `subagent`, `usage`, `log_chunk`, `run_finished` |
+| `inbox/update`     | `item_added`, `item_resolved`                                                                                                                                                           |
+| `library/update`   | `item_changed`, `job_progress`, `job_finished`                                                                                                                                          |
+| `connector/update` | `status_changed`                                                                                                                                                                        |
+| `skill/update`     | `skills_changed`                                                                                                                                                                        |
+| `file/update`      | `changed` (watched paths only)                                                                                                                                                          |
 
 Every update carries `seq` (engine-wide, monotonic, from the event log
 or a projection counter) so the client can order and resume.
@@ -217,6 +217,8 @@ the engine resolves them, so the UI never builds a filesystem path.
   `run_finished` (BL-176).
 - v1 additive (2026-11-24): `docket/add_asset`, `docket/remove_asset`
   (BL-158).
+- v1 additive (2026-11-24): Inbox `question` kind and optional
+  `answers` on `inbox/answer` for Cursor `cursor/ask_question` (BL-147).
 - v1 additive (2026-11-24): `library/pin_version`, `library/set_tags`,
   `library/remove`, and `library/list` optional `tag` filter (BL-173).
 

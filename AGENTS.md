@@ -36,14 +36,16 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   MCP trust, connections, library, work items, work copies, CliAdapter,
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
 - `packages/core`: UI-free kernel (ports, `bindEngine`, `runs/` decide+fold +
-  actor + scheduler, `nodes/` NodeKind+StepContext for trigger/approval/notify,
-  `inbox/` projection + FCP list/answer/dismiss (approval + permission),
-  agents permission chain + ask gate, MCP gateway bridge + launch spec,
-  testing fakes); no Node I/O.
+  actor + scheduler, `nodes/` NodeKind+StepContext for trigger/asset/llm/
+  condition/approval/notify,
+  `inbox/` projection + FCP list/answer/dismiss (approval, permission,
+  question, plan_review), agents permission chain + ask gates, MCP
+  gateway bridge + launch spec, testing fakes); no Node I/O.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox, gateway unix socket),
   `engine.lock`.
-- `packages/agent-acp`: ACP runtime + Cursor profile (`profiles/`); `testing/fake-agent` (stdio).
+- `packages/agent-acp`: ACP runtime + Cursor and generic profiles (`profiles/`);
+  `testing/fake-agent` (stdio).
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer` (+ `$/cancel_request`),
   transports: linked, `wsTransport`, `messagePortTransport`, ndjson (`/node`).
 - `packages/sdk` (`createClient`: queue, backoff, resync) and
