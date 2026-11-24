@@ -39,11 +39,14 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `publish.ts`, `answers.ts`, `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
 - `packages/core`: UI-free kernel (`EngineError`, ports: Document/Event/
-  Secret stores, FileWatcher, ProcessRunner; `bindEngine`, `bindInitialize`
-  gate, `runs/` pure decide+fold, `agents/` permission chain, testing fakes
-  + contract suites); `contracts` + `protocol`; no Node I/O.
+  Secret stores, FileWatcher, ProcessRunner, AgentRuntime; `bindEngine`,
+  `bindInitialize` gate, `runs/` pure decide+fold, `agents/` permission
+  chain, testing fakes + contract suites); `contracts` + `protocol`; no
+  Node I/O.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox), `engine.lock`.
+- `packages/agent-acp`: ACP `AgentRuntime` (later); scripted fake agent
+  over stdio for tests (`testing/fake-agent`).
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer` (+ `$/cancel_request`),
   transports: linked, `wsTransport`, `messagePortTransport`, ndjson (`/node`).
 - `packages/sdk` (`createClient`: queue, backoff, resync) and

@@ -133,6 +133,11 @@ export {
 } from "./files/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
+  AgentEvent,
+  AgentProfileInfo,
+  AgentRuntime,
+  AgentSession,
+  ContentBlock,
   Disposable,
   DocumentRead,
   DocumentRemoveResult,
@@ -144,12 +149,15 @@ export type {
   EventStore,
   FileWatchChange,
   FileWatcher,
+  Money,
+  PlanEntry,
   ProcessRunner,
   ProcessSandboxProfile,
   ProcessSpawnSpec,
   RunningProcess,
-  StoredEvent,
   SecretStore,
+  SessionSpec,
+  StoredEvent,
 } from "./ports/index.ts"
 
 export {

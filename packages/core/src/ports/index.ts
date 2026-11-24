@@ -1,4 +1,14 @@
 export type {
+  AgentEvent,
+  AgentProfileInfo,
+  AgentRuntime,
+  AgentSession,
+  ContentBlock,
+  Money,
+  PlanEntry,
+  SessionSpec,
+} from "./agent-runtime.ts"
+export type {
   DocumentRead,
   DocumentRemoveResult,
   DocumentStore,
