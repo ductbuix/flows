@@ -35,9 +35,6 @@ importers:
       '@workspace/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@workspace/engine':
-        specifier: workspace:*
-        version: link:../../packages/engine
       '@workspace/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -93,9 +90,6 @@ importers:
       '@workspace/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@workspace/engine':
-        specifier: workspace:*
-        version: link:../../packages/engine
       '@workspace/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -187,9 +181,6 @@ importers:
       '@workspace/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@workspace/engine':
-        specifier: workspace:*
-        version: link:../../packages/engine
       '@workspace/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -381,6 +372,9 @@ importers:
       playwright-core:
         specifier: ^1.65.1
         version: 1.65.1
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
