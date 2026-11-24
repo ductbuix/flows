@@ -38,10 +38,14 @@ describe("RunActor mailbox", () => {
     const events = createFakeEventStore()
     const actor = new RunActor("r1", {
       events,
-      runEffect: async (fx) => {
+      runEffect: async (fx): Promise<EffectResult> => {
         order.push(`effect:${fx.kind}:${fx.nodeId}`)
         if (fx.kind === "post_inbox") {
           return { waiting: true, question: fx.question }
+        }
+        const node = g.nodes.find((n) => n.id === fx.nodeId)
+        if (node?.kind === "approval") {
+          return { waiting: true, question: node.question ?? "Go?" }
         }
         return ok(fx.nodeId)
       },
@@ -74,6 +78,7 @@ describe("RunActor mailbox", () => {
 
     expect(order).toEqual([
       "effect:launch_step:t",
+      "effect:launch_step:ask",
       "effect:post_inbox:ask",
       "after-start",
       "after-answer",
