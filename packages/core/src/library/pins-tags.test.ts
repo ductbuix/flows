@@ -64,6 +64,9 @@ function noopFetcher(): LibraryFetcher {
     async fetch() {
       return { files: { "README.md": "x" } }
     },
+    async push() {
+      return { note: "pushed" }
+    },
   }
 }
 

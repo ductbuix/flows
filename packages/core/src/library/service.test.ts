@@ -57,6 +57,9 @@ function fakeFetcher(
       if (!next) throw new Error("no fetch fixture")
       return next
     },
+    async push() {
+      return { note: "Pushed" }
+    },
   }
 }
 

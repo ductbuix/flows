@@ -108,19 +108,19 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Library
 
-| id    | item                                      | status  | test id                       | backlog |
-| ----- | ----------------------------------------- | ------- | ----------------------------- | ------- |
-| LB-01 | Providers dialog (list, presets, custom)  | app     | `library.spec.ts › providers` | —       |
-| LB-02 | Search, kind tabs, list/gallery chrome    | partial | `library.spec.ts › chrome`    | BL-205  |
-| LB-03 | Item list / gallery rows                  | app     | `library.spec.ts › list`      | BL-204  |
-| LB-04 | Add dialog: from link / from disk         | missing | `library.spec.ts › add`       | BL-205  |
-| LB-05 | ProviderDetect on paste link              | missing | `library.spec.ts › detect`    | BL-205  |
-| LB-06 | DiskPicker (file / folder)                | missing | `library.spec.ts › disk pick` | BL-205  |
-| LB-07 | Library sheet (overview, files, versions) | app     | `library.spec.ts › sheet`     | BL-204  |
-| LB-08 | Versions: pin                             | app     | `library.spec.ts › pin`       | BL-204  |
-| LB-09 | Remote: fetch / pull / push / unlink      | partial | `library.spec.ts › remote`    | BL-204  |
-| LB-10 | Tags editor + tag rail filter             | missing | `library.spec.ts › tags`      | BL-205  |
-| LB-11 | Remove from library                       | app     | `library.spec.ts › remove`    | BL-204  |
+| id    | item                                      | status | test id                       | backlog |
+| ----- | ----------------------------------------- | ------ | ----------------------------- | ------- |
+| LB-01 | Providers dialog (list, presets, custom)  | app    | `library.spec.ts › providers` | —       |
+| LB-02 | Search, kind tabs, list/gallery chrome    | app    | `library.spec.ts › chrome`    | BL-205  |
+| LB-03 | Item list / gallery rows                  | app    | `library.spec.ts › list`      | BL-204  |
+| LB-04 | Add dialog: from link / from disk         | app    | `library.spec.ts › add`       | BL-205  |
+| LB-05 | ProviderDetect on paste link              | app    | `library.spec.ts › detect`    | BL-205  |
+| LB-06 | DiskPicker (file / folder)                | app    | `library.spec.ts › disk pick` | BL-205  |
+| LB-07 | Library sheet (overview, files, versions) | app    | `library.spec.ts › sheet`     | BL-204  |
+| LB-08 | Versions: pin                             | app    | `library.spec.ts › pin`       | BL-204  |
+| LB-09 | Remote: fetch / pull / push / unlink      | app    | `library.spec.ts › remote`    | BL-205  |
+| LB-10 | Tags editor + tag rail filter             | app    | `library.spec.ts › tags`      | BL-205  |
+| LB-11 | Remove from library                       | app    | `library.spec.ts › remove`    | BL-204  |
 
 ## Skills
 
@@ -168,7 +168,7 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 | FL-02 | Preview, markdown, edit, save               | app     | `files.spec.ts › edit save`   | —       |
 | FL-03 | Reveal in Finder (`file/reveal` / host)     | app     | `files.spec.ts › reveal`      | BL-208  |
 | FL-04 | `file/stat` for preview metadata            | app     | `files.spec.ts › stat`        | BL-208  |
-| FL-05 | DiskPicker (shared; used by library/assets) | missing | `library.spec.ts › disk pick` | BL-205  |
+| FL-05 | DiskPicker (shared; used by library/assets) | app     | `library.spec.ts › disk pick` | BL-205  |
 
 ## Shell / sidebar
 
@@ -196,9 +196,9 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 52     |
-| partial   | 6      |
-| missing   | 23     |
+| app       | 59     |
+| partial   | 4      |
+| missing   | 18     |
 | drop      | 5      |
 | **total** | **86** |
 

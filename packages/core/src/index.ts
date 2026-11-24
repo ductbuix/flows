@@ -237,6 +237,7 @@ export {
   ProviderService,
   type LibraryBindings,
   type LibraryFetchResult,
+  type LibraryPushResult,
   type LibraryFetcher,
   type LibraryItemBindings,
   type LibraryProviderBindings,

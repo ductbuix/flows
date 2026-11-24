@@ -697,6 +697,11 @@ export function createE2eHome(): string {
       "    write: false",
       "    allowed: true",
       "    cmd: [repo, clone]",
+      "  - name: repo push",
+      "    desc: Push local changes",
+      "    write: true",
+      "    allowed: true",
+      "    cmd: [repo, push]",
       "  - name: pr merge",
       "    desc: Merge a pull request",
       "    write: true",
@@ -721,12 +726,16 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
-  // Stub `gh` for library pull (BL-204): returns JSON files; note bumps.
+  // Stub `gh` for library pull/push (BL-204 / BL-205).
   writeFileSync(
     join(bin, "gh"),
     [
       "#!/bin/sh",
       'if [ "$1" = "--version" ]; then echo "gh stub 0.0.0"; exit 0; fi',
+      'if [ "$1" = "repo" ] && [ "$2" = "push" ]; then',
+      '  printf \'{"note":"Stub push"}\\n\'',
+      "  exit 0",
+      "fi",
       'n=$(($(cat "$FLOWAPP_HOME/.gh-pull-n" 2>/dev/null || echo 0) + 1))',
       'echo "$n" > "$FLOWAPP_HOME/.gh-pull-n"',
       'printf \'{"files":{"README.md":"pull-%s"},"note":"Stub fetch %s"}\\n\' "$n" "$n"',

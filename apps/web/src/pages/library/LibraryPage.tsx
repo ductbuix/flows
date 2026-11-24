@@ -6,29 +6,23 @@ import {
   useOptionalFlowsClient,
   useQuery,
 } from "@workspace/sdk-react"
-import { Plug, Search } from "lucide-react"
+import { Plug, Plus } from "lucide-react"
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@workspace/ui/components/empty"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { FlowsClientGate } from "@/components/FlowsClientGate"
 import { Page, PageTitle } from "@/components/page"
+import { AddLibraryDialog } from "./AddLibraryDialog"
+import { LibraryBody } from "./LibraryBody"
 import { LibraryChrome } from "./LibraryChrome"
 import { removeItem } from "./library-actions"
 import { filterItems, type KindFilter } from "./library-filter"
 import { LibrarySheet } from "./LibrarySheet"
 import { LibraryEmpty, LibraryLoadError, LibraryLoading } from "./LibraryStates"
-import { LibraryGallery, LibraryTable } from "./LibraryViews"
 import { ProvidersDialog } from "./ProvidersDialog"
 import { saveProvider, upsertProvider } from "./provider-actions"
 
@@ -49,8 +43,10 @@ function LibraryPageInner() {
   const [saved, setSaved] = useState<ProviderDescriptor[]>([])
   const [kind, setKind] = useState<KindFilter>("all")
   const [search, setSearch] = useState("")
+  const [tags, setTags] = useState<string[]>([])
   const [gallery, setGallery] = useState(false)
   const [providersOpen, setProvidersOpen] = useState(false)
+  const [adding, setAdding] = useState(false)
   const [params] = useSearchParams()
   const [openId, setOpenId] = useState<string | null>(params.get("item"))
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -65,8 +61,12 @@ function LibraryPageInner() {
     return next
   })()
   const items = itemsQ.data?.items ?? []
-  const shown = filterItems(items, kind, search)
-  const View = gallery ? LibraryGallery : LibraryTable
+  const inKind = filterItems(items, kind, "")
+  const shown = filterItems(items, kind, search, tags)
+  const toggleTag = (t: string) =>
+    setTags((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    )
 
   const loading =
     (providersQ.loading && !providersQ.data) || (itemsQ.loading && !itemsQ.data)
@@ -113,14 +113,20 @@ function LibraryPageInner() {
     <Page
       crumbs={[{ label: "Library" }]}
       actions={
-        <Button
-          variant="outline"
-          onClick={() => setProvidersOpen(true)}
-          data-testid="library-providers-open"
-        >
-          <Plug />
-          Providers
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setProvidersOpen(true)}
+            data-testid="library-providers-open"
+          >
+            <Plug />
+            Providers
+          </Button>
+          <Button onClick={() => setAdding(true)} data-testid="library-add-open">
+            <Plus />
+            Add to Library
+          </Button>
+        </div>
       }
       data-testid="mock-library-page"
     >
@@ -150,29 +156,33 @@ function LibraryPageInner() {
       />
       {items.length === 0 ? (
         <LibraryEmpty />
-      ) : shown.length === 0 ? (
-        <Empty
-          className="ring-1 ring-foreground/10"
-          data-testid="library-no-match"
-        >
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Search />
-            </EmptyMedia>
-            <EmptyTitle>Nothing matches</EmptyTitle>
-            <EmptyDescription>
-              Change the search or type filter.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
       ) : (
-        <View items={shown} providers={providers} onOpen={setOpenId} />
+        <LibraryBody
+          items={items}
+          inKind={inKind}
+          shown={shown}
+          providers={providers}
+          tags={tags}
+          gallery={gallery}
+          onToggleTag={toggleTag}
+          onClearTags={() => setTags([])}
+          onOpen={setOpenId}
+        />
       )}
       <LibrarySheet
         itemId={openId}
         providers={providers}
         onDelete={setDeletingId}
         onClose={() => setOpenId(null)}
+        onError={setActionError}
+      />
+      <AddLibraryDialog
+        open={adding}
+        onOpenChange={setAdding}
+        items={items}
+        providers={providers}
+        onAdded={setOpenId}
+        onOpenExisting={setOpenId}
         onError={setActionError}
       />
       <ProvidersDialog

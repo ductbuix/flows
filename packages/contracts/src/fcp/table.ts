@@ -40,14 +40,17 @@ import {
 } from "./inbox.ts"
 import { initializeMethod } from "./initialize.ts"
 import {
+  libraryAddMethod,
   libraryGetMethod,
   libraryListMethod,
   libraryListProvidersMethod,
   libraryPinVersionMethod,
   libraryPullMethod,
+  libraryPushMethod,
   libraryRemoveMethod,
   librarySaveProviderMethod,
   librarySetTagsMethod,
+  libraryUnlinkMethod,
   libraryUpdateNotification,
 } from "./library.ts"
 import { pingMethod } from "./ping.ts"
@@ -114,6 +117,9 @@ export const fcpMethodTable = {
   "library/list": libraryListMethod,
   "library/get": libraryGetMethod,
   "library/pull": libraryPullMethod,
+  "library/push": libraryPushMethod,
+  "library/add": libraryAddMethod,
+  "library/unlink": libraryUnlinkMethod,
   "library/pin_version": libraryPinVersionMethod,
   "library/set_tags": librarySetTagsMethod,
   "library/remove": libraryRemoveMethod,
