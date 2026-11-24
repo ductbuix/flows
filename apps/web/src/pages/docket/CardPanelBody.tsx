@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { errorMessage, isConflictError } from "@/lib/fcp-error"
 import { AssetsSection } from "./AssetsSection"
 import { CardPanelHeader } from "./CardPanelHeader"
+import { CardRunsSection } from "./CardRunsSection"
 import { InlineText } from "./InlineText"
 import { LinksSection } from "./LinksSection"
 import { PropertiesSection, type PropertyPatch } from "./PropertiesSection"
@@ -128,6 +129,14 @@ export function CardPanelBody({
         </div>
         <div className="flex min-h-0 flex-col">
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+            <CardRunsSection
+              cardId={cardId}
+              title={data.title}
+              refs={data.refs}
+              assetNames={data.assets.map(
+                (a) => a.path.replace(/\\/g, "/").split("/").pop() ?? a.path
+              )}
+            />
             <LinksSection
               cardId={cardId}
               links={storedLinks}

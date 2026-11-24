@@ -13,6 +13,8 @@ const fcpRequestKeySchema = z.string().uuid().optional()
 export const runListParamsSchema = z.object({
   cursor: z.string().min(1).optional(),
   limit: z.number().int().positive().max(DEFAULT_LIMIT_MAX).optional(),
+  /** Docket card / work item id (DES-038, BL-200). */
+  workItemId: workItemIdSchema.optional(),
 })
 
 export const runListResultSchema = z.object({
