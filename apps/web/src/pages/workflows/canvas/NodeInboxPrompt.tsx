@@ -5,6 +5,13 @@ import { toast } from "sonner"
 import type { WireInboxItem } from "@workspace/contracts"
 import { useFlowsClient } from "@workspace/sdk-react"
 import { Button } from "@workspace/ui/components/button"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "@workspace/ui/components/item"
 import { answerInboxItem } from "@/pages/inbox/inbox-actions"
 
 export type NodeInboxItem = Exclude<WireInboxItem, { kind: "sign_in" }>
@@ -41,15 +48,19 @@ export function NodeInboxPrompt({ item }: { item: NodeInboxItem }) {
   }
 
   return (
-    <div
-      className="nodrag nopan nowheel pointer-events-auto flex flex-col gap-2 rounded-2xl bg-warning/15 p-3 ring-1 ring-warning/40"
+    <Item
+      variant="outline"
+      size="sm"
+      className="nodrag nopan nowheel pointer-events-auto flex-col items-stretch bg-warning/15 ring-warning/25"
       data-testid={`node-inbox-${item.nodeId}`}
     >
-      <p className="text-sm font-medium">{item.question}</p>
-      {item.kind === "permission" ? (
-        <p className="text-xs text-muted-foreground">Tool: {item.tool}</p>
-      ) : null}
-      <div className="flex flex-wrap gap-2">
+      <ItemContent>
+        <ItemTitle>{item.question}</ItemTitle>
+        {item.kind === "permission" ? (
+          <ItemDescription>Tool: {item.tool}</ItemDescription>
+        ) : null}
+      </ItemContent>
+      <ItemActions className="flex-wrap">
         {options ? (
           options.map((o) => (
             <Button
@@ -72,7 +83,7 @@ export function NodeInboxPrompt({ item }: { item: NodeInboxItem }) {
             Answer in Inbox
           </Button>
         )}
-      </div>
-    </div>
+      </ItemActions>
+    </Item>
   )
 }

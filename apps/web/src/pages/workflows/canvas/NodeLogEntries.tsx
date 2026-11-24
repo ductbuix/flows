@@ -1,4 +1,5 @@
 import { MessageSquareIcon, WrenchIcon } from "lucide-react"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Terminal } from "@workspace/ui/components/terminal"
 import {
   Trace,
@@ -26,6 +27,20 @@ export function Output({ text, testId }: { text: string; testId?: string }) {
     >
       {text}
     </pre>
+  )
+}
+
+/** Placeholder rows in the shape of log entries while logs load. */
+export function NodeLogLoading() {
+  return (
+    <ol className="flex flex-col gap-2" data-testid="node-log-loading">
+      {[0, 1, 2].map((i) => (
+        <li key={i} className="flex flex-col gap-1">
+          <Skeleton className="ml-1 h-3 w-24" />
+          <Skeleton className="h-12 w-full" />
+        </li>
+      ))}
+    </ol>
   )
 }
 

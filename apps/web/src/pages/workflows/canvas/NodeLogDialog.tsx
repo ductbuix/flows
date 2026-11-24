@@ -2,17 +2,17 @@ import { useEffect, useState } from "react"
 import type { LogChunk } from "@workspace/contracts"
 import { useFlowsClient } from "@workspace/sdk-react"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@workspace/ui/components/sheet"
 import { Button } from "@workspace/ui/components/button"
 import { StackTrace } from "@workspace/ui/components/stack-trace"
 import type { CanvasNode } from "./flow-graph"
 import { parseEntries, parseTrace, type LogEntry } from "./node-logs"
-import { NodeLogEntries, Output } from "./NodeLogEntries"
+import { NodeLogEntries, NodeLogLoading, Output } from "./NodeLogEntries"
 
 const MAX_CHUNKS = 16
 
@@ -97,20 +97,21 @@ export function NodeLogDialog({
     logs && logs.entries.length === 0 && !logs.stdout.trim() && !errorText
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        className="flex max-h-dvh flex-col gap-3 sm:max-w-xl"
+    <Sheet open onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        side="right"
+        className="flex max-h-dvh flex-col gap-3 data-[side=right]:sm:max-w-lg"
         data-testid="node-log-dialog"
       >
-        <DialogHeader>
-          <DialogTitle>{nodeName} logs</DialogTitle>
-          <DialogDescription>
+        <SheetHeader className="pr-12">
+          <SheetTitle>{nodeName} logs</SheetTitle>
+          <SheetDescription>
             {passes.length > 1 ? `Pass ${pass} · ` : ""}Attempt {attempt}
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         {passes.length > 1 ? (
           <div
-            className="flex flex-wrap gap-1"
+            className="flex flex-wrap gap-1 px-4"
             role="tablist"
             aria-label="Pass"
             data-testid="node-log-passes"
@@ -132,10 +133,8 @@ export function NodeLogDialog({
             ))}
           </div>
         ) : null}
-        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
-          {state.status === "loading" ? (
-            <p className="text-muted-foreground">Loading logs…</p>
-          ) : null}
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 pb-4">
+          {state.status === "loading" ? <NodeLogLoading /> : null}
           {state.status === "error" ? (
             <p className="text-destructive" data-testid="node-log-error">
               {state.message}
@@ -163,8 +162,8 @@ export function NodeLogDialog({
             </p>
           ) : null}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }
 
