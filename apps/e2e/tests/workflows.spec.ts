@@ -31,38 +31,75 @@ async function saveAndWait(page: import("@playwright/test").Page) {
   await expect(save).toBeDisabled()
 }
 
-test.describe("workflows page (BL-179)", () => {
-  test("lists workflows, opens editor, creates one", async ({ page }) => {
+test.describe("workflows page (BL-179 / BL-216)", () => {
+  test("list", async ({ page }) => {
     await page.goto("/workflows")
     await expect(page.getByTestId("workflows-page")).toBeVisible()
     await expect(page.getByTestId("workflows-new-open")).toBeVisible()
     await expect(page.getByTestId("workflow-diamond")).toBeVisible()
+    await expect(page.getByTestId("workflows-search")).toBeVisible()
     await screenshotThemes(page, "workflows-page")
+  })
 
+  test("new", async ({ page }) => {
+    const name = `Ship wf ${Date.now()}`
+    await page.goto("/workflows")
+    await page.getByTestId("workflows-new-open").click()
+    await expect(page.getByTestId("workflows-new")).toBeVisible()
+    await page.getByTestId("workflows-new-name").fill(name)
+    await page.getByTestId("workflows-new-submit").click()
+    await expect(page.getByTestId("workflow-editor")).toBeVisible()
+    await page.getByTestId("workflow-editor-tab-yaml").click()
+    await expect(page.getByTestId("workflow-editor-yaml")).toContainText(
+      "ship-wf-"
+    )
+  })
+
+  test("open editor", async ({ page }) => {
+    await page.goto("/workflows")
     await page.getByTestId("workflow-diamond").click()
     await expect(page.getByTestId("workflow-sheet")).toBeVisible()
     await page.getByTestId("workflow-open-editor").click()
     await expect(page.getByTestId("workflow-editor")).toBeVisible()
     await expect(page.getByTestId("workflow-canvas")).toBeVisible()
     await screenshotThemes(page, "workflow-editor")
+  })
 
+  test("rename delete", async ({ page }) => {
+    const stamp = Date.now()
+    const name = `Rename me ${stamp}`
     await page.goto("/workflows")
     await page.getByTestId("workflows-new-open").click()
-    await expect(page.getByTestId("workflows-new")).toBeVisible()
-    await page.getByTestId("workflows-new-name").fill("Ship workflows sdk")
+    await page.getByTestId("workflows-new-name").fill(name)
     await page.getByTestId("workflows-new-submit").click()
     await expect(page.getByTestId("workflow-editor")).toBeVisible()
-    await page.getByTestId("workflow-editor-tab-yaml").click()
-    await expect(page.getByTestId("workflow-editor-yaml")).toContainText(
-      "ship-workflows-sdk"
+    await page.goto("/workflows")
+    const row = page.locator(`[data-testid^="workflow-rename-me-"]`).first()
+    await expect(row).toBeVisible()
+    const id = (await row.getAttribute("data-testid"))!.replace(
+      /^workflow-/,
+      ""
     )
+    await page.getByRole("button", { name: `Actions for ${name}` }).click()
+    await page.getByRole("menuitem", { name: "Rename" }).click()
+    await expect(page.getByTestId("workflows-new")).toBeVisible()
+    const renamed = `Renamed ${stamp}`
+    await page.getByTestId("workflows-new-name").fill(renamed)
+    await page.getByTestId("workflows-new-submit").click()
+    await expect(
+      page.getByRole("button", { name: `Actions for ${renamed}` })
+    ).toBeVisible({ timeout: 10_000 })
+    await page.getByRole("button", { name: `Actions for ${renamed}` }).click()
+    await page.getByRole("menuitem", { name: "Delete" }).click()
+    await page.getByTestId("confirm-ok").click()
+    await expect(page.getByTestId(`workflow-${id}`)).toHaveCount(0, {
+      timeout: 10_000,
+    })
   })
 })
 
 test.describe("workflows.spec.ts › editor yaml", () => {
-  test("YAML tab edits and keeps comments on save (WF-09)", async ({
-    page,
-  }) => {
+  test("editor yaml", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("workflow-editor")).toBeVisible()
     await page.getByTestId("workflow-editor-tab-yaml").click()
@@ -85,7 +122,7 @@ test.describe("workflows.spec.ts › editor yaml", () => {
 })
 
 test.describe("workflows.spec.ts › canvas", () => {
-  test("opens saved layout and saves a move (WF-10)", async ({ page }) => {
+  test("canvas", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("workflow-canvas")).toBeVisible()
     await expect(page.getByTestId("canvas-node-trigger")).toBeVisible()
@@ -119,7 +156,7 @@ test.describe("workflows.spec.ts › canvas", () => {
 })
 
 test.describe("workflows.spec.ts › add node", () => {
-  test("adds a searched node kind (WF-11)", async ({ page }) => {
+  test("add node", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("workflow-canvas")).toBeVisible()
     await page.getByTestId("flow-add-node").click()
@@ -136,11 +173,14 @@ test.describe("workflows.spec.ts › add node", () => {
 })
 
 test.describe("workflows.spec.ts › node settings", () => {
-  test("edits time limit and retries (WF-12)", async ({ page }) => {
+  test("node settings", async ({ page }) => {
     await page.goto("/workflows/node-settings-e2e")
     await page.getByTestId("workflow-canvas-fit").click()
     await page.getByTestId("canvas-node-command").click()
-    await page.getByTestId("node-open-settings").click({ force: true })
+    // evaluate: toolbar remounts on select and stalls Playwright's click.
+    await page.getByTestId("node-open-settings").evaluate((el: HTMLElement) => {
+      el.click()
+    })
     await expect(page.getByTestId("node-settings")).toBeVisible()
     await page.getByTestId("node-settings-timeout").click()
     await page.getByRole("option", { name: "30 min" }).click()
@@ -157,7 +197,7 @@ test.describe("workflows.spec.ts › node settings", () => {
 })
 
 test.describe("workflows.spec.ts › undo redo", () => {
-  test("undo and redo cover add node (WF-13)", async ({ page }) => {
+  test("undo redo", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("workflow-canvas-fit")).toBeVisible()
     await page.getByTestId("flow-add-node").click()
@@ -174,7 +214,7 @@ test.describe("workflows.spec.ts › undo redo", () => {
 })
 
 test.describe("workflows.spec.ts › trigger inputs", () => {
-  test("adds a trigger input (WF-14)", async ({ page }) => {
+  test("trigger inputs", async ({ page }) => {
     // Own workflow so later diamond start-run tests are not blocked by a
     // required input left on disk.
     await page.goto("/workflows/node-run-ok-light")
@@ -197,7 +237,7 @@ test.describe("workflows.spec.ts › trigger inputs", () => {
 })
 
 test.describe("workflows.spec.ts › step connectors", () => {
-  test("picks connectors and skills on an agent (WF-15)", async ({ page }) => {
+  test("step connectors", async ({ page }) => {
     await page.goto("/workflows/node-canvas")
     await expect(page.getByTestId("canvas-node-agent")).toBeVisible()
     await page.getByTestId("workflow-canvas-fit").click()
@@ -219,7 +259,7 @@ test.describe("workflows.spec.ts › step connectors", () => {
 })
 
 test.describe("workflows.spec.ts › model row", () => {
-  test("shows model row on llm and changes cli (WF-16)", async ({ page }) => {
+  test("model row", async ({ page }) => {
     await page.goto("/workflows/node-llm-light")
     await expect(page.getByTestId("model-row")).toBeVisible()
     await page.getByTestId("model-row-cli").click()
@@ -234,7 +274,7 @@ test.describe("workflows.spec.ts › model row", () => {
 })
 
 test.describe("workflows.spec.ts › node actions", () => {
-  test("duplicates and deletes a node (WF-17)", async ({ page }) => {
+  test("node actions", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await page.getByTestId("workflow-canvas-fit").click()
     const command = page.getByTestId("canvas-node-command")
@@ -264,7 +304,7 @@ test.describe("workflows.spec.ts › validate", () => {
 })
 
 test.describe("workflows.spec.ts › sheet", () => {
-  test("opens sheet from a row (WF-04)", async ({ page }) => {
+  test("sheet", async ({ page }) => {
     await page.goto("/workflows")
     await page.getByTestId("workflow-diamond").click()
     await expect(page.getByTestId("workflow-sheet")).toBeVisible()
@@ -275,7 +315,7 @@ test.describe("workflows.spec.ts › sheet", () => {
 })
 
 test.describe("workflows.spec.ts › sheet inputs", () => {
-  test("edits inputs a card supplies (WF-06)", async ({ page }) => {
+  test("sheet inputs", async ({ page }) => {
     await page.goto("/workflows")
     await page.getByTestId("workflow-node-start-run").click()
     const sheet = page.getByTestId("workflow-sheet")
@@ -291,7 +331,7 @@ test.describe("workflows.spec.ts › sheet inputs", () => {
 })
 
 test.describe("workflows.spec.ts › sheet runs", () => {
-  test("lists runs by card after a start (WF-07)", async ({ page }) => {
+  test("sheet runs", async ({ page }) => {
     // Diamond is shared across specs; do not require an empty runs list.
     await cancelLiveRuns("diamond")
     await page.goto("/workflows")
@@ -315,7 +355,7 @@ test.describe("workflows.spec.ts › sheet runs", () => {
 })
 
 test.describe("workflows.spec.ts › sheet start", () => {
-  test("starts a run for a card from the sheet (WF-08)", async ({ page }) => {
+  test("sheet start", async ({ page }) => {
     await page.goto("/workflows")
     await page.getByTestId("workflow-diamond").click()
     const sheet = page.getByTestId("workflow-sheet")
@@ -333,7 +373,7 @@ test.describe("workflows.spec.ts › sheet start", () => {
 })
 
 test.describe("workflows.spec.ts › canvas run bar", () => {
-  test("selects a card and starts a run (RN-02)", async ({ page }) => {
+  test("canvas run bar", async ({ page }) => {
     await page.goto("/workflows/diamond")
     await expect(page.getByTestId("flow-run-bar")).toBeVisible()
     await page.getByTestId("flow-run-card").click()

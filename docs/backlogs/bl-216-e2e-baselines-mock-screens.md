@@ -2,7 +2,7 @@
 id: BL-216
 title: "e2e and layout baselines to the mock screens"
 type: backlog
-status: todo
+status: done
 summary: Specs and layout baselines cover the mock screens and no old page.
 tags: [e2e, web]
 related: [DES-043]
@@ -19,5 +19,5 @@ Replace specs for removed pages. Refresh `layout.spec.ts` baselines. Add a spec 
 
 ## Done when
 
-- [ ] Every checklist row has a passing spec.
-- [ ] No spec visits a removed route.
+- [x] Every checklist row has a passing spec.
+- [x] No spec visits a removed route.
