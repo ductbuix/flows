@@ -41,6 +41,7 @@ export {
 export { createNodeSecretStore } from "./secrets.ts"
 export {
   acquireLock,
+  liveOwner,
   peekLock,
   releaseLock,
   type AcquireLockResult,

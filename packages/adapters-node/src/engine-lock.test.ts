@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { acquireLock, peekLock, releaseLock } from "./engine-lock.ts"
+import { acquireLock, liveOwner, peekLock, releaseLock } from "./engine-lock.ts"
 
 const temps: string[] = []
 
@@ -131,6 +131,29 @@ describe("peekLock", () => {
       { mode: 0o600 }
     )
     expect(peekLock(home)).toBeNull()
+  })
+})
+
+describe("liveOwner", () => {
+  it("returns url and token for a live owner (no pid)", () => {
+    const home = tempHome()
+    expect(liveOwner(home)).toBeNull()
+    expect(acquireLock(home, selfA)).toEqual({ owned: true })
+    expect(liveOwner(home)).toEqual({ url: selfA.url, token: selfA.token })
+  })
+
+  it("returns null for a stale lock", () => {
+    const home = tempHome()
+    writeFileSync(
+      join(home, "engine.lock"),
+      JSON.stringify({
+        pid: deadPid(),
+        url: selfA.url,
+        token: selfA.token,
+      }),
+      { mode: 0o600 }
+    )
+    expect(liveOwner(home)).toBeNull()
   })
 })
 

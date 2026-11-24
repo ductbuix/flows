@@ -5,6 +5,7 @@ import type {
 } from "@workspace/sdk"
 
 type NotifHandler = (params: unknown) => void
+type RequestHandler = (params: unknown) => unknown | Promise<unknown>
 type ResyncHandler = ClientEventMap["resync"]
 
 /** In-memory FlowsClient for hook tests. */
@@ -12,10 +13,12 @@ export function createFakeClient(options?: {
   call?: (method: string, params: unknown) => Promise<unknown>
 }): FlowsClient & {
   emitNotification: (method: string, params: unknown) => void
+  emitRequest: (method: string, params: unknown) => Promise<unknown>
   emitResync: (topic: string) => void
   calls: { method: string; params: unknown }[]
 } {
   const notificationHandlers = new Map<string, Set<NotifHandler>>()
+  const requestHandlers = new Map<string, RequestHandler>()
   const resyncHandlers = new Set<ResyncHandler>()
   const calls: { method: string; params: unknown }[] = []
   const callImpl =
@@ -48,6 +51,15 @@ export function createFakeClient(options?: {
         set?.delete(wrapped)
       }
     },
+    onRequest(method, handler) {
+      const wrapped = handler as RequestHandler
+      requestHandlers.set(method, wrapped)
+      return () => {
+        if (requestHandlers.get(method) === wrapped) {
+          requestHandlers.delete(method)
+        }
+      }
+    },
     on(event, handler) {
       if (event !== "resync") {
         throw new Error(`unknown client event: ${String(event)}`)
@@ -63,6 +75,11 @@ export function createFakeClient(options?: {
       const set = notificationHandlers.get(method as FcpNotificationName)
       if (!set) return
       for (const h of set) h(params)
+    },
+    async emitRequest(method: string, params: unknown) {
+      const handler = requestHandlers.get(method)
+      if (!handler) throw new Error(`fake client: no handler for ${method}`)
+      return handler(params)
     },
     emitResync(topic: string) {
       for (const h of resyncHandlers) h(topic)

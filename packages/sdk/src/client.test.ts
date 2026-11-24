@@ -233,6 +233,27 @@ describe("createClient", () => {
     client.close()
   })
 
+  it("handles engine host/reveal_path requests", async () => {
+    const [clientTransport, serverTransport] = createLinkedTransports()
+    const enginePeer = new RpcPeer(serverTransport)
+    enginePeer.onRequest("initialize", () => INIT_RESULT)
+
+    const revealed: string[] = []
+    const client = createClient({
+      transport: clientTransport,
+      capabilities: { host: { revealPath: true } },
+    })
+    await client.ready
+    client.onRequest("host/reveal_path", (params) => {
+      revealed.push(params.path)
+      return {}
+    })
+
+    await enginePeer.request("host/reveal_path", { path: "/tmp/shown" })
+    expect(revealed).toEqual(["/tmp/shown"])
+    client.close()
+  })
+
   it("emits resync for topics the engine lists on subscribe", async () => {
     const engine = createFakeUpdateEngine({ replayBufferSize: 2 })
     const [clientTransport, serverTransport] = createLinkedTransports()

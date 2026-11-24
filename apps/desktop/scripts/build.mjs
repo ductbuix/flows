@@ -18,9 +18,14 @@ await Promise.all([
   build({
     ...shared,
     entryPoints: [join(root, "src/main.ts")],
-    outfile: join(outdir, "main.js"),
-    format: "esm",
-    external: ["electron"],
+    outfile: join(outdir, "main.cjs"),
+    format: "cjs",
+    // CJS: adapters-node/yaml use require("process"); Electron main loads CJS.
+    external: ["electron", "ws"],
+    banner: {
+      js: 'var __import_meta_url = require("url").pathToFileURL(__filename).href;',
+    },
+    define: { "import.meta.url": "__import_meta_url" },
   }),
   build({
     ...shared,
@@ -39,5 +44,5 @@ await Promise.all([
 ])
 
 console.log(
-  "desktop: built dist/main.js, dist/engine-host.cjs, dist/preload.cjs"
+  "desktop: built dist/main.cjs, dist/engine-host.cjs, dist/preload.cjs"
 )

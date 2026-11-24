@@ -103,6 +103,16 @@ export function peekLock(home: string): PeekLockResult | null {
 }
 
 /**
+ * Live owner url+token without pid (desktop/CLI attach probe; DES-039).
+ * Thin wrapper over peekLock — same staleness rules, no second read path.
+ */
+export function liveOwner(home: string): { url: string; token: string } | null {
+  const owner = peekLock(home)
+  if (!owner) return null
+  return { url: owner.url, token: owner.token }
+}
+
+/**
  * Take `$FLOWAPP_HOME/engine.lock` (O_EXCL, mode 0600) or report a live owner.
  * A lock whose pid is gone is replaced (DES-039).
  */

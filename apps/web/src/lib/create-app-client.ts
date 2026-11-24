@@ -1,5 +1,9 @@
 import { createClient, type FlowsClient } from "@workspace/sdk"
 import { messagePortTransport, type Transport } from "@workspace/protocol"
+import {
+  desktopClientCapabilities,
+  installDesktopHost,
+} from "./desktop-host.ts"
 
 const CLIENT_INFO = { name: "flows-web", version: "0.0.1" }
 
@@ -51,15 +55,19 @@ async function loadWsBootstrap(): Promise<{
 /**
  * Transport switch (DES-039 / BL-186): MessagePort in Electron via preload
  * `connect()`, WebSocket in the browser via `__FLOWS_FCP__` or `/fcp/bootstrap`.
+ * Desktop also declares host capabilities (BL-189).
  */
 export async function createAppClient(): Promise<FlowsClient | null> {
   if (typeof window === "undefined") return null
 
   if (window.flowsDesktop?.connect) {
-    return createClient({
+    const client = createClient({
       transport: () => openDesktopTransport(),
       clientInfo: CLIENT_INFO,
+      capabilities: desktopClientCapabilities(),
     })
+    installDesktopHost(client)
+    return client
   }
 
   const fcp = await loadWsBootstrap()

@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("@workspace/sdk", () => ({
-  createClient: vi.fn((opts: unknown) => ({ kind: "client", opts })),
+  createClient: vi.fn((opts: unknown) => ({
+    kind: "client",
+    opts,
+    ready: Promise.resolve({}),
+    onRequest: () => () => {},
+    onNotification: () => () => {},
+    call: async () => ({}),
+  })),
 }))
 
 vi.mock("@workspace/protocol", () => ({
@@ -37,6 +44,8 @@ describe("createAppClient", () => {
           }
         })
       },
+      revealPath: () => {},
+      notifyInboxItem: () => {},
     }
     const origAdd = window.addEventListener.bind(window)
     const origRemove = window.removeEventListener.bind(window)
@@ -68,11 +77,15 @@ describe("createAppClient", () => {
     const { createAppClient } = await import("./create-app-client.ts")
 
     const client = await createAppClient()
-    expect(client).toEqual({ kind: "client", opts: expect.any(Object) })
+    expect(client).toMatchObject({ kind: "client", opts: expect.any(Object) })
     const opts = (createClient as ReturnType<typeof vi.fn>).mock
       .calls[0]![0] as {
       transport: () => Promise<unknown>
+      capabilities: { host: { revealPath: boolean; notifications: boolean } }
     }
+    expect(opts.capabilities).toEqual({
+      host: { revealPath: true, notifications: true },
+    })
     await opts.transport()
     expect(messagePortTransport).toHaveBeenCalledWith(port)
 

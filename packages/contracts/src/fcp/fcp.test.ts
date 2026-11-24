@@ -15,11 +15,13 @@ import {
   skillListMethod,
   skillUninstallMethod,
   skillUpdateNotification,
+  fcpHostMethodTable,
   fileListMethod,
   fileReadTextMethod,
   fileRevealMethod,
   fileStatMethod,
   fileWriteTextMethod,
+  hostRevealPathMethod,
   inboxAnswerMethod,
   inboxDismissMethod,
   inboxListMethod,
@@ -155,6 +157,14 @@ describe("FCP helpers", () => {
     expect(fileListMethod.kind).toBe("query")
     expect(fileWriteTextMethod.kind).toBe("command")
     expect(fileRevealMethod.kind).toBe("command")
+  })
+
+  it("declares host/* engine-to-client methods", () => {
+    expect(fcpHostMethodTable["host/reveal_path"]).toBe(hostRevealPathMethod)
+    expect(hostRevealPathMethod.kind).toBe("command")
+    expect(hostRevealPathMethod.params.parse({ path: "/tmp/x" })).toEqual({
+      path: "/tmp/x",
+    })
   })
 
   it("declares run command methods", () => {

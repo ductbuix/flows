@@ -265,6 +265,7 @@ export {
 export {
   confineToRoots,
   createFileBindings,
+  createPeerHostReveal,
   isUnderStoreRoot,
   normalizeStorePath,
   type FileBindings,

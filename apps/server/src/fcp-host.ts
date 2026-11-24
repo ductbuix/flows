@@ -44,7 +44,6 @@ export function createFcpHost(engine: Engine): FcpHost {
   const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
   const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
-  const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   return {
     bus,
@@ -55,7 +54,6 @@ export function createFcpHost(engine: Engine): FcpHost {
       ...library.bindings,
       ...skills.bindings,
       ...connectors,
-      ...files,
     },
     dispose() {
       unsubBus()
@@ -108,6 +106,7 @@ export function bindFcpTransport(
         engine,
         idempotency: host.idempotency,
       }),
+      ...createFileFcp(engine, peer, connection),
       ...host.extraBindings,
     },
     { signal: ac.signal },

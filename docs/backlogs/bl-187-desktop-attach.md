@@ -2,7 +2,7 @@
 id: BL-187
 title: Desktop attaches to a running daemon
 type: backlog
-status: todo
+status: done
 summary: If engine.lock names a live owner, the desktop app connects to it over WebSocket instead of starting an engine.
 tags: [desktop, electron, runtime]
 related: [DES-039]
@@ -19,5 +19,5 @@ Never two engines on one home.
 
 ## Done when
 
-- [ ] Start with a live daemon attaches; with none or a stale lock, starts its own.
-- [ ] Smoke test for both paths.
+- [x] Start with a live daemon attaches; with none or a stale lock, starts its own.
+- [x] Smoke test for both paths.

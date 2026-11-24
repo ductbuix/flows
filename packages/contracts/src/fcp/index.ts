@@ -128,6 +128,12 @@ export {
 } from "./subscribe.ts"
 export { fcpMethodTable, fcpNotificationTable } from "./table.ts"
 export {
+  fcpHostMethodTable,
+  hostRevealPathMethod,
+  hostRevealPathParamsSchema,
+  hostRevealPathResultSchema,
+} from "./host.ts"
+export {
   fileEntrySchema,
   fileKindSchema,
   fileListMethod,

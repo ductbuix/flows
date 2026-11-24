@@ -1,10 +1,15 @@
+import { fcpHostMethodTable } from "@workspace/contracts"
 import { type RpcPeer, type Transport } from "@workspace/protocol"
 import { createBackoff, sleep } from "./backoff.ts"
 import { createClientCalls } from "./calls.ts"
 import { resolveConnect } from "./connect.ts"
 import { ProtocolVersionError, RetryableConnectionError } from "./errors.ts"
 import type { ClientInfo, InitializeResult } from "./initialize.ts"
-import { deliverNotification, openSession } from "./session.ts"
+import {
+  deliverNotification,
+  openSession,
+  type HostRequestHandler,
+} from "./session.ts"
 import { createSubscriptionTracker } from "./subscriptions.ts"
 import type {
   ClientEventMap,
@@ -18,6 +23,9 @@ export type {
   FlowsClient,
   FcpCallParams,
   FcpCallResult,
+  FcpHostMethodName,
+  FcpHostParams,
+  FcpHostResult,
   FcpMethodName,
   FcpNotificationName,
 } from "./types.ts"
@@ -40,6 +48,7 @@ export function createClient(options: CreateClientOptions): FlowsClient {
   let settledReady = false
   let reconnecting = false
   const notificationHandlers = new Map<string, Set<(params: unknown) => void>>()
+  const hostHandlers = new Map<string, HostRequestHandler>()
   const resyncHandlers = new Set<(topic: string) => void>()
   const abortReconnect = new AbortController()
   const subscriptions = createSubscriptionTracker((topic) => {
@@ -51,6 +60,7 @@ export function createClient(options: CreateClientOptions): FlowsClient {
   )
   const sessionHooks = {
     notificationHandlers,
+    hostHandlers,
     onNotify(_method: string, params: unknown) {
       subscriptions.noteParamsSeq(params)
     },
@@ -150,6 +160,21 @@ export function createClient(options: CreateClientOptions): FlowsClient {
       set.add(wrapped)
       return () => {
         set?.delete(wrapped)
+      }
+    },
+    onRequest(method, handler) {
+      const wrapped = handler as HostRequestHandler
+      hostHandlers.set(method, wrapped)
+      if (peer) {
+        const def = fcpHostMethodTable[method]
+        peer.onRequest(method, async (raw) => {
+          const parsed = def.params.parse(raw ?? {})
+          const result = await wrapped(parsed)
+          return def.result.parse(result ?? {})
+        })
+      }
+      return () => {
+        if (hostHandlers.get(method) === wrapped) hostHandlers.delete(method)
       }
     },
     on(event, handler) {
