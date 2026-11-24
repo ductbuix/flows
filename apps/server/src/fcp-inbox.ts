@@ -23,7 +23,7 @@ export type InboxFcp = {
 export function createInboxFcp(
   engine: Engine,
   bus: UpdateBus,
-  coreRuns?: CoreRunHost
+  coreRuns: CoreRunHost
 ): InboxFcp {
   const events: EventStore = {
     append() {
@@ -53,21 +53,18 @@ export function createInboxFcp(
       if (input.kind === "approval") {
         const decision = input.optionId === "approved" ? "approved" : "rejected"
         if (
-          coreRuns &&
-          (await coreRuns.answerApproval({
+          await coreRuns.answerApproval({
             runId: input.runId,
             nodeId: input.nodeId,
             decision,
-          }))
+          })
         ) {
           return
         }
-        if (decision === "approved") {
-          engine.approveTask(input.runId, input.nodeId)
-          return
-        }
-        engine.rejectTask(input.runId, input.nodeId)
-        return
+        throw engineError(
+          "failed_precondition",
+          "No live approval for this inbox item"
+        )
       }
       if (!input.requestId) {
         throw engineError(
@@ -85,8 +82,7 @@ export function createInboxFcp(
         optionId: input.optionId,
         ...(input.answers ? { answers: input.answers } : {}),
       }
-      if (coreRuns?.answerAcpAsk(ask)) return
-      if (engine.answerAcpAsk(ask)) return
+      if (coreRuns.answerAcpAsk(ask)) return
       throw engineError(
         "failed_precondition",
         "No live ACP session for this inbox item"

@@ -42,7 +42,7 @@ describe("runs stored by the task engine", () => {
     const engine = createEngine({ home })
     expect(engine.fold("old")).toBeNull()
     expect(engine.listRuns()).toEqual([])
-    engine.resumeAll()
+    engine.bootHousekeeping()
     engine.close()
   })
 })

@@ -10,6 +10,7 @@ import { randomUUID } from "node:crypto"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
+import { createCoreRunHost } from "./core-run-host.ts"
 import { openFcpWs, startFcpServer } from "./fcp-harness.ts"
 
 const prevRunner = getProcessRunner()
@@ -175,8 +176,9 @@ describe("inbox/answer → live ACP session (BL-192)", () => {
 
   it("answerAcpAsk fails cleanly when no ask is parked", async () => {
     const h = await startFcpServer()
+    const host = createCoreRunHost(h.engine)
     expect(
-      h.engine.answerAcpAsk({
+      host.answerAcpAsk({
         kind: "permission",
         runId: "r1",
         at: new Date().toISOString(),
@@ -187,7 +189,7 @@ describe("inbox/answer → live ACP session (BL-192)", () => {
       })
     ).toBe(false)
     expect(
-      h.engine.answerAcpAsk({
+      host.answerAcpAsk({
         kind: "question",
         runId: "r1",
         at: new Date().toISOString(),
@@ -198,7 +200,7 @@ describe("inbox/answer → live ACP session (BL-192)", () => {
       })
     ).toBe(false)
     expect(
-      h.engine.answerAcpAsk({
+      host.answerAcpAsk({
         kind: "plan_review",
         runId: "r1",
         at: new Date().toISOString(),
@@ -208,5 +210,6 @@ describe("inbox/answer → live ACP session (BL-192)", () => {
         optionId: "rejected",
       })
     ).toBe(false)
+    host.dispose()
   })
 })

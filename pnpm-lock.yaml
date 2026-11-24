@@ -93,12 +93,18 @@ importers:
       '@workspace/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@workspace/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       '@workspace/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
       '@workspace/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
+      server:
+        specifier: workspace:*
+        version: link:../server
       ws:
         specifier: ^8.23.0
         version: 8.23.0

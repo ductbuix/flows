@@ -32,7 +32,7 @@ export type FcpStartArgs = {
 export async function startRunForFcp(
   engine: Engine,
   args: FcpStartArgs,
-  coreRuns?: CoreRunHost
+  coreRuns: CoreRunHost
 ): Promise<{ runId: string }> {
   const dir = workflowDir(engine.home, args.workflowId)
   if (!existsSync(join(dir, "workflow.yaml"))) {
@@ -77,43 +77,27 @@ export async function startRunForFcp(
       keepInputs || decls.length > 0 ? undefined : args.values?.text
     const inputs = withInputs ? { decls, values, files: [] } : undefined
 
-    // Core path (BL-194..196): all eligible kinds, partial, and queue.
-    if (coreRuns && coreRuns.canHandle(graph)) {
-      const corePartial = partial
-        ? {
-            only: partial.only,
-            from: partial.from,
-            bases: partialBases(
-              engine,
-              args.workflowId,
-              runId,
-              partial.baseRunId
-            ),
-          }
-        : undefined
-      const core = await coreRuns.tryStart({
-        graph,
-        runId,
-        pins,
-        inputText,
-        inputs,
-        workItemId,
-        ...(corePartial ? { partial: corePartial } : {}),
-      })
-      if (core) return core
-    }
-
-    const handle = engine.startNodeRun({
+    const corePartial = partial
+      ? {
+          only: partial.only,
+          from: partial.from,
+          bases: partialBases(
+            engine,
+            args.workflowId,
+            runId,
+            partial.baseRunId
+          ),
+        }
+      : undefined
+    return coreRuns.tryStart({
       graph,
       runId,
       pins,
-      ...(partial ? { partial } : {}),
       inputText,
-      ...(inputs ? { inputs } : {}),
+      inputs,
       workItemId,
+      ...(corePartial ? { partial: corePartial } : {}),
     })
-    void handle.wait().catch(() => undefined)
-    return { runId: handle.runId }
   } catch (err) {
     throw mapStartError(err)
   }

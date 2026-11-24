@@ -34,6 +34,25 @@ const graph = workflowSchema.parse({
   ],
 })
 
+function seedSucceeded(engine: ReturnType<typeof createEngine>, runId: string) {
+  const at = "2026-01-01T00:00:00.000Z"
+  const result = engine.eventStore().append(
+    runId,
+    [
+      {
+        type: "run_started",
+        runId,
+        workflowId: graph.id,
+        graph,
+        at,
+      },
+      { type: "run_succeeded", runId, at },
+    ],
+    { expectSeq: 0 }
+  )
+  expect(result.ok).toBe(true)
+}
+
 describe("summarizeRun", () => {
   it("lists needsYou and firstFailedTaskId from step state", () => {
     const wf = workflowSchema.parse({
@@ -112,11 +131,10 @@ describe("summarizeRun", () => {
 })
 
 describe("Engine run summary cache", () => {
-  it("second listRunSummaries call folds nothing", async () => {
+  it("second listRunSummaries call folds nothing", () => {
     const home = tempHome()
     const engine = createEngine({ home })
-    const handle = engine.startNodeRun({ graph, runId: "r-cache" })
-    await handle.wait()
+    seedSucceeded(engine, "r-cache")
 
     const spy = vi.spyOn(engine, "fold")
     const first = engine.listRunSummaries()
@@ -126,20 +144,19 @@ describe("Engine run summary cache", () => {
     expect(first[0]).toMatchObject({
       id: "r-cache",
       status: "succeeded",
-      taskCounts: { done: 3, total: 3 },
     })
     spy.mockRestore()
     engine.close()
-  }, 20_000)
+  })
 
-  it("rebuilds summaries after resume on a new engine", async () => {
+  it("rebuilds summaries after bootHousekeeping on a new engine", () => {
     const home = tempHome()
     const engine = createEngine({ home })
-    await engine.startNodeRun({ graph, runId: "r-resume" }).wait()
+    seedSucceeded(engine, "r-resume")
     engine.close()
 
     const again = createEngine({ home })
-    again.resumeAll()
+    again.bootHousekeeping()
     const summaries = again.listRunSummaries()
     expect(summaries).toHaveLength(1)
     expect(summaries[0]?.id).toBe("r-resume")
@@ -150,5 +167,5 @@ describe("Engine run summary cache", () => {
     expect(spy).not.toHaveBeenCalled()
     spy.mockRestore()
     again.close()
-  }, 20_000)
+  })
 })

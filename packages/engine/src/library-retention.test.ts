@@ -263,8 +263,24 @@ edges: []
       ],
     })
     const engine = createEngine({ home })
-    const pins = await engine.pinNodeRun({ graph, runId: "r-pin" })
-    await engine.startNodeRun({ graph, runId: "r-pin", pins }).wait()
+    await engine.pinNodeRun({ graph, runId: "r-pin" })
+    const at = "2026-01-01T00:00:00.000Z"
+    expect(
+      engine.eventStore().append(
+        "r-pin",
+        [
+          {
+            type: "run_started",
+            runId: "r-pin",
+            workflowId: graph.id,
+            graph,
+            at,
+          },
+          { type: "run_succeeded", runId: "r-pin", at },
+        ],
+        { expectSeq: 0 }
+      ).ok
+    ).toBe(true)
     const entityRoot = libraryEntityDir(home, "demo", "item", "z")
     const rev = listLibrary(home).entities[0]?.revisions[0]?.revision
     expect(rev).toBeTruthy()

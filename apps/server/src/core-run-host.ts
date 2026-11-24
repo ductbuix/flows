@@ -13,11 +13,13 @@ import {
 } from "@workspace/core"
 import {
   getProcessRunner,
+  recordUnpublishedLocalEffects,
+  runDir,
+  workflowDir,
   type Engine,
   type ManualItem,
   type MaterializeResourcesResult,
 } from "@workspace/engine"
-import { isCoreRunEligible } from "./core-run-eligible.ts"
 import { createEnginePublishPort } from "./core-run-publish.ts"
 import { resumeCoreRuns } from "./core-run-resume.ts"
 import { createCoreRunSession } from "./core-run-session.ts"
@@ -40,8 +42,7 @@ export type CoreApprovalAnswer = {
 }
 
 export type CoreRunHost = {
-  canHandle(graph: Workflow): boolean
-  tryStart(args: CoreStartArgs): Promise<{ runId: string } | null>
+  tryStart(args: CoreStartArgs): Promise<{ runId: string }>
   isLive(runId: string): boolean
   answerApproval(args: CoreApprovalAnswer): Promise<boolean>
   answerAcpAsk(input: AcpInboxAnswerInput): boolean
@@ -105,8 +106,27 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
     void activate(runId).catch(() => session.endLive(runId))
   }
 
+  const recordLocal = async (runId: string, workflowId: string) => {
+    try {
+      await recordUnpublishedLocalEffects({
+        home: engine.home,
+        runRoot: runDir(workflowDir(engine.home, workflowId), runId),
+        runId,
+        append: (event) => engine.appendLibraryEvent(event),
+      })
+    } catch {
+      /* diff failures must not block run end */
+    }
+  }
+  const prevEndLive = session.endLive.bind(session)
+  session.endLive = (runId) => {
+    const entry = live.get(runId)
+    const workflowId = entry?.workflowId
+    prevEndLive(runId)
+    if (workflowId) void recordLocal(runId, workflowId)
+  }
+
   return {
-    canHandle: isCoreRunEligible,
     isLive: (runId) => live.has(runId),
     tryStart: (args) => startCoreRun(engine, session, makeActor, args),
     retryStep: (runId, nodeId) =>

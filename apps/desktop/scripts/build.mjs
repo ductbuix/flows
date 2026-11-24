@@ -33,6 +33,13 @@ await Promise.all([
     outfile: join(outdir, "engine-host.cjs"),
     format: "cjs",
     // CJS: yaml and friends use require("process"); utilityProcess loads CJS fine.
+    // createEngine re-exports browser-sign-in (playwright-core); stub it so the
+    // host starts without bundling Chromium (sign-in stays on the daemon path).
+    external: ["electron", "ws"],
+    alias: {
+      playwright: join(root, "scripts/playwright-stub.cjs"),
+      "playwright-core": join(root, "scripts/playwright-stub.cjs"),
+    },
   }),
   build({
     ...shared,

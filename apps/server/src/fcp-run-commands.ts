@@ -38,7 +38,7 @@ export type RunCommandBindings = Pick<
 export type RunCommandDeps = {
   engine: Engine
   idempotency: IdempotencyStore
-  coreRuns?: CoreRunHost
+  coreRuns: CoreRunHost
 }
 
 export function createRunCommandBindings(
@@ -74,7 +74,7 @@ export function createRunCommandBindings(
     }),
     "run/cancel": defineBinding(runCancelMethod, async (params) => {
       try {
-        if (coreRuns && (await coreRuns.cancel(params.runId))) return {}
+        if (await coreRuns.cancel(params.runId)) return {}
         engine.cancelRun(params.runId)
         return {}
       } catch (err) {
@@ -116,13 +116,7 @@ export function createRunCommandBindings(
     }),
     "run/retry_step": defineBinding(runRetryStepMethod, async (params) => {
       try {
-        if (
-          coreRuns &&
-          (await coreRuns.retryStep(params.runId, params.stepId))
-        ) {
-          return {}
-        }
-        engine.retryTask(params.runId, params.stepId)
+        await coreRuns.retryStep(params.runId, params.stepId)
         return {}
       } catch (err) {
         throw mapControlError(err)
