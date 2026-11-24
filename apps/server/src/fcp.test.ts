@@ -81,6 +81,27 @@ describe("GET /api/fcp", () => {
     engine.close()
   })
 
+  it("allows Vite loopback Host on :5173", async () => {
+    const home = trackTempHome(
+      mkdtempSync(join(tmpdir(), "flowapp-api-fcp-vite-"))
+    )
+    const token = "vite-boot"
+    const engine = createEngine({ home })
+    const app = createApp({ engine, fcpToken: token, port: 8787 })
+    const res = await app.request("http://127.0.0.1:5173/api/fcp", {
+      headers: {
+        Host: "127.0.0.1:5173",
+        Origin: "http://127.0.0.1:5173",
+      },
+    })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({
+      token,
+      url: "ws://127.0.0.1:8787/fcp",
+    })
+    engine.close()
+  })
+
   it("rejects an evil Origin with 403", async () => {
     const home = trackTempHome(
       mkdtempSync(join(tmpdir(), "flowapp-api-fcp-origin-"))
