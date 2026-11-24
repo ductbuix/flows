@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import { startRun } from "@/components/runs/run-actions"
 import type { CanvasNode } from "./flow-graph"
+import type { NodeInboxItem } from "./NodeInboxPrompt"
 import { showsLogButton } from "./node-logs"
 import { useCanvasRun } from "./use-canvas-run"
 
@@ -22,10 +23,20 @@ export function useRunOverlay(
   const [cardId, setCardId] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
 
+  const inboxQ = useQuery("inbox/list", {}, { topics: ["inbox"] })
   const runs = runsQ.data?.items ?? []
   const cards = cardsQ.data?.items ?? []
   const runId = view === "draft" ? null : view
   const { summary, views, onRetry } = useCanvasRun(runId)
+  const inbox = useMemo(() => {
+    const out: Record<string, NodeInboxItem> = {}
+    if (!runId) return out
+    for (const item of inboxQ.data?.items ?? []) {
+      if (item.kind === "sign_in" || item.status !== "open") continue
+      if (item.runId === runId && !out[item.nodeId]) out[item.nodeId] = item
+    }
+    return out
+  }, [inboxQ.data, runId])
   const viewing = summary ?? runs.find((r) => r.id === runId) ?? null
 
   const shown = useMemo(() => {
@@ -34,7 +45,9 @@ export function useRunOverlay(
       const v = views[n.id]
       // Keep pointer events when Retry or Logs is offered.
       const interactive =
-        v?.state === "failed" || showsLogButton(n.data.kind, v?.state)
+        v?.state === "failed" ||
+        showsLogButton(n.data.kind, v?.state) ||
+        n.id in inbox
       return {
         ...n,
         className: interactive ? undefined : "pointer-events-none",
@@ -45,11 +58,11 @@ export function useRunOverlay(
           ...(v?.state ? { state: v.state } : {}),
           ...(v?.result ? { result: v.result } : {}),
           ...(v?.failReason ? { failReason: v.failReason } : {}),
-          ...(v ? { attempt: v.attempts } : {}),
+          ...(v ? { attempt: v.attempts, pass: v.pass, passes: v.passes } : {}),
         },
       }
     })
-  }, [nodes, runId, views])
+  }, [nodes, runId, views, inbox])
 
   async function start() {
     if (!cardId) return
@@ -64,6 +77,7 @@ export function useRunOverlay(
 
   return {
     shown,
+    inbox,
     runs,
     cards,
     cardId,

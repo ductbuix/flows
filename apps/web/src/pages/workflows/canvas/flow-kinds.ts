@@ -79,6 +79,9 @@ export type CanvasNodeData = {
   failReason?: string
   /** Latest attempt number in the followed run. */
   attempt?: number
+  /** Latest pass of a looped node, and every pass seen so far. */
+  pass?: number
+  passes?: { pass: number; attempts: number }[]
 }
 
 export function kindLabel(kind: string): string {

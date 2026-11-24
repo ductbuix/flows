@@ -48,7 +48,19 @@ export const judgeCheckKind = defineNodeKind({
   ports: { in: ["text", "file"], out: ["text", "file"] },
   async *execute(ctx: StepContext<Settings>): AsyncIterable<StepEvent> {
     const { check } = ctx.settings
-    const passed = evaluateCheck(check, ctx.answers[check.field])
+    const value = ctx.answers[check.field]
+    const passed = evaluateCheck(check, value)
+    const test = `${check.field} ${check.operator}${
+      check.value === undefined ? "" : ` ${String(check.value)}`
+    }`
+    ctx.log({
+      kind: "message",
+      title: `Check ${passed ? "passed" : "failed"}: ${test}`,
+      status: passed ? "ok" : "failed",
+      text: `${check.field} = ${
+        value === undefined ? "(not set)" : JSON.stringify(value)
+      }\nbranch: ${passed ? "yes" : "no"}`,
+    })
     yield* forwardInputs(ctx)
     yield { kind: "done", branch: passed ? "yes" : "no" }
   },

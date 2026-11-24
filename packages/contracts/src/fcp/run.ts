@@ -95,6 +95,8 @@ export const runGetLogParamsSchema = z.object({
   runId: z.string().min(1),
   stepId: z.string().min(1),
   attempt: z.number().int().positive(),
+  /** Pass of a looped node; the latest when omitted. */
+  pass: z.number().int().positive().optional(),
   stream: logStreamSchema,
   offset: z.number().int().nonnegative().optional(),
 })

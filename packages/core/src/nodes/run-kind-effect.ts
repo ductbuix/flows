@@ -80,7 +80,8 @@ export async function runKindEffect(
   })
 
   const attemptRoot = `${runDir}/nodes/${effect.nodeId}/pass-${effect.pass}/attempt-${effect.attempt}`
-  const logsAgent = kind.kind === "llm" || kind.kind === "agent"
+  const logsAgent =
+    kind.kind === "llm" || kind.kind === "agent" || kind.kind === "condition"
   let result: EffectResult
   try {
     result = await collectExecute(kind.execute(ctx))
@@ -98,7 +99,15 @@ export async function runKindEffect(
     }
     throw err
   }
-  if (logsAgent) writeAgentLogs(deps.docs, attemptRoot, runDir, effect, result)
+  if (logsAgent)
+    writeAgentLogs(
+      deps.docs,
+      attemptRoot,
+      runDir,
+      effect,
+      result,
+      kind.kind === "condition" ? "answer.md" : "text.md"
+    )
   if ("ok" in result && result.ok && result.notice) {
     postNotice(deps, state, effect, result.notice, deps.now)
     return { ok: true, outputs: result.outputs ?? [] }
@@ -112,11 +121,12 @@ function writeAgentLogs(
   attemptRoot: string,
   runDir: string,
   effect: { nodeId: string; pass: number },
-  result: EffectResult
+  result: EffectResult,
+  outputFile: string
 ): void {
   if ("ok" in result && result.ok) {
     const out = docs.read(
-      `${runDir}/nodes/${effect.nodeId}/pass-${effect.pass}/text.md`
+      `${runDir}/nodes/${effect.nodeId}/pass-${effect.pass}/${outputFile}`
     )
     docs.write(`${attemptRoot}/stdout.log`, out?.text ?? "")
   } else if ("ok" in result) {

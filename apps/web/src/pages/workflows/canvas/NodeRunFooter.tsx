@@ -2,6 +2,8 @@ import { RotateCcw } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import type { NodeKindName, RunState } from "./flow-kinds"
+import { useFlow } from "./flow-context"
+import { NodeInboxPrompt } from "./NodeInboxPrompt"
 import { NodeLogsButton } from "./NodeLogsButton"
 
 /** Kinds whose card has a connectors/skills row that hosts the Logs button. */
@@ -19,8 +21,11 @@ type Props = {
 
 /** Result text and Retry for a failed node during a run view. */
 export function NodeRunFooter({ kind, nodeId, state, result, onRetry }: Props) {
+  const { inbox } = useFlow()
+  const ask = nodeId ? inbox?.[nodeId] : undefined
   return (
     <>
+      {ask ? <NodeInboxPrompt item={ask} /> : null}
       {result ? (
         <div
           className={cn(

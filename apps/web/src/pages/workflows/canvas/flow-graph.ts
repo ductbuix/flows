@@ -87,6 +87,9 @@ export function workflowEdgesToCanvas(
     const port = e.port ?? "text"
     return {
       id: edgeId(e),
+      type: "smoothstep",
+      // Turn away from the card before bending so wires never graze it.
+      pathOptions: { borderRadius: 16, offset: 32 },
       source: e.from,
       target: e.to,
       sourceHandle: e.branch ?? port,

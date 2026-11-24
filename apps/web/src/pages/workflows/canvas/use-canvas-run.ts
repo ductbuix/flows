@@ -2,17 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import type { RunStep, RunSummary } from "@workspace/contracts"
 import { useFlowsClient, useSubscription } from "@workspace/sdk-react"
 import { retryStep } from "@/components/runs/run-actions"
-import { statesFromSteps } from "./node-run-view"
-import type { RunState } from "./flow-kinds"
+import { statesFromSteps, type StepView } from "./node-run-view"
 
 const RESULT_MAX = 600
 
-export type NodeView = {
-  state: RunState
-  result?: string
-  failReason?: string
-  attempts: number
-}
+export type NodeView = StepView
 
 type RunGet = RunSummary & { steps?: RunStep[] }
 
@@ -27,6 +21,7 @@ async function fetchLog(
   client: ReturnType<typeof useFlowsClient>,
   runId: string,
   stepId: string,
+  pass: number,
   attempt: number,
   failed: boolean
 ): Promise<string> {
@@ -37,6 +32,7 @@ async function fetchLog(
       const chunk = await client.call("run/get_log", {
         runId,
         stepId,
+        pass,
         attempt,
         stream,
         offset: 0,
@@ -100,7 +96,9 @@ export function useCanvasRun(runId: string | null) {
           if (!prev || prev.runId !== runId) {
             return { runId, steps: [step], results: {}, summary: null }
           }
-          const i = prev.steps.findIndex((s) => s.nodeId === step.nodeId)
+          const i = prev.steps.findIndex(
+            (s) => s.nodeId === step.nodeId && s.pass === step.pass
+          )
           const nextSteps =
             i < 0
               ? [...prev.steps, step]
@@ -134,14 +132,17 @@ export function useCanvasRun(runId: string | null) {
     if (!runId || !steps) return
     for (const s of steps) {
       if (s.status !== "succeeded" && s.status !== "failed") continue
+      // Only the latest pass feeds the card's result text.
+      if (steps.some((o) => o.nodeId === s.nodeId && o.pass > s.pass)) continue
       const attempt = Math.max(1, s.attempts)
-      const key = `${runId}:${s.nodeId}:${attempt}:${s.status}`
+      const key = `${runId}:${s.nodeId}:${s.pass}:${attempt}:${s.status}`
       if (fetched.current.has(key)) continue
       fetched.current.add(key)
       void fetchLog(
         client,
         runId,
         s.nodeId,
+        s.pass,
         attempt,
         s.status === "failed"
       ).then((text) => {

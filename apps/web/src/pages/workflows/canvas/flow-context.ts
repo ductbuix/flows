@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react"
+import type { NodeInboxItem } from "./NodeInboxPrompt"
 import type { CanvasNodeData } from "./flow-kinds"
 
 /**
@@ -23,6 +24,8 @@ export type FlowActions = {
   retry?: (id: string) => void
   /** Open the log viewer for a node of the followed run. */
   openLogs?: (id: string) => void
+  /** Open Inbox asks of the followed run, by node id. */
+  inbox?: Readonly<Record<string, NodeInboxItem>>
 }
 
 const noop = () => {}

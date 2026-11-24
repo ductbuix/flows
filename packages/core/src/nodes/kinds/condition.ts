@@ -2,7 +2,12 @@ import { fillTemplate } from "@workspace/contracts"
 import { z } from "zod"
 import { defineNodeKind } from "../define.ts"
 import type { StepContext, StepEvent, StepInput } from "../types.ts"
-import { llmContentBlocks, llmProfileId, llmPromptText } from "./llm.ts"
+import {
+  llmContentBlocks,
+  llmProfileId,
+  llmPromptText,
+  logToolEvent,
+} from "./llm.ts"
 
 /** Named branches on a condition node (DES-041 / mockup). */
 export const CONDITION_BRANCHES = ["yes", "no"] as const
@@ -124,10 +129,12 @@ export const conditionKind = defineNodeKind({
         : {}),
     })
     let text = ""
+    const tools = new Map<string, { title?: string; input?: unknown }>()
     try {
       if (session.setMode) await session.setMode("ask")
       for await (const event of session.prompt(blocks, ctx.signal)) {
         if (event.kind === "message_chunk") text += event.text
+        logToolEvent(ctx, tools, event)
         if (event.kind === "stop" && event.reason === "cancelled") {
           yield { kind: "failed", reason: "exit", message: "cancelled" }
           return
@@ -141,6 +148,7 @@ export const conditionKind = defineNodeKind({
       await session.close()
     }
     const answer = text.trim()
+    ctx.log({ kind: "message", title: "Judge reply", text: answer })
     yield* keepAnswer(ctx, answer)
     const branch = conditionBranch(answer)
     if (!branch) {

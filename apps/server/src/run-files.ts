@@ -28,12 +28,15 @@ export function resolveAttemptRoot(
   engine: Host,
   runId: string,
   taskId: string,
-  attempt: number
+  attempt: number,
+  pass?: number
 ): string | null {
   const state = engine.fold(runId)
   if (!state || state.deleted) return null
   if (!state.tasks[taskId]) return null
-  const step = state.steps.steps[taskId]?.at(-1)
+  const passes = state.steps.steps[taskId]
+  const step =
+    pass === undefined ? passes?.at(-1) : passes?.find((s) => s.pass === pass)
   if (!step || step.attempts < attempt) return null
   const root = runDir(workflowDir(engine.home, state.workflowId), runId)
   return attemptRootOf(stepDir(root, taskId, step.pass), attempt)

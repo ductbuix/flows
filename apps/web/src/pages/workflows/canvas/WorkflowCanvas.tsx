@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
+  ConnectionLineType,
   ReactFlow,
   SelectionMode,
   useEdgesState,
@@ -171,6 +172,7 @@ export function WorkflowCanvas({
       remove: ops.remove,
       retry: onRetry ? (id) => void onRetry(id) : undefined,
       openLogs: runId ? setLogNodeId : undefined,
+      inbox: overlay.inbox,
     }),
     [
       ops.update,
@@ -180,6 +182,7 @@ export function WorkflowCanvas({
       readOnly,
       onRetry,
       runId,
+      overlay.inbox,
       workflowId,
     ]
   )
@@ -207,6 +210,7 @@ export function WorkflowCanvas({
             for (const n of del) ops.remove(n.id)
           }}
           defaultEdgeOptions={{
+            type: "smoothstep",
             style: {
               strokeDasharray: "6 6",
               stroke: "var(--muted-foreground)",
@@ -231,6 +235,7 @@ export function WorkflowCanvas({
             const e = connectionToEdge(c, kindOf)
             if (e) ops.connect(e)
           }}
+          connectionLineType={ConnectionLineType.SmoothStep}
           connectionRadius={28}
           connectionLineStyle={{
             stroke: "var(--ring)",
@@ -285,7 +290,14 @@ export function WorkflowCanvas({
           runId={runId}
           nodeId={logNode.id}
           nodeName={logNode.data.name ?? logNode.data.kind}
-          attempt={logNode.data.attempt ?? 1}
+          passes={
+            logNode.data.passes ?? [
+              {
+                pass: logNode.data.pass ?? 1,
+                attempts: logNode.data.attempt ?? 1,
+              },
+            ]
+          }
           failReason={logNode.data.failReason}
           onClose={() => setLogNodeId(null)}
         />

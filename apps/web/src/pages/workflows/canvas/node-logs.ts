@@ -5,6 +5,7 @@ const LOCAL_PROCESS: ReadonlySet<NodeKindName> = new Set([
   "command",
   "llm",
   "agent",
+  "judge",
 ])
 
 /** Logs button rule: a process kind that has started in the followed run. */

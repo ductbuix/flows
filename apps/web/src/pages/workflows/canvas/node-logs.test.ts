@@ -6,13 +6,13 @@ describe("showsLogButton", () => {
     expect(showsLogButton("command", "done")).toBe(true)
     expect(showsLogButton("llm", "failed")).toBe(true)
     expect(showsLogButton("agent", "running")).toBe(true)
+    expect(showsLogButton("judge", "done")).toBe(true)
   })
   it("hides for kinds that run nothing locally", () => {
     for (const k of [
       "trigger",
       "output",
       "approval",
-      "judge",
       "asset",
       "prompt",
     ] as const) {

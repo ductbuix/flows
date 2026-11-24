@@ -8,6 +8,14 @@ export function desktopClientCapabilities() {
   return DESKTOP_CAPABILITIES
 }
 
+const INBOX_TITLE = {
+  approval: "Approval needed",
+  permission: "Permission needed",
+  question: "Question from an agent",
+  plan_review: "Plan needs review",
+  sign_in: "Sign-in needed",
+} as const
+
 /**
  * Wire host capabilities for the Electron renderer (BL-189 / BL-190 / DES-040).
  */
@@ -35,10 +43,7 @@ export function installDesktopHost(client: FlowsClient): () => void {
     void client.call("subscribe", { topics: ["inbox", "notice"] })
     unsubInbox = client.onNotification("inbox/update", (params) => {
       if (params.kind !== "item_added") return
-      const title =
-        params.item.kind === "permission"
-          ? "Permission needed"
-          : "Approval needed"
+      const title = INBOX_TITLE[params.item.kind]
       api.notifyInboxItem({ title, body: params.item.question })
     })
     unsubNotice = client.onNotification("notice/update", (params) => {

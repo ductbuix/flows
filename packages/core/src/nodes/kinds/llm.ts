@@ -1,7 +1,8 @@
 import { fillTemplate } from "@workspace/contracts"
 import { z } from "zod"
-import type { ContentBlock } from "../../ports/agent-runtime.ts"
+import type { AgentEvent, ContentBlock } from "../../ports/agent-runtime.ts"
 import { defineNodeKind } from "../define.ts"
+import type { LogEntry } from "../attempt-log.ts"
 import type { StepContext, StepEvent, StepInput } from "../types.ts"
 
 const settings = z.object({
@@ -78,6 +79,35 @@ function contentText(content: unknown): string {
   }
 }
 
+type ToolMap = Map<string, { title?: string; input?: unknown }>
+
+/** Log a tool call to the attempt when it settles, or on first sight. */
+export function logToolEvent(
+  ctx: { log(entry: Omit<LogEntry, "at">): void },
+  tools: ToolMap,
+  event: AgentEvent
+): void {
+  if (event.kind !== "tool_call" && event.kind !== "tool_call_update") return
+  const prev = tools.get(event.id)
+  const next = {
+    title: event.kind === "tool_call" ? event.title : prev?.title,
+    input: event.input ?? prev?.input,
+  }
+  tools.set(event.id, next)
+  const settled = event.status === "completed" || event.status === "failed"
+  if (!settled && !(event.kind === "tool_call" && !prev)) return
+  const command = commandOf(next.input)
+  ctx.log({
+    kind: "tool_call",
+    title: next.title ?? "Tool call",
+    ...(command ? { command } : {}),
+    status: event.status,
+    ...(event.kind === "tool_call_update" && event.content !== undefined
+      ? { text: contentText(event.content) }
+      : {}),
+  })
+}
+
 function readFrozen(
   ctx: StepContext<Settings>,
   name: string
@@ -119,35 +149,12 @@ export const llmKind = defineNodeKind({
         : {}),
     })
     let text = ""
-    const tools = new Map<string, { title?: string; input?: unknown }>()
+    const tools: ToolMap = new Map()
     try {
       if (session.setMode) await session.setMode("agent")
       for await (const event of session.prompt(blocks, ctx.signal)) {
         if (event.kind === "message_chunk") text += event.text
-        if (event.kind === "tool_call" || event.kind === "tool_call_update") {
-          const prev = tools.get(event.id)
-          const next = {
-            title: event.kind === "tool_call" ? event.title : prev?.title,
-            input: event.input ?? prev?.input,
-          }
-          tools.set(event.id, next)
-          // Log when the call settles, or on first sight of a started call.
-          const settled =
-            event.status === "completed" || event.status === "failed"
-          if (settled || (event.kind === "tool_call" && !prev)) {
-            const command = commandOf(next.input)
-            ctx.log({
-              kind: "tool_call",
-              title: next.title ?? "Tool call",
-              ...(command ? { command } : {}),
-              status: event.status,
-              ...(event.kind === "tool_call_update" &&
-              event.content !== undefined
-                ? { text: contentText(event.content) }
-                : {}),
-            })
-          }
-        }
+        logToolEvent(ctx, tools, event)
         if (event.kind === "stop" && event.reason === "cancelled") {
           yield { kind: "failed", reason: "exit", message: "cancelled" }
           return
