@@ -32,6 +32,11 @@ export type FakeAgentClientRequest = {
   params?: unknown
   /** When set, the client reply result must deep-equal this. */
   expectResult?: unknown
+  /**
+   * When set, the client must reply with an error. `true` accepts any
+   * error; an object matches `code` and/or a message substring.
+   */
+  expectError?: true | { code?: number; messageIncludes?: string }
 }
 
 export type FakeAgentReply = { result: unknown } | { error: JsonRpcErrorObject }
@@ -53,11 +58,21 @@ export type FakeAgentStep = {
 
 export type FakeAgentScript = {
   steps: readonly FakeAgentStep[]
+  /**
+   * When true, `done` waits until `close()` so the test can call
+   * `requestClient` after the handshake script finishes.
+   */
+  waitForClose?: boolean
 }
 
 export type FakeAgentHandle = {
   /** Resolves when every script step has run (or rejects on mismatch). */
   done: Promise<void>
+  /**
+   * Send a request to the client outside the script (e.g. after
+   * `session/new` so FS handlers are registered).
+   */
+  requestClient(req: FakeAgentClientRequest): Promise<void>
   close(): void
 }
 
@@ -140,10 +155,13 @@ export function runFakeAgent(
   let settle!: (err?: Error) => void
   let settled = false
   const held = new Map<string, JsonRpcId>()
-  const pendingClientExpects = new Map<
-    JsonRpcId,
-    { expectResult: unknown; resolve: () => void; reject: (e: Error) => void }
-  >()
+  type ClientExpect = {
+    expectResult?: unknown
+    expectError?: FakeAgentClientRequest["expectError"]
+    resolve: () => void
+    reject: (e: Error) => void
+  }
+  const pendingClientExpects = new Map<JsonRpcId, ClientExpect>()
   const clientExpectWaits: Promise<void>[] = []
 
   const done = new Promise<void>((resolve, reject) => {
@@ -158,6 +176,7 @@ export function runFakeAgent(
   const tryFinish = () => {
     if (stepIndex < script.steps.length) return
     if (pendingClientExpects.size > 0) return
+    if (script.waitForClose) return
     void Promise.all(clientExpectWaits).then(
       () => settle(),
       (err: unknown) =>
@@ -170,26 +189,33 @@ export function runFakeAgent(
     transport.close()
   }
 
-  const sendClientRequests = (reqs: readonly FakeAgentClientRequest[]) => {
-    for (const req of reqs) {
-      const id = nextClientReqId++
-      transport.send({
-        jsonrpc: JSONRPC_VERSION,
-        method: req.method,
-        ...(req.params !== undefined ? { params: req.params } : {}),
-        id,
-      })
-      if (req.expectResult !== undefined) {
-        const wait = new Promise<void>((resolve, reject) => {
-          pendingClientExpects.set(id, {
-            expectResult: req.expectResult,
-            resolve,
-            reject,
-          })
-        })
-        clientExpectWaits.push(wait)
-      }
+  const sendOneClientRequest = (
+    req: FakeAgentClientRequest
+  ): Promise<void> | undefined => {
+    const id = nextClientReqId++
+    transport.send({
+      jsonrpc: JSONRPC_VERSION,
+      method: req.method,
+      ...(req.params !== undefined ? { params: req.params } : {}),
+      id,
+    })
+    if (req.expectResult === undefined && req.expectError === undefined) {
+      return undefined
     }
+    const wait = new Promise<void>((resolve, reject) => {
+      pendingClientExpects.set(id, {
+        expectResult: req.expectResult,
+        expectError: req.expectError,
+        resolve,
+        reject,
+      })
+    })
+    clientExpectWaits.push(wait)
+    return wait
+  }
+
+  const sendClientRequests = (reqs: readonly FakeAgentClientRequest[]) => {
+    for (const req of reqs) sendOneClientRequest(req)
   }
 
   const emitNotes = (step: FakeAgentStep) => {
@@ -250,6 +276,41 @@ export function runFakeAgent(
       const pending = pendingClientExpects.get(msg.id)
       if (!pending) return
       pendingClientExpects.delete(msg.id)
+      if (pending.expectError !== undefined) {
+        if (!("error" in msg)) {
+          pending.reject(
+            new Error(
+              `fake-agent: client request ${msg.id} expected error, got result`
+            )
+          )
+          return
+        }
+        const want = pending.expectError
+        if (want !== true) {
+          if (want.code !== undefined && msg.error.code !== want.code) {
+            pending.reject(
+              new Error(
+                `fake-agent: client request ${msg.id} error code ${msg.error.code}, want ${want.code}`
+              )
+            )
+            return
+          }
+          if (
+            want.messageIncludes !== undefined &&
+            !msg.error.message.includes(want.messageIncludes)
+          ) {
+            pending.reject(
+              new Error(
+                `fake-agent: client request ${msg.id} error message mismatch`
+              )
+            )
+            return
+          }
+        }
+        pending.resolve()
+        tryFinish()
+        return
+      }
       if ("error" in msg) {
         pending.reject(
           new Error(`fake-agent: client request ${msg.id} returned error`)
@@ -303,7 +364,21 @@ export function runFakeAgent(
 
   return {
     done,
+    requestClient(req) {
+      if (settled) {
+        return Promise.reject(new Error("fake-agent: already settled"))
+      }
+      const wait = sendOneClientRequest(req)
+      return wait ?? Promise.resolve()
+    },
     close() {
+      if (script.waitForClose && !settled) {
+        void Promise.all(clientExpectWaits).then(
+          () => settle(),
+          (err: unknown) =>
+            settle(err instanceof Error ? err : new Error(String(err)))
+        )
+      }
       transport.close()
     },
   }

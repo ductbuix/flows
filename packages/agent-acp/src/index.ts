@@ -8,6 +8,12 @@ export {
   type OpenAcpSessionOptions,
 } from "./session.ts"
 export {
+  attachFsHandlers,
+  resolveUnderRoots,
+  writeTextAtomic,
+  type AcpFsOptions,
+} from "./fs.ts"
+export {
   mapSessionUpdate,
   parseStopReason,
   promptResultSchema,
