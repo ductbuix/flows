@@ -1,4 +1,9 @@
-import type { ProcessRunner, SessionSpec } from "@workspace/core"
+import type { ProcessRunner, SessionSpec, Skill } from "@workspace/core"
+import { cleanupPlacedMcp, placeMcp, type McpLaunchSpec } from "./place-mcp.ts"
+import {
+  cleanupPlacedSkills,
+  placeSkills as placeCursorSkills,
+} from "./place-skills.ts"
 import { probeBinaryVersion } from "./probe.ts"
 import type { AgentCommand, AgentProfile, AgentProbeResult } from "./types.ts"
 
@@ -9,8 +14,8 @@ export const CURSOR_AUTH_METHOD = "cursor_login"
 export const CURSOR_MODES = ["agent", "ask", "plan"] as const
 
 /**
- * Build `agent [--model m] acp` for Cursor (BL-140). mcpParam and
- * setModel stay false until verified against a live agent.
+ * Build `agent [--model m] acp` for Cursor (BL-140). setModel stays
+ * false until verified; mcpParam is true after the BL-167 live probe.
  */
 export function cursorCommand(spec: SessionSpec): AgentCommand {
   const args: string[] = []
@@ -34,12 +39,19 @@ export const cursorProfile: AgentProfile = {
   command: cursorCommand,
   authMethod: CURSOR_AUTH_METHOD,
   capabilities: {
-    mcpParam: false,
+    mcpParam: true,
     setModel: false,
     modes: [...CURSOR_MODES],
   },
-  async placeSkills() {
-    // BL-170
+  async placeSkills(skills: readonly Skill[], workDir: string) {
+    await placeCursorSkills(skills, workDir)
+  },
+  async placeMcp(servers: readonly McpLaunchSpec[], workDir: string) {
+    await placeMcp(servers, workDir)
+  },
+  async cleanup(workDir: string) {
+    await cleanupPlacedSkills(workDir)
+    await cleanupPlacedMcp(workDir)
   },
   extensions: {},
   probe: probeCursor,

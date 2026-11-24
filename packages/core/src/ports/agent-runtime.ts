@@ -1,3 +1,5 @@
+import type { Skill } from "../skills/catalog.ts"
+
 /**
  * AgentRuntime port (DES-041). Implemented by packages/agent-acp over ACP.
  */
@@ -39,7 +41,8 @@ export type SessionSpec = {
   model?: string
   effort?: string
   mcpServers?: readonly unknown[]
-  skills?: readonly string[]
+  /** Selected skills for the step; profile places them under the work dir. */
+  skills?: readonly Skill[]
 }
 
 /** Listed by `AgentRuntime.profiles()` / `list()` (FCP `agent/list`). */

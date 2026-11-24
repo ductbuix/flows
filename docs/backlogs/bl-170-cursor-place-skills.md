@@ -2,7 +2,7 @@
 id: BL-170
 title: Node skills placed for Cursor
 type: backlog
-status: todo
+status: done
 summary: The Cursor profile copies the llm node's selected skills into the work dir layout Cursor reads.
 tags: [cursor, skills, acp]
 related: [DES-041]
@@ -19,5 +19,5 @@ A step sees exactly the skills its node lists.
 
 ## Done when
 
-- [ ] Only selected skills are placed; the work dir is cleaned after the step.
-- [ ] Test checks the placed files.
+- [x] Only selected skills are placed; the work dir is cleaned after the step.
+- [x] Test checks the placed files.

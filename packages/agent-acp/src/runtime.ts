@@ -9,6 +9,7 @@ import type {
 import { engineError } from "@workspace/core"
 import type { AcpLogSink } from "./acp-log.ts"
 import { cursorProfile } from "./profiles/cursor.ts"
+import { asMcpLaunchSpecs, toAcpMcpServers } from "./profiles/place-mcp.ts"
 import type { AgentProfile } from "./profiles/types.ts"
 import { openAcpSession } from "./session.ts"
 import { peerFromProcess } from "./streams.ts"
@@ -73,8 +74,9 @@ export function createAcpRuntime(
       if (spec.skills?.length) {
         await profile.placeSkills(spec.skills, spec.cwd)
       }
-      if (spec.mcpServers?.length && profile.placeMcp) {
-        await profile.placeMcp(spec.mcpServers, spec.cwd)
+      const launches = asMcpLaunchSpecs(spec.mcpServers)
+      if (launches.length && profile.placeMcp) {
+        await profile.placeMcp(launches, spec.cwd)
       }
 
       const command = profile.command(spec)
@@ -100,28 +102,36 @@ export function createAcpRuntime(
         acpLog: options.acpLog,
         secrets: options.secrets,
       })
+      const mcpForSession = profile.capabilities.mcpParam
+        ? toAcpMcpServers(launches)
+        : []
       try {
         const session = await openAcpSession(peer, {
           cwd: spec.cwd,
-          mcpServers: spec.mcpServers,
+          mcpServers: mcpForSession,
           logger: options.logger,
           signal,
           clientInfo: options.clientInfo,
           authMethod: profile.authMethod,
           kill: () => procCtl.abort(),
         })
-        return wrapSession(session, () => {
+        return wrapSession(session, async () => {
           peer.close()
+          await profile.cleanup?.(spec.cwd)
         })
       } catch (err) {
         peer.close()
+        await profile.cleanup?.(spec.cwd)
         throw err
       }
     },
   }
 }
 
-function wrapSession(session: AgentSession, onClose: () => void): AgentSession {
+function wrapSession(
+  session: AgentSession,
+  onClose: () => void | Promise<void>
+): AgentSession {
   return {
     id: session.id,
     prompt: (blocks, signal) => session.prompt(blocks, signal),
@@ -130,7 +140,7 @@ function wrapSession(session: AgentSession, onClose: () => void): AgentSession {
       try {
         await session.close()
       } finally {
-        onClose()
+        await onClose()
       }
     },
   }

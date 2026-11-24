@@ -2,7 +2,7 @@
 id: BL-167
 title: Cursor gets the gateway as its MCP server
 type: backlog
-status: todo
+status: done
 summary: The Cursor profile writes .cursor/mcp.json in the work dir with only the gateway, and checks whether session/new mcpServers is honoured.
 tags: [cursor, mcp, acp]
 related: [DES-041]
@@ -19,6 +19,6 @@ Resolve the open DES-041 gap and record the answer.
 
 ## Done when
 
-- [ ] Gateway entry written for each step; nothing else listed.
-- [ ] A manual check against the real CLI is recorded in DES-041 and the `mcpParam` flag set accordingly.
-- [ ] Fake agent test sees the file.
+- [x] Gateway entry written for each step; nothing else listed.
+- [x] A manual check against the real CLI is recorded in DES-041 and the `mcpParam` flag set accordingly.
+- [x] Fake agent test sees the file.

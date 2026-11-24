@@ -1,8 +1,12 @@
+import { existsSync, mkdtempSync, readFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { createFakeProcessRunner } from "@workspace/core/testing"
 import { ACP_CLIENT_CAPABILITIES } from "./session.ts"
 import { createAcpRuntime } from "./runtime.ts"
 import { CURSOR_AUTH_METHOD, cursorProfile } from "./profiles/cursor.ts"
+import { FLOWS_MCP_KEY, toAcpMcpServers } from "./profiles/place-mcp.ts"
 import {
   createScriptedProcessRunner,
   type ScriptedProcessRunner,
@@ -199,6 +203,53 @@ describe("createAcpRuntime", () => {
     )
     expect(session.id).toBe(sessionId)
     await session.close()
+  })
+
+  it("placeMcp writes .cursor/mcp.json before the fake agent session/new", async () => {
+    const workDir = mkdtempSync(join(tmpdir(), "flows-acp-mcp-file-"))
+    const launch = {
+      command: "tsx",
+      args: ["packages/mcp-gateway/src/cli.ts", "--socket", "/tmp/gw.sock"],
+      env: { FLOWS_LOCK_TOKEN: "tok" },
+    }
+    const acpServers = toAcpMcpServers([launch])
+    const runner = createScriptedProcessRunner(() => ({
+      steps: [
+        {
+          expect: { method: "initialize", params: initializeParams },
+          reply: { result: initResult([]) },
+        },
+        {
+          expect: {
+            method: "session/new",
+            params: { cwd: workDir, mcpServers: acpServers },
+          },
+          reply: { result: { sessionId } },
+        },
+      ],
+    }))
+    const runtime = createAcpRuntime({
+      processRunner: runner,
+      profiles: [cursorProfile],
+      clientInfo,
+    })
+    const session = await runtime.open(
+      {
+        profileId: "cursor",
+        cwd: workDir,
+        mcpServers: [launch],
+      },
+      new AbortController().signal
+    )
+    const mcpPath = join(workDir, ".cursor/mcp.json")
+    expect(existsSync(mcpPath)).toBe(true)
+    const json = JSON.parse(readFileSync(mcpPath, "utf8")) as {
+      mcpServers: Record<string, unknown>
+    }
+    expect(Object.keys(json.mcpServers)).toEqual([FLOWS_MCP_KEY])
+    expect(json.mcpServers[FLOWS_MCP_KEY]).toEqual(launch)
+    await session.close()
+    expect(existsSync(mcpPath)).toBe(false)
   })
 })
 

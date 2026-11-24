@@ -5,5 +5,18 @@ export {
   cursorProfile,
   probeCursor,
 } from "./cursor.ts"
+export {
+  asMcpLaunchSpecs,
+  cleanupPlacedMcp,
+  FLOWS_MCP_KEY,
+  placeMcp,
+  toAcpMcpServers,
+  type McpLaunchSpec,
+} from "./place-mcp.ts"
+export {
+  cleanupPlacedSkills,
+  CURSOR_SKILLS_DIR,
+  placeSkills,
+} from "./place-skills.ts"
 export { probeBinaryVersion, readStdout } from "./probe.ts"
 export type { AgentCommand, AgentProbeResult, AgentProfile } from "./types.ts"

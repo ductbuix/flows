@@ -169,6 +169,7 @@ export {
   skillSlugFromPath,
   uninstallSkill,
   type ParsedSkillMd,
+  type Skill,
   type SkillCatalogDeps,
   type SkillDetail,
   type SkillDir,

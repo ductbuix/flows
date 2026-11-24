@@ -1,6 +1,7 @@
 export {
   createSkillCatalog,
   SkillCatalog,
+  type Skill,
   type SkillCatalogDeps,
   type SkillDetail,
   type SkillFrom,
