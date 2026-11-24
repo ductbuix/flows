@@ -80,7 +80,7 @@ const routes: Route[] = [
   {
     name: "workflow-editor",
     path: "/workflows/diamond",
-    ready: "workflow-editor-yaml",
+    ready: "workflow-editor-tab-canvas",
     dynamic: true,
   },
   { name: "runs", path: "/runs", ready: "runs-start-open", dynamic: true },
