@@ -33,6 +33,7 @@ export function RunSheet({
       <SheetContent
         className="data-[side=right]:sm:max-w-lg"
         data-testid="runs-sheet"
+        data-run-id={runId ?? undefined}
       >
         {runId ? (
           <RunSheetBody

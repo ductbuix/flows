@@ -35,9 +35,11 @@ test.describe("runs page (BL-180)", () => {
     await expect(page.getByTestId("runs-sheet")).toBeVisible({
       timeout: 15_000,
     })
-    await expect(
-      page.getByTestId("runs-list").locator("button").first()
-    ).toBeVisible({
+    const runId = await page
+      .getByTestId("runs-sheet")
+      .getAttribute("data-run-id")
+    expect(runId).toBeTruthy()
+    await expect(page.getByTestId(`runs-row-${runId}`)).toBeVisible({
       timeout: 15_000,
     })
 
@@ -54,6 +56,7 @@ test.describe("runs page (BL-180)", () => {
       })
       .click()
     await expect(page.getByTestId("runs-sheet")).toHaveCount(0)
-    await expect(page.getByTestId("runs-empty")).toBeVisible()
+    // Other specs share the e2e home, so the list may not be empty.
+    await expect(page.getByTestId(`runs-row-${runId}`)).toHaveCount(0)
   })
 })
