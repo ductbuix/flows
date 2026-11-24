@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createEngine } from "@workspace/adapters-node"
-import { healthSchema } from "@workspace/shared"
+import { createHost } from "@workspace/adapters-node"
+import { healthSchema } from "@workspace/contracts"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
 
@@ -17,7 +17,7 @@ afterEach(() => {
 function testStack() {
   const home = mkdtempSync(join(tmpdir(), "flowapp-srv-"))
   homes.push(home)
-  const engine = createEngine({ home })
+  const engine = createHost({ home })
   const app = createApp({ engine })
   return { engine, app }
 }

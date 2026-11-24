@@ -43,7 +43,7 @@ export function RunBar({
     { value: "draft", label: "Draft (editing)" },
     ...runs.map((r, i) => {
       const st = statusOf(r.status, r.needsYou.length > 0)
-      const who = r.workItemId ? cardTitle(r.workItemId) : "No card"
+      const who = r.cardId ? cardTitle(r.cardId) : "No card"
       return {
         value: r.id,
         label: `#${runs.length - i} · ${who} · ${st.label}`,
@@ -86,7 +86,7 @@ export function RunBar({
               return <StatusPill tone={st.tone}>{st.label}</StatusPill>
             })()}
             <span className="font-medium">
-              {viewing.workItemId ? cardTitle(viewing.workItemId) : "No card"}
+              {viewing.cardId ? cardTitle(viewing.cardId) : "No card"}
             </span>
             <span className="text-muted-foreground">
               {viewing.taskCounts.done}/{viewing.taskCounts.total} ·{" "}

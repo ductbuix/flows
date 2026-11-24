@@ -1,9 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/adapters-node"
-import { parseNodeWorkflowYaml, type WorkflowSummary } from "@workspace/shared"
+import { workflowDir, type Host } from "@workspace/adapters-node"
+import {
+  parseNodeWorkflowYaml,
+  type WorkflowSummary,
+} from "@workspace/contracts"
 
-export function listWorkflowSummaries(engine: Engine): WorkflowSummary[] {
+export function listWorkflowSummaries(engine: Host): WorkflowSummary[] {
   const root = join(engine.home, "workflows")
   if (!existsSync(root)) return []
 

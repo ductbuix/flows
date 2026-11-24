@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { parseNodeWorkflowYaml } from "@workspace/contracts"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
@@ -35,7 +35,7 @@ describe("core run queue activation (BL-196)", () => {
     const home = tempHome()
     mkdirSync(join(home, "workflows", "q1"), { recursive: true })
     writeFileSync(join(home, "workflows", "q1", "workflow.yaml"), yaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
 
@@ -61,7 +61,7 @@ describe("core run queue activation (BL-196)", () => {
     const home = tempHome()
     mkdirSync(join(home, "workflows", "q1"), { recursive: true })
     writeFileSync(join(home, "workflows", "q1", "workflow.yaml"), yaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
 

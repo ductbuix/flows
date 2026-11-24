@@ -72,7 +72,7 @@ function decideStart(
     ...(input.only ? { only: input.only } : {}),
     ...(input.from ? { from: input.from } : {}),
     ...(input.queued ? { queued: true } : {}),
-    ...(input.workItemId !== undefined ? { workItemId: input.workItemId } : {}),
+    ...(input.cardId !== undefined ? { cardId: input.cardId } : {}),
   }
   return { events: [started, ...(input.seed ?? [])], effects: [] }
 }

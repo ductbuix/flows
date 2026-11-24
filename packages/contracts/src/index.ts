@@ -1,4 +1,6 @@
 export {
+  slugIdSchema,
+  connectionIdSchema,
   CardId,
   RunId,
   WorkflowId,
@@ -8,7 +10,6 @@ export {
   LibItemId,
 } from "./ids.ts"
 export {
-  connectionIdSchema,
   signInMethodSchema,
   refreshRuleSchema,
   publishPolicySchema,
@@ -16,8 +17,6 @@ export {
   taskUsesEntrySchema,
   taskUsesSchema,
   connectionEnvName,
-  connectionSchema,
-  connectionWriteSchema,
   changeSetOpSchema,
   changeSetSchema,
   runChangesResponseSchema,
@@ -26,13 +25,10 @@ export {
   type PublishPolicy,
   type ConnectionAccess,
   type TaskUsesEntry,
-  type Connection,
-  type ConnectionInput,
-  type ConnectionWrite,
   type ChangeSetOp,
   type ChangeSet,
   type RunChangesResponse,
-} from "./connection.ts"
+} from "./publish.ts"
 export {
   AUTH_FOR,
   capabilitySchema,
@@ -57,22 +53,11 @@ export {
 export {
   connectorDescribeSchema,
   connectorsListSchema,
-  connectionListItemSchema,
-  connectionsListSchema,
-  connectionDetailSchema,
-  connectionParamSchema,
   connectionCheckResultSchema,
-  connectionSignInStatusSchema,
-  connectionBrowserSignInResultSchema,
   type ConnectorDescribe,
   type ConnectorsList,
-  type ConnectionListItem,
-  type ConnectionsList,
-  type ConnectionDetail,
   type ConnectionCheckResult,
-  type ConnectionSignInStatus,
-  type ConnectionBrowserSignInResult,
-} from "./api-connections.ts"
+} from "./connector-describe.ts"
 export {
   resourcePinSchema,
   resourcesJsonSchema,
@@ -172,7 +157,7 @@ export {
 export {
   normalizeInputText,
   canonicalManualItemPayload,
-  canonicalWorkItemKeyPayload,
+  canonicalCardKeyPayload,
   buildManualValuesSchema,
   applyInputDefaults,
   inputsJsonSchema,
@@ -241,19 +226,9 @@ export {
   type RunActivatedEvent,
 } from "./events.ts"
 export {
-  attemptKindSchema,
-  attemptKindInfoSchema,
-  deriveAttemptKind,
-  type AttemptKind,
-  type AttemptKindInfo,
-  type AttemptLike,
-  type RetrySpec,
-} from "./attempt-kind.ts"
-export {
   workflowSummarySchema,
   needsYouEntrySchema,
   runSummarySchema,
-  attemptViewSchema,
   taskViewSchema,
   runLibraryPinSchema,
   runEffectSchema,
@@ -274,7 +249,6 @@ export {
   type WorkflowSummary,
   type NeedsYouEntry,
   type RunSummary,
-  type AttemptView,
   type TaskView,
   type RunLibraryPin,
   type RunEffect,
@@ -297,7 +271,7 @@ export {
   type WorkflowConflict,
   type WsClientMessage,
   type WsServerMessage,
-} from "./api.ts"
+} from "./runs.ts"
 export {
   trustGrantSchema,
   cliTrustValueSchema,
@@ -305,7 +279,7 @@ export {
   startRunBodySchema,
   invalidInputErrorSchema,
   duplicateInputErrorSchema,
-  unknownWorkItemErrorSchema,
+  unknownCardErrorSchema,
   trustCheckStatusSchema,
   trustCheckSchema,
   trustStatusSchema,
@@ -320,7 +294,7 @@ export {
   type StartRunBody,
   type InvalidInputError,
   type DuplicateInputError,
-  type UnknownWorkItemError,
+  type UnknownCardError,
   type TrustCheckStatus,
   type TrustCheck,
   type TrustStatus,
@@ -329,7 +303,7 @@ export {
   type TrustRequiredError,
   type CliInfo,
   type CliStatus,
-} from "./api-trust.ts"
+} from "./trust.ts"
 export {
   noticeSchema,
   noticeListSchema,
@@ -337,7 +311,7 @@ export {
   type Notice,
   type NoticeList,
   type MarkNoticesReadBody,
-} from "./api-notices.ts"
+} from "./notices.ts"
 export {
   mcpTrustEntrySchema,
   mcpTrustValueSchema,
@@ -347,7 +321,7 @@ export {
   type McpTrustValue,
   type McpTrustStatus,
   type PutMcpTrustBody,
-} from "./api-mcp-trust.ts"
+} from "./mcp-trust.ts"
 export {
   workflowIdSchema,
   createWorkflowBodySchema,
@@ -377,37 +351,7 @@ export {
   type WorkflowFileDetail,
   type PutWorkflowFileBody,
   type WorkflowFileConflict,
-} from "./api-lifecycle.ts"
-export {
-  workItemIdSchema,
-  workItemLinkSchema,
-  workItemSourceSchema,
-  workItemSchema,
-  workItemSummarySchema,
-  workItemDetailSchema,
-  createWorkItemBodySchema,
-  putWorkItemBodySchema,
-  workItemConflictSchema,
-  workItemNotesSchema,
-  putWorkItemNotesBodySchema,
-  workItemNotesConflictSchema,
-  attachmentNameSchema,
-  workItemAttachmentSchema,
-  workItemAttachmentListSchema,
-  type WorkItem,
-  type WorkItemLink,
-  type WorkItemSource,
-  type WorkItemSummary,
-  type WorkItemDetail,
-  type CreateWorkItemBody,
-  type PutWorkItemBody,
-  type WorkItemConflict,
-  type WorkItemNotes,
-  type PutWorkItemNotesBody,
-  type WorkItemNotesConflict,
-  type WorkItemAttachment,
-  type WorkItemAttachmentList,
-} from "./work-item.ts"
+} from "./lifecycle.ts"
 export {
   workflowSchema,
   nodeSchema,

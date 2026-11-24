@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { parseNodeWorkflowYaml } from "@workspace/contracts"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
@@ -34,7 +34,7 @@ edges:
 `
     mkdirSync(join(home, "workflows", "resume-demo"), { recursive: true })
     writeFileSync(join(home, "workflows", "resume-demo", "workflow.yaml"), yaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
     const runId = "mid-1"
@@ -65,7 +65,7 @@ edges:
     host.abandon()
     engine.close()
 
-    const again = createEngine({ home })
+    const again = createHost({ home })
     const host2 = createCoreRunHost(again)
     await host2.resumeAll()
 

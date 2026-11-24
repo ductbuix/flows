@@ -1,4 +1,4 @@
-import type { PublishPolicy } from "@workspace/shared"
+import type { PublishPolicy } from "@workspace/contracts"
 import { Badge } from "@workspace/ui/components/badge"
 import { Bot, Lock, ShieldCheck } from "lucide-react"
 

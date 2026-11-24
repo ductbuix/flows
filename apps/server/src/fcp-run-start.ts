@@ -9,23 +9,23 @@ import {
   type Workflow,
   type WorkflowInputDecl,
 } from "@workspace/contracts"
-import { workflowDir, type Engine } from "@workspace/adapters-node"
+import { workflowDir, type Host } from "@workspace/adapters-node"
 import type { CoreRunHost } from "./core-run-host.ts"
 
 export type FcpStartArgs = {
   workflowId: string
   values?: Record<string, string>
-  workItemId?: string
+  cardId?: string
   refreshPins?: boolean
   only?: string
   from?: string
   baseRunId?: string
-  rerunOf?: { runId: string; workItemId?: string }
+  rerunOf?: { runId: string; cardId?: string }
 }
 
 /** Starts a node run for FCP; returns `{ runId }` immediately. */
 export async function startRunForFcp(
-  engine: Engine,
+  engine: Host,
   args: FcpStartArgs,
   coreRuns: CoreRunHost
 ): Promise<{ runId: string }> {
@@ -53,9 +53,9 @@ export async function startRunForFcp(
   const decls = triggerInputs(graph)
   const keepInputs = base !== undefined
   const values = keepInputs ? {} : validateValues(decls, args.values ?? {})
-  const workItemId = resolveWorkItem(
+  const cardId = resolveCard(
     engine,
-    args.rerunOf ? args.rerunOf.workItemId : args.workItemId
+    args.rerunOf ? args.rerunOf.cardId : args.cardId
   )
   const withInputs = !keepInputs && decls.length > 0
   try {
@@ -64,7 +64,7 @@ export async function startRunForFcp(
     const pins = await engine.pinNodeRun({
       graph,
       runId,
-      workItemId,
+      cardId,
       ...(pinFromRunId !== undefined ? { pinFromRunId } : {}),
       refreshPins: args.refreshPins,
     })
@@ -90,7 +90,7 @@ export async function startRunForFcp(
       pins,
       inputText,
       inputs,
-      workItemId,
+      cardId,
       ...(corePartial ? { partial: corePartial } : {}),
     })
   } catch (err) {
@@ -124,21 +124,20 @@ function validateValues(
   return applyInputDefaults(decls, rawValues)
 }
 
-function resolveWorkItem(
-  engine: Engine,
-  workItemId: string | undefined
+function resolveCard(
+  engine: Host,
+  cardId: string | undefined
 ): string | undefined {
-  if (workItemId === undefined) return undefined
-  // TODO(BL-213): work-item store gone; Docket cards only (DES-038).
-  if (!existsSync(join(engine.home, cardPath(workItemId)))) {
-    throw engineError("invalid_params", `unknown_work_item: ${workItemId}`)
+  if (cardId === undefined) return undefined
+  if (!existsSync(join(engine.home, cardPath(cardId)))) {
+    throw engineError("invalid_params", `unknown_card: ${cardId}`)
   }
-  return workItemId
+  return cardId
 }
 
 /** Earlier runs for a partial seed: baseRunId first, then the rest (BL-102). */
 function partialBases(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   runId: string,
   baseRunId?: string

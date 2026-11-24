@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { connectionIdSchema } from "./connection.ts"
+import { connectionIdSchema } from "./ids.ts"
 import {
   cursorAskAnswerSchema,
   cursorAskQuestionSchema,
@@ -56,8 +56,8 @@ export const runStartedEventSchema = z.object({
   files: z.array(z.string()).optional(),
   /** True when the run waits under maxConcurrentRuns (DES-021). */
   queued: z.boolean().optional(),
-  /** Work item this run belongs to (DES-026 / BL-039). */
-  workItemId: z.string().min(1).optional(),
+  /** Docket card this run belongs to (DES-038 / BL-039). */
+  cardId: z.string().min(1).optional(),
 })
 
 /** Queued run becomes running when a slot frees (DES-021). */

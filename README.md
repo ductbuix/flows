@@ -7,7 +7,7 @@ Local app for building and running workflows of tasks (commands, scripts, AI age
 - `apps/web`: Vite + React + shadcn UI (port 5173, proxies `/api` to the server)
 - `apps/server`: Hono API and websocket on `127.0.0.1:8787`
 - `packages/ui`: shared shadcn components
-- `packages/shared`: zod schemas and types shared by server and web
+- `packages/contracts`: zod schemas and types shared by server and web
 - `apps/e2e`: Playwright end to end tests (starts server and web)
 
 ## Commands

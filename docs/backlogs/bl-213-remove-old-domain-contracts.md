@@ -2,7 +2,7 @@
 id: BL-213
 title: "Remove old domain contracts"
 type: backlog
-status: todo
+status: done
 summary: Delete work-item, connection, attempt-kind and api*.ts schemas that no host uses.
 tags: [contracts, cleanup]
 related: [DES-043]
@@ -19,5 +19,5 @@ Docket replaced work items; connectors replaced connections. Remove the schemas 
 
 ## Done when
 
-- [ ] `git grep work-item connection` finds no live use.
-- [ ] `pnpm typecheck` passes.
+- [x] `git grep -i 'work-item\|workItem\|connection.yaml'` finds no live use (docs history excepted).
+- [x] `pnpm typecheck` passes.

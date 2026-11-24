@@ -10,7 +10,7 @@ import {
   defineBinding,
   type MethodBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 import { RpcPeer, type Transport } from "@workspace/protocol"
 import { createCoreRunHost, type CoreRunHost } from "./core-run-host.ts"
 import { bindEngineToBus } from "./engine-bus.ts"
@@ -39,7 +39,7 @@ export type FcpHost = {
 }
 
 /** Shared FCP method stack for the daemon, CLI stdio host, and in-process CLI. */
-export function createFcpHost(engine: Engine): FcpHost {
+export function createFcpHost(engine: Host): FcpHost {
   const bus = new UpdateBus()
   const events = createEventBus()
   const unsubBus = bindEngineToBus(engine, bus, events)
@@ -84,7 +84,7 @@ export type BindFcpTransportOptions = {
 /** Bind one FCP peer on any transport (ws, ndjson, linked). */
 export function bindFcpTransport(
   transport: Transport,
-  engine: Engine,
+  engine: Host,
   host: FcpHost,
   options: BindFcpTransportOptions = {}
 ): void {

@@ -9,7 +9,7 @@ import {
   engineError,
   type MethodBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 import { readNodeWorkflowDetail } from "./node-workflow-files.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 
@@ -21,7 +21,7 @@ export type WorkflowReadBindings = Pick<
 >
 
 export function createWorkflowReadBindings(
-  engine: Engine
+  engine: Host
 ): WorkflowReadBindings {
   return {
     "workflow/list": defineBinding(workflowListMethod, (params) =>

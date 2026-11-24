@@ -21,9 +21,9 @@ describe("workflowLabel", () => {
 
 describe("runLabel", () => {
   it("uses the work item title, else Ad hoc run", () => {
-    expect(runLabel({ workItemTitle: "Fix login" })).toBe("Fix login")
-    expect(runLabel({ workItemTitle: undefined })).toBe("Ad hoc run")
-    expect(runLabel({ workItemTitle: " " })).toBe("Ad hoc run")
+    expect(runLabel({ cardTitle: "Fix login" })).toBe("Fix login")
+    expect(runLabel({ cardTitle: undefined })).toBe("Ad hoc run")
+    expect(runLabel({ cardTitle: " " })).toBe("Ad hoc run")
   })
 })
 

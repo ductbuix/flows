@@ -1,4 +1,4 @@
-import type { Connection } from "@workspace/contracts"
+import type { Connection } from "../../connection-model.ts"
 import { type McpClient, type McpConnectInput } from "../../mcp/client.ts"
 import { mcpServerKeyFromScope } from "../../mcp/trust.ts"
 

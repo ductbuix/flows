@@ -182,7 +182,7 @@ describe("FCP run/list by workflow and run/get steps (BL-203)", () => {
 })
 
 describe("FCP run/start and run/list with a card (BL-200)", () => {
-  it("starts with a docket card id and filters run/list by workItemId", async () => {
+  it("starts with a docket card id and filters run/list by cardId", async () => {
     const h = await startFcpServer()
     writeDemoWorkflow(h.home)
     const cardId = "fix-login"
@@ -206,16 +206,16 @@ describe("FCP run/start and run/list with a card (BL-200)", () => {
       await peer.request("run/start", {
         workflowId: "demo",
         requestKey: randomUUID(),
-        workItemId: cardId,
+        cardId: cardId,
       })
     )
     const otherId = await startRunViaFcp(h.port, h.token, "demo")
 
     const listed = runListMethod.result.parse(
-      await peer.request("run/list", { workItemId: cardId, limit: 50 })
+      await peer.request("run/list", { cardId: cardId, limit: 50 })
     )
     expect(listed.items.map((r) => r.id)).toEqual([started.runId])
-    expect(listed.items[0]?.workItemId).toBe(cardId)
+    expect(listed.items[0]?.cardId).toBe(cardId)
     expect(listed.items.map((r) => r.id)).not.toContain(otherId)
 
     socket.close()

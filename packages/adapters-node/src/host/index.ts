@@ -1,6 +1,6 @@
 /** App host leftovers moved from `@workspace/adapters-node` (BL-214). */
 
-export { createEngine, Engine, type CreateEngineOptions } from "./engine.ts"
+export { createHost, Host, type CreateHostOptions } from "./host.ts"
 export { ensureBlobStore, getBlobStore, setBlobStore } from "./blob-store.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
 export {
@@ -61,17 +61,26 @@ export {
   pathByteSize,
 } from "./library-usage.ts"
 export { listPinningRuns, pinnedRevisionKeys } from "./library-pins.ts"
-/** TODO(BL-213): connection store deleted with old domain contracts. */
 export {
-  listConnections,
-  readConnection,
-  createConnection,
-  updateConnection,
-  deleteConnection,
-  workflowsUsingConnection,
-  type ConnectionStoreError,
-  type ConnectionStoreResult,
-} from "./connections.ts"
+  connectionSchema,
+  type Connection,
+  type ConnectionInput,
+  type ResourceLink,
+} from "./connection-model.ts"
+export {
+  findConnection,
+  requireConnection,
+  setConnectionLookup,
+  resetConnectionLookup,
+  connectionFromConnectorFile,
+  type ConnectionLookup,
+} from "./connection-resolve.ts"
+export {
+  installTestConnectionStore,
+  resetTestConnectionStore,
+  registerTestConnection,
+  updateTestConnection,
+} from "./test-connections.ts"
 export {
   registerConnector,
   unregisterConnector,
@@ -105,7 +114,6 @@ export {
   publishChangesDir,
   workPublishBaseDir,
 } from "./work-copy.ts"
-export { hasOpenPublish } from "./publish.ts"
 export {
   runInputDir,
   materializeRunInput,
@@ -113,7 +121,7 @@ export {
 } from "./run-input.ts"
 export { manualSource } from "./source-manual.ts"
 export type { ManualFilePart, ManualItem } from "./source-manual.ts"
-export { manualItemKey, workItemItemKey } from "./item-key.ts"
+export { manualItemKey, cardItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"
 export { getProcessRunner, setProcessRunner } from "./process-runner.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"

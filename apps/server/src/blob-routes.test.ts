@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { createFakeBlobStore } from "@workspace/core/testing"
 import { createApp } from "./app.ts"
-import { createEngine, setBlobStore } from "@workspace/adapters-node"
+import { createHost, setBlobStore } from "@workspace/adapters-node"
 
 const temps: string[] = []
 const TOKEN = "blob-test-token"
@@ -23,7 +23,7 @@ describe("GET/PUT /blobs", () => {
     const home = mkdtempSync(join(tmpdir(), "flowapp-blob-route-"))
     temps.push(home)
     store = createFakeBlobStore()
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     setBlobStore(store)
     app = createApp({ engine, fcpToken: TOKEN, port: 8787 })
   })

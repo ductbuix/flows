@@ -1,5 +1,5 @@
 import type { EventBus, UpdateBus } from "@workspace/core"
-import type { Engine, StoredEvent } from "@workspace/adapters-node"
+import type { Host, StoredEvent } from "@workspace/adapters-node"
 import type { RunSummary } from "@workspace/contracts"
 import { stepOfNode } from "./run-steps.ts"
 
@@ -27,7 +27,7 @@ const FINISHED_EVENT_TYPES = new Set([
 
 /** Publishes FCP run/update kinds besides run_changed (BL-176). */
 export function publishRunFcpUpdates(
-  engine: Engine,
+  engine: Host,
   bus: UpdateBus,
   events: EventBus,
   stored: StoredEvent,
@@ -68,8 +68,8 @@ export function publishRunFcpUpdates(
         runId,
         workflowId: summary.workflowId,
         status,
-        ...(summary.workItemId !== undefined
-          ? { cardId: summary.workItemId }
+        ...(summary.cardId !== undefined
+          ? { cardId: summary.cardId }
           : {}),
       })
     }

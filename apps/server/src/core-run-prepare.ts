@@ -15,7 +15,7 @@ export type PrepareCoreRunInput = {
   runId: string
   inputText?: string
   inputs?: ManualItem
-  workItemId?: string
+  cardId?: string
 }
 
 /** Freeze graph, inputs and node files under the run dir (tick parity). */
@@ -29,7 +29,7 @@ export function prepareCoreRunDir(input: PrepareCoreRunInput): string {
   )
 
   if (input.inputs) {
-    materializeRunInput(wfRoot, runRoot, input.inputs, input.workItemId)
+    materializeRunInput(wfRoot, runRoot, input.inputs, input.cardId)
   } else {
     const inputDir = join(runRoot, "input")
     mkdirSync(inputDir, { recursive: true })

@@ -1,12 +1,18 @@
 import { z } from "zod"
 
 /**
- * Folder-slug rule shared by workflow, work item, connection and card ids
+ * Folder-slug rule shared by workflow, connector, card and related ids
  * (DES-013 / DES-026 / DES-038). Branded copies for new signatures (DES-042 /
  * BL-112); existing unbranded schemas stay as they are.
  */
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const slugMessage = "lowercase letters, digits and dashes"
+
+/** Unbranded slug id (connector file, library scope, node `connection`). */
+export const slugIdSchema = z.string().min(1).regex(slugRegex, slugMessage)
+
+/** Unbranded alias used by node `connection` fields and library pins. */
+export const connectionIdSchema = slugIdSchema
 
 export const CardId = z.string().regex(slugRegex, slugMessage).brand<"CardId">()
 export type CardId = z.infer<typeof CardId>

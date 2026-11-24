@@ -1,6 +1,6 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
 import { z } from "zod"
-import { connectionIdSchema } from "./connection.ts"
+import { connectionIdSchema } from "./ids.ts"
 
 /** Connector file id: same slug rule as connections (DES-041 / mockup). */
 export const connectorFileIdSchema = connectionIdSchema

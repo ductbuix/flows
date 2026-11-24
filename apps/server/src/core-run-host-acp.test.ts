@@ -5,7 +5,7 @@ import {
 } from "@workspace/agent-acp"
 import { parseNodeWorkflowYaml } from "@workspace/contracts"
 import {
-  createEngine,
+  createHost,
   getProcessRunner,
   setProcessRunner,
 } from "@workspace/adapters-node"
@@ -111,7 +111,7 @@ edges:
     writeFileSync(join(dir, "workflow.yaml"), yaml)
     writeFileSync(join(dir, "nodes", "l", "prompt.md"), "Go.\n")
 
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
     const runId = "core-llm-ask"

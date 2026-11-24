@@ -80,7 +80,7 @@ export const kanbanMockup: Mockup = {
   group: "Work items",
   summary:
     "The Work items page: a Kanban board with Inbox, Running, Needs you and Done.",
-  usedIn: ["/work-items (the page itself)"],
+  usedIn: ["/docket (the page itself)"],
   anatomy: [
     "Page header: title, one line, New work item button",
     "Lane: muted rounded-2xl column (no shadcn part), name, count Badge, ghost + Button",

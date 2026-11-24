@@ -20,7 +20,7 @@ import {
   type PartialBase,
   type PartialRun,
 } from "@workspace/core"
-import { runDir, workflowDir, type Engine } from "@workspace/adapters-node"
+import { runDir, workflowDir, type Host } from "@workspace/adapters-node"
 
 function dirSnapshot(
   dir: string,
@@ -37,7 +37,7 @@ function dirSnapshot(
 }
 
 function loadBase(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   runId: string
 ): PartialBase | undefined {
@@ -77,7 +77,7 @@ function unchanged(
  * `run_started` (BL-196 / DES-034).
  */
 export function seedCorePartial(options: {
-  engine: Engine
+  engine: Host
   graph: Workflow
   runId: string
   at: string

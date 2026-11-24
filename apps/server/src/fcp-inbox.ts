@@ -8,7 +8,7 @@ import {
   type InboxService,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 import type { CoreRunHost } from "./core-run-host.ts"
 
 const systemClock: Clock = { now: () => Date.now() }
@@ -21,7 +21,7 @@ export type InboxFcp = {
 
 /** Live inbox projection over the engine event log (BL-145 / BL-178 / BL-192). */
 export function createInboxFcp(
-  engine: Engine,
+  engine: Host,
   bus: UpdateBus,
   coreRuns: CoreRunHost
 ): InboxFcp {

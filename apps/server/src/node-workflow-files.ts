@@ -7,13 +7,13 @@ import {
   writeFileSync,
 } from "node:fs"
 import { dirname, join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/adapters-node"
+import { workflowDir, type Host } from "@workspace/adapters-node"
 import {
   NODE_KINDS,
   workflowDetailSchema,
   parseNodeWorkflowYaml,
   type WorkflowDetail,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { moveLayoutIds, readLayout } from "./layout-files.ts"
 import { hashContent } from "./hash.ts"
 import {
@@ -24,7 +24,7 @@ import {
 import { workflowYamlPath } from "./workflow-files.ts"
 
 function detailOf(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   yaml: string
 ): WorkflowDetail {
@@ -40,7 +40,7 @@ function detailOf(
 }
 
 export function readNodeWorkflowDetail(
-  engine: Engine,
+  engine: Host,
   workflowId: string
 ): WorkflowDetail | null {
   const path = workflowYamlPath(engine, workflowId)
@@ -65,7 +65,7 @@ function isDir(path: string): boolean {
 }
 
 export function writeNodeWorkflowYaml(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   yaml: string,
   baseHash: string,

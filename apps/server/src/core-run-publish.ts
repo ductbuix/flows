@@ -3,21 +3,21 @@ import type { PublishPort, PublishPolicy } from "@workspace/core"
 import {
   advanceWorkCopyBase,
   diffWorkCopy,
+  findConnection,
   getConnector,
-  readConnection,
 } from "@workspace/adapters-node"
 
 /**
  * PublishPort backed by engine connectors + work-copy (BL-195).
  * `absoluteRunDir` maps the store-relative run dir to a filesystem path.
  */
-export function createEnginePublishPort(deps: {
+export function createHostPublishPort(deps: {
   home: string
   absoluteRunDir: (runDir: string) => string
 }): PublishPort {
   return {
     policy(connectionId) {
-      const conn = readConnection(deps.home, connectionId)
+      const conn = findConnection(deps.home, connectionId)
       if (!conn) return null
       return conn.policy as PublishPolicy
     },
@@ -34,7 +34,7 @@ export function createEnginePublishPort(deps: {
     },
     async apply(input) {
       const runRoot = deps.absoluteRunDir(input.runDir)
-      const conn = readConnection(deps.home, input.connectionId)
+      const conn = findConnection(deps.home, input.connectionId)
       if (!conn) {
         return {
           status: "rejected",

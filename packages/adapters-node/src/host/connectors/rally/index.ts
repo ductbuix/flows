@@ -1,4 +1,5 @@
-import type { Connection, ConnectionCheckResult } from "@workspace/contracts"
+import type { ConnectionCheckResult } from "@workspace/contracts"
+import type { Connection } from "../../connection-model.ts"
 import { isSignedIn, readCookies } from "../../secrets.ts"
 import type {
   Connector,

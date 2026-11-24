@@ -9,7 +9,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { parseNodeWorkflowYaml } from "@workspace/contracts"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
@@ -39,7 +39,7 @@ describe("core partial runs (BL-196)", () => {
     writeFileSync(join(wf, "workflow.yaml"), yaml)
     writeFileSync(join(wf, "nodes", "p", "text.md"), "house rules")
 
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
 

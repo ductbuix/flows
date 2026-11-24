@@ -16,11 +16,11 @@ import {
   recordUnpublishedLocalEffects,
   runDir,
   workflowDir,
-  type Engine,
+  type Host,
   type ManualItem,
   type MaterializeResourcesResult,
 } from "@workspace/adapters-node"
-import { createEnginePublishPort } from "./core-run-publish.ts"
+import { createHostPublishPort } from "./core-run-publish.ts"
 import { resumeCoreRuns } from "./core-run-resume.ts"
 import { createCoreRunSession } from "./core-run-session.ts"
 import { retryCoreStep, startCoreRun } from "./core-run-start.ts"
@@ -31,7 +31,7 @@ export type CoreStartArgs = {
   pins?: MaterializeResourcesResult
   inputText?: string
   inputs?: ManualItem
-  workItemId?: string
+  cardId?: string
   partial?: PartialRun
 }
 
@@ -55,7 +55,7 @@ export type CoreRunHost = {
 }
 
 /** Core RunActor + Scheduler over the shared engine EventLog (BL-194..196). */
-export function createCoreRunHost(engine: Engine): CoreRunHost {
+export function createCoreRunHost(engine: Host): CoreRunHost {
   const docs = createNodeDocumentStore({ root: engine.home })
   const processRunner = getProcessRunner()
   const agentRuntime = createAcpRuntime({ processRunner })
@@ -76,7 +76,7 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
     processEnv: process.env,
     agentRuntime,
     acpAsks: acpAsks.gates,
-    publish: createEnginePublishPort({
+    publish: createHostPublishPort({
       home: engine.home,
       absoluteRunDir: absOf,
     }),

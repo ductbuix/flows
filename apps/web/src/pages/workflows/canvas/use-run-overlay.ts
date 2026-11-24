@@ -52,7 +52,7 @@ export function useRunOverlay(
     setStarting(true)
     const result = await startRun(client, {
       workflowId,
-      workItemId: cardId,
+      cardId: cardId,
     })
     setStarting(false)
     if (result.ok && result.runId) setView(result.runId)

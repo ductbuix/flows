@@ -8,10 +8,10 @@ import {
   type AppTrustPort,
   type SettingsBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 
 /** Always-trust via engine settings table via adapters-node host (BL-214). */
-function engineTrustPort(engine: Engine): AppTrustPort {
+function engineTrustPort(engine: Host): AppTrustPort {
   function status(): TrustStatus {
     const trust = engine.trustDecision()
     return {
@@ -31,7 +31,7 @@ function engineTrustPort(engine: Engine): AppTrustPort {
 }
 
 /** settings/* FCP bindings (CLI probe, app trust, MCP allow) for BL-210. */
-export function createSettingsFcp(engine: Engine): SettingsBindings {
+export function createSettingsFcp(engine: Host): SettingsBindings {
   return createSettingsBindings({
     cli: createNodeCliStatusPort(),
     trust: engineTrustPort(engine),

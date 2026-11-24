@@ -1,4 +1,4 @@
-import type { Connection } from "@workspace/contracts"
+import type { Connection } from "../../connection-model.ts"
 import { isMcpServerAllowed } from "../../mcp/trust.ts"
 import type { ConnectorChangeSet, ConnectorPublishResult } from "../types.ts"
 import {

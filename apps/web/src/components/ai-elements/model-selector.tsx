@@ -4,7 +4,7 @@
  */
 import { useState } from "react"
 import { ChevronDownIcon } from "lucide-react"
-import type { CliModelCatalog, Effort } from "@workspace/shared"
+import type { CliModelCatalog, Effort } from "@workspace/contracts"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import {

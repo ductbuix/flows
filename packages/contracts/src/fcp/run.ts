@@ -1,9 +1,10 @@
 import { z } from "zod"
-import { logChunkSchema, runStepSchema, runSummarySchema } from "../api.ts"
-import { connectionIdSchema, runChangesResponseSchema } from "../connection.ts"
+import { logChunkSchema, runStepSchema, runSummarySchema } from "../runs.ts"
+import { connectionIdSchema } from "../ids.ts"
+import { runChangesResponseSchema } from "../publish.ts"
 import { runStatusSchema } from "../events.ts"
-import { workItemIdSchema } from "../work-item.ts"
-import { trustGrantSchema } from "../api-trust.ts"
+import { cardIdSchema } from "../docket/schemas.ts"
+import { trustGrantSchema } from "../trust.ts"
 import { defineMethod, defineNotification } from "./define.ts"
 import { runUpdateAgentKinds } from "./run-update-kinds.ts"
 
@@ -13,8 +14,8 @@ const fcpRequestKeySchema = z.string().uuid().optional()
 export const runListParamsSchema = z.object({
   cursor: z.string().min(1).optional(),
   limit: z.number().int().positive().max(DEFAULT_LIMIT_MAX).optional(),
-  /** Docket card / work item id (DES-038, BL-200). */
-  workItemId: workItemIdSchema.optional(),
+  /** Docket card id (DES-038, BL-200). */
+  cardId: cardIdSchema.optional(),
   /** Filter to one workflow (BL-203). */
   workflowId: z.string().min(1).optional(),
 })
@@ -37,7 +38,7 @@ export const runStartParamsSchema = z.object({
   workflowId: z.string().min(1),
   requestKey: fcpRequestKeySchema,
   values: z.record(z.string(), z.string()).optional(),
-  workItemId: workItemIdSchema.optional(),
+  cardId: cardIdSchema.optional(),
   refreshPins: z.boolean().optional(),
   only: z.string().min(1).optional(),
   from: z.string().min(1).optional(),

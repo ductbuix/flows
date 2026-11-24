@@ -11,7 +11,7 @@ function groupByCard(runs: RunSummary[], cards: WireCardFace[]): Group[] {
   for (const c of cards) byId.set(c.id, c)
   const groups = new Map<string, Group>()
   for (const r of runs) {
-    const cardId = r.workItemId ?? "_none"
+    const cardId = r.cardId ?? "_none"
     let g = groups.get(cardId)
     if (!g) {
       g = {
