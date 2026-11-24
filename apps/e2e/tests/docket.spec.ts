@@ -70,7 +70,11 @@ test.describe("docket card panel sections (BL-198)", () => {
         name: "Remove ref github.com/costory/flows/issues/198",
       })
       .click()
-    await expect(panel.getByText("No refs yet")).toBeVisible()
+    await expect(
+      panel.getByRole("link", {
+        name: "github.com/costory/flows/issues/198",
+      })
+    ).toHaveCount(0)
   })
 
   test("properties", async ({ page }) => {
@@ -121,5 +125,54 @@ test.describe("docket card panel sections (BL-198)", () => {
       .getByRole("button", { name: "Remove link to Refactor auth session" })
       .click()
     await expect(panel.getByText("No links yet")).toBeVisible()
+  })
+})
+
+test.describe("docket card panel assets (BL-199)", () => {
+  test("add asset", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    await expect(panel.getByText("Acceptance criteria")).toBeVisible()
+
+    await panel.getByRole("button", { name: "Add asset" }).click()
+    await page.getByTestId("asset-add-from-disk").click()
+    const dialog = page.getByTestId("asset-disk-dialog")
+    await expect(dialog).toBeVisible()
+    await dialog.getByTestId("disk-file-input").setInputFiles({
+      name: "notes.md",
+      mimeType: "text/markdown",
+      buffer: Buffer.from("# Notes\n"),
+    })
+    await expect(dialog.getByTestId("disk-picker")).toContainText("notes.md")
+    await dialog.getByTestId("asset-disk-submit").click()
+    await expect(dialog).toBeHidden()
+    await expect(
+      panel.getByRole("button", { name: "Remove asset notes.md" })
+    ).toBeVisible()
+
+    await panel.getByRole("button", { name: "Remove asset notes.md" }).click()
+    await expect(
+      panel.getByRole("button", { name: "Remove asset notes.md" })
+    ).toHaveCount(0)
+  })
+
+  test("item files", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    await panel.getByTestId("item-open-menu").click()
+    await page.getByTestId("item-view-files").click()
+    await expect(page).toHaveURL(/\/files/)
+    await expect(page.getByTestId("mock-files-page")).toBeVisible()
+  })
+
+  test("ref data", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    const block = panel.getByTestId("ref-data-block")
+    await expect(block).toBeVisible()
+    await expect(block.getByText("rally", { exact: true })).toBeVisible()
+    await expect(block.getByText("US1234")).toBeVisible()
+    await expect(block.getByText("In progress")).toBeVisible()
+    await expect(block.getByText("Sprint 42")).toBeVisible()
   })
 })

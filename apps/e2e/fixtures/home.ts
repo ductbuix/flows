@@ -628,6 +628,11 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  mkdirSync(join(docket, "cards", "fix-login", "assets"), { recursive: true })
+  writeFileSync(
+    join(docket, "cards", "fix-login", "assets", "acceptance.md"),
+    "# Acceptance\n\nLogin stays green for 20 runs.\n"
+  )
   writeFileSync(
     join(docket, "cards", "fix-login", "card.md"),
     [
@@ -639,6 +644,18 @@ export function createE2eHome(): string {
       "created: 2026-11-20T09:12:00Z",
       "updated: 2026-11-23T10:00:00Z",
       "due: 2026-11-28",
+      "refs:",
+      "  - system: rally",
+      "    id: US1234",
+      "    label: Login flake on CI",
+      "    syncedAt: 2026-11-23T10:00:00Z",
+      "    data:",
+      "      State: In progress",
+      "      Iteration: Sprint 42",
+      "      Owner: flows",
+      "assets:",
+      "  - path: assets/acceptance.md",
+      "    label: Acceptance criteria",
       "---",
       "",
       "Stabilize the login e2e.",
