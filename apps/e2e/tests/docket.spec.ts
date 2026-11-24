@@ -162,7 +162,7 @@ test.describe("docket card panel assets (BL-199)", () => {
     await panel.getByTestId("item-open-menu").click()
     await page.getByTestId("item-view-files").click()
     await expect(page).toHaveURL(/\/files/)
-    await expect(page.getByTestId("mock-files-page")).toBeVisible()
+    await expect(page.getByTestId("files-page")).toBeVisible()
   })
 
   test("ref data", async ({ page }) => {

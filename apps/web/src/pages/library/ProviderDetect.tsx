@@ -8,7 +8,7 @@ import { CircleCheck, CircleHelp } from "lucide-react"
 import { pathsToFileTree } from "@workspace/ui/components/file-tree"
 import { Input } from "@workspace/ui/components/input"
 import { mono } from "@/components/data/mono"
-import { FilesTree, folderPaths } from "@/pages/mock/FilesTree"
+import { FilesTree, folderPaths } from "@/components/FilesTree"
 import { TagBadge } from "./LibraryTags"
 
 export function findExisting(

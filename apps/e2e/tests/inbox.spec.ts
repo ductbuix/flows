@@ -24,7 +24,7 @@ test.describe("inbox page (BL-178)", () => {
   test("lists a waiting item and approve clears it", async ({ page }) => {
     const runId = await startRun("node-approval-home")
     await page.goto("/inbox")
-    await expect(page.getByTestId("mock-inbox-page")).toBeVisible()
+    await expect(page.getByTestId("inbox-page")).toBeVisible()
     const item = page.getByTestId(`inbox-item-approval:${runId}:gate:1`)
     await expect(item).toBeVisible({ timeout: 20_000 })
     await expect(item).toContainText("Ship the change?")

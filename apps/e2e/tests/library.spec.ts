@@ -31,7 +31,7 @@ async function screenshotThemes(
 test.describe("library page", () => {
   test("providers", async ({ page }) => {
     await page.goto("/library")
-    await expect(page.getByTestId("mock-library-page")).toBeVisible()
+    await expect(page.getByTestId("library-page")).toBeVisible()
     await page.getByTestId("library-providers-open").click()
     await expect(page.getByTestId("providers-dialog")).toBeVisible()
     await expect(page.getByTestId("provider-github")).toBeVisible()
@@ -51,7 +51,7 @@ test.describe("library page", () => {
 
   test("list", async ({ page }) => {
     await page.goto("/library")
-    await expect(page.getByTestId("mock-library-page")).toBeVisible()
+    await expect(page.getByTestId("library-page")).toBeVisible()
     await expect(page.getByTestId("library-row-github-acme-demo")).toBeVisible()
     await expect(page.getByTestId("library-row-local-notes")).toBeVisible()
     await page.getByTestId("library-view-gallery").click()

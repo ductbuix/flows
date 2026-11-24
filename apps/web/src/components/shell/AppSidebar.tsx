@@ -15,14 +15,14 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { InboxNavBadge } from "@/components/InboxNavBadge"
-import { APP_NAV } from "./mock-data"
+import { APP_NAV } from "./nav"
 
 type Props = {
   onOpenSettings: () => void
 }
 
 /** Sidebar 11 layout (shadcn blocks), reworked for Flows. */
-export function MockSidebar({ onOpenSettings }: Props) {
+export function AppSidebar({ onOpenSettings }: Props) {
   const { pathname } = useLocation()
   return (
     <Sidebar data-testid="app-sidebar">

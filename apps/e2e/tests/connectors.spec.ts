@@ -98,7 +98,7 @@ test.describe("connectors page (BL-181)", () => {
     page,
   }) => {
     await page.goto("/connectors")
-    await expect(page.getByTestId("mock-connectors-page")).toBeVisible()
+    await expect(page.getByTestId("connectors-page")).toBeVisible()
     await expect(page.getByTestId("connector-row-github-cli")).toBeVisible()
     await expect(page.getByTestId("connector-row-rally")).toBeVisible()
     await screenshotThemes(page, "connectors-page")

@@ -2,7 +2,7 @@
 id: BL-211
 title: "Rename pages/mock and delete mock stores"
 type: backlog
-status: todo
+status: done
 summary: Move shared components to their area folders; delete every *-store.ts and *-data.ts.
 tags: [web, cleanup, mock]
 related: [DES-043]
@@ -20,6 +20,6 @@ After the UI rebuilds, no code reads fake data. Move what remains to `pages/<are
 
 ## Done when
 
-- [ ] `apps/web/src/pages/mock` does not exist.
-- [ ] `git grep -E '(store|data)\.ts'` finds no mock stores.
-- [ ] Lint rule bans importing `pages/mock`.
+- [x] `apps/web/src/pages/mock` does not exist.
+- [x] `git grep -E '(store|data)\.ts'` finds no mock stores.
+- [x] Lint rule bans importing `pages/mock`.

@@ -75,7 +75,7 @@ function SkillsPageInner() {
           Add source
         </Button>
       }
-      data-testid="mock-skills-page"
+      data-testid="skills-page"
     >
       <PageTitle
         title="Skills"

@@ -70,7 +70,7 @@ async function expectLayout(page: Page, route: Route) {
 
 const routes: Route[] = [
   { name: "docket", path: "/docket", ready: "docket-page", dynamic: true },
-  { name: "inbox", path: "/inbox", ready: "mock-inbox-page", dynamic: true },
+  { name: "inbox", path: "/inbox", ready: "inbox-page", dynamic: true },
   {
     name: "workflows",
     path: "/workflows",

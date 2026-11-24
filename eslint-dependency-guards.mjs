@@ -117,6 +117,11 @@ export const webRestrictedImports = {
           ],
           message: "web must not import core, engine or adapters",
         },
+        {
+          group: ["@/pages/mock", "@/pages/mock/*", "**/pages/mock/*"],
+          message:
+            "pages/mock is gone; import from pages/<area> or components (BL-211)",
+        },
       ],
     },
   ],

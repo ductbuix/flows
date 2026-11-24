@@ -22,7 +22,7 @@ async function screenshotThemes(
 test.describe("runs page (BL-180)", () => {
   test("starts a run, opens sheet, deletes it", async ({ page }) => {
     await page.goto("/runs")
-    await expect(page.getByTestId("mock-runs-page")).toBeVisible()
+    await expect(page.getByTestId("runs-page")).toBeVisible()
     await expect(page.getByTestId("runs-start-open")).toBeVisible()
     await screenshotThemes(page, "runs-page")
 

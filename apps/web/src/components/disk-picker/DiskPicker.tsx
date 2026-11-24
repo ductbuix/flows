@@ -2,8 +2,8 @@ import { useRef } from "react"
 import { File as FileIcon, FolderOpen } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { pathsToFileTree } from "@workspace/ui/components/file-tree"
+import { FilesTree, folderPaths } from "@/components/FilesTree"
 import { mono } from "@/components/data/mono"
-import { FilesTree, folderPaths } from "@/pages/mock/FilesTree"
 
 export type DiskPick = {
   label: string
@@ -97,14 +97,20 @@ export function DiskPicker({ value, onPick, mode, preview = true }: Props) {
   )
 }
 
-/** Both file and folder choosers with one shared preview (library add). */
+type BothProps = {
+  value: DiskPick | null
+  onPick: (pick: DiskPick | null) => void
+  chosenNote?: string
+  emptyHint?: string
+}
+
+/** Both file and folder choosers with one shared preview (library / card assets). */
 export function DiskPickerBoth({
   value,
   onPick,
-}: {
-  value: DiskPick | null
-  onPick: (pick: DiskPick | null) => void
-}) {
+  chosenNote = "copied into its own Library folder",
+  emptyHint = "Nothing chosen. Files are copied into the Library; the originals stay where they are.",
+}: BothProps) {
   const nodes = value
     ? pathsToFileTree(value.entries.slice(0, 60).map((e) => e.path))
     : []
@@ -126,7 +132,8 @@ export function DiskPickerBoth({
             <span className="text-muted-foreground">
               {" · "}
               {value.folder ? `folder, ${value.entries.length} files` : "file"}
-              {" · copied into its own Library folder"}
+              {" · "}
+              {chosenNote}
             </span>
           </p>
           <div className="max-h-40 overflow-y-auto">
@@ -140,10 +147,7 @@ export function DiskPickerBoth({
           </div>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          Nothing chosen. Files are copied into the Library; the originals stay
-          where they are.
-        </p>
+        <p className="text-sm text-muted-foreground">{emptyHint}</p>
       )}
     </div>
   )

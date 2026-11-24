@@ -3,13 +3,13 @@ import { startRun } from "./helpers"
 
 const routes = [
   { path: "/docket", ready: "docket-page" },
-  { path: "/inbox", ready: "mock-inbox-page" },
-  { path: "/workflows", ready: "mock-workflows-page" },
-  { path: "/runs", ready: "mock-runs-page" },
-  { path: "/connectors", ready: "mock-connectors-page" },
-  { path: "/library", ready: "mock-library-page" },
-  { path: "/skills", ready: "mock-skills-page" },
-  { path: "/files", ready: "mock-files-page" },
+  { path: "/inbox", ready: "inbox-page" },
+  { path: "/workflows", ready: "workflows-page" },
+  { path: "/runs", ready: "runs-page" },
+  { path: "/connectors", ready: "connectors-page" },
+  { path: "/library", ready: "library-page" },
+  { path: "/skills", ready: "skills-page" },
+  { path: "/files", ready: "files-page" },
   { path: "/brand", ready: "brand-page" },
 ] as const
 
@@ -40,5 +40,20 @@ test.describe("shell smoke (BL-185)", () => {
     await expect(page.getByTestId("inbox-badge")).toHaveText(/^[1-9]\d*$/, {
       timeout: 20_000,
     })
+  })
+
+  test("app names", async ({ page }) => {
+    await page.goto("/docket")
+    await expect(page.getByTestId("app-sidebar")).toBeVisible({
+      timeout: 30_000,
+    })
+    await expect(page.getByTestId("docket-page")).toBeVisible()
+    await expect(page.locator("[data-testid^='mock-']")).toHaveCount(0)
+  })
+
+  test("no mock routes", async ({ page }) => {
+    await page.goto("/mock/docket")
+    await expect(page.getByTestId("app-sidebar")).toHaveCount(0)
+    await expect(page.getByTestId("docket-page")).toHaveCount(0)
   })
 })

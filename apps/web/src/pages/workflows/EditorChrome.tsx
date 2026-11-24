@@ -72,7 +72,7 @@ export function EditorChrome({
           {pending ? "Saving…" : "Save"}
         </Button>
       }
-      data-testid="mock-workflow-editor"
+      data-testid="workflow-editor"
     >
       <PageTitle
         title={title}

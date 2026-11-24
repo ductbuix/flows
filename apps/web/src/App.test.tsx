@@ -50,9 +50,9 @@ describe("App", () => {
     await expectDocketShell()
   })
 
-  it("keeps /mock/docket as a redirect into the app", async () => {
+  it("does not keep /mock routes", async () => {
     renderApp("/mock/docket")
-    await expectDocketShell()
+    expect(screen.queryByTestId("app-sidebar")).toBeNull()
   })
 
   it("opens settings as a panel from the sidebar footer", async () => {
@@ -63,9 +63,9 @@ describe("App", () => {
     expect(screen.getByTestId("theme-toggle")).toBeTruthy()
   })
 
-  it("redirects /settings away from a settings page", async () => {
+  it("has no /settings page route", async () => {
     renderApp("/settings")
-    await expectDocketShell()
+    expect(screen.queryByTestId("app-sidebar")).toBeNull()
     expect(screen.queryByTestId("settings-page")).toBeNull()
   })
 

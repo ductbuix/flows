@@ -34,15 +34,15 @@ async function saveAndWait(page: import("@playwright/test").Page) {
 test.describe("workflows page (BL-179)", () => {
   test("lists workflows, opens editor, creates one", async ({ page }) => {
     await page.goto("/workflows")
-    await expect(page.getByTestId("mock-workflows-page")).toBeVisible()
+    await expect(page.getByTestId("workflows-page")).toBeVisible()
     await expect(page.getByTestId("workflows-new-open")).toBeVisible()
-    await expect(page.getByTestId("mock-workflow-diamond")).toBeVisible()
+    await expect(page.getByTestId("workflow-diamond")).toBeVisible()
     await screenshotThemes(page, "workflows-page")
 
-    await page.getByTestId("mock-workflow-diamond").click()
+    await page.getByTestId("workflow-diamond").click()
     await expect(page.getByTestId("workflow-sheet")).toBeVisible()
     await page.getByTestId("workflow-open-editor").click()
-    await expect(page.getByTestId("mock-workflow-editor")).toBeVisible()
+    await expect(page.getByTestId("workflow-editor")).toBeVisible()
     await expect(page.getByTestId("workflow-canvas")).toBeVisible()
     await screenshotThemes(page, "workflow-editor")
 
@@ -51,7 +51,7 @@ test.describe("workflows page (BL-179)", () => {
     await expect(page.getByTestId("workflows-new")).toBeVisible()
     await page.getByTestId("workflows-new-name").fill("Ship workflows sdk")
     await page.getByTestId("workflows-new-submit").click()
-    await expect(page.getByTestId("mock-workflow-editor")).toBeVisible()
+    await expect(page.getByTestId("workflow-editor")).toBeVisible()
     await page.getByTestId("workflow-editor-tab-yaml").click()
     await expect(page.getByTestId("workflow-editor-yaml")).toContainText(
       "ship-workflows-sdk"
@@ -64,7 +64,7 @@ test.describe("workflows.spec.ts › editor yaml", () => {
     page,
   }) => {
     await page.goto("/workflows/diamond")
-    await expect(page.getByTestId("mock-workflow-editor")).toBeVisible()
+    await expect(page.getByTestId("workflow-editor")).toBeVisible()
     await page.getByTestId("workflow-editor-tab-yaml").click()
     const yaml = page.getByTestId("workflow-editor-yaml")
     await expect(yaml).toContainText("id: diamond")
