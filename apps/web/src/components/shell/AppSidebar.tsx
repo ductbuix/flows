@@ -9,7 +9,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -49,11 +48,7 @@ export function AppSidebar({ onOpenSettings }: Props) {
                     <File />
                     {item.label}
                   </SidebarMenuButton>
-                  {item.label === "Inbox" ? (
-                    <InboxNavBadge />
-                  ) : (
-                    <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
-                  )}
+                  {item.label === "Inbox" && <InboxNavBadge />}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

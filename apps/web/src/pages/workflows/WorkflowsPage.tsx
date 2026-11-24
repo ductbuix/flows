@@ -34,7 +34,9 @@ import {
 } from "@workspace/ui/components/table"
 import { FlowsClientGate } from "@/components/FlowsClientGate"
 import { Page, PageTitle } from "@/components/page"
+import { mono } from "@/components/data/mono"
 import { workflowLabel } from "@/lib/labels"
+import { cn } from "@workspace/ui/lib/utils"
 import { WorkflowRowMenu } from "./WorkflowRowMenu"
 import { WorkflowDialogs } from "./WorkflowDialogs"
 import { WorkflowSheet } from "./WorkflowSheet"
@@ -147,11 +149,12 @@ function WorkflowsPageInner() {
           </EmptyHeader>
         </Empty>
       ) : (
+        <div className="shrink-0">
         <Table data-testid="workflows-table">
           <TableHeader>
             <TableRow>
               <TableHead>Solves</TableHead>
-              <TableHead>Tasks</TableHead>
+              <TableHead className="text-right">Tasks</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -166,12 +169,16 @@ function WorkflowsPageInner() {
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="font-medium">{workflowLabel(w)}</span>
-                    <span className="max-w-md truncate text-xs text-muted-foreground">
-                      {w.goal ?? w.id}
-                    </span>
+                    {w.goal && (
+                      <span className="max-w-md truncate text-xs text-muted-foreground">
+                        {w.goal}
+                      </span>
+                    )}
                   </div>
                 </TableCell>
-                <TableCell>{w.taskCount}</TableCell>
+                <TableCell className={cn("text-right tabular-nums", mono)}>
+                  {w.taskCount}
+                </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <WorkflowRowMenu
                     name={workflowLabel(w)}
@@ -183,6 +190,7 @@ function WorkflowsPageInner() {
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
       <WorkflowDialogs
         client={client}
