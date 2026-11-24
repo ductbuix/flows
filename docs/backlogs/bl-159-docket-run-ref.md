@@ -2,7 +2,7 @@
 id: BL-159
 title: Run refs on cards
 type: backlog
-status: todo
+status: done
 summary: When a run started from a card finishes, the card gets or updates a flows-run ref.
 tags: [docket, runs]
 related: [DES-038, DES-041]
@@ -19,5 +19,5 @@ Run history stays linked without the board owning run state (domain event betwee
 
 ## Done when
 
-- [ ] Listens to `run.finished`; one ref per run, label shows workflow and result.
-- [ ] Service test on fakes.
+- [x] Listens to `run.finished`; one ref per run, label shows workflow and result.
+- [x] Service test on fakes.

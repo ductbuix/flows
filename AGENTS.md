@@ -29,6 +29,9 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`.
   `/health`; `/` + `/fcp` FCP over ws (loopback Host/Origin + lock token)
   with `GET /fcp/bootstrap`; `/blobs` GET/PUT (BlobStore). No REST `/api`.
+  Shared FCP host stack: `server/fcp-host` (also used by `apps/cli`).
+- `apps/cli`: `flows` command (`engine --stdio`, `inbox`, `run`); attaches
+  via `engine.lock` or hosts in-process; FCP over sdk (ws or linked/ndjson).
 - `packages/engine`: SQLite event log (via EventStore) + settings, connectors,
   MCP trust, connections, library, work items, work copies, CliAdapter,
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
@@ -52,8 +55,9 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   (`runSummarySchema`, `workItemSchema`), branded ids (`CardId`, `RunId`,
   `WorkflowId`, `StepId`, `ConnectorId`, `SkillSlug`, `LibItemId`),
   websocket, node workflow (`workflowSchema`), `connection.yaml`, library
-  list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
-  events, `findLoopEdges`, YAML edits that keep comments and key order.
+  (LibItem `v<n>` + FCP list/get/pull/pin/set_tags/remove/providers),
+  `resources.json`, `config.yaml` `library.maxBytes`, events,
+  `findLoopEdges`, YAML edits that keep comments and key order.
 - `packages/ui`: shadcn, domain-free AI Element patterns, `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
   (`layout.spec.ts` baselines, shell smoke, FCP page specs).

@@ -5,6 +5,7 @@ import {
   type Clock,
   type EventStore,
   type InboxBindings,
+  type InboxService,
   type UpdateBus,
 } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
@@ -12,6 +13,7 @@ import type { Engine } from "@workspace/engine"
 const systemClock: Clock = { now: () => Date.now() }
 
 export type InboxFcp = {
+  inbox: InboxService
   bindings: InboxBindings
   dispose: () => void
 }
@@ -84,6 +86,7 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
 
   const unsub = engine.onEvent((stored) => inbox.apply(stored))
   return {
+    inbox,
     bindings: createInboxBindings(inbox),
     dispose: () => unsub(),
   }

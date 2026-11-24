@@ -11,7 +11,13 @@ import {
   type InboxItem,
   type InboxProjectionState,
 } from "./projection.ts"
+import {
+  applySignInStatus,
+  type SignInStatusInput,
+} from "./projection-sign-in.ts"
 import { answerInboxItem, dismissOptionId } from "./service-answer.ts"
+
+type RunInboxItem = Exclude<InboxItem, { kind: "sign_in" }>
 
 export type InboxAnswerPush = (input: {
   runId: string
@@ -24,7 +30,7 @@ export type InboxAnswerPush = (input: {
   requestId?: string
   /** Selected options when answering a question (BL-147). */
   answers?: CursorAskAnswer[]
-  kind: InboxItem["kind"]
+  kind: RunInboxItem["kind"]
 }) => Promise<void>
 
 export type InboxServiceDeps = {
@@ -112,6 +118,30 @@ export class InboxService {
     return openInboxItems(this.state)
   }
 
+  /**
+   * Connector check → Inbox: `expired` adds a sign-in item, `connected`
+   * resolves it (DES-039 / BL-164).
+   */
+  applyConnectorStatus(input: SignInStatusInput): void {
+    const folded = applySignInStatus(this.state, input)
+    this.state = folded.state
+    if (!this.live) return
+    for (const change of folded.changes) {
+      if (change.kind === "item_added") {
+        this.deps.bus.publish("inbox/update", {
+          kind: "item_added",
+          item: change.item,
+        })
+      } else {
+        this.deps.bus.publish("inbox/update", {
+          kind: "item_resolved",
+          itemId: change.itemId,
+          ...(change.decision ? { decision: change.decision } : {}),
+        })
+      }
+    }
+  }
+
   async answer(
     itemId: string,
     optionId: string,
@@ -123,9 +153,18 @@ export class InboxService {
     )
   }
 
-  /** Dismiss rejects so the run does not stay parked. */
+  /** Dismiss rejects so the run does not stay parked. Sign-in resolves here. */
   async dismiss(itemId: string): Promise<void> {
     const item = this.requireOpen(itemId)
+    if (item.kind === "sign_in") {
+      this.applyConnectorStatus({
+        connectorId: item.connectorId,
+        name: item.connectorId,
+        status: "connected",
+        at: new Date(this.deps.clock.now()).toISOString(),
+      })
+      return
+    }
     await this.route(item, dismissOptionId(item))
   }
 
@@ -138,7 +177,7 @@ export class InboxService {
   }
 
   private async route(
-    item: InboxItem,
+    item: RunInboxItem,
     optionId: InboxDecision,
     answers?: CursorAskAnswer[]
   ): Promise<void> {

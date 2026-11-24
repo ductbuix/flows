@@ -10,7 +10,7 @@ import { validateAskAnswers } from "../agents/question-ask.ts"
 import type { InboxDecision, InboxItem } from "./projection.ts"
 
 type Route = (
-  item: InboxItem,
+  item: Exclude<InboxItem, { kind: "sign_in" }>,
   optionId: InboxDecision,
   answers?: CursorAskAnswer[]
 ) => Promise<void>
@@ -22,6 +22,12 @@ export async function answerInboxItem(
   answers: readonly CursorAskAnswer[] | undefined,
   route: Route
 ): Promise<void> {
+  if (item.kind === "sign_in") {
+    throw engineError(
+      "failed_precondition",
+      "Sign-in items resolve when the connector is connected"
+    )
+  }
   if (item.kind === "approval") {
     const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
     if (!parsed.success) {
@@ -76,7 +82,9 @@ export async function answerInboxItem(
 }
 
 /** Dismiss maps to a reject/skip option so the run does not stay parked. */
-export function dismissOptionId(item: InboxItem): InboxDecision {
+export function dismissOptionId(
+  item: Exclude<InboxItem, { kind: "sign_in" }>
+): InboxDecision {
   if (item.kind === "approval" || item.kind === "plan_review") return "rejected"
   if (item.kind === "question") return "skipped"
   return "reject-once"

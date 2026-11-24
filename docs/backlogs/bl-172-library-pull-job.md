@@ -2,7 +2,7 @@
 id: BL-172
 title: Library pull as a job with versions
 type: backlog
-status: todo
+status: done
 summary: library/pull runs a provider fetch through a connector and writes an immutable v<n> folder; job_progress and job_finished updates.
 tags: [library, connectors]
 related: [DES-041]
@@ -19,5 +19,5 @@ Port today's library pull to the new core with versions.
 
 ## Done when
 
-- [ ] New version only when content changed; `current` is newest unless pinned.
-- [ ] Service tests on fakes.
+- [x] New version only when content changed; `current` is newest unless pinned.
+- [x] Service tests on fakes.

@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { acquireLock, releaseLock } from "./engine-lock.ts"
+import { acquireLock, peekLock, releaseLock } from "./engine-lock.ts"
 
 const temps: string[] = []
 
@@ -67,7 +67,7 @@ describe("acquireLock", () => {
 
     const second = acquireLock(home, selfB)
     expect(second).toEqual({
-      attachTo: { url: selfA.url, token: selfA.token },
+      attachTo: { url: selfA.url, token: selfA.token, pid: process.pid },
     })
     expect(
       JSON.parse(readFileSync(join(home, "engine.lock"), "utf8"))
@@ -101,6 +101,36 @@ describe("acquireLock", () => {
     const home = tempHome()
     writeFileSync(join(home, "engine.lock"), "not-json", { mode: 0o600 })
     expect(acquireLock(home, selfA)).toEqual({ owned: true })
+  })
+})
+
+describe("peekLock", () => {
+  it("returns live owner without taking the lock", () => {
+    const home = tempHome()
+    expect(peekLock(home)).toBeNull()
+    expect(acquireLock(home, selfA)).toEqual({ owned: true })
+    expect(peekLock(home)).toEqual({
+      url: selfA.url,
+      token: selfA.token,
+      pid: process.pid,
+    })
+    expect(acquireLock(home, selfB)).toEqual({
+      attachTo: { url: selfA.url, token: selfA.token, pid: process.pid },
+    })
+  })
+
+  it("returns null for a stale or missing lock", () => {
+    const home = tempHome()
+    writeFileSync(
+      join(home, "engine.lock"),
+      JSON.stringify({
+        pid: deadPid(),
+        url: selfA.url,
+        token: selfA.token,
+      }),
+      { mode: 0o600 }
+    )
+    expect(peekLock(home)).toBeNull()
   })
 })
 

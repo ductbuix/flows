@@ -23,7 +23,9 @@ export type InboxProjectionState = {
   readonly workflowByRun: ReadonlyMap<string, string>
 }
 
-export type InboxDecision = NonNullable<InboxItem["decision"]>
+export type InboxDecision = NonNullable<
+  Exclude<InboxItem, { kind: "sign_in" }>["decision"]
+>
 
 export type InboxChange =
   | { kind: "item_added"; item: InboxItem }
@@ -154,10 +156,12 @@ function resolveApproval(
 function resolveItem(
   state: InboxProjectionState,
   id: string,
-  decision: InboxItem["decision"] | undefined
+  decision: InboxDecision | undefined
 ): { state: InboxProjectionState; changes: InboxChange[] } {
   const cur = state.items.get(id)
-  if (!cur || cur.status !== "open") return { state, changes: [] }
+  if (!cur || cur.status !== "open" || cur.kind === "sign_in") {
+    return { state, changes: [] }
+  }
   const item = {
     ...cur,
     status: "resolved" as const,
@@ -186,12 +190,8 @@ function resolveOpenForStep(
   let next = state
   const changes: InboxChange[] = []
   for (const item of state.items.values()) {
-    if (
-      item.runId !== runId ||
-      item.nodeId !== nodeId ||
-      item.pass !== pass ||
-      item.status !== "open"
-    ) {
+    if (item.kind === "sign_in" || item.status !== "open") continue
+    if (item.runId !== runId || item.nodeId !== nodeId || item.pass !== pass) {
       continue
     }
     const folded = resolveItem(next, item.id, undefined)
@@ -208,7 +208,8 @@ function resolveAllForRun(
   let next = state
   const changes: InboxChange[] = []
   for (const item of state.items.values()) {
-    if (item.runId !== runId || item.status !== "open") continue
+    if (item.kind === "sign_in" || item.status !== "open") continue
+    if (item.runId !== runId) continue
     const folded = resolveItem(next, item.id, undefined)
     next = folded.state
     changes.push(...folded.changes)

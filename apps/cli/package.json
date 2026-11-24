@@ -1,0 +1,36 @@
+{
+  "name": "cli",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "flows": "./src/main.ts"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@workspace/adapters-node": "workspace:*",
+    "@workspace/contracts": "workspace:*",
+    "@workspace/engine": "workspace:*",
+    "@workspace/protocol": "workspace:*",
+    "@workspace/sdk": "workspace:*",
+    "server": "workspace:*",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@hono/node-server": "^2.1.9",
+    "@types/node": "^24.19.2",
+    "@types/ws": "^8.18.2",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.1",
+    "ws": "^8.23.0"
+  }
+}

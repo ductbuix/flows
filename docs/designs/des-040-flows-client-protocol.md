@@ -219,6 +219,8 @@ the engine resolves them, so the UI never builds a filesystem path.
   (BL-158).
 - v1 additive (2026-11-24): Inbox `question` kind and optional
   `answers` on `inbox/answer` for Cursor `cursor/ask_question` (BL-147).
+- v1 additive (2026-11-24): `library/pin_version`, `library/set_tags`,
+  `library/remove`, and `library/list` optional `tag` filter (BL-173).
 
 ## Example
 
