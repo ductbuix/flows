@@ -14,7 +14,21 @@ interface FlowsDesktopApi {
     connectorId: string
     url: string
     cookieDomains: string[]
-  }): Promise<{ cookies: unknown[] } | { cancelled: true }>
+  }): Promise<
+    | {
+        cookies: {
+          name: string
+          value: string
+          path: string
+          domain?: string
+          expires?: number
+          httpOnly?: boolean
+          secure?: boolean
+          sameSite?: "Strict" | "Lax" | "None"
+        }[]
+      }
+    | { cancelled: true }
+  >
 }
 
 interface FlowsFcpBootstrap {

@@ -96,8 +96,9 @@ export function WorkflowCanvas({
   }
 
   const onNodeDragStop: OnNodeDrag = (_e, _node, next) => {
-    setNodes(next)
-    publishLayout(next)
+    const canvas = next as CanvasNode[]
+    setNodes(canvas)
+    publishLayout(canvas)
   }
 
   const { load: loadSystem, clear: clearSystem } = system

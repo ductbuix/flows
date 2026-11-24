@@ -98,7 +98,8 @@ describe("updateWorkflowMeta", () => {
         yaml: expect.stringContaining("name: New"),
       })
     )
-    expect(save.mock.calls[0]![0]).toEqual(
+    const first = save.mock.calls.at(0)?.at(0)
+    expect(first).toEqual(
       expect.objectContaining({
         yaml: expect.stringContaining("goal: fresh goal"),
       })

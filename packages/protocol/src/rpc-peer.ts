@@ -35,9 +35,11 @@ export class RpcPeer {
   private readonly notificationHandlers = new Map<string, NotificationHandler>()
   private readonly unsubs: (() => void)[] = []
   private readonly inbound: InboundState
+  private readonly transport: Transport
   private closed = false
 
-  constructor(private readonly transport: Transport) {
+  constructor(transport: Transport) {
+    this.transport = transport
     this.inbound = {
       transport,
       requestHandlers: this.requestHandlers,

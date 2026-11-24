@@ -1,15 +1,16 @@
 import { describe, expect, it } from "vitest"
-import type { WireSkillSummary } from "@workspace/contracts"
+import { SkillSlug, type WireSkillSummary } from "@workspace/contracts"
 import { statusOf, whereLabel } from "./status"
 
 const skill = (
-  partial: Partial<WireSkillSummary> & Pick<WireSkillSummary, "slug">
+  partial: Omit<Partial<WireSkillSummary>, "slug"> & { slug: string }
 ): WireSkillSummary => ({
   name: partial.slug,
   description: "d",
   scope: "workspace",
   dirs: [".agents", ".claude"],
   ...partial,
+  slug: SkillSlug.parse(partial.slug),
 })
 
 describe("statusOf", () => {

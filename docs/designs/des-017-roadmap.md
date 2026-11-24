@@ -31,9 +31,10 @@ updated: 2026-11-24
 
 # Roadmap
 
-Phases follow the backlog order (priority, then `depends`). Status lives
-in the [backlogs index](../backlogs/INDEX.md); this doc only says why the
-order is what it is. Goals come from [DES-014](des-014-vision.md).
+Phases follow the backlog order (priority, then `depends`). Status for
+open work lives in the [backlogs index](../backlogs/INDEX.md); phases
+37–42 are `done` (BL-193…BL-217). Goals come from
+[DES-014](des-014-vision.md).
 
 | Phase | Goal                           | Backlog items                                                                                                                                    | Done when                                                                                  |
 | ----- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
@@ -74,12 +75,12 @@ order is what it is. Goals come from [DES-014](des-014-vision.md).
 | 34    | Contexts on core               | BL-151 to BL-159 Docket, BL-160 to BL-164 connectors, BL-165 to BL-167 gateway, BL-168 to BL-170 skills, BL-171 to BL-176 library, files, writes | every mockup area has its FCP methods                                                      |
 | 35    | Web on the sdk                 | BL-177 to BL-184 pages, BL-185 REST out                                                                                                          | web uses only the sdk; REST is blobs and health                                            |
 | 36    | Desktop and CLI                | BL-186 to BL-190 desktop, BL-191 CLI                                                                                                             | Electron runs or attaches to the engine; flows run works from a terminal                   |
-| 37    | Parity audit                   | BL-193 checklist                                                                                                                                 | every mock screen, action and state has a row and a test id                                |
-| 38    | Run core in the loop           | BL-194 wiring, BL-195 executors, BL-196 semantics, BL-197 hosts                                                                                  | runs execute on core; no host calls the engine run path                                    |
-| 39    | Mock UI on real data           | BL-198 to BL-208 card, canvas, workflow sheet, library, skills, connectors, inbox, files                                                         | every mock area works on FCP data                                                          |
-| 40    | Remove what the mock has not   | BL-209 Runs page, BL-210 Settings panel, BL-211 mock folder, BL-212 names                                                                        | routes equal the mock routes plus dev pages; no fake data                                  |
-| 41    | Retire the old engine          | BL-213 contracts, BL-214 leftovers, BL-215 delete package                                                                                        | no `@workspace/engine`                                                                     |
-| 42    | Verify                         | BL-216 e2e baselines, BL-217 verification                                                                                                        | checklist passes in desktop and web                                                        |
+| 37    | Parity audit                   | BL-193 checklist                                                                                                                                 | done                                                                                       |
+| 38    | Run core in the loop           | BL-194 wiring, BL-195 executors, BL-196 semantics, BL-197 hosts                                                                                  | done                                                                                       |
+| 39    | Mock UI on real data           | BL-198 to BL-208 card, canvas, workflow sheet, library, skills, connectors, inbox, files                                                         | done                                                                                       |
+| 40    | Remove what the mock has not   | BL-209 Runs page, BL-210 Settings panel, BL-211 mock folder, BL-212 names                                                                        | done                                                                                       |
+| 41    | Retire the old engine          | BL-213 contracts, BL-214 leftovers, BL-215 delete package                                                                                        | done                                                                                       |
+| 42    | Verify                         | BL-216 e2e baselines, BL-217 verification                                                                                                        | done                                                                                       |
 
 ## Why this order
 

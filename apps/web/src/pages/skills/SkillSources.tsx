@@ -94,7 +94,7 @@ export function SourcesList({
   sources: WireSkillSource[]
   items: LibItem[]
 }) {
-  const byId = new Map(items.map((i) => [i.id, i]))
+  const byId = new Map(items.map((i) => [String(i.id), i]))
   const sourceIds = sources.map((s) => s.id)
   return (
     <div className="flex flex-col gap-2" data-testid="skill-sources">

@@ -1,4 +1,8 @@
-import type { LibItem, ProviderIcon } from "@workspace/contracts"
+import {
+  LibItemId,
+  type LibItem,
+  type ProviderIcon,
+} from "@workspace/contracts"
 import type { FlowsClient } from "@workspace/sdk"
 import { errorMessage, isConflictError } from "@/lib/fcp-error"
 
@@ -15,7 +19,7 @@ export async function pinVersion(
 ): Promise<LibraryActionResult | LibItem> {
   try {
     return await client.call("library/pin_version", {
-      id,
+      id: LibItemId.parse(id),
       n,
       requestKey: requestKey(),
     })
@@ -31,7 +35,7 @@ export async function pullItem(
 ): Promise<{ ok: true; jobId: string } | { ok: false; error: string }> {
   try {
     const result = await client.call("library/pull", {
-      id,
+      id: LibItemId.parse(id),
       requestKey: requestKey(),
     })
     return { ok: true, jobId: result.jobId }
@@ -46,7 +50,7 @@ export async function pushItem(
 ): Promise<{ ok: true; jobId: string } | { ok: false; error: string }> {
   try {
     const result = await client.call("library/push", {
-      id,
+      id: LibItemId.parse(id),
       requestKey: requestKey(),
     })
     return { ok: true, jobId: result.jobId }
@@ -61,7 +65,7 @@ export async function unlinkItem(
 ): Promise<LibraryActionResult | LibItem> {
   try {
     return await client.call("library/unlink", {
-      id,
+      id: LibItemId.parse(id),
       requestKey: requestKey(),
     })
   } catch (err) {
@@ -77,7 +81,7 @@ export async function setTags(
 ): Promise<LibraryActionResult | LibItem> {
   try {
     return await client.call("library/set_tags", {
-      id,
+      id: LibItemId.parse(id),
       tags,
       requestKey: requestKey(),
     })
@@ -136,7 +140,10 @@ export async function removeItem(
   id: string
 ): Promise<LibraryActionResult> {
   try {
-    await client.call("library/remove", { id, requestKey: requestKey() })
+    await client.call("library/remove", {
+      id: LibItemId.parse(id),
+      requestKey: requestKey(),
+    })
     return "ok"
   } catch (err) {
     if (isConflictError(err)) return "conflict"
