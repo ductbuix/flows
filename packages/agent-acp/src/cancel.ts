@@ -6,18 +6,34 @@ export const CANCELLED_PERMISSION_RESULT = {
   outcome: { outcome: "cancelled" as const },
 }
 
-export type PendingPermission = {
+/** Cursor `cursor/ask_question` cancelled outcome (DES-041 / BL-147). */
+export const CANCELLED_ASK_QUESTION_RESULT = {
+  outcome: { outcome: "cancelled" as const },
+}
+
+export type PendingClientRequest = {
   resolve: (result: unknown) => void
+  cancelledResult: unknown
+}
+
+/** @deprecated Prefer PendingClientRequest. */
+export type PendingPermission = PendingClientRequest
+
+/** Answer every parked client request with its cancelled outcome. */
+export function cancelPendingRequests(
+  pending: Set<PendingClientRequest>
+): void {
+  for (const entry of pending) {
+    entry.resolve(entry.cancelledResult)
+  }
+  pending.clear()
 }
 
 /** Answer every parked permission with the cancelled outcome. */
 export function cancelPendingPermissions(
-  pending: Set<PendingPermission>
+  pending: Set<PendingClientRequest>
 ): void {
-  for (const entry of pending) {
-    entry.resolve(CANCELLED_PERMISSION_RESULT)
-  }
-  pending.clear()
+  cancelPendingRequests(pending)
 }
 
 /**

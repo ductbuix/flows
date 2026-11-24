@@ -216,6 +216,8 @@ export {
   inboxListResultSchema,
   inboxPermissionItemSchema,
   inboxPermissionOptionIdSchema,
+  inboxQuestionItemSchema,
+  inboxQuestionOptionIdSchema,
   inboxUpdateNotification,
   type WireInboxItem,
 } from "./inbox.ts"

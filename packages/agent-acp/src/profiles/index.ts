@@ -1,4 +1,5 @@
 export {
+  CURSOR_ASK_QUESTION_METHOD,
   CURSOR_AUTH_METHOD,
   CURSOR_MODES,
   cursorCommand,

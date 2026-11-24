@@ -1,6 +1,8 @@
 import {
   inboxApprovalOptionIdSchema,
   inboxPermissionOptionIdSchema,
+  inboxQuestionOptionIdSchema,
+  type CursorAskAnswer,
   type WireInboxItem,
 } from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
@@ -15,16 +17,19 @@ import {
   type InboxItem,
   type InboxProjectionState,
 } from "./projection.ts"
+import { validateAskAnswers } from "../agents/question-ask.ts"
 
 export type InboxAnswerPush = (input: {
   runId: string
   at: string
   nodeId: string
   pass: number
-  /** Approval or permission option id. */
+  /** Approval, permission, or question option id. */
   optionId: InboxDecision
-  /** Set for permission items (DES-041). */
+  /** Set for permission and question items (DES-041). */
   requestId?: string
+  /** Selected options when answering a question (BL-147). */
+  answers?: CursorAskAnswer[]
   kind: InboxItem["kind"]
 }) => Promise<void>
 
@@ -113,7 +118,11 @@ export class InboxService {
     return openInboxItems(this.state)
   }
 
-  async answer(itemId: string, optionId: string): Promise<void> {
+  async answer(
+    itemId: string,
+    optionId: string,
+    answers?: readonly CursorAskAnswer[]
+  ): Promise<void> {
     const item = this.requireOpen(itemId)
     if (item.kind === "approval") {
       const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
@@ -122,6 +131,27 @@ export class InboxService {
           "invalid_params",
           `Unknown optionId for approval: ${optionId}`
         )
+      }
+      await this.route(item, parsed.data)
+      return
+    }
+    if (item.kind === "question") {
+      const parsed = inboxQuestionOptionIdSchema.safeParse(optionId)
+      if (!parsed.success) {
+        throw engineError(
+          "invalid_params",
+          `Unknown optionId for question: ${optionId}`
+        )
+      }
+      if (parsed.data === "answered") {
+        if (!answers || !validateAskAnswers(item.questions, answers)) {
+          throw engineError(
+            "invalid_params",
+            "Invalid or incomplete answers for question"
+          )
+        }
+        await this.route(item, parsed.data, [...answers])
+        return
       }
       await this.route(item, parsed.data)
       return
@@ -143,6 +173,10 @@ export class InboxService {
       await this.route(item, "rejected")
       return
     }
+    if (item.kind === "question") {
+      await this.route(item, "skipped")
+      return
+    }
     await this.route(item, "reject-once")
   }
 
@@ -154,7 +188,11 @@ export class InboxService {
     return item
   }
 
-  private async route(item: InboxItem, optionId: InboxDecision): Promise<void> {
+  private async route(
+    item: InboxItem,
+    optionId: InboxDecision,
+    answers?: CursorAskAnswer[]
+  ): Promise<void> {
     const at = new Date(this.deps.clock.now()).toISOString()
     await this.deps.pushAnswer({
       runId: item.runId,
@@ -163,7 +201,10 @@ export class InboxService {
       pass: item.pass,
       kind: item.kind,
       optionId,
-      ...(item.kind === "permission" ? { requestId: item.requestId } : {}),
+      ...(item.kind === "permission" || item.kind === "question"
+        ? { requestId: item.requestId }
+        : {}),
+      ...(answers ? { answers } : {}),
     })
     this.syncRun(item.runId)
   }

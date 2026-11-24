@@ -3,6 +3,7 @@ import {
   decideAnswer,
   decideEffectResult,
   decidePermissionAnswer,
+  decideQuestionAnswer,
 } from "./decide-result.ts"
 import { decideCancel, decideWake } from "./decide-schedule.ts"
 import type { DecideInput, DecideOutput, RunState } from "./model.ts"
@@ -30,6 +31,9 @@ export function decide(
     case "permission_answer":
       if (!state) return { events: [], effects: [] }
       return decidePermissionAnswer(state, input)
+    case "question_answer":
+      if (!state) return { events: [], effects: [] }
+      return decideQuestionAnswer(state, input)
     case "effect_result":
       if (!state) return { events: [], effects: [] }
       return decideEffectResult(state, input)

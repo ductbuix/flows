@@ -217,6 +217,8 @@ the engine resolves them, so the UI never builds a filesystem path.
   `run_finished` (BL-176).
 - v1 additive (2026-11-24): `docket/add_asset`, `docket/remove_asset`
   (BL-158).
+- v1 additive (2026-11-24): Inbox `question` kind and optional
+  `answers` on `inbox/answer` for Cursor `cursor/ask_question` (BL-147).
 
 ## Example
 

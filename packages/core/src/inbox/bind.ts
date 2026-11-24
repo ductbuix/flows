@@ -17,7 +17,7 @@ export function createInboxBindings(service: InboxService): InboxBindings {
       service.list(params)
     ),
     "inbox/answer": defineBinding(inboxAnswerMethod, async (params) => {
-      await service.answer(params.itemId, params.optionId)
+      await service.answer(params.itemId, params.optionId, params.answers)
       return {}
     }),
     "inbox/dismiss": defineBinding(inboxDismissMethod, async (params) => {

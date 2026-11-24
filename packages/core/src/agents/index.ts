@@ -21,3 +21,14 @@ export {
   type PermissionAskOpen,
   type PermissionOptionId,
 } from "./permission-ask.ts"
+export {
+  askQuestionResult,
+  CANCELLED_ASK_QUESTION_RESULT,
+  createQuestionAskGate,
+  parseAskQuestionParams,
+  QuestionAskGate,
+  validateAskAnswers,
+  type QuestionAskGateDeps,
+  type QuestionAskOpen,
+  type QuestionOutcome,
+} from "./question-ask.ts"

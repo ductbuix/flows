@@ -5,6 +5,11 @@ import {
   permissionItemId,
   resolvePermission,
 } from "./projection-permission.ts"
+import {
+  addQuestion,
+  questionItemId,
+  resolveQuestion,
+} from "./projection-question.ts"
 
 export type InboxItem = WireInboxItem
 
@@ -36,7 +41,7 @@ export function approvalItemId(
   return `approval:${runId}:${nodeId}:${pass}`
 }
 
-export { permissionItemId }
+export { permissionItemId, questionItemId }
 
 export function foldInboxEvent(
   state: InboxProjectionState,
@@ -52,12 +57,16 @@ export function foldInboxEvent(
       return addApproval(state, event)
     case "permission_requested":
       return addPermission(state, event)
+    case "question_asked":
+      return addQuestion(state, event)
     case "step_approved":
       return resolveApproval(state, event, "approved")
     case "step_rejected":
       return resolveApproval(state, event, "rejected")
     case "permission_answered":
       return resolvePermission(state, event, resolveItem)
+    case "question_answered":
+      return resolveQuestion(state, event)
     case "step_cancelled":
       return resolveOpenForStep(state, event.runId, event.nodeId, event.pass)
     case "run_deleted":

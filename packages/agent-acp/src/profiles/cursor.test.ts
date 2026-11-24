@@ -51,6 +51,9 @@ describe("cursorProfile", () => {
       setModel: false,
       modes: [...CURSOR_MODES],
     })
+    expect(cursorProfile.extensions).toMatchObject({
+      "cursor/ask_question": true,
+    })
   })
 
   it("reports found with version via FakeProcessRunner", async () => {

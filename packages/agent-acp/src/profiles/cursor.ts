@@ -1,4 +1,5 @@
 import type { ProcessRunner, SessionSpec, Skill } from "@workspace/core"
+import { CURSOR_ASK_QUESTION_METHOD } from "../ask-question.ts"
 import { cleanupPlacedMcp, placeMcp, type McpLaunchSpec } from "./place-mcp.ts"
 import {
   cleanupPlacedSkills,
@@ -9,6 +10,8 @@ import type { AgentCommand, AgentProfile, AgentProbeResult } from "./types.ts"
 
 /** Cursor ACP auth method id (DES-041). */
 export const CURSOR_AUTH_METHOD = "cursor_login"
+
+export { CURSOR_ASK_QUESTION_METHOD }
 
 /** Modes Cursor exposes until setMode/setModel are verified. */
 export const CURSOR_MODES = ["agent", "ask", "plan"] as const
@@ -53,6 +56,9 @@ export const cursorProfile: AgentProfile = {
     await cleanupPlacedSkills(workDir)
     await cleanupPlacedMcp(workDir)
   },
-  extensions: {},
+  extensions: {
+    /** Inbox question; handler wired on the ACP session (BL-147). */
+    [CURSOR_ASK_QUESTION_METHOD]: true,
+  },
   probe: probeCursor,
 }

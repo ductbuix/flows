@@ -1,4 +1,8 @@
 import { z } from "zod"
+import {
+  cursorAskAnswerSchema,
+  cursorAskQuestionSchema,
+} from "../cursor-question.ts"
 import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
@@ -14,9 +18,13 @@ export const inboxPermissionOptionIdSchema = z.enum([
   "reject-once",
 ])
 
+/** Cursor ask_question outcomes returned via inbox/answer (BL-147). */
+export const inboxQuestionOptionIdSchema = z.enum(["answered", "skipped"])
+
 export const inboxItemOptionIdSchema = z.union([
   inboxApprovalOptionIdSchema,
   inboxPermissionOptionIdSchema,
+  inboxQuestionOptionIdSchema,
 ])
 
 const inboxItemBase = {
@@ -44,12 +52,27 @@ export const inboxPermissionItemSchema = z.object({
   decision: inboxPermissionOptionIdSchema.optional(),
 })
 
+export const inboxQuestionItemSchema = z.object({
+  ...inboxItemBase,
+  kind: z.literal("question"),
+  requestId: z.string().min(1),
+  title: z.string().min(1).optional(),
+  questions: z.array(cursorAskQuestionSchema).min(1),
+  decision: inboxQuestionOptionIdSchema.optional(),
+  answers: z.array(cursorAskAnswerSchema).optional(),
+})
+
 export const inboxItemSchema = z.discriminatedUnion("kind", [
   inboxApprovalItemSchema,
   inboxPermissionItemSchema,
+  inboxQuestionItemSchema,
 ])
 
-export const inboxItemKindSchema = z.enum(["approval", "permission"])
+export const inboxItemKindSchema = z.enum([
+  "approval",
+  "permission",
+  "question",
+])
 
 export type WireInboxItem = z.infer<typeof inboxItemSchema>
 
@@ -73,6 +96,8 @@ export const inboxListMethod = defineMethod({
 export const inboxAnswerParamsSchema = z.object({
   itemId: z.string().min(1),
   optionId: z.string().min(1),
+  /** Required when optionId is `answered` for a question item (BL-147). */
+  answers: z.array(cursorAskAnswerSchema).optional(),
   requestKey: fcpRequestKeySchema,
 })
 

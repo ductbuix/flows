@@ -1,4 +1,6 @@
+export { CURSOR_ASK_QUESTION_METHOD } from "./ask-question.ts"
 export {
+  CANCELLED_ASK_QUESTION_RESULT,
   CANCELLED_PERMISSION_RESULT,
   DEFAULT_CANCEL_GRACE_MS,
 } from "./cancel.ts"

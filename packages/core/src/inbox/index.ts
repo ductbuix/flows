@@ -6,6 +6,7 @@ export {
   openInboxItems,
   permissionItemId,
   projectInbox,
+  questionItemId,
   type InboxChange,
   type InboxDecision,
   type InboxItem,

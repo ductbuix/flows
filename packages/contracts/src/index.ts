@@ -164,6 +164,14 @@ export {
 } from "./run-inputs.ts"
 export { isSafeTaskId, upstreamEnvName } from "./task-ids.ts"
 export {
+  cursorAskAnswerSchema,
+  cursorAskOptionSchema,
+  cursorAskQuestionSchema,
+  type CursorAskAnswer,
+  type CursorAskOption,
+  type CursorAskQuestion,
+} from "./cursor-question.ts"
+export {
   taskStatusSchema,
   runStatusSchema,
   engineEventSchema,
@@ -176,6 +184,8 @@ export {
   approvalRequestedEventSchema,
   permissionRequestedEventSchema,
   permissionAnsweredEventSchema,
+  questionAskedEventSchema,
+  questionAnsweredEventSchema,
   cancelRequestedEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,
@@ -650,6 +660,8 @@ export {
   inboxListResultSchema,
   inboxPermissionItemSchema,
   inboxPermissionOptionIdSchema,
+  inboxQuestionItemSchema,
+  inboxQuestionOptionIdSchema,
   inboxUpdateNotification,
   type WireInboxItem,
   type FcpMethodDef,
