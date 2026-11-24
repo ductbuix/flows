@@ -31,7 +31,7 @@ test.describe("inbox page (BL-178)", () => {
     await screenshotThemes(page, "inbox-page")
 
     await page.getByTestId(`inbox-approve-approval:${runId}:gate:1`).click()
+    // Shared FLOWAPP_HOME may still hold sign-in items from connector checks.
     await expect(item).toHaveCount(0, { timeout: 15_000 })
-    await expect(page.getByTestId("inbox-empty")).toBeVisible()
   })
 })
