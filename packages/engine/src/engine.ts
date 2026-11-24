@@ -125,6 +125,11 @@ export class Engine {
     return this.log.listNotices()
   }
 
+  /** Post an in-app notice (core notify path; BL-195). */
+  postNotice(n: Parameters<EventLog["postNotice"]>[0]): void {
+    this.log.postNotice(n)
+  }
+
   markNoticesRead(ids?: number[]): void {
     this.log.markNoticesRead(ids)
   }

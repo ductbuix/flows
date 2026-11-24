@@ -172,6 +172,9 @@ importers:
       '@workspace/adapters-node':
         specifier: workspace:*
         version: link:../../packages/adapters-node
+      '@workspace/agent-acp':
+        specifier: workspace:*
+        version: link:../../packages/agent-acp
       '@workspace/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -212,9 +215,6 @@ importers:
       '@types/ws':
         specifier: ^8.18.2
         version: 8.18.2
-      '@workspace/agent-acp':
-        specifier: workspace:*
-        version: link:../../packages/agent-acp
       eslint:
         specifier: ^10.15.0
         version: 10.15.0(jiti@2.7.0)

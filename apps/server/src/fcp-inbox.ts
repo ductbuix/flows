@@ -9,6 +9,7 @@ import {
   type UpdateBus,
 } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
+import type { CoreRunHost } from "./core-run-host.ts"
 
 const systemClock: Clock = { now: () => Date.now() }
 
@@ -19,7 +20,11 @@ export type InboxFcp = {
 }
 
 /** Live inbox projection over the engine event log (BL-145 / BL-178 / BL-192). */
-export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
+export function createInboxFcp(
+  engine: Engine,
+  bus: UpdateBus,
+  coreRuns?: CoreRunHost
+): InboxFcp {
   const events: EventStore = {
     append() {
       return { ok: false, kind: "conflict", lastSeq: 0 }
@@ -46,7 +51,18 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
     events,
     pushAnswer: async (input) => {
       if (input.kind === "approval") {
-        if (input.optionId === "approved") {
+        const decision = input.optionId === "approved" ? "approved" : "rejected"
+        if (
+          coreRuns &&
+          (await coreRuns.answerApproval({
+            runId: input.runId,
+            nodeId: input.nodeId,
+            decision,
+          }))
+        ) {
+          return
+        }
+        if (decision === "approved") {
           engine.approveTask(input.runId, input.nodeId)
           return
         }
