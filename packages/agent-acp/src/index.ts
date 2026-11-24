@@ -9,12 +9,27 @@ export {
   promptResultSchema,
   type StopReason,
 } from "./map-update.ts"
+export { createAcpRuntime, type CreateAcpRuntimeOptions } from "./runtime.ts"
+export {
+  CURSOR_AUTH_METHOD,
+  CURSOR_MODES,
+  cursorCommand,
+  cursorProfile,
+  probeBinaryVersion,
+  probeCursor,
+  type AgentCommand,
+  type AgentProbeResult,
+  type AgentProfile,
+} from "./profiles/index.ts"
 export {
   runFakeAgent,
+  createScriptedProcessRunner,
   type FakeAgentExpect,
   type FakeAgentHandle,
   type FakeAgentNotification,
   type FakeAgentReply,
   type FakeAgentScript,
   type FakeAgentStep,
+  type ScriptedProcessRunner,
+  type ScriptedSpawn,
 } from "./testing/index.ts"

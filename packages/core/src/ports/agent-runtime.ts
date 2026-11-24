@@ -42,10 +42,14 @@ export type SessionSpec = {
   skills?: readonly string[]
 }
 
-/** Listed by `AgentRuntime.profiles()`. */
+/** Listed by `AgentRuntime.profiles()` / `list()` (FCP `agent/list`). */
 export type AgentProfileInfo = {
   id: string
   modes?: readonly string[]
+  /** Set by `list()` after probing PATH. */
+  found?: boolean
+  /** First line of `--version` when found. */
+  version?: string | null
 }
 
 /**
@@ -88,5 +92,7 @@ export interface AgentSession {
 /** Spawns and drives agent CLIs behind one port (DES-041). */
 export interface AgentRuntime {
   profiles(): readonly AgentProfileInfo[]
+  /** Probe PATH for each profile (FCP `agent/list`). */
+  list(signal?: AbortSignal): Promise<readonly AgentProfileInfo[]>
   open(spec: SessionSpec, signal: AbortSignal): Promise<AgentSession>
 }
