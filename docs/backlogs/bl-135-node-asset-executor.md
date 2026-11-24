@@ -2,7 +2,7 @@
 id: BL-135
 title: Asset node on the new contract
 type: backlog
-status: todo
+status: done
 summary: Asset resolves a Library item version or card asset to a file, or writes one from its input, through DocumentStore.
 tags: [core, nodes, assets]
 related: [DES-041]
@@ -19,6 +19,6 @@ Port the Asset kind (mockup `asset`: image or markdown) to the executor contract
 
 ## Done when
 
-- [ ] Fixed asset reads the pinned version; produced asset writes to the run outputs.
-- [ ] Missing file fails the step with a clear reason.
-- [ ] Tests on fakes for both modes.
+- [x] Fixed asset reads the pinned version; produced asset writes to the run outputs.
+- [x] Missing file fails the step with a clear reason.
+- [x] Tests on fakes for both modes.

@@ -113,6 +113,7 @@ export type EffectResult =
   | {
       ok: false
       reason: "exit" | "timeout" | "unclear" | "answer"
+      message?: string
       attempt?: {
         attempt: number
         exitCode?: number

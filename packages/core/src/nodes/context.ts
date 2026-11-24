@@ -47,6 +47,15 @@ export function createStepContext<S>(
         return `nodes/${deps.nodeId}/pass-${deps.pass}/${relPath}`
       },
     },
+    docs: {
+      read(path: string) {
+        const got = deps.docs.read(path)
+        return got ? { text: got.text } : null
+      },
+      list(glob: string) {
+        return deps.docs.list(glob)
+      },
+    },
   }
   return ctx
 }
