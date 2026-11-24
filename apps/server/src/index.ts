@@ -25,7 +25,7 @@ const fcpToken = randomBytes(32).toString("base64url")
 const fcpUrl = `ws://127.0.0.1:${port}/fcp`
 const lock = acquireLock(engine.home, { url: fcpUrl, token: fcpToken })
 if ("attachTo" in lock) {
-  if (lock.attachTo.url.startsWith("inproc://")) {
+  if (!/^wss?:\/\//.test(lock.attachTo.url)) {
     console.error(
       `FLOWAPP_HOME engine busy (in-process), pid ${lock.attachTo.pid}`
     )

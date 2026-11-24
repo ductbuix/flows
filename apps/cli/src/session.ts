@@ -14,8 +14,9 @@ export type CliSession = {
   close: () => void
 }
 
+/** Owners that serve no WebSocket (CLI in-process, desktop utility) cannot be attached to. */
 export function isInprocUrl(url: string): boolean {
-  return url.startsWith("inproc://")
+  return !/^wss?:\/\//.test(url)
 }
 
 export function engineBusyMessage(pid: number): string {
