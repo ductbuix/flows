@@ -55,12 +55,33 @@ export {
 } from "./docket.ts"
 export { pingMethod, pingParamsSchema, pingResultSchema } from "./ping.ts"
 export {
+  runCancelMethod,
+  runCancelParamsSchema,
+  runCancelResultSchema,
+  runDeleteMethod,
+  runDeleteParamsSchema,
+  runDeleteResultSchema,
+  runGetChangesMethod,
+  runGetChangesParamsSchema,
+  runGetChangesResultSchema,
+  runGetLogMethod,
+  runGetLogParamsSchema,
+  runGetLogResultSchema,
   runGetMethod,
   runGetParamsSchema,
   runGetResultSchema,
   runListMethod,
   runListParamsSchema,
   runListResultSchema,
+  runRerunMethod,
+  runRerunParamsSchema,
+  runRerunResultSchema,
+  runRetryStepMethod,
+  runRetryStepParamsSchema,
+  runRetryStepResultSchema,
+  runStartMethod,
+  runStartParamsSchema,
+  runStartResultSchema,
   runUpdateNotification,
 } from "./run.ts"
 export {

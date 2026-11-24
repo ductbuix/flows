@@ -17,6 +17,13 @@ import {
   fileRevealMethod,
   fileStatMethod,
   fileWriteTextMethod,
+  runCancelMethod,
+  runDeleteMethod,
+  runGetChangesMethod,
+  runGetLogMethod,
+  runRerunMethod,
+  runRetryStepMethod,
+  runStartMethod,
   workflowCreateMethod,
   workflowDeleteMethod,
   workflowGetMethod,
@@ -126,5 +133,20 @@ describe("FCP helpers", () => {
     expect(fileListMethod.kind).toBe("query")
     expect(fileWriteTextMethod.kind).toBe("command")
     expect(fileRevealMethod.kind).toBe("command")
+  })
+
+  it("declares run command methods", () => {
+    expect(fcpMethodTable["run/start"]).toBe(runStartMethod)
+    expect(fcpMethodTable["run/cancel"]).toBe(runCancelMethod)
+    expect(fcpMethodTable["run/rerun"]).toBe(runRerunMethod)
+    expect(fcpMethodTable["run/retry_step"]).toBe(runRetryStepMethod)
+    expect(fcpMethodTable["run/delete"]).toBe(runDeleteMethod)
+    expect(fcpMethodTable["run/get_log"]).toBe(runGetLogMethod)
+    expect(fcpMethodTable["run/get_changes"]).toBe(runGetChangesMethod)
+    expect(runStartMethod.kind).toBe("command")
+    expect(runGetLogMethod.kind).toBe("query")
+    expect(runStartMethod.result.parse({ runId: "r1" })).toEqual({
+      runId: "r1",
+    })
   })
 })

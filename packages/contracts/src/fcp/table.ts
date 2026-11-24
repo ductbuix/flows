@@ -30,7 +30,18 @@ import {
   librarySaveProviderMethod,
 } from "./library.ts"
 import { pingMethod } from "./ping.ts"
-import { runGetMethod, runListMethod, runUpdateNotification } from "./run.ts"
+import {
+  runCancelMethod,
+  runDeleteMethod,
+  runGetChangesMethod,
+  runGetLogMethod,
+  runGetMethod,
+  runListMethod,
+  runRerunMethod,
+  runRetryStepMethod,
+  runStartMethod,
+  runUpdateNotification,
+} from "./run.ts"
 import {
   skillGetMethod,
   skillListMethod,
@@ -80,6 +91,13 @@ export const fcpMethodTable = {
   "workflow/validate": workflowValidateMethod,
   "run/list": runListMethod,
   "run/get": runGetMethod,
+  "run/start": runStartMethod,
+  "run/cancel": runCancelMethod,
+  "run/rerun": runRerunMethod,
+  "run/retry_step": runRetryStepMethod,
+  "run/delete": runDeleteMethod,
+  "run/get_log": runGetLogMethod,
+  "run/get_changes": runGetChangesMethod,
   "skill/list": skillListMethod,
   "skill/get": skillGetMethod,
   "file/list": fileListMethod,

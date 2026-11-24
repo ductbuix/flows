@@ -6,6 +6,7 @@ import {
   type WsServerMessage,
 } from "@workspace/shared"
 import type { WSContext, WSEvents } from "hono/ws"
+import { publishRunFcpUpdates } from "./fcp-run-updates.ts"
 import { buildRunDetail } from "./run-detail.ts"
 import { type LogSub, logSubKey, startLogSubscription } from "./ws-log.ts"
 import { WorkflowWatcher, type FileChange } from "./workflow-watch.ts"
@@ -32,7 +33,7 @@ export class WsHub {
     )
     this.offEvent = engine.onEvent((stored) => {
       const runId = stored.event.runId
-      this.broadcastRunsChanged(runId)
+      this.broadcastRunsChanged(runId, stored)
       const sockets = this.runWatchers.get(runId)
       if (!sockets) return
       for (const ws of sockets) this.pushRunEvent(ws, stored)
@@ -140,7 +141,7 @@ export class WsHub {
     for (const ws of sockets) this.send(ws, message)
   }
 
-  private broadcastRunsChanged(runId: string) {
+  private broadcastRunsChanged(runId: string, stored: StoredEvent) {
     const summary = this.engine.getRunSummary(runId)
     const message: WsServerMessage = {
       type: "runs_changed",
@@ -153,6 +154,7 @@ export class WsHub {
       runId,
       summary,
     })
+    publishRunFcpUpdates(this.engine, this.bus, stored, summary)
   }
 
   private subscribeRun(ws: WSContext, runId: string, afterSeq: number) {

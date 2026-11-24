@@ -2,7 +2,7 @@
 id: BL-176
 title: Run commands over FCP
 type: backlog
-status: todo
+status: done
 summary: run/start (requestKey), cancel, rerun, retry_step, delete, get_log and get_changes over FCP.
 tags: [runs, fcp]
 related: [DES-040]
@@ -19,6 +19,6 @@ Run controls for every client.
 
 ## Done when
 
-- [ ] `run/start` returns `{ runId }` at once; a repeated `requestKey` returns the same run.
-- [ ] `step_state` and `run_finished` updates.
-- [ ] Protocol tests, including the idempotent start.
+- [x] `run/start` returns `{ runId }` at once; a repeated `requestKey` returns the same run.
+- [x] `step_state` and `run_finished` updates.
+- [x] Protocol tests, including the idempotent start.
