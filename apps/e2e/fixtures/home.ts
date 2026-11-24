@@ -645,6 +645,23 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  mkdirSync(join(docket, "cards", "refactor-auth"), { recursive: true })
+  writeFileSync(
+    join(docket, "cards", "refactor-auth", "card.md"),
+    [
+      "---",
+      "id: refactor-auth",
+      "title: Refactor auth session",
+      "status: todo",
+      "rank: m",
+      "created: 2026-11-21T09:00:00Z",
+      "updated: 2026-11-23T10:00:00Z",
+      "---",
+      "",
+      "Pull session handling into one module.",
+      "",
+    ].join("\n")
+  )
   // Connectors for BL-181 e2e.
   const connectorsDir = join(home, "connectors")
   mkdirSync(connectorsDir, { recursive: true })

@@ -66,9 +66,9 @@ Recorded in DES-043; this checklist is the acceptance surface.
 | DK-06 | Open card panel                               | app     | `docket.spec.ts › open panel`      | —       |
 | DK-07 | Edit title and description                    | app     | `docket.spec.ts › edit title body` | —       |
 | DK-08 | Delete card (confirm)                         | app     | `docket.spec.ts › delete card`     | —       |
-| DK-09 | Refs: list, add URL, remove                   | missing | `docket.spec.ts › add ref`         | BL-198  |
-| DK-10 | Properties: status, start/due, custom keys    | missing | `docket.spec.ts › properties`      | BL-198  |
-| DK-11 | Links: relation + target card                 | missing | `docket.spec.ts › add link`        | BL-198  |
+| DK-09 | Refs: list, add URL, remove                   | app     | `docket.spec.ts › add ref`         | BL-198  |
+| DK-10 | Properties: status, start/due, custom keys    | app     | `docket.spec.ts › properties`      | BL-198  |
+| DK-11 | Links: relation + target card                 | app     | `docket.spec.ts › add link`        | BL-198  |
 | DK-12 | Assets: link from library or disk             | missing | `docket.spec.ts › add asset`       | BL-199  |
 | DK-13 | Item files menu (view / Finder / Cursor)      | missing | `docket.spec.ts › item files`      | BL-199  |
 | DK-14 | Ref data section                              | missing | `docket.spec.ts › ref data`        | BL-199  |
