@@ -25,9 +25,15 @@ const fcpToken = randomBytes(32).toString("base64url")
 const fcpUrl = `ws://127.0.0.1:${port}/fcp`
 const lock = acquireLock(engine.home, { url: fcpUrl, token: fcpToken })
 if ("attachTo" in lock) {
-  console.error(
-    `FLOWAPP_HOME already owned at ${lock.attachTo.url}; attach instead of starting another daemon`
-  )
+  if (!/^wss?:\/\//.test(lock.attachTo.url)) {
+    console.error(
+      `FLOWAPP_HOME engine busy (in-process), pid ${lock.attachTo.pid}`
+    )
+  } else {
+    console.error(
+      `FLOWAPP_HOME already owned at ${lock.attachTo.url}; attach instead of starting another daemon`
+    )
+  }
   process.exit(1)
 }
 

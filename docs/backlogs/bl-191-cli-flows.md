@@ -2,7 +2,7 @@
 id: BL-191
 title: flows CLI
 type: backlog
-status: todo
+status: done
 summary: "apps/cli: flows engine --stdio serves FCP on stdio; flows run <workflow> --card <id> starts a run and streams it."
 tags: [cli, fcp]
 related: [DES-039, DES-040]
@@ -19,6 +19,6 @@ A third host that proves the protocol is UI-agnostic.
 
 ## Done when
 
-- [ ] Attaches to a live daemon by lock file, else runs in-process for the run.
-- [ ] `flows inbox` lists open items; exit code reflects the run result.
-- [ ] Integration test against a temp home.
+- [x] Attaches to a live daemon by lock file, else runs in-process for the run.
+- [x] `flows inbox` lists open items; exit code reflects the run result.
+- [x] Integration test against a temp home.

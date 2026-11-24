@@ -26,7 +26,9 @@ export type EngineLockSelf = {
 }
 
 export type AcquireLockResult =
-  { owned: true } | { attachTo: { url: string; token: string } }
+  { owned: true } | { attachTo: { url: string; token: string; pid: number } }
+
+export type PeekLockResult = { url: string; token: string; pid: number }
 
 function lockPath(home: string): string {
   return join(home, LOCK_NAME)
@@ -89,6 +91,18 @@ function removeStale(path: string): void {
 }
 
 /**
+ * Read a live owner from `$FLOWAPP_HOME/engine.lock`, or null if none/stale.
+ * Does not take or replace the lock (clients attach; hosts use acquireLock).
+ */
+export function peekLock(home: string): PeekLockResult | null {
+  const path = lockPath(home)
+  if (!existsSync(path)) return null
+  const existing = readLock(path)
+  if (!existing || !isPidAlive(existing.pid)) return null
+  return { url: existing.url, token: existing.token, pid: existing.pid }
+}
+
+/**
  * Take `$FLOWAPP_HOME/engine.lock` (O_EXCL, mode 0600) or report a live owner.
  * A lock whose pid is gone is replaced (DES-039).
  */
@@ -107,7 +121,13 @@ export function acquireLock(
 
     const existing = readLock(path)
     if (existing && isPidAlive(existing.pid)) {
-      return { attachTo: { url: existing.url, token: existing.token } }
+      return {
+        attachTo: {
+          url: existing.url,
+          token: existing.token,
+          pid: existing.pid,
+        },
+      }
     }
 
     // Stale or corrupt: remove and retry with O_EXCL.
