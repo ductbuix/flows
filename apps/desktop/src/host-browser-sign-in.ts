@@ -92,6 +92,7 @@ function createDefaultHost(): BrowserSignInHost {
           sandbox: true,
         },
       })
+      win.webContents.setWindowOpenHandler(() => ({ action: "deny" }))
       void win.loadURL(url)
       return Promise.resolve({
         closed: new Promise<void>((resolve) => {
@@ -125,6 +126,9 @@ export async function openBrowserSignIn(
   signal?: AbortSignal
 ): Promise<BrowserSignInResult> {
   if (signal?.aborted) return { cancelled: true }
+  if (!/^https?:$/.test(new URL(params.url).protocol)) {
+    throw new Error("Sign-in URL must be http(s)")
+  }
 
   const host = getBrowserSignInHost()
   const partition = signInPartition(params.connectorId)
