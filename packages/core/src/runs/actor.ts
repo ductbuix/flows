@@ -26,6 +26,12 @@ export class RunActor {
   private readonly mailbox: MailboxEntry[] = []
   private draining = false
   private readonly issued = new Set<string>()
+  /**
+   * Last EventStore seq for this run (global high-water of our events).
+   * Fold's `state.seq` is a local 1..n counter and must not be used as
+   * expectSeq once other runs have advanced the store (BL-195 e2e).
+   */
+  private storeSeq = 0
 
   constructor(
     readonly runId: string,
@@ -61,9 +67,11 @@ export class RunActor {
   async recover(): Promise<void> {
     const stored = this.deps.events.read(this.runId)
     this.state = null
+    this.storeSeq = 0
     this.issued.clear()
     for (const s of stored) {
       this.state = fold(this.state, s.event)
+      this.storeSeq = s.seq
       if (s.event.type === "attempt_started" && s.event.nodeId) {
         this.issued.add(
           `${s.event.nodeId}:${s.event.pass ?? 1}:${s.event.attempt}`
@@ -107,7 +115,7 @@ export class RunActor {
   }
 
   private append(events: readonly EngineEvent[]): void {
-    const expectSeq = this.state?.seq ?? 0
+    const expectSeq = this.storeSeq
     const result = this.deps.events.append(this.runId, events, { expectSeq })
     if (!result.ok) {
       throw new Error(
@@ -117,6 +125,7 @@ export class RunActor {
     for (const s of result.appended) {
       this.state = fold(this.state, s.event)
     }
+    if (result.appended.length > 0) this.storeSeq = result.lastSeq
   }
 
   private async runOneEffect(fx: RunEffect): Promise<void> {
