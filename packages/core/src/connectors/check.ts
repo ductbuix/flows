@@ -2,6 +2,7 @@ import type { ConnectorStatus } from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
 import { engineError } from "../kernel/engine-error.ts"
 import type { UpdateBus } from "../updates/update-bus.ts"
+import { mergeListedTools } from "./mcp-transport.ts"
 import type { ConnectorRuntime } from "./runtime.ts"
 import type { ConnectorService } from "./service.ts"
 
@@ -45,6 +46,14 @@ export async function checkConnector(
   const status: ConnectorStatus = result.ok ? "connected" : "expired"
   const at = new Date(deps.clock.now()).toISOString()
   const detail = result.detail
+
+  if (result.ok && result.tools) {
+    const fresh = deps.service.get(id)
+    if (fresh) {
+      const next = mergeListedTools(fresh.connector, result.tools)
+      deps.service.save(next, fresh.hash)
+    }
+  }
 
   deps.service.setStatus(id, { status, checkedAt: at, detail })
 

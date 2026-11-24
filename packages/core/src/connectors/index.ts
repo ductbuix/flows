@@ -19,6 +19,13 @@ export {
 } from "./api-auth.ts"
 export { createApiTransport, type ApiTransportDeps } from "./api-transport.ts"
 export {
+  argsToMcpArguments,
+  createMcpTransport,
+  mergeListedTools,
+  type McpTransportDeps,
+} from "./mcp-transport.ts"
+export type { McpConnect, McpSession, McpToolInfo } from "./mcp-session.ts"
+export {
   createConnectorTransportRegistry,
   ConnectorTransportRegistry,
 } from "./registry.ts"

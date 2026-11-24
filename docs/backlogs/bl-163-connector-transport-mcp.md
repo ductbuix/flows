@@ -2,7 +2,7 @@
 id: BL-163
 title: Connector MCP transport
 type: backlog
-status: todo
+status: done
 summary: MCP client transport for connectors that are MCP servers (command or URL).
 tags: [connectors, mcp]
 related: [DES-041]
@@ -19,5 +19,5 @@ Reuse MCP servers the user already has.
 
 ## Done when
 
-- [ ] Lists tools as capabilities on check; calls go through the same capability gate.
-- [ ] Test with a tiny stdio MCP server fixture.
+- [x] Lists tools as capabilities on check; calls go through the same capability gate.
+- [x] Test with a tiny stdio MCP server fixture.
