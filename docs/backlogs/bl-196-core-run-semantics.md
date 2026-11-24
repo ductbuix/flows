@@ -2,7 +2,7 @@
 id: BL-196
 title: "Move partial runs, loops, retry and resume to core"
 type: backlog
-status: todo
+status: done
 summary: Partial runs, loop edges, retry, rerun, cancel and resume after restart work on the core run actor.
 tags: [core, runs, resume]
 related: [DES-043]
@@ -19,5 +19,5 @@ Move `partial.ts`, loop walking, cancel and resume. Resume after a daemon restar
 
 ## Done when
 
-- [ ] Partial run, loop, retry and resume tests pass on core.
-- [ ] A killed daemon resumes a run from the event log.
+- [x] Partial run, loop, retry and resume tests pass on core.
+- [x] A killed daemon resumes a run from the event log.
