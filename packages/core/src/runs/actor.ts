@@ -110,7 +110,27 @@ export class RunActor {
       await this.runOneEffect(fx)
     }
     if (input.kind === "start" && this.state?.status === "running") {
-      await this.handle({ kind: "wake", at: input.at })
+      await this.drainSchedule(input.at)
+    }
+  }
+
+  /**
+   * Keep waking while decide only emits schedule events (skips / run
+   * end) with no effects. One skip per wake used to leave the run
+   * parked after a failed upstream (BL-196 e2e).
+   */
+  private async drainSchedule(at: string): Promise<void> {
+    for (let i = 0; i < 1000; i++) {
+      if (!this.state || this.state.status !== "running") return
+      const out = decide(this.state, { kind: "wake", at })
+      if (out.events.length === 0 && out.effects.length === 0) return
+      if (out.events.length > 0) this.append(out.events)
+      if (out.effects.length > 0) {
+        for (const fx of out.effects) {
+          await this.runOneEffect(fx)
+        }
+        return
+      }
     }
   }
 
@@ -180,7 +200,7 @@ export class RunActor {
         result,
       })
       if (this.state?.status === "running") {
-        await this.handle({ kind: "wake", at })
+        await this.drainSchedule(at)
       }
     } catch (err) {
       // Host abort (cancel): leave the step open; a queued cancel input settles.
