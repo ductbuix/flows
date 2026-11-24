@@ -32,7 +32,7 @@ alwaysApply: false
   `@workspace/ui/lib/utils`.
 - Talk to the daemon only through FCP (`@workspace/sdk` /
   `@workspace/sdk-react`). Do not import `hono/client` or `server/app`.
-  Vite still proxies `/api` for FCP bootstrap and blobs.
+  Vite proxies `/fcp` (bootstrap + WS) and `/blobs`.
 - Add `data-testid` to elements that e2e tests assert on.
 - UI changes need a Playwright test in `apps/e2e`, and the PR includes its
   video and screenshots.

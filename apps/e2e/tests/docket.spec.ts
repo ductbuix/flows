@@ -21,7 +21,7 @@ async function screenshotThemes(
 
 test.describe("docket page (BL-177)", () => {
   test("lists cards, opens panel, creates a card", async ({ page }) => {
-    await page.goto("/mock/docket")
+    await page.goto("/docket")
     await expect(page.getByTestId("docket-page")).toBeVisible()
     await expect(page.getByTestId("docket-card-fix-login")).toBeVisible()
     await expect(page.getByTestId("docket-column-doing")).toBeVisible()

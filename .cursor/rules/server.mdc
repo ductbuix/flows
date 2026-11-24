@@ -6,8 +6,9 @@ alwaysApply: false
 
 - Hono on `@hono/node-server`, run with `tsx`. No build step.
 - Define routes by chaining on the `app` in `src/app.ts` (or chain
-  sub-apps with `.route()`), so `AppType` keeps full types for the web
-  `hc` client. Do not register routes in separate statements.
+  sub-apps with `.route()`). Do not register routes in separate
+  statements. Surfaces: `/health`, `/`, `/fcp` (+ `/fcp/bootstrap`),
+  `/blobs`. No REST `/api`.
 - Keep `src/app.ts` free of side effects so tests can call
   `app.request()`. Process setup (listen, signals) stays in `src/index.ts`.
 - Validate params, query and JSON bodies with zod via

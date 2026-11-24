@@ -10,9 +10,6 @@
     "lint": "eslint",
     "test": "vitest run"
   },
-  "exports": {
-    "./app": "./src/app.ts"
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
@@ -25,7 +22,6 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.9",
-    "@hono/zod-validator": "^0.7.6",
     "@workspace/adapters-node": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",

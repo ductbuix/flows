@@ -1,7 +1,7 @@
 import {
   FCP_VERSION,
   inboxListMethod,
-  startRunResponseSchema,
+  runStartMethod,
 } from "@workspace/contracts"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { randomUUID } from "node:crypto"
@@ -27,27 +27,10 @@ edges:
   )
 }
 
-async function startRunViaRest(
-  port: number,
-  workflowId: string
-): Promise<string> {
-  const res = await fetch(
-    `http://127.0.0.1:${port}/api/workflows/${workflowId}/runs`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: randomUUID() }),
-    }
-  )
-  expect(res.status).toBe(200)
-  return startRunResponseSchema.parse(await res.json()).runId
-}
-
 describe("inbox/* over /fcp", () => {
   it("lists a waiting approval and answer clears it", async () => {
     const h = await startFcpServer()
     writeApprovalWorkflow(h.home)
-    const runId = await startRunViaRest(h.port, "ask")
 
     const socket = await openFcpWs(h.port, h.token)
     const peer = new RpcPeer(wsTransport(socket))
@@ -56,6 +39,12 @@ describe("inbox/* over /fcp", () => {
       clientInfo: { name: "fcp-inbox-test", version: "0.0.0" },
       clientCapabilities: {},
     })
+    const runId = runStartMethod.result.parse(
+      await peer.request("run/start", {
+        workflowId: "ask",
+        requestKey: randomUUID(),
+      })
+    ).runId
 
     const deadline = Date.now() + 10_000
     let listed = inboxListMethod.result.parse(

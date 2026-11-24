@@ -49,7 +49,7 @@ function createWindow(): BrowserWindow {
   })
 
   const dist = webDistDir()
-  void win.loadFile(join(dist, "index.html"), { hash: "/mock/docket" })
+  void win.loadFile(join(dist, "index.html"), { hash: "/docket" })
   return win
 }
 

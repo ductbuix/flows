@@ -21,7 +21,7 @@ async function screenshotThemes(
 
 test.describe("skills page (BL-183)", () => {
   test("lists skills, opens a sheet, and uninstalls", async ({ page }) => {
-    await page.goto("/mock/skills")
+    await page.goto("/skills")
     await expect(page.getByTestId("mock-skills-page")).toBeVisible()
     await expect(
       page.getByTestId("skill-row-workspace-write-tests")

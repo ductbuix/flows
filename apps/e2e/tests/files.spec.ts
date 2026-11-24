@@ -21,7 +21,7 @@ async function screenshotThemes(
 
 test.describe("files page (BL-184)", () => {
   test("lists workspace files and opens a preview", async ({ page }) => {
-    await page.goto("/mock/files")
+    await page.goto("/files")
     await expect(page.getByTestId("mock-files-page")).toBeVisible()
     await expect(page.getByTestId("files-count")).not.toHaveText("0 files")
     await expect(page.getByTestId("files-tree")).toBeVisible()

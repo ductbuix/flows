@@ -23,7 +23,7 @@ test.describe("connectors page (BL-181)", () => {
   test("lists connectors, opens sheet, removes one, adds one", async ({
     page,
   }) => {
-    await page.goto("/mock/connectors")
+    await page.goto("/connectors")
     await expect(page.getByTestId("mock-connectors-page")).toBeVisible()
     await expect(page.getByTestId("connector-row-github-cli")).toBeVisible()
     await expect(page.getByTestId("connector-row-rally")).toBeVisible()

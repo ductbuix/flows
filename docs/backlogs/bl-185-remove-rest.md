@@ -2,7 +2,7 @@
 id: BL-185
 title: Remove REST routes and the hc client
 type: backlog
-status: todo
+status: done
 summary: Delete REST routes except blobs and health, drop the hc client, and ban it in lint.
 tags: [server, web, cleanup]
 related: [DES-039]
@@ -19,6 +19,6 @@ One protocol left.
 
 ## Done when
 
-- [ ] Only `/fcp`, `/blobs` and `/health` remain on the daemon.
-- [ ] Lint bans `hono/client` in web.
-- [ ] `pnpm test:e2e` passes.
+- [x] Only `/fcp`, `/blobs` and `/health` remain on the daemon.
+- [x] Lint bans `hono/client` in web.
+- [x] `pnpm test:e2e` passes.

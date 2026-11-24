@@ -151,17 +151,8 @@ describe("workflow writes over /fcp", () => {
   it("returns busy when deleting a workflow with a live run", async () => {
     const h = await startFcpServer()
     writeSlowWorkflow(h.home, "slow")
-    const startRes = await fetch(
-      `http://127.0.0.1:${h.port}/api/workflows/slow/runs`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ requestId: "start-slow" }),
-      }
-    )
-    expect(startRes.status).toBe(200)
-
     const { peer, socket } = await fcpPeer(h.port, h.token)
+    await peer.request("run/start", { workflowId: "slow" })
     await expect(
       peer.request("workflow/delete", { id: "slow" })
     ).rejects.toMatchObject({

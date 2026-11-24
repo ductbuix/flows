@@ -43,7 +43,7 @@ export function fcpAllowedHosts(port: number): Set<string> {
     `localhost:${port}`,
     `[::1]:${port}`,
   ])
-  // Vite proxies /api/fcp; without changeOrigin Host stays on the dev port.
+  // Vite proxies /fcp; without changeOrigin Host stays on the Vite port.
   for (const dev of fcpDevOriginPorts()) {
     hosts.add(`127.0.0.1:${dev}`)
     hosts.add(`localhost:${dev}`)
@@ -200,7 +200,7 @@ export function fcpUpgrade(
   )
 }
 
-/** JSON bootstrap for Vite (proxied as `/api/fcp`); same payload as `__FLOWS_FCP__`. */
+/** JSON bootstrap for Vite (proxied as `/fcp/bootstrap`); same as `__FLOWS_FCP__`. */
 export function fcpBootstrapJson(token: string, port: number) {
   return { token, url: `ws://127.0.0.1:${port}/fcp` }
 }

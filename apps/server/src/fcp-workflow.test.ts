@@ -3,8 +3,6 @@ import {
   FCP_VERSION,
   workflowGetMethod,
   workflowListMethod,
-  workflowSummarySchema,
-  type WorkflowDetail,
 } from "@workspace/contracts"
 import { createEngine } from "@workspace/engine"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
@@ -16,12 +14,13 @@ import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { WebSocket, WebSocketServer } from "ws"
 import { createApp } from "./app.ts"
+import { createWorkflow } from "./workflow-lifecycle.ts"
 
 type Harness = {
   home: string
   port: number
   token: string
-  app: ReturnType<typeof createApp>
+  engine: ReturnType<typeof createEngine>
   close: () => Promise<void>
 }
 
@@ -73,7 +72,7 @@ async function startHarness(): Promise<Harness> {
     home,
     port,
     token,
-    app,
+    engine,
     async close() {
       engine.close()
       await new Promise<void>((resolve, reject) => {
@@ -108,63 +107,37 @@ async function fcpPeer(h: Harness): Promise<{
   return { peer, socket }
 }
 
-async function createWorkflow(
-  app: ReturnType<typeof createApp>,
-  body: { id: string; goal: string; name?: string }
-) {
-  const res = await app.request("/api/workflows", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  })
-  expect(res.status).toBe(201)
-}
-
 describe("workflow/list and workflow/get over /fcp", () => {
-  it("matches REST list and get for the same workflows", async () => {
+  it("lists and gets workflows created on disk", async () => {
     const h = await startHarness()
-    await createWorkflow(h.app, {
-      id: "alpha",
-      name: "Alpha",
-      goal: "first",
-    })
-    await createWorkflow(h.app, { id: "beta", goal: "second" })
-    await createWorkflow(h.app, {
-      id: "gamma",
-      name: "Gamma",
-      goal: "third",
-    })
-
-    const restList = workflowSummarySchema
-      .array()
-      .parse(await (await h.app.request("/api/workflows")).json())
-    const restDetail = (await (
-      await h.app.request("/api/workflows/alpha")
-    ).json()) as WorkflowDetail
+    expect(createWorkflow(h.engine, "alpha", "first", "Alpha").ok).toBe(true)
+    expect(createWorkflow(h.engine, "beta", "second").ok).toBe(true)
+    expect(createWorkflow(h.engine, "gamma", "third", "Gamma").ok).toBe(true)
 
     const { peer, socket } = await fcpPeer(h)
 
     const listed = workflowListMethod.result.parse(
       await peer.request("workflow/list", {})
     )
-    expect(listed.items).toEqual(restList)
+    expect(listed.items.map((w) => w.id)).toEqual(["alpha", "beta", "gamma"])
     expect(listed.next).toBeUndefined()
 
     const page = workflowListMethod.result.parse(
       await peer.request("workflow/list", { limit: 2 })
     )
-    expect(page.items).toEqual(restList.slice(0, 2))
+    expect(page.items.map((w) => w.id)).toEqual(["alpha", "beta"])
     expect(page.next).toBe("beta")
     const page2 = workflowListMethod.result.parse(
       await peer.request("workflow/list", { cursor: page.next, limit: 2 })
     )
-    expect(page2.items).toEqual(restList.slice(2))
+    expect(page2.items.map((w) => w.id)).toEqual(["gamma"])
     expect(page2.next).toBeUndefined()
 
     const got = workflowGetMethod.result.parse(
       await peer.request("workflow/get", { id: "alpha" })
     )
-    expect(got).toEqual(restDetail)
+    expect(got.id).toBe("alpha")
+    expect(got.workflow?.nodes?.some((n) => n.kind === "trigger")).toBe(true)
 
     socket.close()
   })
