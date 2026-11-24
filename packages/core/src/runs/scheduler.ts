@@ -3,25 +3,54 @@ export type SchedulerGrant = {
   stepId: string
 }
 
+export type SchedulerRun = {
+  runId: string
+  workflowId: string
+  at: string
+}
+
 export type SchedulerLimits = {
   /** Global step launch cap (`agents.maxConcurrent`, DES-041). */
   maxConcurrent: number
+  /**
+   * Cap of `running` runs per workflow (DES-021). Default 1.
+   * Pass a number for all workflows, or a per-workflow lookup.
+   */
+  maxConcurrentRuns?: number | ((workflowId: string) => number)
 }
 
 /**
- * Pure policy: which actors may launch steps under a global limit.
- * Fed by actor requests; no I/O (DES-041, DES-021).
+ * Pure policy: step grants under a global limit, and per-workflow run
+ * queues under maxConcurrentRuns (DES-041, DES-021). No I/O.
  */
 export type Scheduler = {
   request(runId: string, stepId: string): void
   release(runId: string, stepId: string): void
-  /** Drop every grant and pending request for a run (cancel). */
+  /**
+   * Drop step grants/pending for a run. If the run is queued, remove it
+   * from the queue (frees nothing). If running, end it and activate the
+   * next queued run for that workflow by `at` FIFO.
+   */
   cancel(runId: string): void
   grants(): readonly SchedulerGrant[]
+
+  /** Admit a run: `running` under the workflow cap, else `queued` (DES-021). */
+  admit(runId: string, workflowId: string, at: string): "running" | "queued"
+  /** Run left `running` (succeeded/failed); activates next queued by `at`. */
+  endRun(runId: string): void
+  activeRuns(): readonly SchedulerRun[]
+  queuedRuns(): readonly SchedulerRun[]
 }
 
 function keyOf(runId: string, stepId: string): string {
   return `${runId}\0${stepId}`
+}
+
+function capFor(limits: SchedulerLimits, workflowId: string): number {
+  const raw = limits.maxConcurrentRuns
+  if (raw === undefined) return 1
+  if (typeof raw === "function") return raw(workflowId)
+  return raw
 }
 
 export function createScheduler(limits: SchedulerLimits): Scheduler {
@@ -31,14 +60,57 @@ export function createScheduler(limits: SchedulerLimits): Scheduler {
 
   const granted = new Map<string, SchedulerGrant>()
   const pending: SchedulerGrant[] = []
+  const active = new Map<string, SchedulerRun>()
+  const queued: SchedulerRun[] = []
 
-  function fill(): void {
+  function fillSteps(): void {
     while (granted.size < limits.maxConcurrent && pending.length > 0) {
       const next = pending.shift()!
       const k = keyOf(next.runId, next.stepId)
       if (granted.has(k)) continue
       granted.set(k, next)
     }
+  }
+
+  function runningCount(workflowId: string): number {
+    let n = 0
+    for (const r of active.values()) {
+      if (r.workflowId === workflowId) n++
+    }
+    return n
+  }
+
+  /** Activate oldest queued runs (by `at`) while under each workflow cap. */
+  function fillRuns(): void {
+    queued.sort((a, b) =>
+      a.at < b.at ? -1 : a.at > b.at ? 1 : a.runId.localeCompare(b.runId)
+    )
+    let i = 0
+    while (i < queued.length) {
+      const r = queued[i]!
+      if (runningCount(r.workflowId) < capFor(limits, r.workflowId)) {
+        queued.splice(i, 1)
+        active.set(r.runId, r)
+        continue
+      }
+      i++
+    }
+  }
+
+  function clearSteps(runId: string): void {
+    for (const k of [...granted.keys()]) {
+      if (granted.get(k)?.runId === runId) granted.delete(k)
+    }
+    for (let i = pending.length - 1; i >= 0; i--) {
+      if (pending[i]!.runId === runId) pending.splice(i, 1)
+    }
+  }
+
+  function endActive(runId: string): boolean {
+    if (!active.has(runId)) return false
+    active.delete(runId)
+    fillRuns()
+    return true
   }
 
   return {
@@ -62,21 +134,49 @@ export function createScheduler(limits: SchedulerLimits): Scheduler {
         (p) => p.runId === runId && p.stepId === stepId
       )
       if (idx >= 0) pending.splice(idx, 1)
-      fill()
+      fillSteps()
     },
 
     cancel(runId: string): void {
-      for (const k of [...granted.keys()]) {
-        if (granted.get(k)?.runId === runId) granted.delete(k)
+      clearSteps(runId)
+      fillSteps()
+      const q = queued.findIndex((r) => r.runId === runId)
+      if (q >= 0) {
+        // Queued cancel frees nothing (DES-021).
+        queued.splice(q, 1)
+        return
       }
-      for (let i = pending.length - 1; i >= 0; i--) {
-        if (pending[i]!.runId === runId) pending.splice(i, 1)
-      }
-      fill()
+      endActive(runId)
     },
 
     grants(): readonly SchedulerGrant[] {
       return [...granted.values()]
+    },
+
+    admit(runId: string, workflowId: string, at: string): "running" | "queued" {
+      if (active.has(runId)) return "running"
+      if (queued.some((r) => r.runId === runId)) return "queued"
+      const record: SchedulerRun = { runId, workflowId, at }
+      if (runningCount(workflowId) < capFor(limits, workflowId)) {
+        active.set(runId, record)
+        return "running"
+      }
+      queued.push(record)
+      return "queued"
+    },
+
+    endRun(runId: string): void {
+      clearSteps(runId)
+      fillSteps()
+      endActive(runId)
+    },
+
+    activeRuns(): readonly SchedulerRun[] {
+      return [...active.values()]
+    },
+
+    queuedRuns(): readonly SchedulerRun[] {
+      return [...queued]
     },
   }
 }

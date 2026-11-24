@@ -181,6 +181,7 @@ export {
   type Scheduler,
   type SchedulerGrant,
   type SchedulerLimits,
+  type SchedulerRun,
   type StepFailReason,
   type StepState,
   type StepStatus,

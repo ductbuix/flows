@@ -6,6 +6,7 @@ export {
   type Scheduler,
   type SchedulerGrant,
   type SchedulerLimits,
+  type SchedulerRun,
 } from "./scheduler.ts"
 export { fold, foldAll, foldAllSteps, foldSteps } from "./fold.ts"
 export {
