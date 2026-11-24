@@ -5,6 +5,7 @@ import { pathsToFileTree } from "@workspace/ui/components/file-tree"
 export const MOCK_CHANGES = [
   { to: "/mock/docket", label: "Docket", badge: "M" },
   { to: "/mock/workflows", label: "Workflows", badge: "M" },
+  { to: "/mock/runs", label: "Runs", badge: "A" },
   { to: "/mock/inbox", label: "Inbox", badge: "A" },
   { to: "/mock/files", label: "Files", badge: "A" },
   { to: "/mock/library", label: "Library", badge: "A" },

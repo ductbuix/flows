@@ -11,6 +11,7 @@ import { ConnectionPage } from "@/pages/connections/ConnectionPage"
 import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
 import { ConnectorsPage } from "@/pages/mock/ConnectorsPage"
 import { SkillsPage } from "@/pages/skills/SkillsPage"
+import { RunsPage as MockRunsPage } from "@/pages/runs/RunsPage"
 import { DocketPage } from "@/pages/docket/DocketPage"
 import { FilesPage } from "@/pages/files/FilesPage"
 import { LibraryPage } from "@/pages/mock/LibraryPage"
@@ -56,6 +57,7 @@ export function App() {
         <Route path="files" element={<FilesPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="skills" element={<SkillsPage />} />
+        <Route path="runs" element={<MockRunsPage />} />
         <Route path="connectors" element={<ConnectorsPage />} />
         <Route path="workflows/:id" element={<MockWorkflowEditorPage />} />
       </Route>
