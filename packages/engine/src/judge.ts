@@ -8,7 +8,7 @@ import {
   type AgentSpec,
   type ResolvedModelEffort,
   type WorkflowAgent,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { getCliAdapter } from "./cli-adapters.ts"
 import { killProcessGroup } from "./pid.ts"
 import { DEFAULT_ATTEMPT_TIMEOUT_SECONDS } from "./timeout.ts"

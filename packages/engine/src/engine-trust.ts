@@ -2,7 +2,7 @@ import type {
   CliTrustValue,
   TrustDecision,
   TrustGrant,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import type { RunState } from "./nodes/run-state.ts"
 import { workflowDir } from "./paths.ts"
 import { isAlwaysTrusted } from "./trust-policy.ts"

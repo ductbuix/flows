@@ -2,7 +2,7 @@ import { execFile } from "node:child_process"
 import { existsSync, readdirSync, readlinkSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { promisify } from "node:util"
-import type { LibraryClearResult } from "@workspace/shared"
+import type { LibraryClearResult } from "@workspace/contracts"
 import { readRevisionMeta } from "./library-paths.ts"
 import { pinKey, pinnedRevisionKeys } from "./library-pins.ts"
 import { decodeEntityId, libraryDir, libraryEntityDir } from "./paths.ts"
@@ -111,7 +111,7 @@ export async function sweepLibrary(
 
 /**
  * Remove unpinned, non-current revisions for one entity (any age).
- * Never touches work items or current.
+ * Never touches cards or current.
  */
 export function clearEntityRevisions(
   home: string,

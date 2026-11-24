@@ -1,4 +1,4 @@
-import type { Workflow } from "@workspace/shared"
+import type { Workflow } from "@workspace/contracts"
 
 /** Builtin default when neither task nor workflow sets timeout (DES-019). */
 export const DEFAULT_ATTEMPT_TIMEOUT_SECONDS = 900

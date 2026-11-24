@@ -15,8 +15,9 @@
     "@workspace/adapters-node": "workspace:*",
     "@workspace/agent-acp": "workspace:*",
     "@workspace/core": "workspace:*",
-    "@workspace/shared": "workspace:*",
+    "@workspace/contracts": "workspace:*",
     "playwright-core": "^1.65.1",
+    "zod": "^4.1.5",
     "yaml": "^2.9.1"
   },
   "devDependencies": {

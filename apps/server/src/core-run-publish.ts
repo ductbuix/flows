@@ -4,7 +4,7 @@ import {
   advanceWorkCopyBase,
   diffWorkCopy,
   getConnector,
-  readConnection,
+  findConnection,
 } from "@workspace/engine"
 
 /**
@@ -17,7 +17,7 @@ export function createEnginePublishPort(deps: {
 }): PublishPort {
   return {
     policy(connectionId) {
-      const conn = readConnection(deps.home, connectionId)
+      const conn = findConnection(deps.home, connectionId)
       if (!conn) return null
       return conn.policy as PublishPolicy
     },
@@ -34,7 +34,7 @@ export function createEnginePublishPort(deps: {
     },
     async apply(input) {
       const runRoot = deps.absoluteRunDir(input.runDir)
-      const conn = readConnection(deps.home, input.connectionId)
+      const conn = findConnection(deps.home, input.connectionId)
       if (!conn) {
         return {
           status: "rejected",

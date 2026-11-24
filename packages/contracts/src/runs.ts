@@ -1,6 +1,5 @@
 import { z } from "zod"
-import { attemptKindInfoSchema } from "./attempt-kind.ts"
-import { connectionIdSchema } from "./connection.ts"
+import { connectionIdSchema } from "./ids.ts"
 import {
   engineEventSchema,
   runStatusSchema,
@@ -44,36 +43,29 @@ export const runSummarySchema = z.object({
   }),
   firstFailedTaskId: z.string().min(1).optional(),
   itemKey: z.string().min(1).optional(),
-  /** Work item this run belongs to (DES-026 / BL-039). */
-  workItemId: z.string().min(1).optional(),
+  /** Docket card this run belongs to (DES-038 / BL-039). */
+  cardId: z.string().min(1).optional(),
   startedAt: z.string().min(1),
   finishedAt: z.string().optional(),
 })
 
 export type RunSummary = z.infer<typeof runSummarySchema>
 
-export const attemptViewSchema = z.object({
-  attempt: z.number().int().positive(),
-  pid: z.number().int().positive().optional(),
-  exitCode: z.number().int().optional(),
-  interrupted: z.boolean().optional(),
-  /** timeout or mapped CLI stderr (DES-019). */
-  reason: z.string().min(1).optional(),
-  kind: attemptKindInfoSchema,
-  /** Resolved model for agent attempts (DES-023). */
-  model: z.string().min(1).optional(),
-  /** Resolved effort for agent attempts (DES-023). */
-  effort: effortSchema.optional(),
-  /** Where model/effort came from (DES-023). */
-  modelSource: z.enum(["task", "workflow", "cli"]).optional(),
-})
-
-export type AttemptView = z.infer<typeof attemptViewSchema>
-
 export const taskViewSchema = z.object({
   id: z.string().min(1),
   status: taskStatusSchema,
-  attempts: z.array(attemptViewSchema),
+  attempts: z.array(
+    z.object({
+      attempt: z.number().int().positive(),
+      pid: z.number().int().positive().optional(),
+      exitCode: z.number().int().optional(),
+      interrupted: z.boolean().optional(),
+      reason: z.string().min(1).optional(),
+      model: z.string().min(1).optional(),
+      effort: effortSchema.optional(),
+      modelSource: z.enum(["task", "workflow", "cli"]).optional(),
+    })
+  ),
 })
 
 export type TaskView = z.infer<typeof taskViewSchema>
@@ -141,8 +133,8 @@ export const runDetailSchema = z.object({
   id: z.string().min(1),
   workflowId: z.string().min(1),
   status: runStatusSchema,
-  /** Work item this run belongs to, when started from one. */
-  workItemId: z.string().min(1).optional(),
+  /** Docket card this run belongs to, when started from one. */
+  cardId: z.string().min(1).optional(),
   startedAt: z.string().min(1),
   finishedAt: z.string().optional(),
   sandboxed: z.boolean(),

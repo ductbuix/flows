@@ -9,7 +9,7 @@ alwaysApply: false
   engine, DES-004 conditions and loops, DES-005 agents and spawn,
   DES-006 sandboxing. Follow them.
 - Append, then act. State is only a fold over the SQLite event log.
-  Shared workflow and event schemas live in `packages/shared`.
+  Shared workflow and event schemas live in `packages/contracts`.
 - Pick work from `docs/backlogs/INDEX.md` and update the item's status.
 - If the code needs to differ from a design, update that design doc and
   its `updated` date in the same change.

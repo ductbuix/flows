@@ -1,8 +1,8 @@
 import { acquireLock, peekLock, releaseLock } from "@workspace/adapters-node"
-import { createEngine, createWorkItem } from "@workspace/engine"
+import { createEngine } from "@workspace/engine"
 import { serve } from "@hono/node-server"
 import { createApp } from "server/app"
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { createServer } from "node:net"
 import type { AddressInfo } from "node:net"
 import { tmpdir } from "node:os"
@@ -142,11 +142,23 @@ describe("flows CLI", () => {
     const home = tempHome()
     writeDemoWorkflow(home)
     expect(peekLock(home)).toBeNull()
-    const { item } = createWorkItem(home, { title: "Card one" })
+    const cardId = "card-one"
+    mkdirSync(join(home, "docket", "cards", cardId), { recursive: true })
+    writeFileSync(
+      join(home, "docket", "cards", cardId, "card.md"),
+      [
+        "---",
+        `id: ${cardId}`,
+        "title: Card one",
+        "column: todo",
+        "---",
+        "",
+      ].join("\n"),
+    )
     const code = await runWorkflow({
       home,
       workflowId: "demo",
-      cardId: item.id,
+      cardId,
     })
     expect(code).toBe(0)
     expect(peekLock(home)).toBeNull()

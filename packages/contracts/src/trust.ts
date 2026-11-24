@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { workItemIdSchema } from "./work-item.ts"
+import { cardIdSchema } from "./docket/schemas.ts"
 
 /** Trust grant on start / always-trust store (DES-019). */
 export const trustGrantSchema = z.enum(["once", "always"])
@@ -24,8 +24,8 @@ export const startRunBodySchema = z.object({
   confirmDuplicate: z.boolean().optional(),
   /** Rerun: pull and pin again instead of reusing prior pins (BL-043). */
   refreshPins: z.boolean().optional(),
-  /** Optional work item; unknown id is 400 unknown_work_item (BL-039). */
-  workItemId: workItemIdSchema.optional(),
+  /** Optional docket card; unknown id is 400 unknown_card (BL-039). */
+  cardId: cardIdSchema.optional(),
   /** Node run: run only this node on the latest upstream results (BL-102). */
   only: z.string().min(1).optional(),
   /** Node run: run from this node, reusing unchanged earlier steps (BL-102). */
@@ -51,12 +51,12 @@ export const duplicateInputErrorSchema = z.object({
 
 export type DuplicateInputError = z.infer<typeof duplicateInputErrorSchema>
 
-export const unknownWorkItemErrorSchema = z.object({
-  error: z.literal("unknown_work_item"),
-  workItemId: z.string().min(1),
+export const unknownCardErrorSchema = z.object({
+  error: z.literal("unknown_card"),
+  cardId: z.string().min(1),
 })
 
-export type UnknownWorkItemError = z.infer<typeof unknownWorkItemErrorSchema>
+export type UnknownCardError = z.infer<typeof unknownCardErrorSchema>
 
 export const trustCheckStatusSchema = z.enum(["pass", "warn"])
 export type TrustCheckStatus = z.infer<typeof trustCheckStatusSchema>

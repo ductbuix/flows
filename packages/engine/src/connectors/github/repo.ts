@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
-import type { Connection } from "@workspace/shared"
+import type { Connection } from "../../connection-model.ts"
 import type { CommandResult } from "./run.ts"
 
 export const PUSH_OP = "push_branch_draft_pr"

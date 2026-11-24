@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join } from "node:path"
-import type { ChangeSet, Workflow } from "@workspace/shared"
+import type { ChangeSet, Workflow } from "@workspace/contracts"
 import { connectionDir } from "./paths.ts"
 import { runAgentJudgeDetailed } from "./judge.ts"
 import { resolveAttemptTimeout } from "./timeout.ts"

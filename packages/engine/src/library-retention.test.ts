@@ -10,14 +10,18 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { workflowSchema } from "@workspace/shared"
+import { workflowSchema } from "@workspace/contracts"
 import {
   clearConnectors,
   fakeConnector,
   registerConnector,
 } from "./connectors/index.ts"
-import { createConnection, readConnection } from "./connections.ts"
 import { createEngine } from "./engine.ts"
+import {
+  installTestConnectionStore,
+  registerTestConnection,
+  resetTestConnectionStore,
+} from "./test-connections.ts"
 import { listLibrary } from "./library-list.ts"
 import { pullEntity } from "./library.ts"
 import {
@@ -27,16 +31,16 @@ import {
 } from "./library-retention.ts"
 import { LibraryCapError } from "./library-usage.ts"
 import { libraryEntityDir } from "./paths.ts"
-import { createWorkItem } from "./workitems.ts"
-
 const homes: string[] = []
 
 beforeEach(() => {
   registerConnector(fakeConnector)
+  installTestConnectionStore()
 })
 
 afterEach(() => {
   clearConnectors()
+  resetTestConnectionStore()
   for (const home of homes.splice(0)) {
     rmSync(home, { recursive: true, force: true })
   }
@@ -49,7 +53,7 @@ function tempHome(): string {
 }
 
 function writeConn(home: string, id: string, label: string) {
-  const result = createConnection(home, {
+  return registerTestConnection(home, {
     id,
     connector: "fake",
     name: id,
@@ -57,8 +61,6 @@ function writeConn(home: string, id: string, label: string) {
     signIn: "cli",
     refresh: "never",
   })
-  expect(result.ok).toBe(true)
-  return result.ok ? result.value : null
 }
 
 function writeWorkflow(home: string, id: string, body: string): string {
@@ -203,9 +205,11 @@ edges: []
     expect(listed.usage.maxBytes).toBe(200)
   })
 
-  it("clear removes unpinned only and never touches work items", async () => {
+  it("clear removes unpinned only and keeps unrelated home files", async () => {
     const home = tempHome()
     const conn = writeConn(home, "demo", "a")!
+    const marker = join(home, "keep-me.txt")
+    writeFileSync(marker, "stay")
     const first = await pullEntity({
       home,
       connection: conn,
@@ -220,9 +224,6 @@ edges: []
       entityId: "a",
       force: true,
     })
-    const { item } = createWorkItem(home, { title: "Story" })
-    const wiPath = join(home, "workitems", item.id)
-    expect(existsSync(wiPath)).toBe(true)
 
     const cleared = clearEntityRevisions(home, "demo", "item", "a")
     expect(cleared.removed).toContain(first.revision)
@@ -237,15 +238,13 @@ edges: []
         join(libraryEntityDir(home, "demo", "item", "a"), second.revision)
       )
     ).toBe(true)
-    expect(existsSync(wiPath)).toBe(true)
-    expect(readFileSync(join(wiPath, "workitem.yaml"), "utf8")).toContain(
-      "Story"
-    )
+    expect(existsSync(marker)).toBe(true)
+    expect(readFileSync(marker, "utf8")).toBe("stay")
   })
 
   it("deleting a run releases its pins so sweep can remove them", async () => {
     const home = tempHome()
-    writeConn(home, "demo", "z")
+    const conn = writeConn(home, "demo", "z")!
     const graph = workflowSchema.parse({
       id: "del-pin",
       nodes: [
@@ -284,10 +283,9 @@ edges: []
     const entityRoot = libraryEntityDir(home, "demo", "item", "z")
     const rev = listLibrary(home).entities[0]?.revisions[0]?.revision
     expect(rev).toBeTruthy()
-    const existing = readConnection(home, "demo")!
     const newer = await pullEntity({
       home,
-      connection: { ...existing, scope: { label: "z2" } },
+      connection: { ...conn, scope: { label: "z2" } },
       kind: "item",
       entityId: "z",
       force: true,

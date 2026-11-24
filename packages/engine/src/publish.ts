@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import type { ChangeSet, EngineEvent } from "@workspace/shared"
+import type { ChangeSet, EngineEvent } from "@workspace/contracts"
 import { publishChangesDir } from "./work-copy.ts"
 
 export function readStoredChangeSet(

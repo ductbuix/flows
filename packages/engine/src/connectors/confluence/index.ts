@@ -1,4 +1,4 @@
-import type { ConnectionCheckResult } from "@workspace/shared"
+import type { ConnectionCheckResult } from "@workspace/contracts"
 import { connectMcp } from "../../mcp/client.ts"
 import { isMcpServerAllowed } from "../../mcp/trust.ts"
 import type { Connector, ConnectorPullResult } from "../types.ts"

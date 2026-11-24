@@ -4,7 +4,7 @@ import {
   type Effort,
   type ModelSource,
   type Workflow,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { getCliAdapter } from "./cli-adapters.ts"
 
 export type AttemptModelFields = {

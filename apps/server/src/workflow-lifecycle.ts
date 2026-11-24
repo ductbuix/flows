@@ -12,7 +12,7 @@ import {
   setWorkflowField,
   workflowIdSchema,
   type WorkflowSummary,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 export type LifecycleResult =
   | { ok: true }

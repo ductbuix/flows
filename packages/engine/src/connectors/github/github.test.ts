@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { createConnection } from "../../connections.ts"
+import { connectionSchema } from "../../connection-model.ts"
 import { pullEntity, resolveScopeEntity } from "../../library.ts"
 import { libraryEntityDir } from "../../paths.ts"
 import { clearConnectors, registerConnector } from "../registry.ts"
@@ -67,8 +67,7 @@ describe("github connector", () => {
   })
 
   it("resolveScopeEntity builds owner/name", () => {
-    const home = tempDir("flowapp-gh-scope-")
-    const result = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "github-acme",
       connector: "github",
       name: "Acme API",
@@ -81,9 +80,7 @@ describe("github connector", () => {
       signIn: "cli",
       refresh: "1h",
     })
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(resolveScopeEntity(result.value)).toEqual({
+    expect(resolveScopeEntity(connection)).toEqual({
       kind: "repo",
       entityId: "acme/api",
       title: "Acme API",
@@ -181,7 +178,7 @@ describe("github connector", () => {
     registerConnector(connector)
 
     const home = tempDir("flowapp-gh-pull-")
-    const created = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "github-demo",
       connector: "github",
       name: "Demo",
@@ -189,12 +186,10 @@ describe("github connector", () => {
       signIn: "cli",
       refresh: "never",
     })
-    expect(created.ok).toBe(true)
-    if (!created.ok) return
 
     const first = await pullEntity({
       home,
-      connection: created.value,
+      connection,
       kind: "repo",
       entityId: "acme/demo",
       force: true,
@@ -218,7 +213,7 @@ describe("github connector", () => {
 
     const second = await pullEntity({
       home,
-      connection: created.value,
+      connection,
       kind: "repo",
       entityId: "acme/demo",
       force: true,

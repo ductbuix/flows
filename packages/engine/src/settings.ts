@@ -1,5 +1,5 @@
 import type { DatabaseSync } from "node:sqlite"
-import { cliTrustValueSchema, type CliTrustValue } from "@workspace/shared"
+import { cliTrustValueSchema, type CliTrustValue } from "@workspace/contracts"
 
 export type { CliTrustValue }
 

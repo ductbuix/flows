@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createEngine } from "./engine.ts"
-import { workflowSchema } from "@workspace/shared"
+import { workflowSchema } from "@workspace/contracts"
 import { foldEvents } from "./nodes/run-state.ts"
 import { summarizeRun } from "./run-summary.ts"
 

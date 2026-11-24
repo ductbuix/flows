@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
-import { EFFORTS, type CliModelCatalog, type Effort } from "@workspace/shared"
+import { EFFORTS, type CliModelCatalog, type Effort } from "@workspace/contracts"
 import type { CliKind } from "./cli-adapters.ts"
 import {
   parseCursorModelList,

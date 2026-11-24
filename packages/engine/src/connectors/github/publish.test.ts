@@ -2,8 +2,8 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import type { Connection } from "@workspace/shared"
-import { createConnection } from "../../connections.ts"
+import type { Connection } from "../../connection-model.ts"
+import { connectionSchema } from "../../connection-model.ts"
 import { pullEntity } from "../../library.ts"
 import { libraryEntityDir } from "../../paths.ts"
 import { copyPinnedEntity, workEntityDir } from "../../work-copy.ts"
@@ -80,7 +80,7 @@ function demoConn(bare: string): Connection {
 
 async function prepWorkCopy(bare: string, home: string) {
   registerConnector(createGithubConnector({ runGh: stubGh(), runGit }))
-  const created = createConnection(home, {
+  const connection = connectionSchema.parse({
     id: "github-demo",
     connector: "github",
     name: "Demo",
@@ -89,12 +89,10 @@ async function prepWorkCopy(bare: string, home: string) {
     refresh: "never",
     policy: "approve-each-publish",
   })
-  expect(created.ok).toBe(true)
-  if (!created.ok) throw new Error("create failed")
 
   const pulled = await pullEntity({
     home,
-    connection: created.value,
+    connection,
     kind: "repo",
     entityId: "acme/demo",
     force: true,

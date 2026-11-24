@@ -13,10 +13,10 @@ frame and sizes. This file wins on look and product shape.
 
 Flows has **two pages**. Everything else lives inside them.
 
-| Page           | Route                          | Job                                              | Mockups                              |
-| -------------- | ------------------------------ | ------------------------------------------------ | ------------------------------------ |
-| **Work items** | `/work-items`                  | A Kanban board of what needs doing and its state | `kanban`, `detail-panel`             |
-| **Workflows**  | `/workflows`, `/workflows/:id` | Chains of nodes: build, run, watch, fix          | `canvas`, `run-card`, `detail-panel` |
+| Page          | Route                          | Job                                              | Mockups                              |
+| ------------- | ------------------------------ | ------------------------------------------------ | ------------------------------------ |
+| **Docket**    | `/docket`                      | A Kanban board of what needs doing and its state | `kanban`, `detail-panel`             |
+| **Workflows** | `/workflows`, `/workflows/:id` | Chains of nodes: build, run, watch, fix          | `canvas`, `run-card`, `detail-panel` |
 
 - Runs, connections, library, settings and notices keep working under the
   hood. They surface **in context**: a run inside its workflow or work item,
@@ -118,7 +118,7 @@ Before you write markup, find the part in this order (DES-008):
 3. AI Elements patterns, https://ui.shadcn.com/docs/ai-elements.md. Add
    base parts with the CLI, then copy the Base UI pattern into
    `packages/ui/src/components/` when it stays domain-free (no
-   `@workspace/shared`). Flows-bound adaptations (e.g. `ModelSelector`
+   `@workspace/contracts`). Flows-bound adaptations (e.g. `ModelSelector`
    on CLI catalog types) live in `apps/web/src/components/ai-elements/`.
 4. Custom code only when none fits, built from the parts above, and listed
    in the table below with the reason.
@@ -134,7 +134,7 @@ Before you write markup, find the part in this order (DES-008):
 | Approval before an action             | `Confirmation` (`@workspace/ui/components/confirmation`)                             |
 | Failed tool call, command output      | `StackTrace`, `Terminal` (`@workspace/ui`)                                           |
 | Changed files                         | `FileTree` (`@workspace/ui/components/file-tree`)                                    |
-| Model and effort pick                 | `ModelSelector` in `apps/web/.../ai-elements` (binds `@workspace/shared` types)      |
+| Model and effort pick                 | `ModelSelector` in `apps/web/.../ai-elements` (binds `@workspace/contracts` types)   |
 | One-click example prompts             | `Suggestion` (`@workspace/ui/components/suggestion`)                                 |
 | Label + control rows, toggles         | `Field` (`orientation="horizontal"`), `FieldSet`, `FieldLegend`, `Switch`            |
 | Multi-select chips                    | `ToggleGroup multiple variant="outline"`                                             |

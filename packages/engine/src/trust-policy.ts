@@ -1,4 +1,4 @@
-import type { CliTrustValue, TrustDecision } from "@workspace/shared"
+import type { CliTrustValue, TrustDecision } from "@workspace/contracts"
 
 /**
  * One policy for server (dialog) and engine (marker). Returns once,

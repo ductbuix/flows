@@ -59,7 +59,7 @@ export function createRunCommandBindings(
         {
           workflowId: params.workflowId,
           values: params.values,
-          workItemId: params.workItemId,
+          cardId: params.cardId,
           refreshPins: params.refreshPins,
           only: params.only,
           from: params.from,
@@ -105,7 +105,7 @@ export function createRunCommandBindings(
           only: params.only,
           from: params.from,
           baseRunId: params.baseRunId,
-          rerunOf: { runId: params.runId, workItemId: state.workItemId },
+          rerunOf: { runId: params.runId, cardId: state.cardId },
         },
         coreRuns
       )

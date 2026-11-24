@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, rmSync } from "node:fs"
 import { join } from "node:path"
-import type { ConnectionCheckResult } from "@workspace/shared"
+import type { ConnectionCheckResult } from "@workspace/contracts"
 import type {
   Connector,
   ConnectorChangeSet,

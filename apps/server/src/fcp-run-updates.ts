@@ -68,8 +68,8 @@ export function publishRunFcpUpdates(
         runId,
         workflowId: summary.workflowId,
         status,
-        ...(summary.workItemId !== undefined
-          ? { cardId: summary.workItemId }
+        ...(summary.cardId !== undefined
+          ? { cardId: summary.cardId }
           : {}),
       })
     }

@@ -5,7 +5,7 @@ import type {
   AgentSpec,
   CliModelCatalog,
   ResolvedModelEffort,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import {
   agentPrompt,
   judgePrompt,

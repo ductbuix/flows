@@ -20,7 +20,7 @@ import type {
   OutList,
   RunInputFileDetail,
   SummaryResponse,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 const CHUNK_BYTES = 64 * 1024
 

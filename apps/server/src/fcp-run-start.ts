@@ -10,9 +10,8 @@ import {
   type WorkflowInputDecl,
 } from "@workspace/contracts"
 import {
-  readWorkItem,
   workflowDir,
-  workItemItemKey,
+  cardItemKey,
   type Engine,
 } from "@workspace/engine"
 import type { CoreRunHost } from "./core-run-host.ts"
@@ -20,12 +19,12 @@ import type { CoreRunHost } from "./core-run-host.ts"
 export type FcpStartArgs = {
   workflowId: string
   values?: Record<string, string>
-  workItemId?: string
+  cardId?: string
   refreshPins?: boolean
   only?: string
   from?: string
   baseRunId?: string
-  rerunOf?: { runId: string; workItemId?: string }
+  rerunOf?: { runId: string; cardId?: string }
 }
 
 /** Starts a node run for FCP; returns `{ runId }` immediately. */
@@ -58,9 +57,9 @@ export async function startRunForFcp(
   const decls = triggerInputs(graph)
   const keepInputs = base !== undefined
   const values = keepInputs ? {} : validateValues(decls, args.values ?? {})
-  const workItemId = resolveWorkItem(
+  const cardId = resolveCard(
     engine,
-    args.rerunOf ? args.rerunOf.workItemId : args.workItemId
+    args.rerunOf ? args.rerunOf.cardId : args.cardId
   )
   const withInputs = !keepInputs && decls.length > 0
   try {
@@ -69,7 +68,7 @@ export async function startRunForFcp(
     const pins = await engine.pinNodeRun({
       graph,
       runId,
-      workItemId,
+      cardId,
       ...(pinFromRunId !== undefined ? { pinFromRunId } : {}),
       refreshPins: args.refreshPins,
     })
@@ -95,7 +94,7 @@ export async function startRunForFcp(
       pins,
       inputText,
       inputs,
-      workItemId,
+      cardId,
       ...(corePartial ? { partial: corePartial } : {}),
     })
   } catch (err) {
@@ -129,20 +128,16 @@ function validateValues(
   return applyInputDefaults(decls, rawValues)
 }
 
-function resolveWorkItem(
+function resolveCard(
   engine: Engine,
-  workItemId: string | undefined
+  cardId: string | undefined
 ): string | undefined {
-  if (workItemId === undefined) return undefined
-  // Legacy work items and Docket cards share the same branded id (DES-038).
-  if (
-    !readWorkItem(engine.home, workItemId) &&
-    !existsSync(join(engine.home, cardPath(workItemId)))
-  ) {
-    throw engineError("invalid_params", `unknown_work_item: ${workItemId}`)
+  if (cardId === undefined) return undefined
+  if (!existsSync(join(engine.home, cardPath(cardId)))) {
+    throw engineError("invalid_params", `unknown_card: ${cardId}`)
   }
-  void workItemItemKey(workItemId)
-  return workItemId
+  void cardItemKey(cardId)
+  return cardId
 }
 
 /** Earlier runs for a partial seed: baseRunId first, then the rest (BL-102). */

@@ -31,7 +31,7 @@ export type CoreStartArgs = {
   pins?: MaterializeResourcesResult
   inputText?: string
   inputs?: ManualItem
-  workItemId?: string
+  cardId?: string
   partial?: PartialRun
 }
 

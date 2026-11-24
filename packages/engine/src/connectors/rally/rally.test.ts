@@ -15,13 +15,17 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { createConnection } from "../../connections.ts"
+import { connectionSchema } from "../../connection-model.ts"
 import { pullEntity, resolveScopeEntity } from "../../library.ts"
 import { libraryEntityDir } from "../../paths.ts"
 import { writeCookies } from "../../secrets.ts"
 import { clearConnectors, registerConnector } from "../registry.ts"
 import { createRallyConnector, rallyConnector } from "./index.ts"
 import { COMMENT_MD, ITEM_JSON, writePulledItem } from "./files.ts"
+import {
+  installTestConnectionStore,
+  resetTestConnectionStore,
+} from "../../test-connections.ts"
 
 const dirs: string[] = []
 let server: Server | undefined
@@ -192,6 +196,8 @@ beforeEach(async () => {
 })
 
 describe("rally connector", () => {
+  beforeEach(() => installTestConnectionStore())
+  afterEach(() => resetTestConnectionStore())
   it("describe lists story, defect and cookies sign-in", () => {
     const desc = rallyConnector.describe()
     expect(desc.id).toBe("rally")
@@ -202,8 +208,7 @@ describe("rally connector", () => {
   })
 
   it("resolveScopeEntity uses workspace/project", () => {
-    const home = tempDir("flowapp-rally-scope-")
-    const result = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "rally-payments",
       connector: "rally",
       name: "Payments Rally",
@@ -215,9 +220,7 @@ describe("rally connector", () => {
       signIn: "cookies",
       refresh: "1h",
     })
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(resolveScopeEntity(result.value)).toEqual({
+    expect(resolveScopeEntity(connection)).toEqual({
       kind: "story",
       entityId: "ws1/proj1",
       title: "Payments Rally",
@@ -226,7 +229,7 @@ describe("rally connector", () => {
 
   it("check detects missing and expired cookies", async () => {
     const home = tempDir("flowapp-rally-check-")
-    const created = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "rally-payments",
       connector: "rally",
       name: "Payments Rally",
@@ -234,20 +237,18 @@ describe("rally connector", () => {
       signIn: "cookies",
       refresh: "never",
     })
-    expect(created.ok).toBe(true)
-    if (!created.ok) return
     const connector = createRallyConnector()
-    expect(await connector.check(created.value, home)).toEqual({
+    expect(await connector.check(connection, home)).toEqual({
       ok: false,
       message: "not signed in",
     })
     seedCookies(home, "rally-payments")
-    expect(await connector.check(created.value, home)).toEqual({
+    expect(await connector.check(connection, home)).toEqual({
       ok: true,
       message: "rally sign-in ok",
     })
     expireUser = true
-    expect(await connector.check(created.value, home)).toEqual({
+    expect(await connector.check(connection, home)).toEqual({
       ok: false,
       message: "cookies expired",
     })
@@ -255,7 +256,7 @@ describe("rally connector", () => {
 
   it("pull writes item.json and item.md for a story", async () => {
     const home = tempDir("flowapp-rally-pull-")
-    const created = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "rally-payments",
       connector: "rally",
       name: "Payments Rally",
@@ -263,12 +264,10 @@ describe("rally connector", () => {
       signIn: "cookies",
       refresh: "never",
     })
-    expect(created.ok).toBe(true)
-    if (!created.ok) return
     seedCookies(home, "rally-payments")
     const pulled = await pullEntity({
       home,
-      connection: created.value,
+      connection,
       kind: "story",
       entityId: "US42",
       title: "Payments checkout",
@@ -288,7 +287,7 @@ describe("rally connector", () => {
 
   it("diff and publish support a comment and a field change", async () => {
     const home = tempDir("flowapp-rally-pub-")
-    const created = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "rally-payments",
       connector: "rally",
       name: "Payments Rally",
@@ -296,8 +295,6 @@ describe("rally connector", () => {
       signIn: "cookies",
       refresh: "never",
     })
-    expect(created.ok).toBe(true)
-    if (!created.ok) return
     seedCookies(home, "rally-payments")
     const connector = createRallyConnector()
     const baseDir = join(home, "base")
@@ -317,16 +314,12 @@ describe("rally connector", () => {
     writeFileSync(join(workDir, COMMENT_MD), "Shipped the happy path.\n")
 
     const changeSet = await connector.diff({
-      connection: created.value,
+      connection,
       workCopyDir: workDir,
       baseDir,
     })
     expect(changeSet.ops.map((o) => o.op).sort()).toEqual(["comment", "field"])
-    const publishedResult = await connector.publish(
-      created.value,
-      changeSet,
-      home
-    )
+    const publishedResult = await connector.publish(connection, changeSet, home)
     expect(publishedResult.status).toBe("applied")
     expect(published.some((p) => p.method === "PUT")).toBe(true)
     expect(published.some((p) => p.method === "POST")).toBe(true)

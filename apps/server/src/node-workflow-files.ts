@@ -13,7 +13,7 @@ import {
   workflowDetailSchema,
   parseNodeWorkflowYaml,
   type WorkflowDetail,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { moveLayoutIds, readLayout } from "./layout-files.ts"
 import { hashContent } from "./hash.ts"
 import {

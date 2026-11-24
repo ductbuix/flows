@@ -7,7 +7,7 @@ import {
   engineEventSchema,
   type EngineEvent,
   type NoticeList,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import {
   ensureNoticesTable,
   listNotices,

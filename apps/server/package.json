@@ -32,7 +32,6 @@
     "@workspace/core": "workspace:*",
     "@workspace/engine": "workspace:*",
     "@workspace/protocol": "workspace:*",
-    "@workspace/shared": "workspace:*",
     "hono": "^4.13.19",
     "tsx": "^4.23.15",
     "ws": "^8.23.0",

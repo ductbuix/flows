@@ -1,4 +1,4 @@
-import type { Effort, EngineEvent, ModelSource } from "@workspace/shared"
+import type { Effort, EngineEvent, ModelSource } from "@workspace/contracts"
 
 /** Step states (DES-034). */
 export type StepStatus =

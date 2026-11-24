@@ -9,7 +9,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { createConnection } from "../../connections.ts"
+import { connectionSchema } from "../../connection-model.ts"
 import { pullEntity, resolveScopeEntity } from "../../library.ts"
 import { connectMcp } from "../../mcp/client.ts"
 import {
@@ -52,7 +52,7 @@ function tempDir(prefix: string): string {
 }
 
 function seedConnection(home: string, scope: Record<string, string> = {}) {
-  const result = createConnection(home, {
+  return connectionSchema.parse({
     id: "conf-team",
     connector: "confluence",
     name: "Team space",
@@ -65,9 +65,6 @@ function seedConnection(home: string, scope: Record<string, string> = {}) {
     signIn: "mcp",
     refresh: "1h",
   })
-  expect(result.ok).toBe(true)
-  if (!result.ok) throw new Error("create failed")
-  return result.value
 }
 
 describe("confluence connector", () => {

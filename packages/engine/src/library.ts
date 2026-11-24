@@ -9,11 +9,8 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join } from "node:path"
-import {
-  resourcesJsonSchema,
-  type Connection,
-  type ResourcesJson,
-} from "@workspace/shared"
+import { resourcesJsonSchema, type ResourcesJson } from "@workspace/contracts"
+import type { Connection } from "./connection-model.ts"
 import { getConnector } from "./connectors/registry.ts"
 import {
   currentRevision,

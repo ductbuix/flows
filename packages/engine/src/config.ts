@@ -5,7 +5,7 @@ import {
   appConfigSchema,
   type AppConfig,
   type WorkflowLimits,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 /** Load ~/.flowapp/config.yaml (or FLOWAPP_HOME). Missing file → {}. */
 export function loadAppConfig(home: string): AppConfig {

@@ -6,7 +6,7 @@ import {
   normalizeInputText,
   type ManualItemKeyField,
   type WorkflowInputDecl,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 export type ManualFilePart = {
   field: string
@@ -28,7 +28,7 @@ export type InputsJson = {
   itemKey: string
   itemKeyVersion: 1
   fields: Record<string, InputsJsonField>
-  workItemId?: string
+  cardId?: string
 }
 
 export type MaterializeResult = {

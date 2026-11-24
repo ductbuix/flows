@@ -1,5 +1,5 @@
 import { chromium, type Cookie } from "playwright-core"
-import type { Connection } from "@workspace/shared"
+import type { Connection } from "./connection-model.ts"
 import {
   ensureSecretsDir,
   profileDir,

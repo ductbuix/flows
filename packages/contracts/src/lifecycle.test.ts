@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isAllowedWorkflowFilePath } from "./api-lifecycle.ts"
+import { isAllowedWorkflowFilePath } from "./lifecycle.ts"
 
 describe("isAllowedWorkflowFilePath", () => {
   it("accepts workflow-relative text paths", () => {

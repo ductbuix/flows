@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { logChunkSchema } from "../api.ts"
+import { logChunkSchema } from "../runs.ts"
 import { cursorPlanTodoSchema } from "../cursor-plan.ts"
 
 const seqRun = {

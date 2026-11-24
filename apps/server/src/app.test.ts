@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine } from "@workspace/engine"
-import { healthSchema } from "@workspace/shared"
+import { healthSchema } from "@workspace/contracts"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
 

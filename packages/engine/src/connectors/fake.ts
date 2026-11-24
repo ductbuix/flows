@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join, relative } from "node:path"
-import type { ConnectionCheckResult } from "@workspace/shared"
+import type { ConnectionCheckResult } from "@workspace/contracts"
 import { connectionDir } from "../paths.ts"
 import { isSignedIn, readCookies } from "../secrets.ts"
 import type {

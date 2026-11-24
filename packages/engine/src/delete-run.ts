@@ -1,5 +1,5 @@
 import { existsSync, rmSync } from "node:fs"
-import type { EngineEvent } from "@workspace/shared"
+import type { EngineEvent } from "@workspace/contracts"
 import type { RunState } from "./nodes/run-state.ts"
 import { removeWorkCopies } from "./work-copy.ts"
 

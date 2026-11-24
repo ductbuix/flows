@@ -1,5 +1,5 @@
 import type { Engine } from "@workspace/engine"
-import { type Health } from "@workspace/shared"
+import { type Health } from "@workspace/contracts"
 import { Hono } from "hono"
 import { blobRoutes } from "./blob-routes.ts"
 import { createFcpHost } from "./fcp-host.ts"

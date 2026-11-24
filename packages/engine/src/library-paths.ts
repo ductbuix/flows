@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readlinkSync } from "node:fs"
 import { join } from "node:path"
-import type { RefreshRule } from "@workspace/shared"
+import type { RefreshRule } from "@workspace/contracts"
 import { libraryEntityDir } from "./paths.ts"
 
 const REFRESH_MS: Record<Exclude<RefreshRule, "never">, number> = {

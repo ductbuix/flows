@@ -5,7 +5,7 @@ import {
   layoutFileSchema,
   parseNodeWorkflowYaml,
   type LayoutFile,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { workflowYamlPath } from "./workflow-files.ts"
 
 const EMPTY: LayoutFile = { version: 1, nodes: {} }

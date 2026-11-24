@@ -119,7 +119,7 @@ export function RunWorkflowDialog({
     )
     const result = await startRun(client, {
       workflowId: workflow.id,
-      workItemId: card.id,
+      cardId: card.id,
       ...(inputNames.length > 0 ? { values } : {}),
     })
     setPending(false)

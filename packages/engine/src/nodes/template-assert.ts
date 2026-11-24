@@ -4,7 +4,7 @@ import {
   templateProblems,
   type TemplateText,
   type Workflow,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { workflowDir } from "../paths.ts"
 
 function templateTexts(home: string, graph: Workflow): TemplateText[] {

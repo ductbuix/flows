@@ -10,7 +10,7 @@ import {
   mcpTrustValueSchema,
   type McpTrustEntry,
   type McpTrustValue,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 /** Session-only grants (trust once); cleared when the process exits. */
 const onceGrants = new Set<string>()

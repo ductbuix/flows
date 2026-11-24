@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { ChangeSet, EngineEvent } from "@workspace/shared"
-import { readConnection } from "./connections.ts"
+import type { ChangeSet, EngineEvent } from "@workspace/contracts"
+import { requireConnection } from "./connection-resolve.ts"
 import { getConnector } from "./connectors/registry.ts"
 import type { ConnectorPublishResult } from "./connectors/types.ts"
 import { advanceWorkCopyBase } from "./work-copy.ts"
@@ -33,8 +33,7 @@ export async function callPublish(
   task: PublishTarget,
   changeSet: ChangeSet
 ): Promise<ConnectorPublishResult> {
-  const conn = readConnection(host.home, task.connection)
-  if (!conn) throw new Error(`unknown connection ${task.connection}`)
+  const conn = requireConnection(host.home, task.connection)
   const connector = getConnector(conn.connector)
   if (!connector) throw new Error(`unknown connector ${conn.connector}`)
   return connector.publish(conn, changeSet, host.home, {

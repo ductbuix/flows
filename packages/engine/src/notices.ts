@@ -1,5 +1,5 @@
 import type { DatabaseSync } from "node:sqlite"
-import type { NoticeList } from "@workspace/shared"
+import type { NoticeList } from "@workspace/contracts"
 
 /**
  * In-app notices live in a table beside `events` and `settings` (BL-100).

@@ -4,7 +4,7 @@ import {
   resolveModelEffort,
   type AgentSpec,
   type WorkflowAgent,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { getCliAdapter } from "./cli-adapters.ts"
 
 import type { AgentLaunchPaths } from "./agent-prompt.ts"

@@ -6,12 +6,11 @@ import type {
   RunSummary,
   TrustDecision,
   Workflow,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import {
   materializeNodeRunResources,
   type MaterializeResourcesResult,
 } from "./library-run.ts"
-import { readWorkItem } from "./workitems.ts"
 import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
 import {
   prepareTrustMarker,
@@ -196,13 +195,13 @@ export class Engine {
   }
 
   /**
-   * Pulls and pins the Asset resources of a node run, with the work item's
-   * links, before it starts (BL-082). Undefined when the graph has no Asset.
+   * Pulls and pins the Asset resources of a node run before it starts (BL-082).
+   * Undefined when the graph has no Asset.
    */
   async pinNodeRun(input: {
     graph: Workflow
     runId: string
-    workItemId?: string
+    cardId?: string
     /** Reuse the pins of this run (rerun, partial runs) unless `refreshPins`. */
     pinFromRunId?: string
     refreshPins?: boolean
@@ -212,16 +211,13 @@ export class Engine {
     if (!input.graph.nodes.some((n) => n.kind === "asset")) return undefined
     const runRoot = runDir(workflowDir(this.home, input.graph.id), input.runId)
     mkdirSync(runRoot, { recursive: true })
-    const links =
-      input.workItemId !== undefined
-        ? (readWorkItem(this.home, input.workItemId)?.item.links ?? [])
-        : []
+    void input.cardId
     return materializeNodeRunResources({
       home: this.home,
       graph: input.graph,
       runRoot,
       runId: input.runId,
-      workItemLinks: links,
+      cardLinks: [],
       pinFromRunRoot: this.runRootOf(input.pinFromRunId),
       refreshPins: input.refreshPins,
     })

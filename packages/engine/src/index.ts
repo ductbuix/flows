@@ -7,8 +7,6 @@ export {
   resolveAppHomeRealpath,
   appDbPath,
   workflowDir,
-  workItemsRoot,
-  workItemDir,
   runDir,
   connectionsDir,
   connectionDir,
@@ -19,6 +17,19 @@ export {
   encodeEntityId,
   decodeEntityId,
 } from "./paths.ts"
+export {
+  connectionSchema,
+  type Connection,
+  type ConnectionInput,
+  type ResourceLink,
+} from "./connection-model.ts"
+export {
+  findConnection,
+  requireConnection,
+  setConnectionLookup,
+  resetConnectionLookup,
+  type ConnectionLookup,
+} from "./connection-resolve.ts"
 export {
   cookiesPath,
   profileDir,
@@ -69,16 +80,6 @@ export {
 } from "./library-usage.ts"
 export { listPinningRuns, pinnedRevisionKeys } from "./library-pins.ts"
 export {
-  listConnections,
-  readConnection,
-  createConnection,
-  updateConnection,
-  deleteConnection,
-  workflowsUsingConnection,
-  type ConnectionStoreError,
-  type ConnectionStoreResult,
-} from "./connections.ts"
-export {
   registerConnector,
   unregisterConnector,
   getConnector,
@@ -116,30 +117,6 @@ export {
   revokeMcpServer,
 } from "./mcp/trust.ts"
 export {
-  hashText,
-  writeAtomic,
-  newWorkItemId,
-  readWorkItem,
-  listWorkItemSummaries,
-  createWorkItem,
-  updateWorkItem,
-  deleteWorkItem,
-  type CreateWorkItemInput,
-  type UpdateWorkItemInput,
-  type UpdateWorkItemResult,
-  type DeleteWorkItemResult,
-} from "./workitems.ts"
-export {
-  readWorkItemNotes,
-  writeWorkItemNotes,
-  listWorkItemAttachments,
-  writeWorkItemAttachment,
-  deleteWorkItemAttachment,
-  type WriteNotesResult,
-  type AttachmentWriteResult,
-  type AttachmentDeleteResult,
-} from "./workitem-files.ts"
-export {
   runInputDir,
   materializeRunInput,
   type MaterializeRunInputResult,
@@ -175,9 +152,9 @@ export {
   parseCursorModelId,
   composeCursorModelId,
 } from "./cursor-model-families.ts"
-export type { CliTrustValue } from "@workspace/shared"
+export type { CliTrustValue } from "@workspace/contracts"
 
-export { manualItemKey, workItemItemKey } from "./item-key.ts"
+export { manualItemKey, cardItemKey } from "./item-key.ts"
 export { summarizeRun, type ListRunSummariesOptions } from "./run-summary.ts"
 export {
   copyPinnedEntity,

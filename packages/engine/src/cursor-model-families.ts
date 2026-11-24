@@ -1,4 +1,4 @@
-import { EFFORTS, type CliModelEntry, type Effort } from "@workspace/shared"
+import { EFFORTS, type CliModelEntry, type Effort } from "@workspace/contracts"
 
 const EFFORT_SET = new Set<string>(EFFORTS)
 

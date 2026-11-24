@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { EngineEvent } from "@workspace/shared"
+import type { EngineEvent } from "@workspace/contracts"
 import { foldSteps, latestStep } from "./fold-steps.ts"
 
 const base = { runId: "r1", at: "t" }

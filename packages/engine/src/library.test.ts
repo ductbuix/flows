@@ -9,14 +9,19 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { workflowSchema } from "@workspace/shared"
+import { workflowSchema } from "@workspace/contracts"
 import {
   clearConnectors,
   fakeConnector,
   registerConnector,
 } from "./connectors/index.ts"
-import { createConnection } from "./connections.ts"
 import { createEngine } from "./engine.ts"
+import {
+  installTestConnectionStore,
+  registerTestConnection,
+  resetTestConnectionStore,
+  updateTestConnection,
+} from "./test-connections.ts"
 import { listLibrary } from "./library-list.ts"
 import { currentRevision, isFresh } from "./library-paths.ts"
 import { pullNow } from "./library-run.ts"
@@ -26,16 +31,16 @@ import {
   resolveScopeEntity,
 } from "./library.ts"
 import { libraryEntityDir, runDir, workflowDir } from "./paths.ts"
-import { createWorkItem } from "./workitems.ts"
-
 const homes: string[] = []
 
 beforeEach(() => {
   registerConnector(fakeConnector)
+  installTestConnectionStore()
 })
 
 afterEach(() => {
   clearConnectors()
+  resetTestConnectionStore()
   for (const home of homes.splice(0)) {
     rmSync(home, { recursive: true, force: true })
   }
@@ -53,7 +58,7 @@ function writeConn(
   scope: Record<string, string>,
   refresh = "1h"
 ) {
-  const result = createConnection(home, {
+  return registerTestConnection(home, {
     id,
     connector: "fake",
     name: id,
@@ -61,8 +66,6 @@ function writeConn(
     signIn: "cli",
     refresh: refresh as "1h" | "never" | "15m" | "1d",
   })
-  expect(result.ok).toBe(true)
-  return result.ok ? result.value : null
 }
 
 describe("library store", () => {
@@ -187,30 +190,6 @@ describe("pull at run start and resources", () => {
     engine.close()
   })
 
-  it("pulls work item links at run start (BL-046)", async () => {
-    const home = tempHome()
-    writeConn(home, "ctx-src", { label: "CTX-1" })
-    const { item } = createWorkItem(home, {
-      title: "From context",
-      links: [{ connection: "ctx-src", kind: "item", entityId: "CTX-1" }],
-    })
-    // Links are pulled only when the graph has an Asset node.
-    const graph = assetGraph("link-only", {
-      connection: "ctx-src",
-      id: "CTX-1",
-    })
-    const engine = createEngine({ home })
-    await engine.pinNodeRun({ graph, runId: "r-link", workItemId: item.id })
-    expect(resourcesOf(home, "link-only", "r-link").pins).toEqual([
-      expect.objectContaining({
-        connection: "ctx-src",
-        kind: "item",
-        entityId: "CTX-1",
-      }),
-    ])
-    engine.close()
-  })
-
   it("fails start when pull fails and no revision exists", async () => {
     const home = tempHome()
     writeConn(home, "bad", { label: "x", signedOut: "1" })
@@ -231,22 +210,11 @@ describe("pull at run start and resources", () => {
       kind: "item",
       entityId: "x",
     })
-    // Break sign-in for the next pull while keeping the revision.
-    writeFileSync(
-      join(home, "connections", "flaky", "connection.yaml"),
-      [
-        "id: flaky",
-        "connector: fake",
-        "name: flaky",
-        "signIn: cli",
-        "refresh: 15m",
-        "scope:",
-        "  label: x",
-        "  signedOut: '1'",
-        "  failPull: boom",
-        "",
-      ].join("\n")
-    )
+    updateTestConnection(home, {
+      ...conn,
+      scope: { label: "x", signedOut: "1", failPull: "boom" },
+      refresh: "15m",
+    })
     // Force refresh so pull is attempted (stale if we rewind meta).
     const rev = currentRevision(home, "flaky", "item", "x")!
     const metaPath = join(

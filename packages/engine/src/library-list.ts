@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readlinkSync } from "node:fs"
 import { join } from "node:path"
-import type { LibraryEntity, LibraryList } from "@workspace/shared"
-import { readConnection } from "./connections.ts"
+import type { LibraryEntity, LibraryList } from "@workspace/contracts"
+import { findConnection } from "./connection-resolve.ts"
 import { isFresh, readRevisionMeta } from "./library-paths.ts"
 import { listPinningRuns } from "./library-pins.ts"
 import { libraryUsage } from "./library-usage.ts"
@@ -17,7 +17,7 @@ export function listLibrary(home: string): LibraryList {
   for (const connEntry of readdirSync(root, { withFileTypes: true })) {
     if (!connEntry.isDirectory()) continue
     const connectionId = connEntry.name
-    const conn = readConnection(home, connectionId)
+    const conn = findConnection(home, connectionId)
     const connRoot = join(root, connectionId)
     for (const kindEntry of readdirSync(connRoot, { withFileTypes: true })) {
       if (!kindEntry.isDirectory()) continue
@@ -59,7 +59,7 @@ export function listLibrary(home: string): LibraryList {
           connection: connectionId,
           kind,
           entityId,
-          title: currentMeta?.title ?? conn?.name ?? entityId,
+          title: currentMeta?.title ?? conn?.name ?? connectionId,
           refresh,
           pulledAt: currentMeta?.pulledAt,
           fresh: isFresh(currentMeta?.pulledAt, refresh),

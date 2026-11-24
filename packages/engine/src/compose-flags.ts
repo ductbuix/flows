@@ -1,4 +1,4 @@
-import type { Effort } from "@workspace/shared"
+import type { Effort } from "@workspace/contracts"
 import { shellSingleQuote } from "./agent-prompt.ts"
 import { composeCursorModelId } from "./cursor-model-families.ts"
 

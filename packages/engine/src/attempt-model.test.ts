@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { resolveAttemptModelFields } from "./attempt-model.ts"
-import type { Workflow } from "@workspace/shared"
+import type { Workflow } from "@workspace/contracts"
 
 const baseGraph = { id: "w" } as Workflow
 

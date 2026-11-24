@@ -16,7 +16,7 @@ import {
   fakeConnector,
   registerConnector,
 } from "./connectors/index.ts"
-import { createConnection } from "./connections.ts"
+import { connectionSchema } from "./connection-model.ts"
 import { secretsDir, secretsRoot } from "./paths.ts"
 import {
   cookiesPath,
@@ -99,7 +99,7 @@ describe("cookie leak scan after pull", () => {
   it("finds no cookie value outside secrets/ or in pull output", async () => {
     const home = tempHome()
     const secretValue = "cookie-leak-probe-value-9f3a"
-    const created = createConnection(home, {
+    const connection = connectionSchema.parse({
       id: "rally-payments",
       connector: "fake",
       name: "Rally",
@@ -107,8 +107,6 @@ describe("cookie leak scan after pull", () => {
       signIn: "cookies",
       refresh: "never",
     })
-    expect(created.ok).toBe(true)
-    if (!created.ok) return
     writeCookies(home, "rally-payments", [
       {
         name: "sid",
@@ -121,7 +119,7 @@ describe("cookie leak scan after pull", () => {
     const entityRoot = join(home, "library", "rally-payments", "item", "1")
     const destDir = join(entityRoot, "r1")
     await fakeConnector.pull({
-      connection: created.value,
+      connection,
       entityKind: "item",
       entityId: "1",
       entityRoot,

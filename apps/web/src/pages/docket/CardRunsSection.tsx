@@ -26,7 +26,7 @@ type Props = {
 export function CardRunsSection({ cardId, title, refs, assetNames }: Props) {
   const listQ = useQuery(
     "run/list",
-    { workItemId: cardId, limit: 100 },
+    { cardId: cardId, limit: 100 },
     { topics: ["run"] }
   )
   const workflowsQ = useQuery("workflow/list", {}, { topics: ["workflow"] })

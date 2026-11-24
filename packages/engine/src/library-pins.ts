@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
-import type { ResourcePin } from "@workspace/shared"
+import type { ResourcePin } from "@workspace/contracts"
 import { readResourcesJson } from "./library.ts"
 
 export type PinKey = {

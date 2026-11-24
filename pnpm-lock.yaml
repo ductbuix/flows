@@ -193,9 +193,6 @@ importers:
       '@workspace/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@workspace/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       hono:
         specifier: ^4.13.19
         version: 4.13.19
@@ -275,9 +272,6 @@ importers:
       '@workspace/sdk-react':
         specifier: workspace:*
         version: link:../../packages/sdk-react
-      '@workspace/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -548,18 +542,21 @@ importers:
       '@workspace/agent-acp':
         specifier: workspace:*
         version: link:../agent-acp
+      '@workspace/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@workspace/core':
         specifier: workspace:*
         version: link:../core
-      '@workspace/shared':
-        specifier: workspace:*
-        version: link:../shared
       playwright-core:
         specifier: ^1.65.1
         version: 1.65.1
       yaml:
         specifier: ^2.9.1
         version: 2.9.1
+      zod:
+        specifier: ^4.1.5
+        version: 4.6.7
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -711,31 +708,6 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
-      typescript:
-        specifier: ~6.0.3
-        version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.72.2
-        version: 8.72.2(eslint@10.15.0(jiti@2.7.0))(typescript@6.0.3)
-      vitest:
-        specifier: ^5.1.1
-        version: 5.1.1(@types/node@24.19.2)(jsdom@31.0.1)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
-
-  packages/shared:
-    dependencies:
-      '@workspace/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-    devDependencies:
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@10.15.0(jiti@2.7.0))
-      eslint:
-        specifier: ^10.15.0
-        version: 10.15.0(jiti@2.7.0)
-      globals:
-        specifier: ^17.14.0
-        version: 17.14.0
       typescript:
         specifier: ~6.0.3
         version: 6.0.3

@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { isSafeTaskId } from "@workspace/shared"
+import { isSafeTaskId } from "@workspace/contracts"
 
 /** UTC stamp for trash folder names: `YYYYMMDDTHHMMSSZ` (DES-022). */
 export function trashStamp(at: Date = new Date()): string {

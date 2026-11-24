@@ -35,7 +35,7 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `apps/cli`: `flows` command (`engine --stdio`, `inbox`, `run`); attaches
   via `engine.lock` or hosts in-process; FCP over sdk (ws or linked/ndjson).
 - `packages/engine`: SQLite event log (via EventStore) + settings, connectors,
-  MCP trust, connections, library, work items, work copies, CliAdapter,
+  MCP trust, connectors, library, work copies, CliAdapter,
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
 - `packages/core`: UI-free kernel (ports, `bindEngine`, `runs/` decide+fold +
   actor + scheduler, `nodes/` NodeKind+StepContext for trigger/asset/llm/
@@ -53,13 +53,11 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `packages/sdk` (`createClient`: queue, backoff, resync) and
   `packages/sdk-react` (`useQuery`, `useSubscription`); `packages/mcp-gateway`
   (stdio MCP server forwarding to the engine socket).
-- `packages/contracts` (`packages/shared` re-export shim): zod for API
-  (`runSummarySchema`, `workItemSchema`), branded ids (`CardId`, `RunId`,
-  `WorkflowId`, `StepId`, `ConnectorId`, `SkillSlug`, `LibItemId`),
-  websocket, node workflow (`workflowSchema`), `connection.yaml`, library
-  (LibItem `v<n>` + FCP list/get/add/pull/push/unlink/pin/set_tags/remove/providers),
-  `resources.json`, `config.yaml` `library.maxBytes`, events,
-  `findLoopEdges`, YAML edits that keep comments and key order.
+- `packages/contracts`: zod for API
+  (`runSummarySchema`, docket/connector schemas), branded ids (`CardId`,
+  `RunId`, `WorkflowId`, `StepId`, `ConnectorId`, `SkillSlug`, `LibItemId`),
+  FCP, node workflow (`workflowSchema`), library (LibItem `v<n>` + FCP),
+  `resources.json`, events, `findLoopEdges`, YAML edits that keep comments.
 - `packages/ui`: shadcn, domain-free AI Element patterns, `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
   (`layout.spec.ts` baselines, shell smoke, FCP page specs).

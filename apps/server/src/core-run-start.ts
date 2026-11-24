@@ -15,7 +15,7 @@ export type StartCoreRunArgs = {
   pins?: MaterializeResourcesResult
   inputText?: string
   inputs?: ManualItem
-  workItemId?: string
+  cardId?: string
   partial?: PartialRun
 }
 
@@ -36,7 +36,7 @@ export async function startCoreRun(
     runId: args.runId,
     inputText: args.partial ? undefined : args.inputText,
     inputs: args.partial ? undefined : args.inputs,
-    workItemId: args.workItemId,
+    cardId: args.cardId,
   })
   if (args.partial) {
     copyPartialInput({
@@ -69,7 +69,7 @@ export async function startCoreRun(
       at,
       runId: args.runId,
       graph: args.graph,
-      workItemId: args.workItemId,
+      cardId: args.cardId,
       queued,
       ...(args.partial?.only ? { only: args.partial.only } : {}),
       ...(args.partial?.from ? { from: args.partial.from } : {}),
