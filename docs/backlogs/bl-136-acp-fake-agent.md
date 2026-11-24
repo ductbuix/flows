@@ -2,7 +2,7 @@
 id: BL-136
 title: AgentRuntime port and a scripted fake ACP agent
 type: backlog
-status: todo
+status: done
 summary: AgentRuntime port in core, plus a fake ACP agent process that replays a JSON-RPC script for tests.
 tags: [acp, agents, testing]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Testing first: every ACP item after this one tests against the fake, never a rea
 
 ## Done when
 
-- [ ] `AgentRuntime`, `AgentSession`, `AgentEvent` types in core (DES-041).
-- [ ] `agent-acp/testing/fake-agent.ts` reads a script (expected requests, replies, notifications) and runs over stdio.
-- [ ] Self test: a scripted `initialize` round trip passes.
+- [x] `AgentRuntime`, `AgentSession`, `AgentEvent` types in core (DES-041).
+- [x] `agent-acp/testing/fake-agent.ts` reads a script (expected requests, replies, notifications) and runs over stdio.
+- [x] Self test: a scripted `initialize` round trip passes.
