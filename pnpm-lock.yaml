@@ -44,6 +44,9 @@ importers:
       '@workspace/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
+      ws:
+        specifier: ^8.23.0
+        version: 8.23.0
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -54,6 +57,9 @@ importers:
       '@types/node':
         specifier: ^24.19.2
         version: 24.19.2
+      '@types/ws':
+        specifier: ^8.18.2
+        version: 8.18.2
       electron:
         specifier: ^39.2.7
         version: 39.8.10

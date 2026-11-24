@@ -89,6 +89,18 @@ function removeStale(path: string): void {
 }
 
 /**
+ * Read a live owner from `$FLOWAPP_HOME/engine.lock`, or null when absent/stale.
+ * Does not take the lock (desktop/CLI attach probe; DES-039).
+ */
+export function liveOwner(home: string): { url: string; token: string } | null {
+  const path = lockPath(home)
+  if (!existsSync(path)) return null
+  const existing = readLock(path)
+  if (!existing || !isPidAlive(existing.pid)) return null
+  return { url: existing.url, token: existing.token }
+}
+
+/**
  * Take `$FLOWAPP_HOME/engine.lock` (O_EXCL, mode 0600) or report a live owner.
  * A lock whose pid is gone is replaced (DES-039).
  */

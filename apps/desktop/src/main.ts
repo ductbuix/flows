@@ -7,6 +7,9 @@ import {
 } from "electron"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { bridgePortToWebSocket } from "./fcp-bridge.ts"
+import { resolveEngineMode, type EngineMode } from "./resolve-engine-mode.ts"
+import type { MessagePortLike } from "@workspace/protocol"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const preloadPath = join(here, "preload.cjs")
@@ -17,6 +20,8 @@ function webDistDir(): string {
 }
 
 let engineChild: UtilityProcess | undefined
+let engineMode: EngineMode | undefined
+const bridges: Array<{ dispose: () => void }> = []
 
 function startEngineHost(): UtilityProcess {
   const home = process.env.FLOWAPP_HOME
@@ -54,12 +59,33 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  engineChild = startEngineHost()
+  const home = process.env.FLOWAPP_HOME
+  if (!home) {
+    throw new Error("FLOWAPP_HOME is required")
+  }
+
+  engineMode = resolveEngineMode(home)
+  if (engineMode.kind === "own") {
+    engineChild = startEngineHost()
+  }
 
   ipcMain.on("flows:connect", (event) => {
     const port = event.ports[0]
-    if (!port || !engineChild) return
-    engineChild.postMessage({ type: "connect" }, [port])
+    if (!port || !engineMode) return
+
+    if (engineMode.kind === "own") {
+      if (!engineChild) return
+      engineChild.postMessage({ type: "connect" }, [port])
+      return
+    }
+
+    bridges.push(
+      bridgePortToWebSocket(
+        port as unknown as MessagePortLike,
+        engineMode.url,
+        engineMode.token
+      )
+    )
   })
 
   createWindow()
@@ -74,6 +100,7 @@ app.on("window-all-closed", () => {
 })
 
 app.on("before-quit", () => {
+  for (const b of bridges.splice(0)) b.dispose()
   engineChild?.kill()
   engineChild = undefined
 })

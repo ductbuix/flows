@@ -24,8 +24,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   `/dev/kit`; `/mock/*` redirects to the same paths. No `hono/client`.
   FCP client: MessagePort in Electron, WebSocket via `/fcp/bootstrap`.
 - `apps/desktop`: Electron main + preload (`connect(): MessagePort`) +
-  utilityProcess engine host; loads the web build; Playwright smoke in
-  `apps/desktop/smoke`.
+  utilityProcess host, or attach to a live daemon via `engine.lock`; loads
+  the web build; Playwright smoke in `apps/desktop/smoke`.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`.
   `/health`; `/` + `/fcp` FCP over ws (loopback Host/Origin + lock token)
   with `GET /fcp/bootstrap`; `/blobs` GET/PUT (BlobStore). No REST `/api`.

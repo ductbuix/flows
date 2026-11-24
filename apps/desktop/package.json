@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "private": true,
-  "main": "./dist/main.js",
+  "main": "./dist/main.cjs",
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:web": "FLOWAPP_DESKTOP_BUILD=1 pnpm --filter web exec vite build",
@@ -18,12 +18,14 @@
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",
     "@workspace/protocol": "workspace:*",
-    "@workspace/sdk": "workspace:*"
+    "@workspace/sdk": "workspace:*",
+    "ws": "^8.23.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
     "@types/node": "^24.19.2",
+    "@types/ws": "^8.18.2",
     "electron": "^39.2.7",
     "esbuild": "^0.27.2",
     "eslint": "^10.15.0",

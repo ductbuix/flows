@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { acquireLock, releaseLock } from "./engine-lock.ts"
+import { acquireLock, liveOwner, releaseLock } from "./engine-lock.ts"
 
 const temps: string[] = []
 
@@ -101,6 +101,33 @@ describe("acquireLock", () => {
     const home = tempHome()
     writeFileSync(join(home, "engine.lock"), "not-json", { mode: 0o600 })
     expect(acquireLock(home, selfA)).toEqual({ owned: true })
+  })
+})
+
+describe("liveOwner", () => {
+  it("returns null when the lock is missing or the pid is gone", () => {
+    const home = tempHome()
+    expect(liveOwner(home)).toBeNull()
+
+    writeFileSync(
+      join(home, "engine.lock"),
+      JSON.stringify({
+        pid: deadPid(),
+        url: selfA.url,
+        token: selfA.token,
+      }),
+      { mode: 0o600 }
+    )
+    expect(liveOwner(home)).toBeNull()
+  })
+
+  it("returns url and token for a live owner without taking the lock", () => {
+    const home = tempHome()
+    expect(acquireLock(home, selfA)).toEqual({ owned: true })
+    expect(liveOwner(home)).toEqual({ url: selfA.url, token: selfA.token })
+    expect(
+      JSON.parse(readFileSync(join(home, "engine.lock"), "utf8"))
+    ).toMatchObject({ pid: process.pid, token: selfA.token })
   })
 })
 
