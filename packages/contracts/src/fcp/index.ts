@@ -192,12 +192,22 @@ export {
   connectorSetCapabilityResultSchema,
 } from "./connector.ts"
 export {
+  libraryGetMethod,
+  libraryGetParamsSchema,
+  libraryGetResultSchema,
+  libraryListMethod,
+  libraryListParamsSchema,
   libraryListProvidersMethod,
   libraryListProvidersParamsSchema,
   libraryListProvidersResultSchema,
+  libraryListResultSchema,
+  libraryPullJobResultSchema,
+  libraryPullMethod,
+  libraryPullParamsSchema,
   librarySaveProviderMethod,
   librarySaveProviderParamsSchema,
   librarySaveProviderResultSchema,
+  libraryUpdateNotification,
 } from "./library.ts"
 export {
   inboxAnswerMethod,

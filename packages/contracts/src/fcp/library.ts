@@ -1,12 +1,15 @@
 import { z } from "zod"
+import { LibItemId } from "../ids.ts"
+import { libItemSchema, libVersionSchema } from "../lib-item.ts"
 import { providerDescriptorSchema, providerIdSchema } from "../provider.ts"
-import { defineMethod } from "./define.ts"
+import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
+const DEFAULT_LIMIT_MAX = 500
 
 export const libraryListProvidersParamsSchema = z.object({
   cursor: providerIdSchema.optional(),
-  limit: z.number().int().positive().max(500).optional(),
+  limit: z.number().int().positive().max(DEFAULT_LIMIT_MAX).optional(),
 })
 
 export const libraryListProvidersResultSchema = z.object({
@@ -33,4 +36,80 @@ export const librarySaveProviderMethod = defineMethod({
   params: librarySaveProviderParamsSchema,
   result: librarySaveProviderResultSchema,
   kind: "command",
+})
+
+export const libraryListParamsSchema = z.object({
+  cursor: LibItemId.optional(),
+  limit: z.number().int().positive().max(DEFAULT_LIMIT_MAX).optional(),
+})
+
+export const libraryListResultSchema = z.object({
+  items: z.array(libItemSchema),
+  next: LibItemId.optional(),
+})
+
+export const libraryGetParamsSchema = z.object({
+  id: LibItemId,
+})
+
+export const libraryGetResultSchema = libItemSchema
+
+export const libraryPullParamsSchema = z.object({
+  id: LibItemId,
+  requestKey: fcpRequestKeySchema,
+})
+
+/** FCP pull returns a job id; distinct from legacy REST `libraryPullResultSchema`. */
+export const libraryPullJobResultSchema = z.object({
+  jobId: z.string().min(1),
+})
+
+export const libraryListMethod = defineMethod({
+  name: "library/list",
+  params: libraryListParamsSchema,
+  result: libraryListResultSchema,
+  kind: "query",
+})
+
+export const libraryGetMethod = defineMethod({
+  name: "library/get",
+  params: libraryGetParamsSchema,
+  result: libraryGetResultSchema,
+  kind: "query",
+})
+
+export const libraryPullMethod = defineMethod({
+  name: "library/pull",
+  params: libraryPullParamsSchema,
+  result: libraryPullJobResultSchema,
+  kind: "command",
+})
+
+export const libraryUpdateNotification = defineNotification({
+  name: "library/update",
+  params: z.discriminatedUnion("kind", [
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("item_changed"),
+      item: libItemSchema,
+    }),
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("job_progress"),
+      jobId: z.string().min(1),
+      itemId: LibItemId,
+      message: z.string().optional(),
+      fraction: z.number().min(0).max(1).optional(),
+    }),
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("job_finished"),
+      jobId: z.string().min(1),
+      itemId: LibItemId,
+      ok: z.boolean(),
+      unchanged: z.boolean().optional(),
+      version: libVersionSchema.optional(),
+      error: z.string().optional(),
+    }),
+  ]),
 })

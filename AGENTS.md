@@ -50,8 +50,9 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   (`runSummarySchema`, `workItemSchema`), branded ids (`CardId`, `RunId`,
   `WorkflowId`, `StepId`, `ConnectorId`, `SkillSlug`, `LibItemId`),
   websocket, node workflow (`workflowSchema`), `connection.yaml`, library
-  list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
-  events, `findLoopEdges`, YAML edits that keep comments and key order.
+  (LibItem `v<n>` + FCP list/get/pull/providers), `resources.json`,
+  `config.yaml` `library.maxBytes`, events, `findLoopEdges`, YAML edits
+  that keep comments and key order.
 - `packages/ui`: shadcn, domain-free AI Element patterns, `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
   (`layout.spec.ts` baselines, shell smoke, FCP page specs).

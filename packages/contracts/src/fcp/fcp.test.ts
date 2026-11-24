@@ -5,6 +5,7 @@ import {
   defineNotification,
   ErrorCode,
   fcpMethodTable,
+  fcpNotificationTable,
   type FcpMethodParams,
   type FcpMethodResult,
   type FcpNotificationParams,
@@ -114,9 +115,13 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
   })
 
-  it("declares library/list_providers as a query and library/save_provider as a command", () => {
+  it("declares library list/get as queries and pull/save_provider as commands", () => {
+    expect(fcpMethodTable["library/list"].kind).toBe("query")
+    expect(fcpMethodTable["library/get"].kind).toBe("query")
+    expect(fcpMethodTable["library/pull"].kind).toBe("command")
     expect(fcpMethodTable["library/list_providers"].kind).toBe("query")
     expect(fcpMethodTable["library/save_provider"].kind).toBe("command")
+    expect(fcpNotificationTable["library/update"].name).toBe("library/update")
   })
 
   it("declares skill/list and skill/get as queries and install/uninstall as commands", () => {
