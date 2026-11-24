@@ -55,7 +55,9 @@ export function resolvePermission(
   resolveItem: (
     state: InboxProjectionState,
     id: string,
-    decision: InboxItem["decision"] | undefined
+    decision:
+      | NonNullable<Extract<InboxItem, { kind: "permission" }>["decision"]>
+      | undefined
   ) => { state: InboxProjectionState; changes: InboxChange[] }
 ): { state: InboxProjectionState; changes: InboxChange[] } {
   const id = permissionItemId(

@@ -15,6 +15,11 @@ export type ConnectorCallResult = {
 export type ConnectorCheckResult = {
   ok: boolean
   detail?: string
+  /**
+   * MCP `tools/list` (BL-163). When set, `checkConnector` merges these into
+   * the connector file as capabilities.
+   */
+  tools?: Array<{ name: string; description?: string }>
 }
 
 /**

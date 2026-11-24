@@ -1,4 +1,5 @@
 import {
+  connectorCheckMethod,
   connectorGetMethod,
   connectorListMethod,
   connectorRemoveMethod,
@@ -8,6 +9,7 @@ import {
 } from "@workspace/contracts"
 import { engineError } from "../kernel/engine-error.ts"
 import { defineBinding, type MethodBindings } from "../rpc/bind.ts"
+import { checkConnector, type ConnectorCheckDeps } from "./check.ts"
 import type { ConnectorService } from "./service.ts"
 
 export type ConnectorBindings = Pick<
@@ -17,10 +19,16 @@ export type ConnectorBindings = Pick<
   | "connector/save"
   | "connector/remove"
   | "connector/set_capability"
+  | "connector/check"
 >
 
+export type CreateConnectorBindingsOptions = {
+  check?: Omit<ConnectorCheckDeps, "service">
+}
+
 export function createConnectorBindings(
-  service: ConnectorService
+  service: ConnectorService,
+  options?: CreateConnectorBindingsOptions
 ): ConnectorBindings {
   return {
     "connector/list": defineBinding(connectorListMethod, (params) => {
@@ -47,7 +55,17 @@ export function createConnectorBindings(
       return { hash: result.hash }
     }),
     "connector/remove": defineBinding(connectorRemoveMethod, (params) => {
+      const record = service.get(params.id)
       service.remove(params.id)
+      const check = options?.check
+      if (check && record) {
+        check.onStatusChanged?.({
+          connectorId: params.id,
+          name: record.connector.name,
+          status: "off",
+          at: new Date(check.clock.now()).toISOString(),
+        })
+      }
       return {}
     }),
     "connector/set_capability": defineBinding(
@@ -68,6 +86,19 @@ export function createConnectorBindings(
           })
         }
         return { hash: result.hash }
+      }
+    ),
+    "connector/check": defineBinding(
+      connectorCheckMethod,
+      async (params, ctx) => {
+        const check = options?.check
+        if (!check) {
+          throw engineError(
+            "failed_precondition",
+            "Connector check is not configured"
+          )
+        }
+        return checkConnector({ service, ...check }, params.id, ctx.signal)
       }
     ),
   }

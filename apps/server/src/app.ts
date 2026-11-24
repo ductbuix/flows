@@ -36,7 +36,7 @@ export function createApp({
   const inbox = createInboxFcp(engine, bus)
   const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
-  const connectors = createConnectorsFcp(engine)
+  const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
 

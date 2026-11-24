@@ -12,6 +12,11 @@ export {
   type InboxProjectionState,
 } from "./projection.ts"
 export {
+  applySignInStatus,
+  signInItemId,
+  type SignInStatusInput,
+} from "./projection-sign-in.ts"
+export {
   createInboxService,
   InboxService,
   type InboxAnswerPush,
