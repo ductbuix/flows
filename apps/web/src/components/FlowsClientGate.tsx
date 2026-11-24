@@ -48,7 +48,7 @@ export function FlowsClientGate({ children }: { children: ReactNode }) {
 
   if (error) {
     return (
-      <Page data-testid="fcp-error">
+      <Page crumbs={[{ label: "Connecting" }]} data-testid="fcp-error">
         <PageTitle title="Could not connect" />
         <Alert variant="destructive">
           <AlertTitle>Could not connect</AlertTitle>
@@ -60,7 +60,7 @@ export function FlowsClientGate({ children }: { children: ReactNode }) {
 
   if (!client) {
     return (
-      <Page data-testid="fcp-loading">
+      <Page crumbs={[{ label: "Connecting" }]} data-testid="fcp-loading">
         <PageTitle title="Connecting…" />
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-40 w-full" />

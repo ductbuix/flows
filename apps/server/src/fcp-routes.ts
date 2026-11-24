@@ -27,7 +27,15 @@ export const FCP_DEV_ORIGIN_PORT = 5173
 const engineInfo = { name: "flows", version: "0.0.1" }
 
 export function fcpAllowedHosts(port: number): Set<string> {
-  return new Set([`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`])
+  return new Set([
+    `127.0.0.1:${port}`,
+    `localhost:${port}`,
+    `[::1]:${port}`,
+    // Vite proxies /api/fcp; without changeOrigin Host stays on the dev port.
+    `127.0.0.1:${FCP_DEV_ORIGIN_PORT}`,
+    `localhost:${FCP_DEV_ORIGIN_PORT}`,
+    `[::1]:${FCP_DEV_ORIGIN_PORT}`,
+  ])
 }
 
 export function fcpAllowedOrigins(port: number): Set<string> {

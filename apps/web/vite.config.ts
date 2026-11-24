@@ -27,7 +27,12 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     proxy: {
-      "/api": { target: `http://127.0.0.1:${apiPort}`, ws: true },
+      // changeOrigin so /api/fcp sees the daemon Host (DES-016 loopback guard).
+      "/api": {
+        target: `http://127.0.0.1:${apiPort}`,
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })
