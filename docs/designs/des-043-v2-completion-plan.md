@@ -3,7 +3,7 @@ id: DES-043
 title: "v2 completion plan: mock parity and old-app removal"
 type: design
 status: active
-summary: Audit of the app against the mock blueprint, the gaps (UI, run core, old engine, extra pages) and the phases that close them.
+summary: Mock parity and old-app removal plan; phases 37–42 (BL-193…BL-217) are done.
 tags: [v2, plan, mock, cleanup, roadmap, design]
 related:
   [DES-014, DES-016, DES-017, DES-038, DES-039, DES-041, DES-042, DES-044]
@@ -21,8 +21,8 @@ v2 is done when two things are true:
 2. **Nothing else.** The app has no page, route, package or data path that
    the mock does not need. The old app is gone.
 
-BL-105 to BL-192 are all `done`, but that measures backlog items, not this
-goal. This doc compares the code with the goal and lists what is left.
+Phases 37–42 (BL-193…BL-217) closed this goal. The audit below is the
+gap list that drove those phases; DES-044 is the acceptance checklist.
 
 ## The baseline: what "the mock" is
 

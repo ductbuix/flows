@@ -2,7 +2,7 @@
 id: BL-217
 title: "v2 end-to-end verification and docs refresh"
 type: backlog
-status: todo
+status: done
 summary: Run the checklist in the desktop app and the web server; refresh roadmap and decision log.
 tags: [verify, docs]
 related: [DES-043]
@@ -19,6 +19,6 @@ Walk the checklist by hand in Electron and in `pnpm dev`. Update DES-017 statuse
 
 ## Done when
 
-- [ ] Every checklist row passes in both.
-- [ ] AGENTS.md layout matches the repo.
-- [ ] DES-043 is set to `active`.
+- [x] Every checklist row passes in both.
+- [x] AGENTS.md layout matches the repo.
+- [x] DES-043 is set to `active`.
