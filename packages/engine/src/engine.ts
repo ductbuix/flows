@@ -21,6 +21,7 @@ import {
   reconcileEngineTrustMarker,
   trustDecisionFor,
 } from "./engine-trust.ts"
+import type { EventStore } from "@workspace/core/ports"
 import { EventLog, type StoredEvent } from "./event-log.ts"
 import {
   appDbPath,
@@ -173,6 +174,11 @@ export class Engine {
 
   onEvent(listener: (stored: StoredEvent) => void): () => void {
     return this.log.onAppend(listener)
+  }
+
+  /** Shared EventStore for core RunActor (BL-194); notifies `onEvent`. */
+  eventStore(): EventStore {
+    return this.log.asEventStore()
   }
 
   fold(runId: string): RunState | null {

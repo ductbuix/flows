@@ -403,6 +403,7 @@ export {
   collectExecute,
   createCoreNodeRegistry,
   createNodeEffectRunner,
+  runCommandEffect,
   triggerKind,
   assetKind,
   llmKind,
@@ -424,4 +425,5 @@ export {
   type StepContextDeps,
   type NodeEffectRunnerDeps,
   type NoticePost,
+  type CommandEffectDeps,
 } from "./nodes/index.ts"

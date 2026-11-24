@@ -1,7 +1,9 @@
 import { resolveAnswerValues } from "@workspace/contracts"
 import type { DocumentStore } from "../ports/document-store.ts"
+import type { ProcessRunner } from "../ports/process-runner.ts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
 import { latestStep } from "../runs/model.ts"
+import { runCommandEffect } from "./command-effect.ts"
 import { createStepContext, loadRunInputs, loadStepInputs } from "./context.ts"
 import {
   createNodeKindRegistry,
@@ -55,6 +57,18 @@ export type NodeEffectRunnerDeps = {
   /** Absolute cwd resolver for agent sessions (llm / condition). */
   agentCwdOf?: (state: RunState, nodeId: string, pass: number) => string
   agentRuntime?: import("../ports/agent-runtime.ts").AgentRuntime
+  /**
+   * When set with `workflowDirOf`, `command` nodes spawn via ProcessRunner
+   * instead of the process-kind stub (BL-194).
+   */
+  process?: ProcessRunner
+  workflowDirOf?: (state: RunState) => string
+  /** Passed through to command spawns (host: `process.env`). */
+  processEnv?: Readonly<Record<string, string | undefined>>
+  /** Absolute path resolver for process cwd / NODE_OUT. */
+  absolutePathOf?: (storePath: string) => string
+  /** Per-run abort signal so host cancel can kill a spawn. */
+  signalOf?: (state: RunState) => AbortSignal | undefined
 }
 
 /** Fold StepEvents from one execute() into an EffectResult. */
@@ -133,7 +147,24 @@ export function createNodeEffectRunner(
     const key = kindKeyForNode(node)
     const kind = key ? registry.get(key) : undefined
     if (!kind) {
-      // Process / unknown kinds: shell owns the spawn; stub settles.
+      if (
+        node.kind === "command" &&
+        effect.kind === "launch_step" &&
+        deps.process &&
+        deps.workflowDirOf
+      ) {
+        return runCommandEffect(effect, state, {
+          docs: deps.docs,
+          process: deps.process,
+          runDirOf: deps.runDirOf,
+          workflowDirOf: deps.workflowDirOf,
+          absolutePathOf: deps.absolutePathOf,
+          baseEnv: deps.processEnv,
+          signalOf: deps.signalOf,
+          now,
+        })
+      }
+      // Other process / unknown kinds: shell owns the spawn; stub settles.
       return { ok: true, outputs: [`out/${effect.nodeId}`] }
     }
 

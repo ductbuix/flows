@@ -15,6 +15,7 @@ import {
   workItemItemKey,
   type Engine,
 } from "@workspace/engine"
+import type { CoreRunHost } from "./core-run-host.ts"
 
 export type FcpStartArgs = {
   workflowId: string
@@ -30,7 +31,8 @@ export type FcpStartArgs = {
 /** Starts a node run for FCP; returns `{ runId }` immediately. */
 export async function startRunForFcp(
   engine: Engine,
-  args: FcpStartArgs
+  args: FcpStartArgs,
+  coreRuns?: CoreRunHost
 ): Promise<{ runId: string }> {
   const dir = workflowDir(engine.home, args.workflowId)
   if (!existsSync(join(dir, "workflow.yaml"))) {
@@ -71,13 +73,30 @@ export async function startRunForFcp(
       ...(pinFromRunId !== undefined ? { pinFromRunId } : {}),
       refreshPins: args.refreshPins,
     })
+    const inputText =
+      keepInputs || decls.length > 0 ? undefined : args.values?.text
+    const inputs = withInputs ? { decls, values, files: [] } : undefined
+
+    // Core path for trigger+command (BL-194); other kinds / queue → engine.
+    if (coreRuns && !partial && coreRuns.canHandle(graph)) {
+      const core = await coreRuns.tryStart({
+        graph,
+        runId,
+        pins,
+        inputText,
+        inputs,
+        workItemId,
+      })
+      if (core) return core
+    }
+
     const handle = engine.startNodeRun({
       graph,
       runId,
       pins,
       ...(partial ? { partial } : {}),
-      inputText: keepInputs || decls.length > 0 ? undefined : args.values?.text,
-      ...(withInputs ? { inputs: { decls, values, files: [] } } : {}),
+      inputText,
+      ...(inputs ? { inputs } : {}),
       workItemId,
     })
     void handle.wait().catch(() => undefined)

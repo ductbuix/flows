@@ -78,6 +78,38 @@ export class EventLog {
     }
   }
 
+  /**
+   * EventStore view for core `RunActor` (BL-194). Appends update
+   * `lastSeq` and notify the same listeners as `append`.
+   */
+  asEventStore(): EventStore {
+    return {
+      append: (runId, events, options) => {
+        if (this.closed) throw new Error("event log is closed")
+        const result = this.store.append(runId, events, options)
+        if (!result.ok) {
+          this.lastSeq.set(runId, result.lastSeq)
+          return result
+        }
+        if (result.appended.length > 0) {
+          this.lastSeq.set(runId, result.lastSeq)
+          for (const stored of result.appended) {
+            for (const listener of this.listeners) listener(stored)
+          }
+        }
+        return result
+      },
+      read: (runId, fromSeq) => {
+        if (this.closed) throw new Error("event log is closed")
+        return this.store.read(runId, fromSeq)
+      },
+      tail: () => {
+        if (this.closed) throw new Error("event log is closed")
+        return this.store.tail()
+      },
+    }
+  }
+
   /** Append an event via EventStore; returns its sequence number. */
   append(event: EngineEvent): number {
     if (this.closed) throw new Error("event log is closed")

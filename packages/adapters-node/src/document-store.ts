@@ -79,13 +79,28 @@ export function createNodeDocumentStore(options?: {
     },
 
     list(glob: string): string[] {
-      if (!root || !existsSync(root)) return []
+      if (root) {
+        if (!existsSync(root)) return []
+        const files: string[] = []
+        walkFiles(root, files)
+        const pattern = glob.replace(/^\//, "")
+        return files
+          .map((abs) => toStorePath(root, abs))
+          .filter((p) => minimatch(p.replace(/^\//, ""), pattern))
+          .sort((a, b) => a.localeCompare(b))
+      }
+      // Absolute store: walk the glob's directory prefix.
+      const pattern = glob.replace(/\\/g, "/")
+      const star = pattern.search(/[*?{]/)
+      const prefix =
+        star >= 0 ? pattern.slice(0, star).replace(/\/$/, "") : dirname(pattern)
+      const walkRoot =
+        prefix && existsSync(prefix) ? prefix : prefix ? dirname(prefix) : ""
+      if (!walkRoot || !existsSync(walkRoot)) return []
       const files: string[] = []
-      walkFiles(root, files)
-      const pattern = glob.replace(/^\//, "")
+      walkFiles(walkRoot, files)
       return files
-        .map((abs) => toStorePath(root, abs))
-        .filter((p) => minimatch(p.replace(/^\//, ""), pattern))
+        .filter((abs) => minimatch(abs.replace(/\\/g, "/"), pattern))
         .sort((a, b) => a.localeCompare(b))
     },
 
