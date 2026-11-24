@@ -48,7 +48,7 @@ export function CardTile({
         role="button"
         tabIndex={0}
         className={cn(
-          "@container/card cursor-grab transition-shadow outline-none ring-inset hover:ring-foreground/25 focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing active:ring-foreground/40",
+          "@container/card shrink-0 cursor-grab transition-shadow outline-none ring-inset hover:ring-foreground/25 focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing active:ring-foreground/40",
           dragging && "opacity-40"
         )}
         data-testid={`docket-card-${card.id}`}
@@ -58,7 +58,7 @@ export function CardTile({
         }}
       >
         <CardContent className="flex flex-col gap-3">
-          <div className="line-clamp-2 text-sm font-medium break-words">
+          <div className="line-clamp-2 min-h-10 text-sm leading-5 font-medium break-words">
             {card.title}
           </div>
           <div className="flex min-h-6 items-center gap-3 text-xs text-muted-foreground">
