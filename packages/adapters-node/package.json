@@ -9,13 +9,15 @@
     "test": "vitest run"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./chrome-browser-sign-in": "./src/chrome-browser-sign-in.ts"
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",
     "@workspace/protocol": "workspace:*",
     "minimatch": "^10.2.6",
+    "playwright-core": "^1.65.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

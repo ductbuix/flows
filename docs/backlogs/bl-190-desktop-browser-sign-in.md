@@ -2,7 +2,7 @@
 id: BL-190
 title: Browser sign-in through the desktop app
 type: backlog
-status: todo
+status: done
 summary: host/browser_sign_in opens an Electron window for the connector URL and returns cookies for the listed domains only.
 tags: [desktop, connectors, security]
 related: [DES-040, DES-041]
@@ -19,5 +19,5 @@ Cookie sign-in without driving Chrome when the desktop app is the client.
 
 ## Done when
 
-- [ ] Separate session partition per connector; only `cookieDomains` cookies are returned; cancel returns `cancelled`.
-- [ ] Without the capability the engine keeps today's Chrome sign-in.
+- [x] Separate session partition per connector; only `cookieDomains` cookies are returned; cancel returns `cancelled`.
+- [x] Without the capability the engine keeps today's Chrome sign-in.

@@ -21,6 +21,7 @@ import {
   fileRevealMethod,
   fileStatMethod,
   fileWriteTextMethod,
+  hostBrowserSignInMethod,
   hostRevealPathMethod,
   inboxAnswerMethod,
   inboxDismissMethod,
@@ -116,6 +117,7 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["connector/remove"].kind).toBe("command")
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
     expect(fcpMethodTable["connector/check"].kind).toBe("command")
+    expect(fcpMethodTable["connector/sign_in"].kind).toBe("command")
     expect(fcpNotificationTable["connector/update"].name).toBe(
       "connector/update"
     )
@@ -161,9 +163,22 @@ describe("FCP helpers", () => {
 
   it("declares host/* engine-to-client methods", () => {
     expect(fcpHostMethodTable["host/reveal_path"]).toBe(hostRevealPathMethod)
+    expect(fcpHostMethodTable["host/browser_sign_in"]).toBe(
+      hostBrowserSignInMethod
+    )
     expect(hostRevealPathMethod.kind).toBe("command")
     expect(hostRevealPathMethod.params.parse({ path: "/tmp/x" })).toEqual({
       path: "/tmp/x",
+    })
+    expect(
+      hostBrowserSignInMethod.params.parse({
+        connectorId: "rally",
+        url: "https://rally.example/",
+        cookieDomains: ["rally.example"],
+      })
+    ).toMatchObject({ connectorId: "rally" })
+    expect(hostBrowserSignInMethod.result.parse({ cancelled: true })).toEqual({
+      cancelled: true,
     })
   })
 

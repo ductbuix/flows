@@ -1,4 +1,4 @@
-/** Preload API when the web build runs inside Electron (BL-186, BL-189). */
+/** Preload API when the web build runs inside Electron (BL-186, BL-189, BL-190). */
 interface FlowsDesktopApi {
   /**
    * Ask preload to open an FCP MessagePort. The peer port is delivered on
@@ -9,6 +9,12 @@ interface FlowsDesktopApi {
   revealPath(path: string): void
   /** OS notification when the window is not focused (`host.notifications`). */
   notifyInboxItem(payload: { title: string; body: string }): void
+  /** Cookie sign-in window (`host.browserSignIn` / `host/browser_sign_in`). */
+  browserSignIn(params: {
+    connectorId: string
+    url: string
+    cookieDomains: string[]
+  }): Promise<{ cookies: unknown[] } | { cancelled: true }>
 }
 
 interface FlowsFcpBootstrap {

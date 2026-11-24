@@ -5,11 +5,16 @@ import {
   connectorRemoveMethod,
   connectorSaveMethod,
   connectorSetCapabilityMethod,
+  connectorSignInMethod,
   type ConnectorSummary,
 } from "@workspace/contracts"
 import { engineError } from "../kernel/engine-error.ts"
+import type { SecretStore } from "../ports/secret-store.ts"
 import { defineBinding, type MethodBindings } from "../rpc/bind.ts"
+import type { FcpConnection } from "../rpc/initialize.ts"
+import type { ChromeBrowserSignIn } from "./browser-sign-in.ts"
 import { checkConnector, type ConnectorCheckDeps } from "./check.ts"
+import { signInConnector } from "./sign-in.ts"
 import type { ConnectorService } from "./service.ts"
 
 export type ConnectorBindings = Pick<
@@ -20,10 +25,23 @@ export type ConnectorBindings = Pick<
   | "connector/remove"
   | "connector/set_capability"
   | "connector/check"
+  | "connector/sign_in"
 >
+
+type HostPeer = {
+  request(method: string, params?: unknown): Promise<unknown>
+}
+
+export type ConnectorSignInBindingDeps = {
+  secrets: SecretStore
+  chromeSignIn?: ChromeBrowserSignIn
+  peer?: HostPeer
+  connection?: FcpConnection
+}
 
 export type CreateConnectorBindingsOptions = {
   check?: Omit<ConnectorCheckDeps, "service">
+  signIn?: ConnectorSignInBindingDeps
 }
 
 export function createConnectorBindings(
@@ -99,6 +117,30 @@ export function createConnectorBindings(
           )
         }
         return checkConnector({ service, ...check }, params.id, ctx.signal)
+      }
+    ),
+    "connector/sign_in": defineBinding(
+      connectorSignInMethod,
+      async (params, ctx) => {
+        const signIn = options?.signIn
+        if (!signIn) {
+          throw engineError(
+            "failed_precondition",
+            "Connector sign-in is not configured"
+          )
+        }
+        return signInConnector(
+          {
+            service,
+            secrets: signIn.secrets,
+            chromeSignIn: signIn.chromeSignIn,
+            peer: signIn.peer,
+            connection: signIn.connection,
+            check: options?.check,
+          },
+          params.id,
+          ctx.signal
+        )
       }
     ),
   }

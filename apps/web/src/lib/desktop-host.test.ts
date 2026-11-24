@@ -55,19 +55,21 @@ describe("desktop-host", () => {
     delete window.flowsDesktop
   })
 
-  it("declares revealPath and notifications capabilities", () => {
+  it("declares revealPath, notifications and browserSignIn", () => {
     expect(desktopClientCapabilities()).toEqual({
-      host: { revealPath: true, notifications: true },
+      host: { revealPath: true, notifications: true, browserSignIn: true },
     })
   })
 
-  it("handles host/reveal_path and inbox item_added", async () => {
+  it("handles host/reveal_path, host/browser_sign_in and inbox item_added", async () => {
     const revealPath = vi.fn()
     const notifyInboxItem = vi.fn()
+    const browserSignIn = vi.fn().mockResolvedValue({ cancelled: true })
     window.flowsDesktop = {
       connect: () => {},
       revealPath,
       notifyInboxItem,
+      browserSignIn,
     }
     const client = fakeDesktopClient()
 
@@ -77,6 +79,18 @@ describe("desktop-host", () => {
 
     await client.emitRequest("host/reveal_path", { path: "/tmp/x" })
     expect(revealPath).toHaveBeenCalledWith("/tmp/x")
+
+    const signIn = await client.emitRequest("host/browser_sign_in", {
+      connectorId: "rally",
+      url: "https://rally.example/",
+      cookieDomains: ["rally.example"],
+    })
+    expect(browserSignIn).toHaveBeenCalledWith({
+      connectorId: "rally",
+      url: "https://rally.example/",
+      cookieDomains: ["rally.example"],
+    })
+    expect(signIn).toEqual({ cancelled: true })
 
     client.emitNotification("inbox/update", {
       seq: 1,

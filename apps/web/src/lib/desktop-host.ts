@@ -1,7 +1,7 @@
 import type { FlowsClient } from "@workspace/sdk"
 
 const DESKTOP_CAPABILITIES = {
-  host: { revealPath: true, notifications: true },
+  host: { revealPath: true, notifications: true, browserSignIn: true },
 } as const
 
 export function desktopClientCapabilities() {
@@ -9,16 +9,16 @@ export function desktopClientCapabilities() {
 }
 
 /**
- * Wire host/reveal_path and Inbox OS notifications for the Electron
- * renderer (BL-189 / DES-040).
+ * Wire host capabilities for the Electron renderer (BL-189 / BL-190 / DES-040).
  */
 export function installDesktopHost(client: FlowsClient): () => void {
   const api = window.flowsDesktop
-  if (!api?.revealPath || !api.notifyInboxItem) {
+  if (!api?.revealPath || !api.notifyInboxItem || !api.browserSignIn) {
     return () => {}
   }
 
   let unsubReveal: (() => void) | undefined
+  let unsubSignIn: (() => void) | undefined
   let unsubInbox: (() => void) | undefined
   let closed = false
 
@@ -28,6 +28,9 @@ export function installDesktopHost(client: FlowsClient): () => void {
       api.revealPath(params.path)
       return {}
     })
+    unsubSignIn = client.onRequest("host/browser_sign_in", (params) =>
+      api.browserSignIn(params)
+    )
     void client.call("subscribe", { topics: ["inbox"] })
     unsubInbox = client.onNotification("inbox/update", (params) => {
       if (params.kind !== "item_added") return
@@ -42,6 +45,7 @@ export function installDesktopHost(client: FlowsClient): () => void {
   return () => {
     closed = true
     unsubReveal?.()
+    unsubSignIn?.()
     unsubInbox?.()
     void client.call("unsubscribe", { topics: ["inbox"] })
   }

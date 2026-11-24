@@ -9,6 +9,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
 import { notifyInboxIfUnfocused } from "./host-notifications.ts"
+import { openBrowserSignIn } from "./host-browser-sign-in.ts"
 import { revealPathInFolder } from "./host-shell.ts"
 import {
   installFlowsBlobProtocol,
@@ -113,6 +114,30 @@ app.whenReady().then(() => {
     const { title, body } = payload as { title?: unknown; body?: unknown }
     if (typeof title !== "string" || typeof body !== "string") return
     notifyInboxIfUnfocused({ title, body })
+  })
+
+  ipcMain.handle("flows:browser-sign-in", async (_event, raw: unknown) => {
+    if (!raw || typeof raw !== "object") {
+      return { cancelled: true as const }
+    }
+    const params = raw as {
+      connectorId?: unknown
+      url?: unknown
+      cookieDomains?: unknown
+    }
+    if (
+      typeof params.connectorId !== "string" ||
+      typeof params.url !== "string" ||
+      !Array.isArray(params.cookieDomains) ||
+      !params.cookieDomains.every((d) => typeof d === "string")
+    ) {
+      return { cancelled: true as const }
+    }
+    return openBrowserSignIn({
+      connectorId: params.connectorId,
+      url: params.url,
+      cookieDomains: params.cookieDomains,
+    })
   })
 
   createWindow()
