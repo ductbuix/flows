@@ -2,7 +2,7 @@
 id: BL-202
 title: "Canvas: Add node, node settings, undo and redo"
 type: backlog
-status: todo
+status: done
 summary: Add node menu with search, node settings, toolbar with undo, redo and fit view.
 tags: [web, editor, canvas]
 related: [DES-043]
@@ -19,6 +19,6 @@ Rebuild `AddNodeMenu`, `NodeSettings`, `ModelRow`, `MultiPick` and `FlowToolbar`
 
 ## Done when
 
-- [ ] Every node kind in the registry can be added and configured.
-- [ ] Undo and redo cover add, move, edit and delete.
-- [ ] An invalid workflow shows validation errors before save.
+- [x] Every node kind in the registry can be added and configured.
+- [x] Undo and redo cover add, move, edit and delete.
+- [x] An invalid workflow shows validation errors before save.

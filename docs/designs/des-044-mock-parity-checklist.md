@@ -89,13 +89,13 @@ Recorded in DES-043; this checklist is the acceptance surface.
 | WF-08 | Sheet: start run for a card               | missing | `workflows.spec.ts › sheet start`     | BL-203  |
 | WF-09 | Editor route (YAML textarea today)        | app     | `workflows.spec.ts › editor yaml`     | BL-201  |
 | WF-10 | Node canvas, cards, edges, save layout    | app     | `workflows.spec.ts › canvas`          | BL-201  |
-| WF-11 | Add node menu with search                 | missing | `workflows.spec.ts › add node`        | BL-202  |
-| WF-12 | Node settings (prompt, format, limits, …) | missing | `workflows.spec.ts › node settings`   | BL-202  |
-| WF-13 | Toolbar: undo, redo, fit view             | missing | `workflows.spec.ts › undo redo`       | BL-202  |
-| WF-14 | Trigger inputs editor                     | missing | `workflows.spec.ts › trigger inputs`  | BL-202  |
-| WF-15 | Step connectors / skills multi-pick       | missing | `workflows.spec.ts › step connectors` | BL-202  |
-| WF-16 | Model row on node                         | missing | `workflows.spec.ts › model row`       | BL-202  |
-| WF-17 | Duplicate / delete node                   | missing | `workflows.spec.ts › node actions`    | BL-202  |
+| WF-11 | Add node menu with search                 | app     | `workflows.spec.ts › add node`        | BL-202  |
+| WF-12 | Node settings (prompt, format, limits, …) | app     | `workflows.spec.ts › node settings`   | BL-202  |
+| WF-13 | Toolbar: undo, redo, fit view             | app     | `workflows.spec.ts › undo redo`       | BL-202  |
+| WF-14 | Trigger inputs editor                     | app     | `workflows.spec.ts › trigger inputs`  | BL-202  |
+| WF-15 | Step connectors / skills multi-pick       | app     | `workflows.spec.ts › step connectors` | BL-202  |
+| WF-16 | Model row on node                         | app     | `workflows.spec.ts › model row`       | BL-202  |
+| WF-17 | Duplicate / delete node                   | app     | `workflows.spec.ts › node actions`    | BL-202  |
 
 ## Runs in context
 

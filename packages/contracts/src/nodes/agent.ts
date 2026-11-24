@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { effortSchema, modelIdSchema } from "../model-effort.ts"
-import { answersSchema, stepSettings } from "./common.ts"
+import { answersSchema, stepAllowLists, stepSettings } from "./common.ts"
 import { defineNodeKind } from "./define.ts"
 
 export const agentKind = defineNodeKind({
@@ -16,6 +16,7 @@ export const agentKind = defineNodeKind({
     effort: effortSchema.optional(),
     memory: z.array(z.string().min(1)).optional(),
     answers: answersSchema.optional(),
+    ...stepAllowLists,
     ...stepSettings,
   },
 })

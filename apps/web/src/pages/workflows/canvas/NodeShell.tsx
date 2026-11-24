@@ -120,12 +120,18 @@ export function NodeShell({
       )}
     >
       {nodeId && !readOnly ? (
-        <NodeToolbar isVisible={selected} position={Position.Top} offset={8}>
+        <NodeToolbar
+          isVisible={selected}
+          position={Position.Top}
+          offset={8}
+          className="!z-50"
+        >
           <div className="flex gap-1 rounded-2xl bg-card p-1 ring-1 ring-foreground/10">
             <Button
               variant="ghost"
               size="icon"
               aria-label="Node settings"
+              data-testid="node-open-settings"
               onClick={() => openSettings(nodeId)}
             >
               <Settings2 />
@@ -136,6 +142,7 @@ export function NodeShell({
                   variant="ghost"
                   size="icon"
                   aria-label="Duplicate node"
+                  data-testid="node-duplicate"
                   onClick={() => duplicate(nodeId)}
                 >
                   <Copy />
@@ -144,6 +151,7 @@ export function NodeShell({
                   variant="ghost"
                   size="icon"
                   aria-label="Delete node"
+                  data-testid="node-delete"
                   onClick={() => remove(nodeId)}
                 >
                   <Trash2 />

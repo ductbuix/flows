@@ -1,4 +1,4 @@
-import type { NodeKindName } from "@workspace/contracts"
+import type { Effort, NodeKindName } from "@workspace/contracts"
 
 export type { NodeKindName }
 import {
@@ -52,6 +52,11 @@ export type CanvasNodeData = {
   summary?: string
   question?: string
   title?: string
+  cli?: "claude" | "cursor"
+  model?: string
+  effort?: Effort
+  connectors?: string[]
+  skills?: string[]
   state?: RunState
   result?: string
 }
