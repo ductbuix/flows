@@ -1,6 +1,8 @@
 import type { ProcessRunner, SessionSpec, Skill } from "@workspace/core"
 import { CURSOR_ASK_QUESTION_METHOD } from "../ask-question.ts"
 import { CURSOR_CREATE_PLAN_METHOD } from "../create-plan.ts"
+import { CURSOR_TASK_METHOD } from "../task.ts"
+import { CURSOR_UPDATE_TODOS_METHOD } from "../update-todos.ts"
 import { cleanupPlacedMcp, placeMcp, type McpLaunchSpec } from "./place-mcp.ts"
 import {
   cleanupPlacedSkills,
@@ -12,7 +14,12 @@ import type { AgentCommand, AgentProfile, AgentProbeResult } from "./types.ts"
 /** Cursor ACP auth method id (DES-041). */
 export const CURSOR_AUTH_METHOD = "cursor_login"
 
-export { CURSOR_ASK_QUESTION_METHOD, CURSOR_CREATE_PLAN_METHOD }
+export {
+  CURSOR_ASK_QUESTION_METHOD,
+  CURSOR_CREATE_PLAN_METHOD,
+  CURSOR_TASK_METHOD,
+  CURSOR_UPDATE_TODOS_METHOD,
+}
 
 /** Modes Cursor exposes until setMode/setModel are verified. */
 export const CURSOR_MODES = ["agent", "ask", "plan"] as const
@@ -62,6 +69,10 @@ export const cursorProfile: AgentProfile = {
     [CURSOR_ASK_QUESTION_METHOD]: true,
     /** Plan review; handler wired on the ACP session (BL-148). */
     [CURSOR_CREATE_PLAN_METHOD]: true,
+    /** Todos run update; merge flag honoured (BL-149). */
+    [CURSOR_UPDATE_TODOS_METHOD]: true,
+    /** Subagent trace row under the step (BL-149). */
+    [CURSOR_TASK_METHOD]: true,
   },
   probe: probeCursor,
 }

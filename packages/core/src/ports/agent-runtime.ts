@@ -20,11 +20,18 @@ export type ContentBlock =
       mimeType?: string
     }
 
-/** One plan / todo row from a session update. */
+/** One plan row from a session update. */
 export type PlanEntry = {
   content: string
   status?: string
   priority?: string
+}
+
+/** One todo row from `cursor/update_todos` (id required for merge). */
+export type TodoEntry = {
+  id: string
+  content: string
+  status: string
 }
 
 /** Optional cost on a usage update. */
@@ -69,7 +76,15 @@ export type AgentEvent =
       status: string
     }
   | { kind: "tool_call_update"; id: string; status: string; content?: unknown }
-  | { kind: "plan" | "todos"; entries: PlanEntry[] }
+  | { kind: "plan"; entries: PlanEntry[] }
+  | { kind: "todos"; entries: TodoEntry[] }
+  | {
+      kind: "subagent"
+      id: string
+      description: string
+      subagentType: string
+      durationMs?: number
+    }
   | { kind: "usage"; used: number; size: number; cost?: Money }
   | {
       kind: "stop"

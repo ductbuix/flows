@@ -54,6 +54,8 @@ describe("cursorProfile", () => {
     expect(cursorProfile.extensions).toMatchObject({
       "cursor/ask_question": true,
       "cursor/create_plan": true,
+      "cursor/update_todos": true,
+      "cursor/task": true,
     })
   })
 

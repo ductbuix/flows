@@ -1,6 +1,19 @@
 export { CURSOR_ASK_QUESTION_METHOD } from "./ask-question.ts"
 export { CURSOR_CREATE_PLAN_METHOD } from "./create-plan.ts"
 export {
+  CURSOR_TASK_METHOD,
+  completedTaskResult,
+  parseTaskParams,
+  rejectedTaskResult,
+} from "./task.ts"
+export {
+  CURSOR_UPDATE_TODOS_METHOD,
+  acceptedUpdateTodosResult,
+  mergeTodos,
+  parseUpdateTodosParams,
+  rejectedUpdateTodosResult,
+} from "./update-todos.ts"
+export {
   CANCELLED_ASK_QUESTION_RESULT,
   CANCELLED_CREATE_PLAN_RESULT,
   CANCELLED_PERMISSION_RESULT,

@@ -3,6 +3,7 @@ import type {
   AgentSession,
   ContentBlock,
   Logger,
+  TodoEntry,
 } from "@workspace/core"
 import type { RpcPeer } from "@workspace/protocol"
 import { CURSOR_ASK_QUESTION_METHOD } from "./ask-question.ts"
@@ -17,6 +18,7 @@ import {
   type PendingClientRequest,
 } from "./cancel.ts"
 import { CURSOR_CREATE_PLAN_METHOD } from "./create-plan.ts"
+import { attachCursorStreamExtensions } from "./cursor-stream-extensions.ts"
 import { attachFsHandlers } from "./fs.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
 
@@ -132,9 +134,12 @@ class AcpSession implements AgentSession {
   private readonly handlePermission?: (params: unknown) => Promise<unknown>
   private readonly handleAskQuestion?: (params: unknown) => Promise<unknown>
   private readonly handleCreatePlan?: (params: unknown) => Promise<unknown>
+  private todos: TodoEntry[] = []
+  private emitEvent?: (event: AgentEvent) => void
   private unsubPermission?: () => void
   private unsubAskQuestion?: () => void
   private unsubCreatePlan?: () => void
+  private unsubStreamExt?: () => void
   private unsubFs?: () => void
 
   constructor(
@@ -176,6 +181,13 @@ class AcpSession implements AgentSession {
         CURSOR_CREATE_PLAN_METHOD
       )
     )
+    this.unsubStreamExt = attachCursorStreamExtensions(peer, {
+      getTodos: () => this.todos,
+      setTodos: (todos) => {
+        this.todos = todos
+      },
+      emit: (event) => this.emitEvent?.(event),
+    })
     this.unsubFs = attachFsHandlers(peer, {
       sessionId: id,
       allowedRoots: options.allowedRoots ?? [options.cwd],
@@ -202,6 +214,8 @@ class AcpSession implements AgentSession {
     this.unsubAskQuestion = undefined
     this.unsubCreatePlan?.()
     this.unsubCreatePlan = undefined
+    this.unsubStreamExt?.()
+    this.unsubStreamExt = undefined
     this.unsubFs?.()
     this.unsubFs = undefined
     this.peer.close()
@@ -261,6 +275,12 @@ class AcpSession implements AgentSession {
       w?.resolve()
     }
 
+    const pushEvent = (event: AgentEvent) => {
+      queue.push(event)
+      wake()
+    }
+    this.emitEvent = pushEvent
+
     const onAbort = () => {
       if (cancelStarted) return
       cancelStarted = true
@@ -288,8 +308,7 @@ class AcpSession implements AgentSession {
       }
       const event = mapSessionUpdate(params, this.logger)
       if (!event) return
-      queue.push(event)
-      wake()
+      pushEvent(event)
     })
 
     // Do not pass `signal`: ACP cancel is `session/cancel`, not `$/cancel_request`.
@@ -339,6 +358,7 @@ class AcpSession implements AgentSession {
     } finally {
       signal.removeEventListener("abort", onAbort)
       clearKill?.()
+      if (this.emitEvent === pushEvent) this.emitEvent = undefined
       unsub()
     }
   }

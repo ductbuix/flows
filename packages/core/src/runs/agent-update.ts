@@ -58,6 +58,18 @@ export function mapAgentEventToRunUpdate(
       return { kind: "plan", runId, stepId, entries: event.entries }
     case "todos":
       return { kind: "todos", runId, stepId, entries: event.entries }
+    case "subagent": {
+      const update: AgentRunUpdate = {
+        kind: "subagent",
+        runId,
+        stepId,
+        id: event.id,
+        description: event.description,
+        subagentType: event.subagentType,
+      }
+      if (event.durationMs !== undefined) update.durationMs = event.durationMs
+      return update
+    }
     case "usage": {
       const update: AgentRunUpdate = {
         kind: "usage",

@@ -114,13 +114,13 @@ export function wirePlanReviewInbox(
   gate: PlanReviewGate
   inbox: ReturnType<typeof createInboxService>
 } {
-  let inbox!: ReturnType<typeof createInboxService>
+  const box: { inbox?: ReturnType<typeof createInboxService> } = {}
   const appendAndApply = (ev: EngineEvent) => {
     const last = events.read(runId).at(-1)?.seq ?? 0
     const result = events.append(runId, [ev], { expectSeq: last })
     if (!result.ok) throw new Error("append conflict")
     for (const s of result.appended) {
-      inbox.apply(s)
+      box.inbox!.apply(s)
       onApply?.(s.event)
     }
   }
@@ -130,7 +130,7 @@ export function wirePlanReviewInbox(
       appendAndApply(event)
     },
   })
-  inbox = createInboxService({
+  box.inbox = createInboxService({
     bus,
     clock,
     events,
@@ -161,6 +161,7 @@ export function wirePlanReviewInbox(
       })
     },
   })
+  const inbox = box.inbox
   for (const s of events.read(runId)) inbox.apply(s)
   return { gate, inbox }
 }

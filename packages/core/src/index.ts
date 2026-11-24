@@ -260,6 +260,7 @@ export type {
   GatewaySocketServer,
   Money,
   PlanEntry,
+  TodoEntry,
   ProcessRunner,
   ProcessSandboxProfile,
   ProcessSpawnSpec,
