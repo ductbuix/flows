@@ -7,11 +7,20 @@ const DEFAULT_LIST_LIMIT_MAX = 500
 /** Approval options today; later kinds add their own option ids (DES-041). */
 export const inboxApprovalOptionIdSchema = z.enum(["approved", "rejected"])
 
-export const inboxItemKindSchema = z.literal("approval")
+/** ACP Cursor permission option ids (DES-041 / BL-146). */
+export const inboxPermissionOptionIdSchema = z.enum([
+  "allow-once",
+  "allow-always",
+  "reject-once",
+])
 
-export const inboxItemSchema = z.object({
+export const inboxItemOptionIdSchema = z.union([
+  inboxApprovalOptionIdSchema,
+  inboxPermissionOptionIdSchema,
+])
+
+const inboxItemBase = {
   id: z.string().min(1),
-  kind: inboxItemKindSchema,
   runId: z.string().min(1),
   workflowId: z.string().min(1).optional(),
   nodeId: z.string().min(1),
@@ -19,8 +28,28 @@ export const inboxItemSchema = z.object({
   question: z.string(),
   at: z.string().min(1),
   status: z.enum(["open", "resolved"]),
+}
+
+export const inboxApprovalItemSchema = z.object({
+  ...inboxItemBase,
+  kind: z.literal("approval"),
   decision: inboxApprovalOptionIdSchema.optional(),
 })
+
+export const inboxPermissionItemSchema = z.object({
+  ...inboxItemBase,
+  kind: z.literal("permission"),
+  tool: z.string().min(1),
+  requestId: z.string().min(1),
+  decision: inboxPermissionOptionIdSchema.optional(),
+})
+
+export const inboxItemSchema = z.discriminatedUnion("kind", [
+  inboxApprovalItemSchema,
+  inboxPermissionItemSchema,
+])
+
+export const inboxItemKindSchema = z.enum(["approval", "permission"])
 
 export type WireInboxItem = z.infer<typeof inboxItemSchema>
 
@@ -82,7 +111,7 @@ export const inboxUpdateNotification = defineNotification({
       seq: z.number().int().nonnegative(),
       kind: z.literal("item_resolved"),
       itemId: z.string().min(1),
-      decision: inboxApprovalOptionIdSchema.optional(),
+      decision: inboxItemOptionIdSchema.optional(),
     }),
   ]),
 })

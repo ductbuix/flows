@@ -117,14 +117,21 @@ describe("inbox service + run actor", () => {
       bus,
       clock: createFakeClock(Date.parse(at)),
       events,
-      pushAnswer: (input) =>
-        actor.push({
+      pushAnswer: (input) => {
+        if (input.kind !== "approval") {
+          throw new Error(`unexpected inbox kind ${input.kind}`)
+        }
+        if (input.optionId !== "approved" && input.optionId !== "rejected") {
+          throw new Error(`unexpected option ${input.optionId}`)
+        }
+        return actor.push({
           kind: "answer",
           at: input.at,
           nodeId: input.nodeId,
           pass: input.pass,
-          decision: input.decision,
-        }),
+          decision: input.optionId,
+        })
+      },
     })
 
     const [serverTransport, clientTransport] = createLinkedTransports()
@@ -194,14 +201,21 @@ describe("inbox service + run actor", () => {
       bus: new UpdateBus(),
       clock: createFakeClock(Date.parse(at)),
       events,
-      pushAnswer: (input) =>
-        actor.push({
+      pushAnswer: (input) => {
+        if (input.kind !== "approval") {
+          throw new Error(`unexpected inbox kind ${input.kind}`)
+        }
+        if (input.optionId !== "approved" && input.optionId !== "rejected") {
+          throw new Error(`unexpected option ${input.optionId}`)
+        }
+        return actor.push({
           kind: "answer",
           at: input.at,
           nodeId: input.nodeId,
           pass: input.pass,
-          decision: input.decision,
-        }),
+          decision: input.optionId,
+        })
+      },
     })
 
     await actor.push({ kind: "start", at, runId: "r1", graph })

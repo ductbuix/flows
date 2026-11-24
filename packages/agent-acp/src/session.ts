@@ -33,6 +33,12 @@ export type OpenAcpSessionOptions = {
   cancelGraceMs?: number
   /** End the agent process group if it ignores `session/cancel`. */
   kill?: () => void
+  /**
+   * When the chain says ask (or host decides), resolve
+   * `session/request_permission` (BL-146). Without this, requests park
+   * until `session/cancel` answers `cancelled`.
+   */
+  handlePermission?: (params: unknown) => Promise<unknown>
 }
 
 type QueueWaiter = {
@@ -102,6 +108,7 @@ class AcpSession implements AgentSession {
   private readonly cancelGraceMs: number
   private readonly kill?: () => void
   private readonly logger?: Logger
+  private readonly handlePermission?: (params: unknown) => Promise<unknown>
   private unsubPermission?: () => void
 
   constructor(
@@ -112,6 +119,7 @@ class AcpSession implements AgentSession {
     this.cancelGraceMs = options.cancelGraceMs ?? DEFAULT_CANCEL_GRACE_MS
     this.kill = options.kill
     this.logger = options.logger
+    this.handlePermission = options.handlePermission
     this.unsubPermission = peer.onRequest(
       "session/request_permission",
       (params) => this.onPermission(params)
@@ -148,9 +156,23 @@ class AcpSession implements AgentSession {
         new Error("session/request_permission wrong session")
       )
     }
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const entry: PendingPermission = { resolve }
       this.pendingPermissions.add(entry)
+      const handler = this.handlePermission
+      if (!handler) return
+      void handler(params).then(
+        (result) => {
+          if (!this.pendingPermissions.has(entry)) return
+          this.pendingPermissions.delete(entry)
+          resolve(result)
+        },
+        (err: unknown) => {
+          if (!this.pendingPermissions.has(entry)) return
+          this.pendingPermissions.delete(entry)
+          reject(err)
+        }
+      )
     })
   }
 

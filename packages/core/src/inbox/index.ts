@@ -4,8 +4,10 @@ export {
   foldInboxEvent,
   foldInboxStored,
   openInboxItems,
+  permissionItemId,
   projectInbox,
   type InboxChange,
+  type InboxDecision,
   type InboxItem,
   type InboxProjectionState,
 } from "./projection.ts"
