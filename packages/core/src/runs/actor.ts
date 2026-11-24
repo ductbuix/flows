@@ -117,7 +117,7 @@ export class RunActor {
   /**
    * Keep waking while decide only emits schedule events (skips / run
    * end) with no effects. One skip per wake used to leave the run
-   * parked after a failed upstream (BL-196 e2e).
+   * parked after a failed upstream (BL-196 / BL-209).
    */
   private async drainSchedule(at: string): Promise<void> {
     for (let i = 0; i < 1000; i++) {
@@ -131,16 +131,6 @@ export class RunActor {
         }
         return
       }
-    }
-    // A wake that only skips/fails leaves no effect; keep draining so the
-    // run can emit run_failed / run_succeeded (command fail → skip output).
-    if (
-      input.kind === "wake" &&
-      out.effects.length === 0 &&
-      out.events.length > 0 &&
-      this.state?.status === "running"
-    ) {
-      await this.handle({ kind: "wake", at: input.at })
     }
   }
 

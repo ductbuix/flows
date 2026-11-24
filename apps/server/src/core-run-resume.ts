@@ -1,7 +1,6 @@
 import type { Workflow } from "@workspace/contracts"
 import { fold, type RunActor } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
-import { isCoreRunEligible } from "./core-run-eligible.ts"
 import type { CoreRunSession } from "./core-run-session.ts"
 
 export type ResumeDeps = {
@@ -29,7 +28,6 @@ export async function resumeCoreRuns(deps: ResumeDeps): Promise<void> {
     for (const s of stored) state = fold(state, s.event)
     if (!state || state.deleted) continue
     if (state.status !== "running" && state.status !== "queued") continue
-    if (!isCoreRunEligible(state.graph)) continue
     session.trackCap(state.graph)
     pending.push({
       runId: summary.runId,

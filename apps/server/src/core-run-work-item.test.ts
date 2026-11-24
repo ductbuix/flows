@@ -2,23 +2,16 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { workflowSchema } from "@workspace/shared"
-import { createEngine } from "./engine.ts"
-import { createWorkItem } from "./workitems.ts"
+import { workflowSchema } from "@workspace/contracts"
+import { createEngine, createWorkItem } from "@workspace/engine"
+import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
-
 afterEach(() => {
   for (const home of homes.splice(0)) {
     rmSync(home, { recursive: true, force: true })
   }
 })
-
-function tempHome(): string {
-  const home = mkdtempSync(join(tmpdir(), "flowapp-wi-run-"))
-  homes.push(home)
-  return home
-}
 
 const graph = workflowSchema.parse({
   id: "wi-wf",
@@ -33,26 +26,33 @@ const graph = workflowSchema.parse({
   ],
 })
 
-describe("runs carry workItemId", () => {
+describe("core runs carry workItemId (BL-197)", () => {
   it("records workItemId on run_started and in the summary", async () => {
-    const home = tempHome()
+    const home = mkdtempSync(join(tmpdir(), "flowapp-core-wi-"))
+    homes.push(home)
     const engine = createEngine({ home })
+    const host = createCoreRunHost(engine)
     const { item } = createWorkItem(home, { title: "Story one" })
 
-    const handle = engine.startNodeRun({
+    await host.tryStart({
       graph,
       runId: "r1",
       inputText: "T-1",
       workItemId: item.id,
     })
-    await handle.wait()
+    const deadline = Date.now() + 10_000
+    while (Date.now() < deadline) {
+      const s = engine.fold("r1")
+      if (s && s.status !== "running" && s.status !== "queued") break
+      await new Promise((r) => setTimeout(r, 25))
+    }
 
     expect(engine.fold("r1")?.workItemId).toBe(item.id)
-
     const summary = engine.listRunSummaries({ workItemId: item.id })
     expect(summary).toHaveLength(1)
     expect(summary[0]).toMatchObject({ id: "r1", workItemId: item.id })
     expect(engine.listRunSummaries({ workItemId: "other" })).toEqual([])
+    host.dispose()
     engine.close()
-  })
+  }, 15_000)
 })

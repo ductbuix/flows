@@ -1,9 +1,4 @@
-export {
-  createEngine,
-  Engine,
-  type CreateEngineOptions,
-  type RunHandle,
-} from "./engine.ts"
+export { createEngine, Engine, type CreateEngineOptions } from "./engine.ts"
 export { ensureBlobStore, getBlobStore, setBlobStore } from "./blob-store.ts"
 export type { ManualFilePart, ManualItem } from "./source-manual.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
@@ -207,4 +202,10 @@ export {
   isWorkflowExportOmitted,
 } from "./workflow-export.ts"
 export { getProcessRunner, setProcessRunner } from "./process-runner.ts"
+export {
+  buildSandboxSpawn,
+  canApplySandbox,
+  sandboxSecretsRoot,
+  sandboxWriteRoot,
+} from "./sandbox.ts"
 export * from "./nodes/index.ts"

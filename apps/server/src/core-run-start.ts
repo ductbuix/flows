@@ -5,7 +5,6 @@ import type {
   ManualItem,
   MaterializeResourcesResult,
 } from "@workspace/engine"
-import { isCoreRunEligible } from "./core-run-eligible.ts"
 import { copyPartialInput, seedCorePartial } from "./core-run-partial.ts"
 import { prepareCoreRunDir } from "./core-run-prepare.ts"
 import type { CoreRunSession } from "./core-run-session.ts"
@@ -25,8 +24,7 @@ export async function startCoreRun(
   session: CoreRunSession,
   makeActor: (runId: string) => RunActor,
   args: StartCoreRunArgs
-): Promise<{ runId: string } | null> {
-  if (!isCoreRunEligible(args.graph)) return null
+): Promise<{ runId: string }> {
   session.trackCap(args.graph)
   const at = new Date().toISOString()
   const queued =
@@ -97,7 +95,6 @@ export async function retryCoreStep(
   let state = null as ReturnType<typeof fold>
   for (const s of stored) state = fold(state, s.event)
   if (!state || state.deleted) throw new Error(`unknown run ${runId}`)
-  if (!isCoreRunEligible(state.graph)) return false
   session.trackCap(state.graph)
   const at = new Date().toISOString()
   session.scheduler.forceRunning(runId, state.workflowId, at)

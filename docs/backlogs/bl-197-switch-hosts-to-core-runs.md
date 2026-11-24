@@ -2,7 +2,7 @@
 id: BL-197
 title: "Switch daemon, CLI and desktop to core runs"
 type: backlog
-status: todo
+status: done
 summary: All hosts start and follow runs through core; the engine run path is unused and deleted.
 tags: [server, cli, desktop, runs]
 related: [DES-043]
@@ -19,5 +19,5 @@ Remove calls to `runNodes` and `resumeNodes`. `flows run`, the daemon and the de
 
 ## Done when
 
-- [ ] `git grep runNodes` finds nothing outside deleted code.
-- [ ] `pnpm test:e2e` and the desktop smoke pass.
+- [x] `git grep runNodes` finds nothing outside deleted code.
+- [x] `pnpm test:e2e` and the desktop smoke pass.
