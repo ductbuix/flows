@@ -124,15 +124,15 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Skills
 
-| id    | item                             | status  | test id                      | backlog |
-| ----- | -------------------------------- | ------- | ---------------------------- | ------- |
-| SK-01 | Installed table + sheet body     | app     | `skills.spec.ts › installed` | —       |
-| SK-02 | Uninstall from sheet             | app     | `skills.spec.ts › uninstall` | —       |
-| SK-03 | Tabs: available + sources chrome | partial | `skills.spec.ts › tabs`      | BL-206  |
-| SK-04 | Available list + install         | missing | `skills.spec.ts › install`   | BL-206  |
-| SK-05 | Add / sync / remove skill source | missing | `skills.spec.ts › sources`   | BL-206  |
-| SK-06 | Update stale installed skill     | missing | `skills.spec.ts › update`    | BL-206  |
-| SK-07 | Used-by nodes on sheet           | missing | `skills.spec.ts › used by`   | BL-206  |
+| id    | item                             | status | test id                      | backlog |
+| ----- | -------------------------------- | ------ | ---------------------------- | ------- |
+| SK-01 | Installed table + sheet body     | app    | `skills.spec.ts › installed` | —       |
+| SK-02 | Uninstall from sheet             | app    | `skills.spec.ts › uninstall` | —       |
+| SK-03 | Tabs: available + sources chrome | app    | `skills.spec.ts › tabs`      | BL-206  |
+| SK-04 | Available list + install         | app    | `skills.spec.ts › install`   | BL-206  |
+| SK-05 | Add / sync / remove skill source | app    | `skills.spec.ts › sources`   | BL-206  |
+| SK-06 | Update stale installed skill     | app    | `skills.spec.ts › update`    | BL-206  |
+| SK-07 | Used-by nodes on sheet           | app    | `skills.spec.ts › used by`   | BL-206  |
 
 ## Connectors
 
@@ -196,9 +196,9 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 59     |
-| partial   | 4      |
-| missing   | 18     |
+| app       | 74     |
+| partial   | 3      |
+| missing   | 4      |
 | drop      | 5      |
 | **total** | **86** |
 
