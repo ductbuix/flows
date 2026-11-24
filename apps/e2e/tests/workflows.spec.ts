@@ -136,7 +136,7 @@ test.describe("workflows.spec.ts › add node", () => {
 
 test.describe("workflows.spec.ts › node settings", () => {
   test("edits time limit and retries (WF-12)", async ({ page }) => {
-    await page.goto("/workflows/diamond")
+    await page.goto("/workflows/node-settings-e2e")
     await page.getByTestId("workflow-canvas-fit").click()
     await page.getByTestId("canvas-node-command").click()
     await page.getByTestId("node-open-settings").click({ force: true })
@@ -147,7 +147,7 @@ test.describe("workflows.spec.ts › node settings", () => {
     await page.getByRole("option", { name: "2 retries" }).click()
     await saveAndWait(page)
     const onDisk = readFileSync(
-      join(e2eHome(), "workflows", "diamond", "workflow.yaml"),
+      join(e2eHome(), "workflows", "node-settings-e2e", "workflow.yaml"),
       "utf8"
     )
     expect(onDisk).toMatch(/timeout:\s*1800/)
@@ -200,15 +200,16 @@ test.describe("workflows.spec.ts › step connectors", () => {
     await expect(page.getByTestId("node-settings")).toBeVisible()
     await page.getByTestId("pick-Connectors").locator("input").fill("github")
     await page.getByTestId("pick-item-github-cli").click()
-    await page.getByTestId("pick-Skills").locator("input").fill("write")
-    await page.getByTestId("pick-item-write-tests").click()
+    // Prefer commit-style: skills.spec may have uninstalled write-tests.
+    await page.getByTestId("pick-Skills").locator("input").fill("commit")
+    await page.getByTestId("pick-item-commit-style").click()
     await saveAndWait(page)
     const onDisk = readFileSync(
       join(e2eHome(), "workflows", "node-canvas", "workflow.yaml"),
       "utf8"
     )
     expect(onDisk).toContain("github-cli")
-    expect(onDisk).toContain("write-tests")
+    expect(onDisk).toContain("commit-style")
   })
 })
 

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { cancelLiveRuns } from "./helpers"
 
 async function screenshotThemes(
   page: import("@playwright/test").Page,
@@ -21,6 +22,8 @@ async function screenshotThemes(
 
 test.describe("runs page (BL-180)", () => {
   test("starts a run, opens sheet, deletes it", async ({ page }) => {
+    // Free the diamond slot if a prior live run is still holding it.
+    await cancelLiveRuns("diamond")
     await page.goto("/runs")
     await expect(page.getByTestId("mock-runs-page")).toBeVisible()
     await expect(page.getByTestId("runs-start-open")).toBeVisible()
