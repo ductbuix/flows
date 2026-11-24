@@ -210,15 +210,15 @@ interface AgentProfile {
 
 Cursor specifics, each behind a profile flag so a gap is one switch:
 
-| Concern               | Cursor profile                                                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Model and effort      | `--model` at spawn (one session per step), until a set-model call exists                                                              |
-| MCP servers           | Cursor reads `.cursor/mcp.json`; `placeMcp` writes it in the work dir with the gateway only (verify whether `mcpServers` is honoured) |
-| Skills                | `placeSkills` copies the node's skills into the work dir `.cursor/` layout                                                            |
-| `cursor/ask_question` | becomes an Inbox **question** item; answer returns `answered`/`skipped`                                                               |
-| `cursor/create_plan`  | node setting `planReview`: `auto` accepts, `ask` makes an Inbox item                                                                  |
-| `cursor/update_todos` | `todos` run update (merge flag honoured)                                                                                              |
-| `cursor/task`         | subagent trace row under the step                                                                                                     |
+| Concern               | Cursor profile                                                                                                                                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Model and effort      | `--model` at spawn (one session per step), until a set-model call exists                                                                                                                                                                                                                    |
+| MCP servers           | `mcpParam: true` — live probe (`scripts/probe-acp-mcp.mjs`, agent `2026.11.22-e9042b2`) showed `session/new` `mcpServers` with `type: "stdio"` and `env` as `{name,value}[]` is honoured (tool ran). `placeMcp` still writes work-dir `.cursor/mcp.json` with only the Flows gateway entry. |
+| Skills                | `placeSkills` copies the node's skills into the work dir `.cursor/` layout                                                                                                                                                                                                                  |
+| `cursor/ask_question` | becomes an Inbox **question** item; answer returns `answered`/`skipped`                                                                                                                                                                                                                     |
+| `cursor/create_plan`  | node setting `planReview`: `auto` accepts, `ask` makes an Inbox item                                                                                                                                                                                                                        |
+| `cursor/update_todos` | `todos` run update (merge flag honoured)                                                                                                                                                                                                                                                    |
+| `cursor/task`         | subagent trace row under the step                                                                                                                                                                                                                                                           |
 
 A `generic` ACP profile (spec methods only, no extensions) lets other
 ACP agents run with no new code; a `spawn` profile wraps today's

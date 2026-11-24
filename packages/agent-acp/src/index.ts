@@ -30,15 +30,21 @@ export {
 } from "./acp-log.ts"
 export { peerFromProcess, type PeerFromProcessOptions } from "./streams.ts"
 export {
+  asMcpLaunchSpecs,
+  cleanupPlacedMcp,
   CURSOR_AUTH_METHOD,
   CURSOR_MODES,
   cursorCommand,
   cursorProfile,
+  FLOWS_MCP_KEY,
+  placeMcp,
   probeBinaryVersion,
   probeCursor,
+  toAcpMcpServers,
   type AgentCommand,
   type AgentProbeResult,
   type AgentProfile,
+  type McpLaunchSpec,
 } from "./profiles/index.ts"
 export {
   runFakeAgent,

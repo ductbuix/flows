@@ -43,11 +43,11 @@ describe("cursorCommand", () => {
 })
 
 describe("cursorProfile", () => {
-  it("keeps mcpParam and setModel false until verified", () => {
+  it("sets mcpParam true after the live probe; setModel still unverified", () => {
     expect(cursorProfile.id).toBe("cursor")
     expect(cursorProfile.authMethod).toBe(CURSOR_AUTH_METHOD)
     expect(cursorProfile.capabilities).toEqual({
-      mcpParam: false,
+      mcpParam: true,
       setModel: false,
       modes: [...CURSOR_MODES],
     })
