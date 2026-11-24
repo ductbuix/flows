@@ -1,4 +1,5 @@
 import { test, expect, _electron as electron } from "@playwright/test"
+import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { materializeSmokeHome, removeSmokeHome } from "../playwright.config.ts"
@@ -101,6 +102,46 @@ test.describe("Electron desktop smoke", () => {
     } finally {
       await electronApp.close()
       daemon.close()
+      removeSmokeHome(home)
+    }
+  })
+
+  test("reveal path via stubbed shell (BL-189)", async () => {
+    const home = materializeSmokeHome()
+    const revealLog = join(home, "reveal.log")
+    const electronApp = await electron.launch({
+      args: [join(desktopRoot, "dist/main.cjs")],
+      cwd: desktopRoot,
+      env: {
+        ...process.env,
+        FLOWAPP_HOME: home,
+        FLOWAPP_WEB_DIST: join(repoRoot, "apps/web/dist"),
+        FLOWAPP_REVEAL_STUB: revealLog,
+      },
+    })
+
+    try {
+      const window = await electronApp.firstWindow()
+      await expectDocket(window)
+      await window.evaluate(() => {
+        const api = (
+          globalThis as unknown as {
+            flowsDesktop?: { revealPath: (path: string) => void }
+          }
+        ).flowsDesktop
+        api!.revealPath("/tmp/flows-smoke-reveal")
+      })
+      await expect
+        .poll(() => {
+          try {
+            return readFileSync(revealLog, "utf8")
+          } catch {
+            return ""
+          }
+        })
+        .toContain("/tmp/flows-smoke-reveal")
+    } finally {
+      await electronApp.close()
       removeSmokeHome(home)
     }
   })

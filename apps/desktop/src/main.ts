@@ -8,6 +8,8 @@ import {
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
+import { notifyInboxIfUnfocused } from "./host-notifications.ts"
+import { revealPathInFolder } from "./host-shell.ts"
 import {
   installFlowsBlobProtocol,
   registerFlowsBlobScheme,
@@ -94,6 +96,18 @@ app.whenReady().then(() => {
         engineMode.token
       )
     )
+  })
+
+  ipcMain.on("flows:reveal-path", (_event, path: unknown) => {
+    if (typeof path !== "string" || path.length === 0) return
+    revealPathInFolder(path)
+  })
+
+  ipcMain.on("flows:notify-inbox", (_event, payload: unknown) => {
+    if (!payload || typeof payload !== "object") return
+    const { title, body } = payload as { title?: unknown; body?: unknown }
+    if (typeof title !== "string" || typeof body !== "string") return
+    notifyInboxIfUnfocused({ title, body })
   })
 
   createWindow()

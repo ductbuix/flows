@@ -15,6 +15,7 @@ import { randomUUID, timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
 import { fcpIndexHtml } from "./fcp-index.ts"
+import { createFileFcp } from "./fcp-files.ts"
 import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
 import { createWorkflowWriteBindings } from "./fcp-workflow-write.ts"
 import { createRunCommandBindings } from "./fcp-run-commands.ts"
@@ -140,6 +141,7 @@ function bindFcpPeer(
       ...subBindings,
       ...createRunReadBindings(engine),
       ...createRunCommandBindings({ engine, idempotency }),
+      ...createFileFcp(engine, peer, connection),
       ...extra,
     },
     { signal: ac.signal },

@@ -1,4 +1,8 @@
-import { initializeMethod } from "@workspace/contracts"
+import {
+  fcpHostMethodTable,
+  initializeMethod,
+  type FcpMethodDef,
+} from "@workspace/contracts"
 import { RpcPeer, type Transport } from "@workspace/protocol"
 import { ProtocolVersionError } from "./errors.ts"
 import {
@@ -9,9 +13,14 @@ import {
   type InitializeResult,
 } from "./initialize.ts"
 
+export type FcpHostMethodName = keyof typeof fcpHostMethodTable
+
+export type HostRequestHandler = (params: unknown) => unknown | Promise<unknown>
+
 export type SessionHooks = {
   readonly onDrop: (err?: Error) => void
   readonly notificationHandlers: Map<string, Set<(params: unknown) => void>>
+  readonly hostHandlers: Map<string, HostRequestHandler>
   readonly onNotify?: (method: string, params: unknown) => void
 }
 
@@ -32,6 +41,20 @@ export function deliverNotification(
   }
 }
 
+function bindHostHandlers(
+  peer: RpcPeer,
+  handlers: Map<string, HostRequestHandler>
+): void {
+  for (const [method, handler] of handlers) {
+    const def = (fcpHostMethodTable as Record<string, FcpMethodDef>)[method]
+    peer.onRequest(method, async (raw) => {
+      const parsed = def ? def.params.parse(raw ?? {}) : raw
+      const result = await handler(parsed)
+      return def ? def.result.parse(result ?? {}) : result
+    })
+  }
+}
+
 export async function openSession(
   connect: () => Promise<Transport>,
   clientInfo: ClientInfo,
@@ -46,6 +69,7 @@ export async function openSession(
       deliverNotification(hooks, method, params)
     })
   }
+  bindHostHandlers(peer, hooks.hostHandlers)
   transport.onClose((err) => {
     if (closed()) return
     hooks.onDrop(err)

@@ -19,6 +19,9 @@ function fakeClient(
     onNotification() {
       return () => {}
     },
+    onRequest() {
+      return () => {}
+    },
     on() {
       return () => {}
     },

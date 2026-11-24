@@ -13,6 +13,8 @@ import {
   createDocketStore,
   createDocketWriteBindings,
   createFcpConnection,
+  createFileBindings,
+  createPeerHostReveal,
   createSubscribeBindings,
   defineBinding,
   type MethodBindings,
@@ -55,7 +57,7 @@ export function composeDesktopEngine(home: string): DesktopEngine {
   const blobs = createNodeBlobStore({ root: join(home, "blobs") })
 
   const docketDeps = { index, store, bus, blobs }
-  const bindings: MethodBindings = {
+  const sharedBindings: MethodBindings = {
     ping: defineBinding(pingMethod, () => ({ ok: true as const })),
     ...createDocketReadBindings(docketDeps),
     ...createDocketWriteBindings(docketDeps),
@@ -68,6 +70,13 @@ export function composeDesktopEngine(home: string): DesktopEngine {
     const peerId = randomUUID()
     const { bindings: subBindings, dispose: subDispose } =
       createSubscribeBindings(bus, peer, peerId)
+    const files = createFileBindings({
+      docs,
+      allowedRoots: [""],
+      reveal: createPeerHostReveal(peer, connection, (storePath) =>
+        join(home, storePath)
+      ),
+    })
     transport.onClose(() => {
       ac.abort()
       subDispose.dispose()
@@ -78,7 +87,7 @@ export function composeDesktopEngine(home: string): DesktopEngine {
     })
     bindEngine(
       peer,
-      { ...bindings, ...subBindings },
+      { ...sharedBindings, ...files, ...subBindings },
       { signal: ac.signal },
       { connection }
     )

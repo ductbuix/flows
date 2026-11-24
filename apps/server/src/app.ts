@@ -9,7 +9,6 @@ import { createDocketFcp } from "./fcp-docket.ts"
 import { createInboxFcp } from "./fcp-inbox.ts"
 import { createLibraryFcp } from "./fcp-library.ts"
 import { createSkillsFcp } from "./fcp-skills.ts"
-import { createFileFcp } from "./fcp-files.ts"
 import { blobRoutes } from "./blob-routes.ts"
 import {
   fcpBootstrapResponse,
@@ -37,7 +36,6 @@ export function createApp({
   const library = createLibraryFcp(engine)
   const skills = createSkillsFcp(engine, bus)
   const connectors = createConnectorsFcp(engine)
-  const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
 
   return new Hono()
@@ -54,7 +52,6 @@ export function createApp({
         ...library.bindings,
         ...skills.bindings,
         ...connectors,
-        ...files,
       })
     )
     .route("/blobs", blobRoutes(fcpToken))

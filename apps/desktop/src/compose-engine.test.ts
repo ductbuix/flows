@@ -79,4 +79,31 @@ describe("composeDesktopEngine", () => {
     channel.port1.close()
     channel.port2.close()
   })
+
+  it("file/reveal asks the client via host/reveal_path", async () => {
+    const home = seedHome()
+    const engine = composeDesktopEngine(home)
+    const channel = new MessageChannel()
+    engine.bindPort(channel.port1)
+
+    const revealed: string[] = []
+    const client = createClient({
+      transport: messagePortTransport(channel.port2),
+      clientInfo: { name: "desktop-test", version: "0.0.0" },
+      capabilities: { host: { revealPath: true } },
+    })
+    await client.ready
+    client.onRequest("host/reveal_path", (params) => {
+      revealed.push(params.path)
+      return {}
+    })
+
+    await client.call("file/reveal", { path: "docket/board.yaml" })
+    expect(revealed).toEqual([join(home, "docket/board.yaml")])
+
+    client.close()
+    engine.dispose()
+    channel.port1.close()
+    channel.port2.close()
+  })
 })

@@ -5,6 +5,9 @@ export {
   type FlowsClient,
   type FcpCallParams,
   type FcpCallResult,
+  type FcpHostMethodName,
+  type FcpHostParams,
+  type FcpHostResult,
   type FcpMethodName,
   type FcpNotificationName,
 } from "./client.ts"

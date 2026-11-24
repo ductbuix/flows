@@ -2,7 +2,7 @@
 id: BL-189
 title: Desktop host capabilities
 type: backlog
-status: todo
+status: done
 summary: The desktop client declares host.revealPath and host.notifications and implements host/reveal_path and OS notifications for Inbox items.
 tags: [desktop, electron, fcp]
 related: [DES-040]
@@ -19,5 +19,5 @@ Use what only a desktop app can do, through capabilities.
 
 ## Done when
 
-- [ ] Reveal opens Finder at the path; new Inbox items post a notification when the window is not focused.
-- [ ] Smoke test for reveal via a stubbed shell.
+- [x] Reveal opens Finder at the path; new Inbox items post a notification when the window is not focused.
+- [x] Smoke test for reveal via a stubbed shell.
