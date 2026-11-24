@@ -8,23 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
-import { MessageSquareIcon, WrenchIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { Terminal } from "@workspace/ui/components/terminal"
-import {
-  Trace,
-  TraceCollapsible,
-  TraceCollapsibleContent,
-  TraceCollapsibleTrigger,
-  TraceIcon,
-  TraceLine,
-  TraceTitle,
-} from "@workspace/ui/components/trace"
 import { StackTrace } from "@workspace/ui/components/stack-trace"
-import { cn } from "@workspace/ui/lib/utils"
-import { formatAbsolute } from "@/lib/labels"
-import { mono } from "@/components/data/mono"
+import type { CanvasNode } from "./flow-graph"
 import { parseEntries, parseTrace, type LogEntry } from "./node-logs"
+import { NodeLogEntries, Output } from "./NodeLogEntries"
 
 const MAX_CHUNKS = 16
 
@@ -154,11 +142,7 @@ export function NodeLogDialog({
             </p>
           ) : null}
           {logs && logs.entries.length > 0 ? (
-            <ol className="flex flex-col gap-2" data-testid="node-log-entries">
-              {logs.entries.map((e, i) => (
-                <EntryRow key={`${e.at}-${i}`} entry={e} />
-              ))}
-            </ol>
+            <NodeLogEntries entries={logs.entries} />
           ) : (
             <>
               {trace ? (
@@ -184,91 +168,27 @@ export function NodeLogDialog({
   )
 }
 
-function Output({ text, testId }: { text: string; testId?: string }) {
+/** Log dialog for the canvas node whose logs are open. */
+export function CanvasNodeLogs({
+  runId,
+  node,
+  onClose,
+}: {
+  runId: string
+  node: CanvasNode
+  onClose: () => void
+}) {
+  const { data } = node
   return (
-    <pre
-      className={cn(
-        "max-h-96 overflow-auto rounded-md bg-muted p-3 text-xs break-words whitespace-pre-wrap",
-        mono
-      )}
-      data-testid={testId}
-    >
-      {text}
-    </pre>
-  )
-}
-
-/** Terminal status for the AI Elements Terminal pattern. */
-function termStatus(status?: string): "running" | "error" | undefined {
-  if (status === "failed") return "error"
-  if (
-    status === "running" ||
-    status === "in_progress" ||
-    status === "pending"
-  ) {
-    return "running"
-  }
-  return undefined
-}
-
-/** One command, tool call or reply with its time and result. */
-function EntryRow({ entry }: { entry: LogEntry }) {
-  return (
-    <li
-      className="flex flex-col gap-1"
-      data-testid={`node-log-entry-${entry.kind}`}
-    >
-      <div className="flex flex-wrap items-baseline gap-x-2 px-1 text-xs text-muted-foreground">
-        <time dateTime={entry.at}>{formatAbsolute(entry.at)}</time>
-        {entry.status ? <span>{entry.status}</span> : null}
-      </div>
-      <EntryBody entry={entry} />
-    </li>
-  )
-}
-
-function EntryBody({ entry }: { entry: LogEntry }) {
-  const text = entry.text ?? ""
-  if (entry.kind === "error" && text) {
-    const trace = parseTrace(text)
-    return (
-      <StackTrace
-        error={trace.error}
-        frames={trace.frames}
-        data-testid="node-log-trace"
-      />
-    )
-  }
-  if (entry.command) {
-    return (
-      <Terminal
-        title={entry.command}
-        output={text || "(no output)"}
-        status={termStatus(entry.status)}
-        defaultOpen
-        data-testid="node-log-terminal"
-      />
-    )
-  }
-  const Icon = entry.kind === "message" ? MessageSquareIcon : WrenchIcon
-  const status = termStatus(entry.status)
-  return (
-    <Trace data-testid="node-log-tool">
-      <TraceCollapsible defaultOpen={entry.kind === "message"}>
-        <TraceCollapsibleTrigger>
-          <TraceLine status={status === "running" ? undefined : status}>
-            <TraceIcon>
-              <Icon />
-            </TraceIcon>
-            <TraceTitle>{entry.title}</TraceTitle>
-          </TraceLine>
-        </TraceCollapsibleTrigger>
-        {text.trim() ? (
-          <TraceCollapsibleContent>
-            <Output text={text} />
-          </TraceCollapsibleContent>
-        ) : null}
-      </TraceCollapsible>
-    </Trace>
+    <NodeLogDialog
+      runId={runId}
+      nodeId={node.id}
+      nodeName={data.name ?? data.kind}
+      passes={
+        data.passes ?? [{ pass: data.pass ?? 1, attempts: data.attempt ?? 1 }]
+      }
+      failReason={data.failReason}
+      onClose={onClose}
+    />
   )
 }
