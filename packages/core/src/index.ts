@@ -81,16 +81,26 @@ export {
 } from "./docket/write.ts"
 export {
   CONNECTORS_GLOB,
+  cliArgv,
   connectorIdFromPath,
   connectorPath,
+  createCliTransport,
   createConnectorBindings,
+  createConnectorRuntime,
   createConnectorService,
+  createConnectorTransportRegistry,
+  ConnectorRuntime,
   ConnectorService,
+  ConnectorTransportRegistry,
   isCapabilityAllowed,
   setCapabilityAllowed,
   type ConnectorBindings,
+  type ConnectorCallResult,
+  type ConnectorCheckResult,
   type ConnectorRecord,
+  type ConnectorRuntimeDeps,
   type ConnectorServiceDeps,
+  type ConnectorTransportHandler,
 } from "./connectors/index.ts"
 export {
   PROVIDERS_GLOB,
