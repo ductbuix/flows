@@ -70,7 +70,7 @@ export function RunInputFiles({ runId, files }: Props) {
                 <Button
                   type="button"
                   variant="outline"
-                  
+
                   className={mono}
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   onClick={() => void openPreview(path)}
@@ -80,7 +80,7 @@ export function RunInputFiles({ runId, files }: Props) {
               ) : (
                 <Button
                   variant="outline"
-                  
+
                   className={mono}
                   data-testid={`run-input-file-${sanitizeTestId(path)}`}
                   render={<a href={downloadHref(runId, path)} download />}

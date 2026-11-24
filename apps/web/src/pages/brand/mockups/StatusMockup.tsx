@@ -12,9 +12,16 @@ const EXAMPLES: { tone: Tone; label: string }[] = [
 /** Every status tone with a typical label. */
 export function StatusMockup() {
   return (
-    <div className="flex flex-wrap items-center gap-3" data-testid="mockup-status">
+    <div
+      className="flex flex-wrap items-center gap-3"
+      data-testid="mockup-status"
+    >
       {EXAMPLES.map((ex) => (
-        <StatusPill key={ex.tone} tone={ex.tone} data-testid={`pill-${ex.tone}`}>
+        <StatusPill
+          key={ex.tone}
+          tone={ex.tone}
+          data-testid={`pill-${ex.tone}`}
+        >
           {ex.label}
         </StatusPill>
       ))}

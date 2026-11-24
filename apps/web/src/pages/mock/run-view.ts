@@ -15,7 +15,9 @@ export function nodeStatesFor(
   // Starts: the trigger and fixed assets (assets with no inputs).
   const fed = new Set(edges.map((e) => e.target))
   const queue = nodes
-    .filter((n) => n.type === "trigger" || (n.type === "asset" && !fed.has(n.id)))
+    .filter(
+      (n) => n.type === "trigger" || (n.type === "asset" && !fed.has(n.id))
+    )
     .map((n) => n.id)
   while (queue.length) {
     const cur = queue.shift()!
@@ -28,15 +30,22 @@ export function nodeStatesFor(
       queue.push(e.target)
     }
   }
-  const approval = order.findIndex((id) => nodes.find((n) => n.id === id)?.type === "approval")
-  const atApproval = approval >= 0 && (run.tone === "attention" || !!run.decision)
+  const approval = order.findIndex(
+    (id) => nodes.find((n) => n.id === id)?.type === "approval"
+  )
+  const atApproval =
+    approval >= 0 && (run.tone === "attention" || !!run.decision)
   const reached = atApproval
     ? approval + (run.decision === "approved" ? 1 : 0)
     : run.tone === "done"
       ? order.length
       : Math.floor(order.length * (run.tone === "failed" ? 0.8 : 0.5))
   const stop: RunState =
-    run.tone === "failed" ? "failed" : run.tone === "attention" ? "waiting" : "running"
+    run.tone === "failed"
+      ? "failed"
+      : run.tone === "attention"
+        ? "waiting"
+        : "running"
   const out: Record<string, { state: RunState; result?: string }> = {}
   for (const n of nodes) {
     const i = order.indexOf(n.id)

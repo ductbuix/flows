@@ -44,16 +44,16 @@ record model (DES-026); see Migration.
 
 ## Must-haves (MVP)
 
-| Area     | Must-have                                                                      |
-| -------- | ------------------------------------------------------------------------------ |
-| Card     | title, Markdown description, status, dates (start, due, created, updated, done) |
-| Refs     | links to external items (Rally, Jira, GitHub, any URL) with system and id      |
-| Assets   | local files, folders, images attached or linked; open, add, remove             |
-| Links    | card to card with a relation; backlinks shown on the target                    |
-| Fields   | free key/value map for any other system field, shown in the detail panel       |
-| Board    | configurable columns (id, label, done flag); drag to change status and order   |
-| Live     | board follows file changes (agent edits appear without refresh)                |
-| Safety   | optimistic move with rollback; 409 on a stale save; missing assets flagged     |
+| Area   | Must-have                                                                       |
+| ------ | ------------------------------------------------------------------------------- |
+| Card   | title, Markdown description, status, dates (start, due, created, updated, done) |
+| Refs   | links to external items (Rally, Jira, GitHub, any URL) with system and id       |
+| Assets | local files, folders, images attached or linked; open, add, remove              |
+| Links  | card to card with a relation; backlinks shown on the target                     |
+| Fields | free key/value map for any other system field, shown in the detail panel        |
+| Board  | configurable columns (id, label, done flag); drag to change status and order    |
+| Live   | board follows file changes (agent edits appear without refresh)                 |
+| Safety | optimistic move with rollback; 409 on a stale save; missing assets flagged      |
 
 Out of MVP: WIP limits, derived columns, swimlanes, several boards, search,
 undo, automated sync, move triggers, bulk actions, card templates.
@@ -135,14 +135,14 @@ Free Markdown description. Agents may append notes here.
 
 A pointer to an item in another system.
 
-| Key        | Meaning                                                      |
-| ---------- | ------------------------------------------------------------ |
-| system     | `rally`, `jira`, `github`, `url`, or any string              |
-| kind, id   | optional; system-local type and identifier                   |
-| url        | where the human opens it                                     |
-| label      | display title cached from the system                         |
-| syncedAt   | when `snapshot` was last written                             |
-| snapshot   | optional asset path holding the broken-down copy (JSON or MD)|
+| Key      | Meaning                                                       |
+| -------- | ------------------------------------------------------------- |
+| system   | `rally`, `jira`, `github`, `url`, or any string               |
+| kind, id | optional; system-local type and identifier                    |
+| url      | where the human opens it                                      |
+| label    | display title cached from the system                          |
+| syncedAt | when `snapshot` was last written                              |
+| snapshot | optional asset path holding the broken-down copy (JSON or MD) |
 
 The board never calls an external API itself. A connector or agent writes
 the snapshot asset and updates `syncedAt`; the card shows its age
@@ -150,11 +150,11 @@ the snapshot asset and updates `syncedAt`; the card shows its age
 
 ### Asset
 
-| Key   | Meaning                                                                   |
-| ----- | ------------------------------------------------------------------------- |
-| path  | relative to the card folder (owned) or absolute (linked)                  |
-| label | optional display name                                                     |
-| scope | `owned` (default for relative) or `linked` (absolute, never copied)       |
+| Key   | Meaning                                                             |
+| ----- | ------------------------------------------------------------------- |
+| path  | relative to the card folder (owned) or absolute (linked)            |
+| label | optional display name                                               |
+| scope | `owned` (default for relative) or `linked` (absolute, never copied) |
 
 Kind (file, folder, image, JSON, Markdown) is derived from the path, not
 stored. Owned assets live in the card folder and travel with it. Linked
@@ -177,7 +177,7 @@ columns:
   - { id: doing, label: Doing }
   - { id: review, label: Review }
   - { id: done, label: Done, done: true }
-face: [due, fields.assignee]   # extra keys on the card face, max 2
+face: [due, fields.assignee] # extra keys on the card face, max 2
 ```
 
 Columns are the only configuration. A column id is what cards store in
@@ -207,17 +207,17 @@ agents / connectors / workflows read and write the same files
 
 ### API
 
-| Route                              | Purpose                                              |
-| ---------------------------------- | ---------------------------------------------------- |
-| `GET /docket`                      | board config and card summaries (no bodies)          |
-| `PUT /docket/board`                | save columns and face (hash, 409)                    |
-| `POST /docket/cards`               | create (title, optional status, ref or description)  |
-| `GET /docket/cards/:id`            | full card, hash, backlinks, asset states             |
-| `PUT /docket/cards/:id`            | save fields and body (`baseHash`, 409 with disk copy)|
-| `POST /docket/cards/:id/move`      | `{ status, beforeId? }` rewrites status and rank only|
-| `POST /docket/cards/:id/assets`    | add owned (upload) or linked (path)                  |
-| `GET /docket/cards/:id/assets/*`   | stream an owned asset                                |
-| `DELETE /docket/cards/:id`         | delete card (confirmed; owned assets go with it)     |
+| Route                            | Purpose                                               |
+| -------------------------------- | ----------------------------------------------------- |
+| `GET /docket`                    | board config and card summaries (no bodies)           |
+| `PUT /docket/board`              | save columns and face (hash, 409)                     |
+| `POST /docket/cards`             | create (title, optional status, ref or description)   |
+| `GET /docket/cards/:id`          | full card, hash, backlinks, asset states              |
+| `PUT /docket/cards/:id`          | save fields and body (`baseHash`, 409 with disk copy) |
+| `POST /docket/cards/:id/move`    | `{ status, beforeId? }` rewrites status and rank only |
+| `POST /docket/cards/:id/assets`  | add owned (upload) or linked (path)                   |
+| `GET /docket/cards/:id/assets/*` | stream an owned asset                                 |
+| `DELETE /docket/cards/:id`       | delete card (confirmed; owned assets go with it)      |
 
 Linked paths are opened through an allow-listed "reveal/open" action on the
 server (localhost only); the browser never reads arbitrary paths.
@@ -237,15 +237,15 @@ server (localhost only); the browser never reads arbitrary paths.
 
 ## Differences from the old pattern
 
-| Old (Work items, KanbanMockup)                 | Docket                                              |
-| ---------------------------------------------- | --------------------------------------------------- |
-| Fixed four columns derived from run state      | User columns; status is plain data                  |
-| Strict record, unknown keys are errors         | Open schema, unknown keys preserved                 |
-| Source is a closed union (adhoc, library, rally)| Any number of refs, any system                      |
-| Attachments are uploads only                   | Owned and linked assets, snapshots of external data |
-| Notes in a separate file                       | Description is the card body                        |
-| Card is a work item plus run status            | Card wraps; runs are linked, not the model          |
-| Column order stored in a list                  | Per-card `rank`, one-file moves                     |
+| Old (Work items, KanbanMockup)                   | Docket                                              |
+| ------------------------------------------------ | --------------------------------------------------- |
+| Fixed four columns derived from run state        | User columns; status is plain data                  |
+| Strict record, unknown keys are errors           | Open schema, unknown keys preserved                 |
+| Source is a closed union (adhoc, library, rally) | Any number of refs, any system                      |
+| Attachments are uploads only                     | Owned and linked assets, snapshots of external data |
+| Notes in a separate file                         | Description is the card body                        |
+| Card is a work item plus run status              | Card wraps; runs are linked, not the model          |
+| Column order stored in a list                    | Per-card `rank`, one-file moves                     |
 
 ## Integration contract (not built in MVP)
 

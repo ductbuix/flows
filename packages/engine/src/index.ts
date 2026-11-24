@@ -4,6 +4,7 @@ export {
   type CreateEngineOptions,
   type RunHandle,
 } from "./engine.ts"
+export { ensureBlobStore, getBlobStore, setBlobStore } from "./blob-store.ts"
 export type { ManualFilePart, ManualItem } from "./source-manual.ts"
 export { EventLog, type StoredEvent } from "./event-log.ts"
 export {
@@ -48,10 +49,7 @@ export {
   type ScopeEntity,
   type PullEntityResult,
 } from "./library.ts"
-export {
-  materializeNodeRunResources,
-  pullNow,
-} from "./library-run.ts"
+export { materializeNodeRunResources, pullNow } from "./library-run.ts"
 export { listLibrary } from "./library-list.ts"
 export { isFresh, currentRevision, readRevisionMeta } from "./library-paths.ts"
 export {
@@ -154,9 +152,7 @@ export {
   pathComponentCount,
   resolveCursorProjectsDir,
 } from "./cursor-trust.ts"
-export {
-  runPublishAgentReview,
-} from "./publish-review.ts"
+export { runPublishAgentReview } from "./publish-review.ts"
 export {
   getCliAdapter,
   cliAdapters,

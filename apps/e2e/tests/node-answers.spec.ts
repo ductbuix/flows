@@ -18,15 +18,21 @@ for (const theme of ["light", "dark"] as const) {
     await page.getByTestId("node-settings-assess").click()
     await expect(page.getByTestId("answer-row-risk")).toContainText("low, high")
     await expect(page.getByTestId("answer-row-score")).toContainText("number")
-    await page.screenshot({ path: info.outputPath(`node-answers-sheet-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-answers-sheet-${theme}.png`),
+    })
 
     await page.getByTestId("answer-add").click()
     await page.getByTestId("answer-edit-name").fill("ready")
     await page.getByTestId("answer-edit-type").click()
     await page.getByRole("option", { name: "Yes or no" }).click()
-    await page.screenshot({ path: info.outputPath(`node-answers-edit-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-answers-edit-${theme}.png`),
+    })
     await page.getByTestId("answer-edit-done").click()
-    await expect(page.getByTestId("answer-row-ready")).toContainText("yes or no")
+    await expect(page.getByTestId("answer-row-ready")).toContainText(
+      "yes or no"
+    )
 
     // A duplicate name cannot be saved.
     await page.getByTestId("answer-add").click()
@@ -39,7 +45,9 @@ for (const theme of ["light", "dark"] as const) {
     await page.keyboard.press("Escape")
     await page.getByTestId("node-save").click()
     await expect(page.getByTestId("node-save")).toBeDisabled()
-    const wf = (await (await page.request.get(`/api/workflows/${id}`)).json()) as {
+    const wf = (await (
+      await page.request.get(`/api/workflows/${id}`)
+    ).json()) as {
       yaml: string
     }
     expect(wf.yaml).toContain("name: ready")
@@ -60,14 +68,21 @@ for (const theme of ["light", "dark"] as const) {
     const { runId } = (await res.json()) as { runId: string }
 
     await page.goto(`/runs/${runId}`)
-    await expect(page.getByTestId("step-table")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByTestId("step-state-show-1")).toHaveText("succeeded", {
-      timeout: 20_000,
+    await expect(page.getByTestId("step-table")).toBeVisible({
+      timeout: 15_000,
     })
+    await expect(page.getByTestId("step-state-show-1")).toHaveText(
+      "succeeded",
+      {
+        timeout: 20_000,
+      }
+    )
     await page.getByTestId("step-row-assess-1").click()
     await expect(page.getByTestId("task-answer-risk")).toContainText("high")
     await expect(page.getByTestId("task-answer-score")).toContainText("3")
-    await page.screenshot({ path: info.outputPath(`node-answers-run-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-answers-run-${theme}.png`),
+    })
   })
 
   test(`a later step gets the answers filled into its prompt (${theme})`, async ({
@@ -85,6 +100,8 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("node-result-show")).toContainText(
       "Summary: Risk is high, score 3."
     )
-    await page.screenshot({ path: info.outputPath(`node-answers-graph-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-answers-graph-${theme}.png`),
+    })
   })
 }

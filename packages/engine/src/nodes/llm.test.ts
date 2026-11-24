@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { execFileSync } from "node:child_process"
@@ -61,7 +67,11 @@ const graph = (cli: "claude" | "cursor", extra: object = {}) =>
     ],
   })
 
-async function call(cli: "claude" | "cursor", extra: object = {}, system = false) {
+async function call(
+  cli: "claude" | "cursor",
+  extra: object = {},
+  system = false
+) {
   const { home, log } = setup(cli === "claude" ? "claude" : "agent", { system })
   const state = await runNodes({
     log,
@@ -72,13 +82,20 @@ async function call(cli: "claude" | "cursor", extra: object = {}, system = false
   })
   const events: EngineEvent[] = log.listByRun("r1").map((s) => s.event)
   log.close()
-  const out = join(runDir(workflowDir(home, "wf"), "r1"), "nodes/l/pass-1/attempt-1/out")
+  const out = join(
+    runDir(workflowDir(home, "wf"), "r1"),
+    "nodes/l/pass-1/attempt-1/out"
+  )
   return { home, state, events, out }
 }
 
 describe("llm node", () => {
   it("runs Claude in print mode with tools off and feeds stdout on as text", async () => {
-    const { state, events, out } = await call("claude", { model: "sonnet" }, true)
+    const { state, events, out } = await call(
+      "claude",
+      { model: "sonnet" },
+      true
+    )
     expect(latestStep(state, "l")?.status).toBe("done")
     expect(latestStep(state, "c")?.status).toBe("done")
     expect(events.at(-1)?.type).toBe("run_succeeded")
@@ -87,7 +104,9 @@ describe("llm node", () => {
     expect(args).toContain("--no-session-persistence")
     expect(args).toContain("--model sonnet")
     const stdin = readFileSync(join(out, "stdin.txt"), "utf8")
-    expect(stdin.startsWith("You are terse.\n\nSummarize the input.\n\n## Input")).toBe(true)
+    expect(
+      stdin.startsWith("You are terse.\n\nSummarize the input.\n\n## Input")
+    ).toBe(true)
     expect(stdin).toContain("a long story")
   })
 
@@ -95,7 +114,10 @@ describe("llm node", () => {
     const { home } = await call("claude")
     const step = join(runDir(workflowDir(home, "wf"), "r1"), "nodes/l/pass-1")
     expect(readFileSync(join(step, "text.md"), "utf8")).toBe("a summary")
-    const next = join(runDir(workflowDir(home, "wf"), "r1"), "nodes/c/pass-1/text.md")
+    const next = join(
+      runDir(workflowDir(home, "wf"), "r1"),
+      "nodes/c/pass-1/text.md"
+    )
     expect(readFileSync(next, "utf8")).toContain("a summary")
   })
 
@@ -126,7 +148,10 @@ describe("llm node", () => {
 describe("llm command building", () => {
   const resolved = { modelSource: "cli" as const }
   it("Claude: print, no tools, prompt on stdin", () => {
-    const cmd = getCliAdapter("claude").buildLlmCommand("/a b/prompt.txt", resolved)
+    const cmd = getCliAdapter("claude").buildLlmCommand(
+      "/a b/prompt.txt",
+      resolved
+    )
     expect(cmd).toBe(
       `claude --print --tools "" --permission-mode dontAsk --no-session-persistence < '/a b/prompt.txt'`
     )
@@ -173,7 +198,10 @@ describe("llm sandbox", () => {
       log.close()
       expect(latestStep(state, "l")?.status).toBe("done")
       expect(existsSync(join(wf, "leak.txt"))).toBe(false)
-      const out = join(runDir(wf, "r1"), "nodes/l/pass-1/attempt-1/out/inside.txt")
+      const out = join(
+        runDir(wf, "r1"),
+        "nodes/l/pass-1/attempt-1/out/inside.txt"
+      )
       expect(existsSync(out)).toBe(true)
     }
   )
@@ -181,13 +209,22 @@ describe("llm sandbox", () => {
 
 // Opt-in: FLOWS_LIVE_LLM=1 calls the installed CLIs for real (a few tokens).
 describe.skipIf(process.env.FLOWS_LIVE_LLM !== "1")("llm live", () => {
-  it.each(["claude", "cursor"] as const)("%s answers pong", (cli) => {
-    const dir = mkdtempSync(join(tmpdir(), "flowapp-llm-live-"))
-    homes.push(dir)
-    const prompt = join(dir, "prompt.txt")
-    writeFileSync(prompt, "Reply with exactly the word pong.\n")
-    const cmd = getCliAdapter(cli).buildLlmCommand(prompt, { modelSource: "cli" })
-    const out = execFileSync("/bin/sh", ["-c", cmd], { cwd: dir, encoding: "utf8" })
-    expect(out.toLowerCase()).toContain("pong")
-  }, 90_000)
+  it.each(["claude", "cursor"] as const)(
+    "%s answers pong",
+    (cli) => {
+      const dir = mkdtempSync(join(tmpdir(), "flowapp-llm-live-"))
+      homes.push(dir)
+      const prompt = join(dir, "prompt.txt")
+      writeFileSync(prompt, "Reply with exactly the word pong.\n")
+      const cmd = getCliAdapter(cli).buildLlmCommand(prompt, {
+        modelSource: "cli",
+      })
+      const out = execFileSync("/bin/sh", ["-c", cmd], {
+        cwd: dir,
+        encoding: "utf8",
+      })
+      expect(out.toLowerCase()).toContain("pong")
+    },
+    90_000
+  )
 })

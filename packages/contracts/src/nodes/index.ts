@@ -129,10 +129,7 @@ export function edgeProblems(
 }
 
 /** Ids of every node with a path to `id`, along any port. */
-function ancestorsOf(
-  edges: readonly WorkflowEdge[],
-  id: string
-): Set<string> {
+function ancestorsOf(edges: readonly WorkflowEdge[], id: string): Set<string> {
   const seen = new Set<string>()
   const todo = [id]
   while (todo.length > 0) {
@@ -196,7 +193,11 @@ function outputProblems(wf: {
       })
       return
     }
-    if (!proposeConnectionsUpstream(wf.nodes, wf.edges, n.id).includes(n.connection)) {
+    if (
+      !proposeConnectionsUpstream(wf.nodes, wf.edges, n.id).includes(
+        n.connection
+      )
+    ) {
       out.push({
         message: `publish to ${n.connection} needs an upstream Asset with propose access to it`,
         path: ["nodes", i, "connection"],
@@ -245,10 +246,16 @@ const nodeWorkflowObjectSchema = z
     wf.nodes.forEach((n, i) => {
       if (n.kind !== "judge") return
       for (const p of judgeSettingProblems(n)) {
-        ctx.addIssue({ code: "custom", message: p.message, path: ["nodes", i, p.key] })
+        ctx.addIssue({
+          code: "custom",
+          message: p.message,
+          path: ["nodes", i, p.key],
+        })
       }
       if (n.mode === "check" && n.check) {
-        const from = upstreamAnswerSources(wf.nodes, wf.edges, n.id).get(n.check.field) ?? []
+        const from =
+          upstreamAnswerSources(wf.nodes, wf.edges, n.id).get(n.check.field) ??
+          []
         if (from.length !== 1) {
           ctx.addIssue({
             code: "custom",

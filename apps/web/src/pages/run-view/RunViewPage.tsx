@@ -132,11 +132,7 @@ export function RunViewPage() {
     (taskId ? run.tasks.find((t) => t.id === taskId) : undefined) ?? auto
   // Failed run opens Terminal; waiting run opens Output (the default tab).
   const effectiveTab =
-    tabExplicit || taskId
-      ? tab
-      : auto?.status === "failed"
-        ? "terminal"
-        : tab
+    tabExplicit || taskId ? tab : auto?.status === "failed" ? "terminal" : tab
   const effects = run.effects ?? []
   const pins = run.pins ?? []
 
@@ -167,10 +163,7 @@ export function RunViewPage() {
       />
       <RunLead run={run} />
       <RunSummaryCards run={run} workItemTitle={workItemTitle} />
-      <Tabs
-        defaultValue="tasks"
-        className="flex min-h-0 flex-1 flex-col gap-4"
-      >
+      <Tabs defaultValue="tasks" className="flex min-h-0 flex-1 flex-col gap-4">
         <TabsList variant="line">
           <TabsTrigger value="tasks" data-testid="run-tab-tasks">
             Tasks
@@ -185,7 +178,10 @@ export function RunViewPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tasks" className="flex min-h-0 flex-1 flex-col gap-3">
+        <TabsContent
+          value="tasks"
+          className="flex min-h-0 flex-1 flex-col gap-3"
+        >
           <PageToolbar>
             <Tabs
               value={view}

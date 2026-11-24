@@ -3,7 +3,7 @@ import { z } from "zod"
 export const attemptKindSchema = z.enum([
   "run",
   "retry",
-    "manual_retry",
+  "manual_retry",
   "interrupted",
 ])
 

@@ -5,9 +5,7 @@ import { foldSteps, isOpenStep } from "./fold-steps.ts"
 const now = () => new Date().toISOString()
 
 /** True once `cancel_requested` is in the log. */
-export function cancelRequested(
-  events: readonly { type: string }[]
-): boolean {
+export function cancelRequested(events: readonly { type: string }[]): boolean {
   return events.some((e) => e.type === "cancel_requested")
 }
 
@@ -130,7 +128,7 @@ export function requestNodeRetry(
     throw new Error(`task ${nodeId} cannot be retried`)
   }
   const reset = new Set([nodeId])
-  for (let grew = true; grew; ) {
+  for (let grew = true; grew;) {
     grew = false
     for (const e of edges) {
       if (reset.has(e.from) && !reset.has(e.to)) {

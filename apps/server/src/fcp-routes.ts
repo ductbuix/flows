@@ -82,7 +82,8 @@ function bindFcpPeer(
   raw: WsLike,
   engine: Engine,
   bus: UpdateBus,
-  idempotency: IdempotencyStore
+  idempotency: IdempotencyStore,
+  port: number
 ): void {
   const transport = wsTransport(raw)
   const peer = new RpcPeer(transport)
@@ -99,6 +100,9 @@ function bindFcpPeer(
   bindInitialize(peer, connection, {
     engineInfo,
     workspace: { home: engine.home, id: engine.home },
+    engineCapabilities: {
+      blobs: { http: `http://127.0.0.1:${port}/blobs` },
+    },
   })
   bindEngine(
     peer,
@@ -138,7 +142,7 @@ function fcpEvents(
         ws.close(1011, "no websocket")
         return
       }
-      bindFcpPeer(raw as WsLike, engine, bus, idempotency)
+      bindFcpPeer(raw as WsLike, engine, bus, idempotency, port)
     },
   }
 }

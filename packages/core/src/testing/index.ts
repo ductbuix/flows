@@ -1,6 +1,11 @@
 export { FakeClock, createFakeClock } from "./fake-clock.ts"
 export { FakeIds, createFakeIds } from "./fake-ids.ts"
 export { FakeLogger, createFakeLogger, type LogEntry } from "./fake-logger.ts"
+export { createFakeBlobStore } from "./fake-blob-store.ts"
+export {
+  describeBlobStoreContract,
+  type BlobStoreFactory,
+} from "./blob-store.contract.ts"
 export { createFakeDocumentStore } from "./fake-document-store.ts"
 export {
   describeDocumentStoreContract,

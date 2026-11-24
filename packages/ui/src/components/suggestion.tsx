@@ -9,7 +9,10 @@ import { cn } from "@workspace/ui/lib/utils"
 export function Suggestions({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex gap-2 overflow-x-auto overscroll-x-contain", className)}
+      className={cn(
+        "flex gap-2 overflow-x-auto overscroll-x-contain",
+        className
+      )}
       {...props}
     />
   )

@@ -1,4 +1,11 @@
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs"
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  statSync,
+} from "node:fs"
 import { join } from "node:path"
 import { joinedInputText } from "./forward.ts"
 import { defineExecutor } from "./define.ts"
@@ -29,7 +36,8 @@ export const outputExecutor = defineExecutor({
       return {
         outputs: [],
         notice: {
-          title: ctx.node.title ?? ctx.node.name ?? ctx.graph.name ?? ctx.graph.id,
+          title:
+            ctx.node.title ?? ctx.node.name ?? ctx.graph.name ?? ctx.graph.id,
           text: joinedInputText(ctx).trim(),
         },
       }

@@ -15,7 +15,13 @@ import type { Card } from "./docket-data"
 import { AddLibraryDialog } from "./AddLibraryDialog"
 import { linkCard, unlinkCard, useLibrary } from "./library-store"
 import { KindIcon } from "./LibraryViews"
-import { Adder, EmptyLine, ListRow, RemoveButton, Section } from "./SectionParts"
+import {
+  Adder,
+  EmptyLine,
+  ListRow,
+  RemoveButton,
+  Section,
+} from "./SectionParts"
 import { KIND_SINGULAR, type LibItem } from "./library-data"
 
 /** Assets of a card are Library items. Opening one goes to the Library page. */
@@ -29,11 +35,22 @@ export function AssetsSection({ card }: { card: Card }) {
     <Section title="Assets">
       {mine.length ? (
         mine.map((i) => (
-          <ListRow key={i.id} onOpen={() => void navigate(`/mock/library?item=${i.id}`)}>
-            <KindIcon kind={i.kind} className="shrink-0 text-muted-foreground" />
+          <ListRow
+            key={i.id}
+            onOpen={() => void navigate(`/mock/library?item=${i.id}`)}
+          >
+            <KindIcon
+              kind={i.kind}
+              className="shrink-0 text-muted-foreground"
+            />
             <span className="min-w-0 flex-1 truncate">{i.title}</span>
-            {i.source !== "local" ? <Badge variant="secondary">v{i.current}</Badge> : null}
-            <RemoveButton label={`Unlink ${i.title}`} onClick={() => unlinkCard(i.id, card.id)} />
+            {i.source !== "local" ? (
+              <Badge variant="secondary">v{i.current}</Badge>
+            ) : null}
+            <RemoveButton
+              label={`Unlink ${i.title}`}
+              onClick={() => unlinkCard(i.id, card.id)}
+            />
           </ListRow>
         ))
       ) : (
@@ -67,7 +84,9 @@ export function AssetsSection({ card }: { card: Card }) {
                   <ComboboxItem key={i.id} value={i}>
                     <KindIcon kind={i.kind} />
                     <span className="min-w-0 flex-1 truncate">{i.title}</span>
-                    <span className="text-xs text-muted-foreground">{KIND_SINGULAR[i.kind]}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {KIND_SINGULAR[i.kind]}
+                    </span>
                   </ComboboxItem>
                 )}
               </ComboboxList>

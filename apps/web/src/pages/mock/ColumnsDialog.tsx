@@ -39,13 +39,23 @@ type Props = {
 }
 
 function slug(label: string, taken: string[]): string {
-  const base = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "column"
+  const base =
+    label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "column"
   let id = base
   for (let n = 2; taken.includes(id); n++) id = `${base}-${n}`
   return id
 }
 
-export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Props) {
+export function ColumnsDialog({
+  open,
+  columns,
+  cards,
+  onOpenChange,
+  onSave,
+}: Props) {
   const [draft, setDraft] = useState<Column[]>(columns)
   const [moves, setMoves] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
@@ -82,11 +92,16 @@ export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Pr
       setError("Every column needs a name.")
       return
     }
-    onSave(draft.map((c) => ({ ...c, label: c.label.trim() })), moves)
+    onSave(
+      draft.map((c) => ({ ...c, label: c.label.trim() })),
+      moves
+    )
     reset(false)
   }
 
-  const gone = columns.filter((c) => !draft.some((d) => d.id === c.id) && countIn(c.id) > 0)
+  const gone = columns.filter(
+    (c) => !draft.some((d) => d.id === c.id) && countIn(c.id) > 0
+  )
 
   return (
     <Dialog open={open} onOpenChange={reset}>
@@ -100,12 +115,28 @@ export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Pr
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
           {draft.map((c, i) => (
-            <div key={c.id} className="flex items-center gap-1.5" data-testid={`columns-row-${c.id}`}>
+            <div
+              key={c.id}
+              className="flex items-center gap-1.5"
+              data-testid={`columns-row-${c.id}`}
+            >
               <div className="flex">
-                <Button variant="ghost" size="icon" aria-label="Move up" disabled={i === 0} onClick={() => shift(i, -1)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Move up"
+                  disabled={i === 0}
+                  onClick={() => shift(i, -1)}
+                >
                   <ArrowUp />
                 </Button>
-                <Button variant="ghost" size="icon" aria-label="Move down" disabled={i === draft.length - 1} onClick={() => shift(i, 1)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Move down"
+                  disabled={i === draft.length - 1}
+                  onClick={() => shift(i, 1)}
+                >
                   <ArrowDown />
                 </Button>
               </div>
@@ -120,7 +151,10 @@ export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Pr
                 items={TONES}
                 onValueChange={(v) => v && patch(c.id, { tone: v as Tone })}
               >
-                <SelectTrigger className={`w-32 ${TONE_TEXT[c.tone]}`} aria-label="Tone">
+                <SelectTrigger
+                  className={`w-32 ${TONE_TEXT[c.tone]}`}
+                  aria-label="Tone"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent alignItemWithTrigger={false}>
@@ -155,7 +189,14 @@ export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Pr
             onClick={() =>
               setDraft((d) => [
                 ...d,
-                { id: slug("New column", [...d.map((x) => x.id), ...columns.map((x) => x.id)]), label: "New column", tone: "idle" },
+                {
+                  id: slug("New column", [
+                    ...d.map((x) => x.id),
+                    ...columns.map((x) => x.id),
+                  ]),
+                  label: "New column",
+                  tone: "idle",
+                },
               ])
             }
           >
@@ -164,7 +205,11 @@ export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Pr
           </Button>
         </div>
         {gone.map((g) => (
-          <div key={g.id} className="flex items-center gap-2 rounded-2xl bg-muted/60 p-3 text-sm" data-testid={`columns-move-${g.id}`}>
+          <div
+            key={g.id}
+            className="flex items-center gap-2 rounded-2xl bg-muted/60 p-3 text-sm"
+            data-testid={`columns-move-${g.id}`}
+          >
             <span className="flex-1">
               Move {countIn(g.id)} {countIn(g.id) === 1 ? "card" : "cards"} from{" "}
               <strong>{g.label}</strong> to
@@ -174,7 +219,10 @@ export function ColumnsDialog({ open, columns, cards, onOpenChange, onSave }: Pr
               items={draft.map((d) => ({ value: d.id, label: d.label }))}
               onValueChange={(v) => v && setMoves((m) => ({ ...m, [g.id]: v }))}
             >
-              <SelectTrigger className="w-40" aria-label={`Move cards of ${g.label} to`}>
+              <SelectTrigger
+                className="w-40"
+                aria-label={`Move cards of ${g.label} to`}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent alignItemWithTrigger={false}>

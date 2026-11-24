@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  isSafeTaskId,
-  upstreamEnvName,
-} from "./task-ids.ts"
+import { isSafeTaskId, upstreamEnvName } from "./task-ids.ts"
 
 describe("task id helpers (DES-020)", () => {
   it("accepts legacy and generated ids; rejects path segments and leading dot", () => {

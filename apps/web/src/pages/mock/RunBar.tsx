@@ -25,7 +25,14 @@ type Props = {
 }
 
 /** Top of the canvas: switch between the draft and any run of this workflow. */
-export function RunBar({ runs, value, cardId, onValue, onCard, onStart }: Props) {
+export function RunBar({
+  runs,
+  value,
+  cardId,
+  onValue,
+  onCard,
+  onStart,
+}: Props) {
   const run = runs.find((r) => r.id === value)
   const options = [
     { value: "draft", label: "Draft (editing)" },
@@ -37,8 +44,16 @@ export function RunBar({ runs, value, cardId, onValue, onCard, onStart }: Props)
   return (
     <Panel position="top-left">
       <div className="flex flex-wrap items-center gap-2 rounded-3xl bg-card p-2 ring-1 ring-foreground/10">
-        <Select value={value} items={options} onValueChange={(v) => v && onValue(v)}>
-          <SelectTrigger className="min-w-56" aria-label="Run" data-testid="flow-run-select">
+        <Select
+          value={value}
+          items={options}
+          onValueChange={(v) => v && onValue(v)}
+        >
+          <SelectTrigger
+            className="min-w-56"
+            aria-label="Run"
+            data-testid="flow-run-select"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent alignItemWithTrigger={false}>
@@ -67,29 +82,33 @@ export function RunBar({ runs, value, cardId, onValue, onCard, onStart }: Props)
                 ))}
               </SelectContent>
             </Select>
-            <Button disabled={!cardId} onClick={onStart} data-testid="flow-start-run">
+            <Button
+              disabled={!cardId}
+              onClick={onStart}
+              data-testid="flow-start-run"
+            >
               <Play />
               Start run
             </Button>
           </>
         )}
         {run ? (
-        <div
-          className="flex flex-wrap items-center gap-2 px-1 text-sm"
-          data-testid="flow-run-banner"
-        >
-          <StatusPill tone={run.tone}>{run.label}</StatusPill>
-          <span className="font-medium">{cardTitle(run.cardId)}</span>
-          <span className="text-muted-foreground">
-            #{run.attempt} · {run.reason} · {run.ago}
-          </span>
-          {Object.entries(run.inputs).map(([k, v]) => (
-            <Badge key={k} variant="outline">
-              {k}: {v}
-            </Badge>
-          ))}
-          <span className="text-xs text-muted-foreground">Read-only</span>
-        </div>
+          <div
+            className="flex flex-wrap items-center gap-2 px-1 text-sm"
+            data-testid="flow-run-banner"
+          >
+            <StatusPill tone={run.tone}>{run.label}</StatusPill>
+            <span className="font-medium">{cardTitle(run.cardId)}</span>
+            <span className="text-muted-foreground">
+              #{run.attempt} · {run.reason} · {run.ago}
+            </span>
+            {Object.entries(run.inputs).map(([k, v]) => (
+              <Badge key={k} variant="outline">
+                {k}: {v}
+              </Badge>
+            ))}
+            <span className="text-xs text-muted-foreground">Read-only</span>
+          </div>
         ) : null}
       </div>
     </Panel>

@@ -33,16 +33,16 @@ export function MemoryCombobox({ workflowId, value, onChange }: Props) {
         param: { workflowId },
       })
       if (!res.ok || !alive) return
-      setNames(memoryListSchema.parse(await res.json()).files.map((f) => f.name))
+      setNames(
+        memoryListSchema.parse(await res.json()).files.map((f) => f.name)
+      )
     })()
     return () => {
       alive = false
     }
   }, [workflowId])
 
-  const items = [
-    ...new Set([...names.map((n) => `memory/${n}`), ...value]),
-  ]
+  const items = [...new Set([...names.map((n) => `memory/${n}`), ...value])]
   return (
     <Combobox
       multiple
@@ -50,14 +50,18 @@ export function MemoryCombobox({ workflowId, value, onChange }: Props) {
       onOpenChange={setOpen}
       items={items}
       value={[...value]}
-      onValueChange={(next: string[]) => onChange(next.length ? next : undefined)}
+      onValueChange={(next: string[]) =>
+        onChange(next.length ? next : undefined)
+      }
     >
       <ComboboxChips ref={anchor} data-testid="node-memory">
         <ComboboxValue>
           {(picked: string[]) => (
             <>
               {picked.map((p) => (
-                <ComboboxChip key={p}>{p.replace(/^memory\//, "")}</ComboboxChip>
+                <ComboboxChip key={p}>
+                  {p.replace(/^memory\//, "")}
+                </ComboboxChip>
               ))}
               <ComboboxChipsInput
                 aria-label="Memory files"

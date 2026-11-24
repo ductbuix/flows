@@ -14,7 +14,10 @@ export const KIND_META: Record<string, Meta> = {
   llm: { label: "LLM", hint: "One model call, no tools" },
   judge: { label: "Judge", hint: "Answers yes or no and picks a branch" },
   approval: { label: "Approval", hint: "Waits for a person to approve" },
-  output: { label: "Output", hint: "Saves to a folder, publishes changes or posts a notice" },
+  output: {
+    label: "Output",
+    hint: "Saves to a folder, publishes changes or posts a notice",
+  },
 }
 
 export function kindIcon(kind: string): LucideIcon | undefined {

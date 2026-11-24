@@ -166,7 +166,10 @@ export function DevKitPage() {
       </PageSection>
 
       <PageSection title="shadcn parts">
-        <div className="flex flex-wrap items-start gap-4" data-testid="kit-parts">
+        <div
+          className="flex flex-wrap items-start gap-4"
+          data-testid="kit-parts"
+        >
           <Popover>
             <PopoverTrigger render={<Button variant="outline" />}>
               Popover

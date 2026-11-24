@@ -25,7 +25,10 @@ export function RunLibraryPins({ pins }: Props) {
   return (
     <PageSection title="Library pins">
       {pins.length === 0 ? (
-        <Empty className="ring-1 ring-foreground/10" data-testid="run-pins-empty">
+        <Empty
+          className="ring-1 ring-foreground/10"
+          data-testid="run-pins-empty"
+        >
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Pin />
@@ -69,7 +72,9 @@ export function RunLibraryPins({ pins }: Props) {
                       data-testid={`run-pin-fresh-${safeId}`}
                     />
                   </TableCell>
-                  <TableCell className={`${mono} text-sm text-muted-foreground`}>
+                  <TableCell
+                    className={`${mono} text-sm text-muted-foreground`}
+                  >
                     {pin.usedByTaskIds.length > 0
                       ? pin.usedByTaskIds.join(", ")
                       : "—"}

@@ -16,11 +16,7 @@ const step = (
 /** A Judge loop: draft and check ran three times, the last verdict Yes. */
 const run = {
   graph: {
-    nodes: [
-      { id: "draft", name: "Draft" },
-      { id: "check" },
-      { id: "done" },
-    ],
+    nodes: [{ id: "draft", name: "Draft" }, { id: "check" }, { id: "done" }],
   },
   steps: [
     step("draft", "command", 1, "succeeded"),
@@ -40,7 +36,9 @@ describe("StepTable with several passes", () => {
     for (const key of ["draft-1", "draft-2", "draft-3", "check-3", "done-1"]) {
       expect(screen.getByTestId(`step-row-${key}`)).toBeTruthy()
     }
-    expect(screen.getByTestId("step-state-draft-2").textContent).toBe("succeeded")
+    expect(screen.getByTestId("step-state-draft-2").textContent).toBe(
+      "succeeded"
+    )
     expect(screen.getByTestId("step-state-draft-3").textContent).toBe("failed")
     expect(screen.getByTestId("step-verdict-draft-3").textContent).toBe(
       "Loop limit"

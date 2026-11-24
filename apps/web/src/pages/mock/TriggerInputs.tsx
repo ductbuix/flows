@@ -42,7 +42,12 @@ export function TriggerInputs({ inputs, onChange }: Props) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
         />
-        <Button variant="outline" size="icon" aria-label="Add input" onClick={add}>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label="Add input"
+          onClick={add}
+        >
           <Plus />
         </Button>
       </div>

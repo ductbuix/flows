@@ -104,7 +104,11 @@ describe("GET /fcp", () => {
     )
     expect(init.protocolVersion).toBe(FCP_VERSION)
     expect(init.workspace.home).toBe(h.home)
-    expect(init.engineCapabilities).toEqual({ agents: [], nodeKinds: [] })
+    expect(init.engineCapabilities).toEqual({
+      agents: [],
+      nodeKinds: [],
+      blobs: { http: `http://127.0.0.1:${h.port}/blobs` },
+    })
 
     const pong = pingMethod.result.parse(await peer.request("ping", {}))
     expect(pong).toEqual({ ok: true })

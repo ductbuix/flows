@@ -66,11 +66,16 @@ export function forwardOrder(graph: WalkGraph): string[] {
 }
 
 function terminalEff(step: StepState): Eff {
-  return step.status === "done" ? { s: "done", branch: step.branch } : { s: "ended" }
+  return step.status === "done"
+    ? { s: "done", branch: step.branch }
+    : { s: "ended" }
 }
 
 /** A done step whose branch the edge takes. */
-function feeds(e: WorkflowEdge, step: StepState | undefined): step is StepState {
+function feeds(
+  e: WorkflowEdge,
+  step: StepState | undefined
+): step is StepState {
   return (
     step?.status === "done" &&
     (e.branch === undefined || e.branch === step.branch)

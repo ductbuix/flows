@@ -30,7 +30,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("node-result-show")).toContainText(
       "Summary: Write one line about the weather."
     )
-    await page.screenshot({ path: info.outputPath(`node-llm-run-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-llm-run-${theme}.png`),
+    })
   })
 
   test(`the run view lists the LLM step (${theme})`, async ({
@@ -46,11 +48,18 @@ for (const theme of ["light", "dark"] as const) {
     const { runId } = (await res.json()) as { runId: string }
 
     await page.goto(`/runs/${runId}`)
-    await expect(page.getByTestId("step-table")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByTestId("step-state-write-1")).toHaveText("succeeded", {
-      timeout: 20_000,
+    await expect(page.getByTestId("step-table")).toBeVisible({
+      timeout: 15_000,
     })
-    await page.screenshot({ path: info.outputPath(`node-llm-view-${theme}.png`) })
+    await expect(page.getByTestId("step-state-write-1")).toHaveText(
+      "succeeded",
+      {
+        timeout: 20_000,
+      }
+    )
+    await page.screenshot({
+      path: info.outputPath(`node-llm-view-${theme}.png`),
+    })
 
     await page.getByTestId("run-view-graph").click()
     await expect(page.getByTestId("llm-prompt")).toHaveValue(
@@ -62,7 +71,9 @@ for (const theme of ["light", "dark"] as const) {
   })
 }
 
-test("Add node offers LLM with a prompt and a text out port", async ({ page }) => {
+test("Add node offers LLM with a prompt and a text out port", async ({
+  page,
+}) => {
   await page.goto("/workflows/node-llm-add?tab=editor")
   await expect(page.getByTestId("node-empty")).toBeVisible({ timeout: 15_000 })
   await page.getByTestId("add-node").click()

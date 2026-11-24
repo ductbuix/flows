@@ -8,7 +8,9 @@ type Step = { nodeId: string; status: string; reused?: boolean }
 /** Starts a run from the toolbar and returns its id once the run is done. */
 async function fullRun(page: Page) {
   const started = page.waitForResponse(
-    (r) => /\/api\/workflows\/[^/]+\/runs$/.test(r.url()) && r.request().method() === "POST"
+    (r) =>
+      /\/api\/workflows\/[^/]+\/runs$/.test(r.url()) &&
+      r.request().method() === "POST"
   )
   await page.getByTestId("canvas-run").click()
   await page.getByTestId("start-run-submit").click()
@@ -32,13 +34,17 @@ for (const theme of ["light", "dark"] as const) {
     await page.goto(`/workflows/node-step-${theme}?tab=editor`)
     await expect(page.getByTestId("canvas")).toBeVisible({ timeout: 15_000 })
     await fullRun(page)
-    await expect(page.getByTestId("canvas-run")).toBeEnabled({ timeout: 10_000 })
+    await expect(page.getByTestId("canvas-run")).toBeEnabled({
+      timeout: 10_000,
+    })
 
     const sent = page.waitForRequest(
       (r) => /\/runs$/.test(r.url()) && r.method() === "POST"
     )
     const response = page.waitForResponse(
-      (r) => /\/api\/workflows\/[^/]+\/runs$/.test(r.url()) && r.request().method() === "POST"
+      (r) =>
+        /\/api\/workflows\/[^/]+\/runs$/.test(r.url()) &&
+        r.request().method() === "POST"
     )
     await page.getByTestId("node-run-build").click()
     expect((await sent).postDataJSON()).toMatchObject({ only: "build" })
@@ -54,7 +60,9 @@ for (const theme of ["light", "dark"] as const) {
     expect(steps.find((s) => s.nodeId === "build")?.reused).toBeUndefined()
     expect(steps.find((s) => s.nodeId === "done")).toBeUndefined()
     await expect(page.getByTestId("node-status-done")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-run-step-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-run-step-${theme}.png`),
+    })
   })
 
   test(`Run from selected node reuses unchanged steps (${theme})`, async ({
@@ -64,7 +72,9 @@ for (const theme of ["light", "dark"] as const) {
     await page.goto(`/workflows/node-step-${theme}?tab=editor`)
     await expect(page.getByTestId("canvas")).toBeVisible({ timeout: 15_000 })
     await fullRun(page)
-    await expect(page.getByTestId("canvas-run")).toBeEnabled({ timeout: 10_000 })
+    await expect(page.getByTestId("canvas-run")).toBeEnabled({
+      timeout: 10_000,
+    })
 
     // Nothing selected: the menu item is disabled.
     await page.getByTestId("canvas-run-menu").click()
@@ -74,7 +84,9 @@ for (const theme of ["light", "dark"] as const) {
     await page.getByTestId("node-build").locator("div").first().click()
     await page.getByTestId("canvas-run-menu").click()
     const response = page.waitForResponse(
-      (r) => /\/api\/workflows\/[^/]+\/runs$/.test(r.url()) && r.request().method() === "POST"
+      (r) =>
+        /\/api\/workflows\/[^/]+\/runs$/.test(r.url()) &&
+        r.request().method() === "POST"
     )
     await page.getByTestId("canvas-run-from").click()
     const sent = (await response).request().postDataJSON()

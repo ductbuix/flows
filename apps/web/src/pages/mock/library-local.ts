@@ -1,6 +1,11 @@
 import type { LibItem } from "./library-types"
 
-const v = (n: number, at: string, note: string, size: string) => ({ n, at, note, size })
+const v = (n: number, at: string, note: string, size: string) => ({
+  n,
+  at,
+  note,
+  size,
+})
 
 /** Items copied from disk: no remote, one version. */
 export const LOCAL_ITEMS: LibItem[] = [

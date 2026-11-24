@@ -13,7 +13,12 @@ import {
 import "@xyflow/react/dist/style.css"
 import { Page } from "@/components/page"
 import { FlowContext, type FlowActions } from "./flow-context"
-import { newData, type FlowData, type FlowNode, type NodeKind } from "./flow-data"
+import {
+  newData,
+  type FlowData,
+  type FlowNode,
+  type NodeKind,
+} from "./flow-data"
 import { nodeTypes, portOf } from "./flow-node-types"
 import { Toolbar } from "./FlowToolbar"
 import { useDraftRun } from "./useDraftRun"
@@ -22,7 +27,12 @@ import { NodeSettings } from "./NodeSettings"
 import { RunBar } from "./RunBar"
 import { nodeStatesFor } from "./run-view"
 import { decideRun, startRun, useRuns } from "./runs-store"
-import { getFlow, saveFlow, setWorkflowInputs, useWorkflows } from "./workflows-store"
+import {
+  getFlow,
+  saveFlow,
+  setWorkflowInputs,
+  useWorkflows,
+} from "./workflows-store"
 
 /** Remounts per workflow so each canvas starts from its saved state. */
 export function WorkflowEditorMock() {
@@ -33,7 +43,9 @@ export function WorkflowEditorMock() {
 function Editor({ id }: { id: string }) {
   const workflow = useWorkflows().find((w) => w.id === id)
   const [initial] = useState(() => getFlow(id))
-  const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>(initial.nodes)
+  const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>(
+    initial.nodes
+  )
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges)
   const [params] = useSearchParams()
   const [view, setView] = useState(params.get("run") ?? "draft")
@@ -46,7 +58,11 @@ function Editor({ id }: { id: string }) {
     return nodes.map((n) => ({
       ...n,
       className: "pointer-events-none",
-      data: { ...n.data, state: states[n.id]?.state, result: states[n.id]?.result },
+      data: {
+        ...n.data,
+        state: states[n.id]?.state,
+        result: states[n.id]?.result,
+      },
     }))
   }, [viewing, nodes, edges])
   useEffect(() => saveFlow(id, { nodes, edges }), [id, nodes, edges])
@@ -64,7 +80,9 @@ function Editor({ id }: { id: string }) {
   const update = useCallback(
     (nid: string, patch: Partial<FlowData>) => {
       setNodes((prev) =>
-        prev.map((n) => (n.id === nid ? { ...n, data: { ...n.data, ...patch } } : n))
+        prev.map((n) =>
+          n.id === nid ? { ...n, data: { ...n.data, ...patch } } : n
+        )
       )
       // An asset changing type drops wires its new output cannot feed.
       if (patch.assetKind) {
@@ -84,7 +102,8 @@ function Editor({ id }: { id: string }) {
 
   const sourceType = (c: { source: string; sourceHandle?: string | null }) => {
     const n = nodesRef.current.find((x) => x.id === c.source)
-    if (n?.type === "asset") return n.data.assetKind === "markdown" ? "text" : "image"
+    if (n?.type === "asset")
+      return n.data.assetKind === "markdown" ? "text" : "image"
     return portOf(c.sourceHandle)
   }
 
@@ -111,7 +130,10 @@ function Editor({ id }: { id: string }) {
       {
         id: `${kind}-${seq.current++}`,
         type: kind,
-        position: { x: (last?.position.x ?? 0) + 80, y: (last?.position.y ?? 0) + 380 },
+        position: {
+          x: (last?.position.x ?? 0) + 80,
+          y: (last?.position.y ?? 0) + 380,
+        },
         data: newData(kind),
       },
     ])
@@ -119,7 +141,9 @@ function Editor({ id }: { id: string }) {
 
   const BRANCH: Record<string, string> = { yes: "Yes", no: "No" }
   const onConnect = (c: Connection) =>
-    setEdges((prev) => addEdge({ ...c, label: BRANCH[c.sourceHandle ?? ""] }, prev))
+    setEdges((prev) =>
+      addEdge({ ...c, label: BRANCH[c.sourceHandle ?? ""] }, prev)
+    )
 
   return (
     <Page
@@ -145,9 +169,15 @@ function Editor({ id }: { id: string }) {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             isValidConnection={(c) =>
-              c.targetHandle === "any" || sourceType(c) === portOf(c.targetHandle)
+              c.targetHandle === "any" ||
+              sourceType(c) === portOf(c.targetHandle)
             }
-            defaultEdgeOptions={{ style: { strokeDasharray: "6 6", stroke: "var(--muted-foreground)" } }}
+            defaultEdgeOptions={{
+              style: {
+                strokeDasharray: "6 6",
+                stroke: "var(--muted-foreground)",
+              },
+            }}
             nodesDraggable={!viewing}
             nodesConnectable={!viewing}
             elementsSelectable={!viewing}
@@ -158,13 +188,21 @@ function Editor({ id }: { id: string }) {
             zoomOnScroll={false}
             selectionMode={SelectionMode.Partial}
             // Settings follow the selection: deselecting the node hides the panel.
-            onSelectionChange={({ nodes: sel }) => setSettingsId((cur) => (cur && sel.some((n) => n.id === cur) ? cur : null))}
+            onSelectionChange={({ nodes: sel }) =>
+              setSettingsId((cur) =>
+                cur && sel.some((n) => n.id === cur) ? cur : null
+              )
+            }
             onPaneContextMenu={(e) => e.preventDefault()}
             defaultViewport={{ x: 120, y: 150, zoom: 0.7 }}
             minZoom={0.2}
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Dots} gap={24} color="var(--muted-foreground)" />
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={24}
+              color="var(--muted-foreground)"
+            />
             {editing && !viewing ? (
               <NodeSettings
                 key={editing.id}

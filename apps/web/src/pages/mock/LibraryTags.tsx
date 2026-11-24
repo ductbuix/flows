@@ -20,7 +20,9 @@ export function TagBadge({
   const [ns, value] = split(tag)
   const body = (
     <>
-      <span className={active ? "opacity-70" : "text-muted-foreground"}>{ns}:</span>
+      <span className={active ? "opacity-70" : "text-muted-foreground"}>
+        {ns}:
+      </span>
       {value}
     </>
   )
@@ -63,17 +65,25 @@ export function TagRail({
   onToggle: (tag: string) => void
 }) {
   const counts = new Map<string, number>()
-  items.forEach((i) => i.tags.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)))
+  items.forEach((i) =>
+    i.tags.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1))
+  )
   const groups = new Map<string, string[]>()
   ;[...counts.keys()].sort().forEach((t) => {
     const ns = split(t)[0]
     groups.set(ns, [...(groups.get(ns) ?? []), t])
   })
   return (
-    <nav className="flex flex-col gap-4" aria-label="Tags" data-testid="library-tag-rail">
+    <nav
+      className="flex flex-col gap-4"
+      aria-label="Tags"
+      data-testid="library-tag-rail"
+    >
       {[...groups.entries()].map(([ns, tags]) => (
         <div key={ns} className="flex flex-col gap-0.5">
-          <h3 className="px-2 text-xs font-medium text-muted-foreground">{ns}</h3>
+          <h3 className="px-2 text-xs font-medium text-muted-foreground">
+            {ns}
+          </h3>
           {tags.map((t) => (
             <button
               key={t}
@@ -83,7 +93,9 @@ export function TagRail({
               className="flex min-h-8 items-center justify-between gap-2 rounded-lg px-2 text-left text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring aria-pressed:bg-muted aria-pressed:font-medium"
             >
               <span className="truncate">{split(t)[1]}</span>
-              <span className="text-xs text-muted-foreground tabular-nums">{counts.get(t)}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {counts.get(t)}
+              </span>
             </button>
           ))}
         </div>

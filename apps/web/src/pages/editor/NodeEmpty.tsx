@@ -1,4 +1,9 @@
-import { ArrowRightIcon, BotIcon, FolderOutputIcon, ZapIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  BotIcon,
+  FolderOutputIcon,
+  ZapIcon,
+} from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import {

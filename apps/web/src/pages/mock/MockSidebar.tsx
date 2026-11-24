@@ -19,7 +19,9 @@ import { MOCK_CHANGES } from "./mock-data"
 /** Sidebar 11 layout (shadcn blocks), reworked for Flows. */
 export function MockSidebar() {
   const { pathname } = useLocation()
-  const waiting = useRuns().filter((r) => r.tone === "attention" && !r.decision).length
+  const waiting = useRuns().filter(
+    (r) => r.tone === "attention" && !r.decision
+  ).length
   return (
     <Sidebar data-testid="mock-sidebar">
       <SidebarHeader>
@@ -47,7 +49,9 @@ export function MockSidebar() {
                     {item.label}
                   </SidebarMenuButton>
                   <SidebarMenuBadge>
-                    {item.label === "Inbox" && waiting > 0 ? waiting : item.badge}
+                    {item.label === "Inbox" && waiting > 0
+                      ? waiting
+                      : item.badge}
                   </SidebarMenuBadge>
                 </SidebarMenuItem>
               ))}

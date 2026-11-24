@@ -1,14 +1,17 @@
 import type { AnswerDecl } from "./common.ts"
 
-export { ANSWER_NAME_PATTERN, answersSchema, answerDeclSchema } from "./common.ts"
+export {
+  ANSWER_NAME_PATTERN,
+  answersSchema,
+  answerDeclSchema,
+} from "./common.ts"
 export type { AnswerDecl } from "./common.ts"
 
 /** Answers are plain JSON values, one per declared name (DES-032). */
 export type AnswerValues = Record<string, unknown>
 
 export type AnswerParse =
-  | { ok: true; value: AnswerValues }
-  | { ok: false; error: string }
+  { ok: true; value: AnswerValues } | { ok: false; error: string }
 
 /** The one-line type hint shown to the model and in the Sheet. */
 export function answerTypeHint(d: AnswerDecl): string {

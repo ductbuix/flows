@@ -46,17 +46,17 @@ export function FilesPage() {
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-5">
         <div className="flex min-h-0 flex-col gap-2 rounded-3xl p-2 ring-1 ring-foreground/10 md:col-span-2">
           <div className="flex items-center gap-2">
-          <InputGroup className="flex-1">
-            <InputGroupAddon>
-              <Search />
-            </InputGroupAddon>
-            <InputGroupInput
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search files"
-              data-testid="files-search"
-            />
-          </InputGroup>
+            <InputGroup className="flex-1">
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupInput
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search files"
+                data-testid="files-search"
+              />
+            </InputGroup>
             <Button
               variant="outline"
               size="icon"
@@ -69,7 +69,10 @@ export function FilesPage() {
               {allOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
             </Button>
           </div>
-          <p className="px-1 text-xs text-muted-foreground" data-testid="files-count">
+          <p
+            className="px-1 text-xs text-muted-foreground"
+            data-testid="files-count"
+          >
             {paths.length} {paths.length === 1 ? "file" : "files"}
           </p>
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -99,7 +102,9 @@ export function FilesPage() {
           </div>
         </div>
         <div className="min-h-0 overflow-y-auto rounded-3xl ring-1 ring-foreground/10 md:col-span-3">
-          <FilePreview path={selected && paths.includes(selected) ? selected : null} />
+          <FilePreview
+            path={selected && paths.includes(selected) ? selected : null}
+          />
         </div>
       </div>
     </Page>

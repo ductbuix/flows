@@ -91,7 +91,10 @@ export function WorkflowsPage() {
             className="max-w-sm shrink-0"
           />
           {filtered!.length === 0 ? (
-            <Empty className="ring-1 ring-foreground/10" data-testid="workflows-empty">
+            <Empty
+              className="ring-1 ring-foreground/10"
+              data-testid="workflows-empty"
+            >
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <FolderOpen />

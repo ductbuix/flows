@@ -32,7 +32,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(row.getByLabel("command")).toBeVisible()
     await expect(row).toHaveClass(/bg-muted/)
     await expect(page.getByTestId("task-detail-status")).toHaveText("failed")
-    await page.screenshot({ path: info.outputPath(`node-run-view-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-run-view-${theme}.png`),
+    })
 
     await page.getByTestId("run-view-graph").click()
     await expect(page.getByTestId("node-build")).toBeVisible()

@@ -29,7 +29,13 @@ type Props = {
   onClose: () => void
 }
 
-export function WorkflowSheet({ workflow, runs, cards, onStart, onClose }: Props) {
+export function WorkflowSheet({
+  workflow,
+  runs,
+  cards,
+  onStart,
+  onClose,
+}: Props) {
   const [cardId, setCardId] = useState<string | null>(null)
   const mine = runs.filter((r) => r.workflowId === workflow?.id)
   const byCard = cards
@@ -38,7 +44,10 @@ export function WorkflowSheet({ workflow, runs, cards, onStart, onClose }: Props
 
   return (
     <Sheet open={!!workflow} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent className="data-[side=right]:sm:max-w-lg" data-testid="workflow-sheet">
+      <SheetContent
+        className="data-[side=right]:sm:max-w-lg"
+        data-testid="workflow-sheet"
+      >
         {workflow ? (
           <>
             <SheetHeader className="pr-12">

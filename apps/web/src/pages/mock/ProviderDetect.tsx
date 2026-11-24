@@ -18,7 +18,13 @@ export function useLinkField() {
   return { url, setUrl, match, existing: findExisting(match, items) }
 }
 
-export function LinkInput({ url, onUrl }: { url: string; onUrl: (v: string) => void }) {
+export function LinkInput({
+  url,
+  onUrl,
+}: {
+  url: string
+  onUrl: (v: string) => void
+}) {
   return (
     <Input
       autoFocus
@@ -54,7 +60,10 @@ export function DetectCard({
   const folder = `library/${match.provider.id}/${match.id.replace(/[^a-z0-9._-]+/gi, "__")}/`
   const nodes = pathsToFileTree(match.provider.layout)
   return (
-    <div className="flex flex-col gap-2 rounded-2xl p-3 ring-1 ring-foreground/10" data-testid="library-detected">
+    <div
+      className="flex flex-col gap-2 rounded-2xl p-3 ring-1 ring-foreground/10"
+      data-testid="library-detected"
+    >
       <p className="flex items-center gap-2 text-sm font-medium">
         <CircleCheck className="text-success" />
         {match.provider.label} <span className={mono}>{match.id}</span>
@@ -65,7 +74,11 @@ export function DetectCard({
           {onOpenExisting ? (
             <>
               {" · "}
-              <button type="button" className="underline" onClick={() => onOpenExisting(existing.id)}>
+              <button
+                type="button"
+                className="underline"
+                onClick={() => onOpenExisting(existing.id)}
+              >
                 Open it
               </button>
             </>
@@ -74,9 +87,18 @@ export function DetectCard({
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            {match.provider.access === "readwrite" ? "Read and write" : "Read-only"} · fetches into <span className={mono}>{folder}</span>
+            {match.provider.access === "readwrite"
+              ? "Read and write"
+              : "Read-only"}{" "}
+            · fetches into <span className={mono}>{folder}</span>
           </p>
-          <FilesTree nodes={nodes} open={new Set(folderPaths(nodes))} selected={null} onToggle={() => {}} onSelect={() => {}} />
+          <FilesTree
+            nodes={nodes}
+            open={new Set(folderPaths(nodes))}
+            selected={null}
+            onToggle={() => {}}
+            onSelect={() => {}}
+          />
           <div className="flex flex-wrap gap-1">
             {match.provider.tags.map((t) => (
               <TagBadge key={t} tag={t.replace("{id}", match.id)} />

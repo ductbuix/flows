@@ -10,7 +10,13 @@ describe("foldSteps", () => {
   it("runs a step to done with outputs, branch and answer", () => {
     const s = foldSteps([
       ev({ type: "step_started", nodeId: "a", pass: 1 }),
-      ev({ type: "attempt_started", taskId: "a", nodeId: "a", pass: 1, attempt: 1 }),
+      ev({
+        type: "attempt_started",
+        taskId: "a",
+        nodeId: "a",
+        pass: 1,
+        attempt: 1,
+      }),
       ev({
         type: "attempt_launched",
         taskId: "a",
@@ -70,7 +76,10 @@ describe("foldSteps", () => {
       ev({ type: "step_cancelled", nodeId: "d", pass: 1 }),
     ])
     expect(latestStep(s, "a")?.status).toBe("running")
-    expect(latestStep(s, "b")).toMatchObject({ status: "failed", failReason: "exit" })
+    expect(latestStep(s, "b")).toMatchObject({
+      status: "failed",
+      failReason: "exit",
+    })
     expect(latestStep(s, "c")?.status).toBe("skipped")
     expect(latestStep(s, "d")?.status).toBe("cancelled")
   })
@@ -111,8 +120,20 @@ describe("foldSteps", () => {
   it("counts retry attempts in the same pass", () => {
     const s = foldSteps([
       ev({ type: "step_started", nodeId: "a", pass: 1 }),
-      ev({ type: "attempt_started", taskId: "a", nodeId: "a", pass: 1, attempt: 1 }),
-      ev({ type: "attempt_started", taskId: "a", nodeId: "a", pass: 1, attempt: 2 }),
+      ev({
+        type: "attempt_started",
+        taskId: "a",
+        nodeId: "a",
+        pass: 1,
+        attempt: 1,
+      }),
+      ev({
+        type: "attempt_started",
+        taskId: "a",
+        nodeId: "a",
+        pass: 1,
+        attempt: 2,
+      }),
     ])
     expect(s.steps.a).toHaveLength(1)
     expect(latestStep(s, "a")?.attempts).toBe(2)

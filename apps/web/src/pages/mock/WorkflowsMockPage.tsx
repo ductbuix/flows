@@ -28,7 +28,12 @@ import { StatusPill } from "@/components/brand/StatusPill"
 import { CARDS } from "./docket-data"
 import { WorkflowSheet } from "./WorkflowSheet"
 import { removeRunsOf, startRun, useRuns } from "./runs-store"
-import { addWorkflow, deleteWorkflow, renameWorkflow, useWorkflows } from "./workflows-store"
+import {
+  addWorkflow,
+  deleteWorkflow,
+  renameWorkflow,
+  useWorkflows,
+} from "./workflows-store"
 import { WorkflowRowMenu } from "./WorkflowRowMenu"
 import { NewWorkflowDialog } from "./NewWorkflowDialog"
 
@@ -60,7 +65,10 @@ export function WorkflowsMockPage() {
     <Page
       crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Workflows" }]}
       actions={
-        <Button onClick={() => setCreating(true)} data-testid="workflows-new-open">
+        <Button
+          onClick={() => setCreating(true)}
+          data-testid="workflows-new-open"
+        >
           <Plus />
           New workflow
         </Button>
@@ -122,13 +130,17 @@ export function WorkflowsMockPage() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>{new Set(mine.map((r) => r.cardId)).size}</TableCell>
+                  <TableCell>
+                    {new Set(mine.map((r) => r.cardId)).size}
+                  </TableCell>
                   <TableCell>{mine.length}</TableCell>
                   <TableCell>
                     {last ? (
                       <div className="flex items-center gap-2">
                         <StatusPill tone={last.tone}>{last.label}</StatusPill>
-                        <span className="text-muted-foreground">{last.ago}</span>
+                        <span className="text-muted-foreground">
+                          {last.ago}
+                        </span>
                       </div>
                     ) : (
                       <span className="text-muted-foreground">—</span>

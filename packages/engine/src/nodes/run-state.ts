@@ -6,7 +6,12 @@ import type {
   TaskStatus,
   Workflow,
 } from "@workspace/shared"
-import { foldSteps, type StepState, type StepStatus, type StepsState } from "./fold-steps.ts"
+import {
+  foldSteps,
+  type StepState,
+  type StepStatus,
+  type StepsState,
+} from "./fold-steps.ts"
 
 /** The latest attempt of a node, as the run view reads it. */
 export type AttemptState = {
@@ -155,7 +160,10 @@ export function foldEvents(events: readonly EngineEvent[]): RunState | null {
         break
       case "step_retry_requested":
         // A manual retry reopens a settled run (DES-034, Retry).
-        if (state && (state.status === "failed" || state.status === "succeeded")) {
+        if (
+          state &&
+          (state.status === "failed" || state.status === "succeeded")
+        ) {
           state.status = "running"
           state.finishedAt = undefined
         }

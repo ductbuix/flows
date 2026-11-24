@@ -25,7 +25,11 @@ function useCommand() {
 
 const ITEM = "[data-slot=command-item]:not([hidden]):not([aria-disabled=true])"
 
-function Command({ className, onKeyDown, ...props }: React.ComponentProps<"div">) {
+function Command({
+  className,
+  onKeyDown,
+  ...props
+}: React.ComponentProps<"div">) {
   const [query, setQuery] = React.useState("")
   const [visible, setVisible] = React.useState<Record<string, boolean>>({})
   const register = React.useCallback((id: string, v: boolean) => {
@@ -43,7 +47,9 @@ function Command({ className, onKeyDown, ...props }: React.ComponentProps<"div">
   }, [query, visibleCount])
 
   return (
-    <CommandContext.Provider value={{ query, setQuery, register, visibleCount }}>
+    <CommandContext.Provider
+      value={{ query, setQuery, register, visibleCount }}
+    >
       <div
         ref={ref}
         data-slot="command"
@@ -138,7 +144,9 @@ function CommandGroup({
   heading,
   children,
   ...props
-}: Omit<React.ComponentProps<"div">, "heading"> & { heading?: React.ReactNode }) {
+}: Omit<React.ComponentProps<"div">, "heading"> & {
+  heading?: React.ReactNode
+}) {
   return (
     <div
       data-slot="command-group"
@@ -156,7 +164,10 @@ function CommandGroup({
   )
 }
 
-function CommandSeparator({ className, ...props }: React.ComponentProps<"div">) {
+function CommandSeparator({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="command-separator"
@@ -187,7 +198,8 @@ function CommandItem({
     setLabel(text.current?.textContent ?? "")
   }, [children])
   const haystack = `${value ?? ""} ${label}`.toLowerCase()
-  const shown = query.trim() === "" || haystack.includes(query.trim().toLowerCase())
+  const shown =
+    query.trim() === "" || haystack.includes(query.trim().toLowerCase())
   React.useEffect(() => {
     register(id, shown)
     return () => register(id, false)
@@ -211,7 +223,7 @@ function CommandItem({
         e.currentTarget.setAttribute("data-selected", "true")
       }}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-hidden select-none data-[selected=true]:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-hidden select-none aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[selected=true]:bg-muted [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

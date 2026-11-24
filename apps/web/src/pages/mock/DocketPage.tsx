@@ -162,7 +162,9 @@ export function DocketPage() {
         onSave={(next, moves) => {
           saveColumns(next)
           setCards((prev) =>
-            prev.map((c) => (moves[c.status] ? { ...c, status: moves[c.status]! } : c))
+            prev.map((c) =>
+              moves[c.status] ? { ...c, status: moves[c.status]! } : c
+            )
           )
         }}
       />

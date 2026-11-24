@@ -6,7 +6,11 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@workspace/ui/components/input-group"
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
 import { KIND_GROUPS, KIND_LABEL, type NodeKind } from "./flow-data"
 
 type Props = {
@@ -20,8 +24,8 @@ export function AddNodeMenu({ hasTrigger, onPick }: Props) {
   const [q, setQ] = useState("")
   const groups = KIND_GROUPS.map((g) => ({
     ...g,
-    kinds: g.kinds.filter(
-      (k) => KIND_LABEL[k].toLowerCase().includes(q.trim().toLowerCase())
+    kinds: g.kinds.filter((k) =>
+      KIND_LABEL[k].toLowerCase().includes(q.trim().toLowerCase())
     ),
   })).filter((g) => g.kinds.length > 0)
   return (

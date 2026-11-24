@@ -34,12 +34,16 @@ export const assetExecutor = defineExecutor({
           p.entityId === r.id
       )
       if (!pin) {
-        throw new Error(`resource not pinned: ${r.connection}/${r.entity}/${r.id}`)
+        throw new Error(
+          `resource not pinned: ${r.connection}/${r.entity}/${r.id}`
+        )
       }
       const seg = entityIdSegment(r.id)
       const source = join(ctx.runRoot, "resources", r.connection, r.entity, seg)
       if (!existsSync(source)) {
-        throw new Error(`pinned folder missing: ${r.connection}/${r.entity}/${r.id}`)
+        throw new Error(
+          `pinned folder missing: ${r.connection}/${r.entity}/${r.id}`
+        )
       }
       const linkDir = join(ctx.stepDir, "files", r.connection, r.entity)
       mkdirSync(linkDir, { recursive: true })

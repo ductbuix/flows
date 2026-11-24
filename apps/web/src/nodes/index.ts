@@ -31,7 +31,9 @@ export function viewOf(kind: string): NodeView | undefined {
 }
 
 /** Path of a node's text file (`nodes/<id>/prompt.md`), or null. */
-export function nodeTextPath(node: Pick<WorkflowNode, "id" | "kind">): string | null {
+export function nodeTextPath(
+  node: Pick<WorkflowNode, "id" | "kind">
+): string | null {
   const file = NODE_KINDS.find((k) => k.kind === node.kind)?.files[0]
   return file ? `nodes/${node.id}/${file.path}` : null
 }

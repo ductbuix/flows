@@ -34,7 +34,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("node-empty")).toBeVisible({
       timeout: 15_000,
     })
-    await expect(page.getByRole("button", { name: "Add a trigger" })).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Add a trigger" })
+    ).toBeVisible()
     await expect(
       page.getByRole("button", { name: "Start from a sample" })
     ).toBeVisible()
