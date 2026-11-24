@@ -20,6 +20,7 @@ import {
 import { CanvasChrome } from "./CanvasChrome"
 import { NodeLogDialog } from "./NodeLogDialog"
 import { nodeTypes } from "./node-types"
+import { resolveCollisions } from "./resolve-collisions"
 import { useCanvasKeys } from "./use-canvas-keys"
 import { useCanvasOps } from "./use-canvas-ops"
 import { useRunOverlay } from "./use-run-overlay"
@@ -104,8 +105,15 @@ export function WorkflowCanvas({
     )
   }
 
-  const onNodeDragStop: OnNodeDrag = (_e, _node, next) => {
-    const canvas = next as CanvasNode[]
+  const onNodeDragStop: OnNodeDrag = (_e, node, dragged) => {
+    const pinned = new Set(dragged.map((n) => n.id))
+    pinned.add(node.id)
+    const canvas = resolveCollisions(
+      (nodes as CanvasNode[]).map(
+        (n) => (dragged.find((d) => d.id === n.id) ?? n) as CanvasNode
+      ),
+      { pinned }
+    )
     setNodes(canvas)
     publishLayout(canvas)
   }
