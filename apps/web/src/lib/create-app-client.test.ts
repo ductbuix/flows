@@ -113,6 +113,7 @@ describe("createAppClient", () => {
       expect.objectContaining({
         url: "ws://127.0.0.1:8787/fcp",
         token: "secret",
+        capabilities: { host: { revealPath: true } },
       })
     )
   })
@@ -136,6 +137,7 @@ describe("createAppClient", () => {
       expect.objectContaining({
         url: "ws://127.0.0.1:8787/fcp",
         token: "boot",
+        capabilities: { host: { revealPath: true } },
       })
     )
   })

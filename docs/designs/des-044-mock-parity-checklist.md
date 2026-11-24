@@ -158,7 +158,7 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 | IB-04 | Question answer / skip                         | app     | `inbox.spec.ts › question`          | —       |
 | IB-05 | Plan review accept / reject                    | app     | `inbox.spec.ts › plan review`       | —       |
 | IB-06 | Dismiss                                        | app     | `inbox.spec.ts › dismiss`           | —       |
-| IB-07 | Sidebar badge from live inbox (not mock store) | partial | `shell-smoke.spec.ts › inbox badge` | BL-208  |
+| IB-07 | Sidebar badge from live inbox (not mock store) | app     | `shell-smoke.spec.ts › inbox badge` | BL-208  |
 
 ## Files
 
@@ -166,8 +166,8 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 | ----- | ------------------------------------------- | ------- | ----------------------------- | ------- |
 | FL-01 | Tree, search, expand/collapse, count        | app     | `files.spec.ts › tree`        | —       |
 | FL-02 | Preview, markdown, edit, save               | app     | `files.spec.ts › edit save`   | —       |
-| FL-03 | Reveal in Finder (`file/reveal` / host)     | missing | `files.spec.ts › reveal`      | BL-208  |
-| FL-04 | `file/stat` for preview metadata            | missing | `files.spec.ts › stat`        | BL-208  |
+| FL-03 | Reveal in Finder (`file/reveal` / host)     | app     | `files.spec.ts › reveal`      | BL-208  |
+| FL-04 | `file/stat` for preview metadata            | app     | `files.spec.ts › stat`        | BL-208  |
 | FL-05 | DiskPicker (shared; used by library/assets) | missing | `library.spec.ts › disk pick` | BL-205  |
 
 ## Shell / sidebar

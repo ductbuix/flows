@@ -213,7 +213,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-205 | todo | P1 | BL-204 | [Library: add dialog, tags and views](bl-205-library-add-tags-views.md) | Add from a link or a file, tag items and switch views, as in the mock. | web, library, tags |
 | BL-206 | todo | P2 | BL-193 | [Skill sources](bl-206-skill-sources.md) | Add and remove skill sources and update installed skills, as in the mock. | web, skills |
 | BL-207 | done | P1 | BL-193 | [Connector sign-in, check and update](bl-207-connector-sign-in-check.md) | Connector sheet can sign in, check status and update settings. | web, connectors, desktop |
-| BL-208 | todo | P2 | BL-193 | [Inbox and Files parity fixes](bl-208-inbox-files-parity.md) | Close the Inbox and Files rows of the parity checklist. | web, inbox, files |
+| BL-208 | done | P2 | BL-193 | [Inbox and Files parity fixes](bl-208-inbox-files-parity.md) | Close the Inbox and Files rows of the parity checklist. | web, inbox, files |
 | BL-209 | todo | P1 | BL-200, BL-203 | [Remove the Runs page](bl-209-remove-runs-page.md) | Delete /runs and pages/runs list; run detail opens in context only. | web, runs, cleanup |
 | BL-210 | todo | P1 | BL-193 | [Settings panel and trust methods](bl-210-settings-panel-trust-fcp.md) | Settings opens from the sidebar footer as a panel; CLI, trust and MCP trust have FCP methods. | web, settings, trust, fcp |
 | BL-211 | todo | P1 | BL-198, BL-199, BL-201, BL-202, BL-204, BL-205, BL-206, BL-207, BL-208 | [Rename pages/mock and delete mock stores](bl-211-rename-mock-folder-delete-stores.md) | Move shared components to their area folders; delete every *-store.ts and *-data.ts. | web, cleanup, mock |
