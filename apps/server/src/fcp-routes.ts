@@ -26,25 +26,33 @@ export const FCP_DEV_ORIGIN_PORT = 5173
 
 const engineInfo = { name: "flows", version: "0.0.1" }
 
+/** Vite loopback ports: default 5173 plus PW_WEB_PORT for parallel e2e agents. */
+function viteDevPorts(): number[] {
+  const ports = new Set<number>([FCP_DEV_ORIGIN_PORT])
+  const fromEnv = Number(process.env.PW_WEB_PORT)
+  if (Number.isFinite(fromEnv) && fromEnv > 0) ports.add(fromEnv)
+  return [...ports]
+}
+
 export function fcpAllowedHosts(port: number): Set<string> {
-  return new Set([
-    `127.0.0.1:${port}`,
-    `localhost:${port}`,
-    `[::1]:${port}`,
-    // Vite proxies /api/fcp; without changeOrigin Host stays on the dev port.
-    `127.0.0.1:${FCP_DEV_ORIGIN_PORT}`,
-    `localhost:${FCP_DEV_ORIGIN_PORT}`,
-    `[::1]:${FCP_DEV_ORIGIN_PORT}`,
-  ])
+  const hosts = [`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`]
+  // Vite proxies /api/fcp; without changeOrigin Host stays on the dev port.
+  for (const vitePort of viteDevPorts()) {
+    hosts.push(
+      `127.0.0.1:${vitePort}`,
+      `localhost:${vitePort}`,
+      `[::1]:${vitePort}`
+    )
+  }
+  return new Set(hosts)
 }
 
 export function fcpAllowedOrigins(port: number): Set<string> {
-  return new Set([
-    `http://127.0.0.1:${port}`,
-    `http://localhost:${port}`,
-    `http://127.0.0.1:${FCP_DEV_ORIGIN_PORT}`,
-    `http://localhost:${FCP_DEV_ORIGIN_PORT}`,
-  ])
+  const origins = [`http://127.0.0.1:${port}`, `http://localhost:${port}`]
+  for (const vitePort of viteDevPorts()) {
+    origins.push(`http://127.0.0.1:${vitePort}`, `http://localhost:${vitePort}`)
+  }
+  return new Set(origins)
 }
 
 /** True when Host is a loopback name on the daemon port. */

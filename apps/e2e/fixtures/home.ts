@@ -605,5 +605,44 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  // Workspace skills for BL-183 e2e.
+  for (const dir of [".agents", ".claude"] as const) {
+    const skillDir = join(home, dir, "skills", "write-tests")
+    mkdirSync(skillDir, { recursive: true })
+    writeFileSync(
+      join(skillDir, "SKILL.md"),
+      [
+        "---",
+        "name: write-tests",
+        "description: Write focused unit tests for a changed file.",
+        "from:",
+        "  sourceId: repo-team-skills",
+        "  version: 1",
+        "---",
+        "",
+        "# write-tests",
+        "",
+        "- Read the diff first",
+        "- One behaviour per test",
+        "",
+      ].join("\n")
+    )
+  }
+  const commitStyle = join(home, ".cursor", "skills", "commit-style")
+  mkdirSync(commitStyle, { recursive: true })
+  writeFileSync(
+    join(commitStyle, "SKILL.md"),
+    [
+      "---",
+      "name: commit-style",
+      "description: Write commit messages in this repo's style.",
+      "---",
+      "",
+      "# commit-style",
+      "",
+      "- Imperative mood",
+      "",
+    ].join("\n")
+  )
   return home
 }
