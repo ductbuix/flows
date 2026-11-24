@@ -34,9 +34,9 @@ describe("judge check kind", () => {
       outputs: ["nodes/j/pass-1/text.md"],
       branch: "yes",
     })
-    expect(docs.read(`${runDir}/nodes/j/pass-1/text.md`)?.text).toContain(
-      "payload"
-    )
+    const verdict = docs.read(`${runDir}/nodes/j/pass-1/text.md`)?.text
+    expect(verdict).toContain("Check passed: score > 1")
+    expect(verdict).not.toContain("payload")
 
     const no = createStepContext({
       docs,

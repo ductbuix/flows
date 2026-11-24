@@ -27,7 +27,7 @@ describe("approval kind", () => {
     })
   })
 
-  it("forwards input text on approve", async () => {
+  it("copies nothing on approve", async () => {
     const docs = createFakeDocumentStore()
     const runDir = "runs/r1"
     docs.write(`${runDir}/nodes/t/pass-1/text.md`, "the change")
@@ -49,16 +49,11 @@ describe("approval kind", () => {
       graph: { id: "wf" },
     })
     const result = await collectExecute(approvalKind.execute(ctx))
-    expect(result).toMatchObject({
-      ok: true,
-      outputs: ["nodes/ok/pass-1/text.md"],
-    })
-    expect(docs.read(`${runDir}/nodes/ok/pass-1/text.md`)?.text).toContain(
-      "the change"
-    )
+    expect(result).toEqual({ ok: true, outputs: [] })
+    expect(docs.read(`${runDir}/nodes/ok/pass-1/text.md`)).toBeNull()
   })
 
-  it("runs on the actor: wait, approve, then settle", async () => {
+  it("runs on the actor: wait, approve, then pass results on", async () => {
     const docs = createFakeDocumentStore()
     const runDir = "workflows/wf/runs/r1"
     docs.write(`${runDir}/input/text.md`, "payload")
@@ -73,8 +68,14 @@ describe("approval kind", () => {
       }),
     })
     const graph = parse(
-      [{ id: "ok", kind: "approval", question: "Ship it?" }],
-      [{ from: "t", to: "ok" }]
+      [
+        { id: "ok", kind: "approval", question: "Ship it?" },
+        { id: "out", kind: "output", target: "folder" },
+      ],
+      [
+        { from: "t", to: "ok" },
+        { from: "ok", to: "out" },
+      ]
     )
     await actor.push({ kind: "start", at, runId: "r1", graph })
     expect(latestStep(actor.getState()!.steps, "ok")).toMatchObject({
@@ -98,9 +99,9 @@ describe("approval kind", () => {
       decision: "approved",
     })
     expect(actor.getState()?.status).toBe("succeeded")
-    expect(docs.read(`${runDir}/nodes/ok/pass-1/text.md`)?.text).toContain(
-      "payload"
-    )
+    // The output reads the trigger's result through the gate.
+    expect(docs.read(`${runDir}/output/t/text.md`)?.text).toBe("payload")
+    expect(docs.read(`${runDir}/output/ok/text.md`)).toBeNull()
     expect(notices).toEqual([])
   })
 })

@@ -4,6 +4,7 @@ import { appendLogEntry } from "./attempt-log.ts"
 import type { AgentRuntime } from "../ports/agent-runtime.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { PublishPort } from "../ports/publish.ts"
+import type { InputSource } from "./input-sources.ts"
 import { AskPending, type StepContext, type StepInput } from "./types.ts"
 
 export type StepContextDeps = {
@@ -145,31 +146,42 @@ export function loadRunInputs(
   return out.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-/** Load files from upstream step folders as StepInputs. */
+/**
+ * Load the results of upstream steps as StepInputs (DES-034). A step's
+ * results are the files its `step_done` recorded plus its `files/**`;
+ * attempt logs, scratch files and the agent's own workspace are never
+ * inputs. Without recorded outputs only `text.md` is read.
+ */
 export function loadStepInputs(
   docs: DocumentStore,
   runDir: string,
-  fromIds: readonly string[],
-  passOf: (id: string) => number
+  sources: readonly InputSource[]
 ): StepInput[] {
   const out: StepInput[] = []
-  for (const from of fromIds) {
-    const pass = passOf(from)
-    const base = `${runDir}/nodes/${from}/pass-${pass}`
-    for (const path of docs.list(`${base}/**`)) {
-      if (!path.startsWith(`${base}/`)) continue
-      const name = path.slice(base.length + 1)
-      if (!name || name.endsWith("/")) continue
-      // Per-attempt logs and scratch output are not step results.
-      if (/^attempt-\d+\//.test(name)) continue
+  for (const src of sources) {
+    const base = `nodes/${src.from}/pass-${src.pass}`
+    const names = new Set<string>()
+    for (const rel of src.outputs ?? [`${base}/text.md`]) {
+      if (rel.startsWith(`${base}/`)) names.add(rel.slice(base.length + 1))
+    }
+    const filesRoot = `${runDir}/${base}/files/`
+    for (const path of docs.list(`${runDir}/${base}/files/**`)) {
+      if (path.startsWith(filesRoot) && !path.endsWith("/")) {
+        names.add(path.slice(runDir.length + base.length + 2))
+      }
+    }
+    for (const name of [...names].sort(byResultFirst)) {
+      const path = `${runDir}/${base}/${name}`
       const read = docs.read(path)
-      out.push({
-        from,
-        path,
-        name,
-        ...(read ? { text: read.text } : {}),
-      })
+      if (!read) continue
+      out.push({ from: src.from, path, name, text: read.text, role: src.role })
     }
   }
   return out
+}
+
+function byResultFirst(a: string, b: string): number {
+  if (a === "text.md") return -1
+  if (b === "text.md") return 1
+  return a.localeCompare(b)
 }

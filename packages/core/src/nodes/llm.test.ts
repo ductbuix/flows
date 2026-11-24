@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest"
 import { createFakeAgentRuntime } from "../testing/fake-agent-runtime.ts"
 import { createFakeDocumentStore } from "../testing/fake-document-store.ts"
 import { createStepContext } from "./context.ts"
-import { llmContentBlocks, llmKind, llmPromptText } from "./kinds/llm.ts"
+import {
+  createReply,
+  llmContentBlocks,
+  llmKind,
+  llmPromptText,
+} from "./kinds/llm.ts"
 import { collectExecute } from "./run.ts"
 
 const runDir = "workflows/wf/runs/r1"
@@ -63,13 +68,14 @@ describe("llm kind (ACP)", () => {
           system: "Be brief.",
           prompt: "Summarize weather.",
         }),
-        ctx.inputs
+        ctx.inputs,
+        "l"
       )
     )
     expect(runtime.prompts[0]?.blocks).toContainEqual({
       type: "resource",
-      uri: "file://text.md",
-      mimeType: "text/plain",
+      uri: "flows://nodes/t/text.md",
+      mimeType: "text/markdown",
       text: "a long story",
     })
   })
@@ -107,5 +113,37 @@ describe("llmPromptText / llmContentBlocks", () => {
   it("joins system and prompt", () => {
     expect(llmPromptText({ system: "S", prompt: "P\n" })).toBe("S\n\nP\n")
     expect(llmPromptText({ prompt: "P" })).toBe("P\n")
+  })
+})
+
+describe("createReply", () => {
+  it("keeps the last message and logs narration before tool calls", () => {
+    const logged: string[] = []
+    const reply = createReply((t) => logged.push(t))
+    reply.push({ kind: "message_chunk", text: "Let me " })
+    reply.push({ kind: "message_chunk", text: "check." })
+    reply.push({
+      kind: "tool_call",
+      id: "1",
+      title: "ls",
+      toolKind: "execute",
+      status: "pending",
+    })
+    reply.push({ kind: "message_chunk", text: " ok " })
+    expect(reply.final()).toBe("ok")
+    expect(logged).toEqual(["Let me check."])
+  })
+
+  it("falls back to the message before a trailing tool call", () => {
+    const reply = createReply()
+    reply.push({ kind: "message_chunk", text: "done" })
+    reply.push({
+      kind: "tool_call",
+      id: "1",
+      title: "save",
+      toolKind: "edit",
+      status: "pending",
+    })
+    expect(reply.final()).toBe("done")
   })
 })

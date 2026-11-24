@@ -7,7 +7,7 @@ summary: "Engine for node graphs: event types, the walk, loops with back edges a
 tags: [design, engine, events, loops, judge, resume]
 related:
   [DES-031, DES-032, DES-033, DES-003, DES-004, DES-005, DES-019, DES-026]
-updated: 2026-11-22
+updated: 2026-11-25
 ---
 
 # Node engine
@@ -142,16 +142,23 @@ has no kind branches.
 
 ## Data passing
 
-- Each attempt gets `input/text.md`: the active text inputs joined in
-  edge order, each under a heading with the source node name.
-- File inputs are links under `input/files/<fromNodeId>/` and stay in
-  env as `UPSTREAM_<id>` (the id with `-` as `_`).
-- `TASK_ID`, `TASK_IN`, `TASK_OUT` and `TASK_INSTRUCTIONS` become
-  `NODE_ID`, `NODE_IN`, `NODE_OUT` and `NODE_INSTRUCTIONS`.
-  `PREV_ATTEMPT`, `RUN_INPUT`, `RESOURCES_DIR`, `RESOURCE_<ID>`,
-  `WF_DIR`, `WF_INPUT`, `WF_OUTPUT` and `RUN_ID` stay as today.
-- Judge and Approval forward their inputs unchanged, so a step after
-  them sees the same upstream paths.
+A node reads only the final results of the nodes before it, never
+their conversation or logs.
+
+- A step's result is `text.md` plus `files/**`, and the files its
+  `step_done` recorded. Attempt logs (`attempt-N/`), scratch files and
+  the agent's working folder are never inputs.
+- For llm, agent and rule Judge steps the result is the agent's last
+  message, after its last tool call. Earlier messages are narration and
+  go to `attempt-N/events.log` only.
+- LLM, agent and rule Judge steps get their inputs as ACP resource
+  blocks `flows://nodes/<fromId>/<file>` (`flows://input/<file>` for
+  run input), after a text block that names each input's source.
+- Judge and Approval are gates: they copy nothing. A step after a gate
+  reads the gated results by reference (the latest done pass of each
+  source). A Judge's own `text.md` is its verdict; it is read only
+  along a loop edge, as feedback for the node it sends back to.
+- Folder output copies results the same way: through gates, no logs.
 - `{{name}}` is filled from the nearest upstream answer before launch.
 
 ## Partial runs

@@ -11,7 +11,13 @@ import {
 import { copyAgentMemories } from "../agent-memory.ts"
 import { defineNodeKind } from "../define.ts"
 import type { StepContext, StepEvent } from "../types.ts"
-import { llmContentBlocks, llmProfileId, llmPromptText } from "./llm.ts"
+import {
+  createReply,
+  llmContentBlocks,
+  llmProfileId,
+  llmPromptText,
+  logNarration,
+} from "./llm.ts"
 
 const settings = z.object({
   cli: z.enum(["claude", "cursor"]).default("cursor"),
@@ -70,7 +76,11 @@ export const agentKind = defineNodeKind({
     )?.text
     if (priorError) parts.push(agentFixPrompt(priorError))
 
-    const blocks = llmContentBlocks(`${parts.join("\n\n")}\n`, ctx.inputs)
+    const blocks = llmContentBlocks(
+      `${parts.join("\n\n")}\n`,
+      ctx.inputs,
+      ctx.node.id
+    )
     const session = await ctx.agent.session({
       profileId: llmProfileId(ctx.settings.cli),
       cwd: "",
@@ -82,11 +92,11 @@ export const agentKind = defineNodeKind({
         ? { effort: ctx.settings.effort }
         : {}),
     })
-    let text = ""
+    const reply = createReply(logNarration(ctx))
     try {
       if (session.setMode) await session.setMode("agent")
       for await (const event of session.prompt(blocks, ctx.signal)) {
-        if (event.kind === "message_chunk") text += event.text
+        reply.push(event)
         if (event.kind === "stop" && event.reason === "cancelled") {
           yield { kind: "failed", reason: "exit", message: "cancelled" }
           return
@@ -100,6 +110,7 @@ export const agentKind = defineNodeKind({
       await session.close()
     }
 
+    const text = reply.final()
     if (decls.length > 0) {
       const found = readStepAnswer(ctx.docs, ctx.stepDir, decls)
       const settled = settleAnswer(ctx.docs, ctx.stepDir, decls, found)
@@ -114,7 +125,7 @@ export const agentKind = defineNodeKind({
       if (settled.ok) {
         yield {
           kind: "output_written",
-          path: await ctx.outputs.write("text.md", text.trim()),
+          path: await ctx.outputs.write("text.md", text),
         }
         yield { kind: "done", answer: settled.answer }
         return
@@ -123,7 +134,7 @@ export const agentKind = defineNodeKind({
 
     yield {
       kind: "output_written",
-      path: await ctx.outputs.write("text.md", text.trim()),
+      path: await ctx.outputs.write("text.md", text),
     }
     yield { kind: "done" }
   },

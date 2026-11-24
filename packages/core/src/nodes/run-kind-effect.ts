@@ -2,6 +2,7 @@ import { resolveAnswerValues } from "@workspace/contracts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
 import { latestStep } from "../runs/model.ts"
 import { createStepContext, loadRunInputs, loadStepInputs } from "./context.ts"
+import { resolveInputSources } from "./input-sources.ts"
 import { kindKeyForNode, type NodeKindRegistry } from "./registry.ts"
 import type { NodeEffectRunnerDeps, NoticePost } from "./run-deps.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
@@ -25,19 +26,13 @@ export async function runKindEffect(
 
   const runDir = deps.runDirOf(state)
   const step = latestStep(state.steps, effect.nodeId)
-  const fromIds = state.graph.edges
-    .filter((e) => e.to === effect.nodeId)
-    .map((e) => e.from)
-    .filter((id) => latestStep(state.steps, id)?.status === "done")
-
   const inputs =
     kind.kind === "trigger"
       ? loadRunInputs(deps.docs, runDir)
       : loadStepInputs(
           deps.docs,
           runDir,
-          fromIds,
-          (id) => latestStep(state.steps, id)?.pass ?? 1
+          resolveInputSources(state, effect.nodeId)
         )
 
   const parsed = kind.settings.safeParse({ ...node })
@@ -99,15 +94,7 @@ export async function runKindEffect(
     }
     throw err
   }
-  if (logsAgent)
-    writeAgentLogs(
-      deps.docs,
-      attemptRoot,
-      runDir,
-      effect,
-      result,
-      kind.kind === "condition" ? "answer.md" : "text.md"
-    )
+  if (logsAgent) writeAgentLogs(deps.docs, attemptRoot, runDir, effect, result)
   if ("ok" in result && result.ok && result.notice) {
     postNotice(deps, state, effect, result.notice, deps.now)
     return { ok: true, outputs: result.outputs ?? [] }
@@ -121,12 +108,11 @@ function writeAgentLogs(
   attemptRoot: string,
   runDir: string,
   effect: { nodeId: string; pass: number },
-  result: EffectResult,
-  outputFile: string
+  result: EffectResult
 ): void {
   if ("ok" in result && result.ok) {
     const out = docs.read(
-      `${runDir}/nodes/${effect.nodeId}/pass-${effect.pass}/${outputFile}`
+      `${runDir}/nodes/${effect.nodeId}/pass-${effect.pass}/text.md`
     )
     docs.write(`${attemptRoot}/stdout.log`, out?.text ?? "")
   } else if ("ok" in result) {

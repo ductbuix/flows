@@ -59,15 +59,14 @@ describe("condition kind (ACP)", () => {
       const { docs, runtime, result } = await runCondition(answer)
       expect(result).toEqual({
         ok: true,
-        outputs: ["nodes/c/pass-1/answer.md", "nodes/c/pass-1/text.md"],
+        outputs: ["nodes/c/pass-1/text.md"],
         branch,
       })
-      expect(docs.read(`${runDir}/nodes/c/pass-1/answer.md`)?.text).toBe(
+      // The verdict is the result; inputs are not copied.
+      expect(docs.read(`${runDir}/nodes/c/pass-1/text.md`)?.text).toBe(
         answer.trim()
       )
-      expect(docs.read(`${runDir}/nodes/c/pass-1/text.md`)?.text).toContain(
-        "all green"
-      )
+      expect(docs.list(`${runDir}/nodes/c/pass-1/files/**`)).toEqual([])
       expect(runtime.opens).toEqual([
         {
           profileId: "cursor",
@@ -87,8 +86,7 @@ describe("condition kind (ACP)", () => {
       reason: "unclear",
       message: answer,
     })
-    expect(docs.read(`${runDir}/nodes/c/pass-1/answer.md`)?.text).toBe(answer)
-    expect(docs.read(`${runDir}/nodes/c/pass-1/text.md`)).toBeNull()
+    expect(docs.read(`${runDir}/nodes/c/pass-1/text.md`)?.text).toBe(answer)
     expect(runtime.opens[0]?.mode).toBe("ask")
   })
 
@@ -179,7 +177,7 @@ describe("judge → condition routing", () => {
     })
     expect(latestStep(state.steps, "ok")?.status).toBe("done")
     expect(state.status).toBe("succeeded")
-    expect(docs.read(`${runDir}/nodes/j/pass-1/answer.md`)?.text).toBe(
+    expect(docs.read(`${runDir}/nodes/j/pass-1/text.md`)?.text).toBe(
       "yes, all passed"
     )
     expect(runtime.opens).toEqual([

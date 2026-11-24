@@ -15,6 +15,8 @@ export type StepInput = {
   /** Path relative to the source step/input folder. */
   name: string
   text?: string
+  /** `feedback`: a judge verdict sent back along a loop edge. */
+  role?: "result" | "feedback"
 }
 
 /**
