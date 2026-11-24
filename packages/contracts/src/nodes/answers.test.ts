@@ -27,7 +27,12 @@ describe("parseAnswer", () => {
   })
 
   it("names every field that is missing or the wrong type", () => {
-    const r = parseAnswer(decls, { title: 1, ready: "yes", tags: [1], risk: "mid" })
+    const r = parseAnswer(decls, {
+      title: 1,
+      ready: "yes",
+      tags: [1],
+      risk: "mid",
+    })
     expect(r.ok).toBe(false)
     if (r.ok) return
     expect(r.error).toContain("title: must be a string")
@@ -48,7 +53,9 @@ describe("parseAnswerText", () => {
   const json = JSON.stringify(good)
   it("reads a bare object, a fenced block, and the last of several", () => {
     expect(parseAnswerText(decls, json).ok).toBe(true)
-    expect(parseAnswerText(decls, `Here you go\n\`\`\`json\n${json}\n\`\`\`\n`).ok).toBe(true)
+    expect(
+      parseAnswerText(decls, `Here you go\n\`\`\`json\n${json}\n\`\`\`\n`).ok
+    ).toBe(true)
     const two = `\`\`\`json\n{"title":1}\n\`\`\`\nfixed:\n\`\`\`json\n${json}\n\`\`\``
     expect(parseAnswerText(decls, two).ok).toBe(true)
     expect(parseAnswerText(decls, `Summary text\n${json}`).ok).toBe(true)
@@ -83,7 +90,14 @@ describe("templates", () => {
 
 const nodes = [
   { id: "a", kind: "agent", answers: [{ name: "risk", type: "text" }] },
-  { id: "b", kind: "llm", answers: [{ name: "risk", type: "text" }, { name: "n", type: "number" }] },
+  {
+    id: "b",
+    kind: "llm",
+    answers: [
+      { name: "risk", type: "text" },
+      { name: "n", type: "number" },
+    ],
+  },
   { id: "c", kind: "agent" },
 ] as unknown as Parameters<typeof templateProblems>[0]
 
@@ -94,7 +108,11 @@ describe("ambiguity", () => {
   ]
   it("flags a name two upstream nodes declare", () => {
     const p = templateProblems(nodes, edges, [
-      { nodeId: "c", label: "prompt.md", text: "{{risk}} and {{n}} and {{none}}" },
+      {
+        nodeId: "c",
+        label: "prompt.md",
+        text: "{{risk}} and {{n}} and {{none}}",
+      },
     ])
     expect(p).toHaveLength(1)
     expect(p[0]!.message).toBe("{{risk}} is ambiguous: a and b both declare it")
@@ -102,9 +120,11 @@ describe("ambiguity", () => {
 
   it("passes when only one upstream node declares the name", () => {
     expect(
-      templateProblems(nodes, [{ from: "a", to: "c" }], [
-        { nodeId: "c", label: "prompt.md", text: "{{risk}}" },
-      ])
+      templateProblems(
+        nodes,
+        [{ from: "a", to: "c" }],
+        [{ nodeId: "c", label: "prompt.md", text: "{{risk}}" }]
+      )
     ).toEqual([])
   })
 
@@ -114,7 +134,9 @@ describe("ambiguity", () => {
       { from: "c", to: "a" },
     ]
     expect(
-      templateProblems(nodes, loop, [{ nodeId: "a", label: "prompt.md", text: "{{risk}}" }])
+      templateProblems(nodes, loop, [
+        { nodeId: "a", label: "prompt.md", text: "{{risk}}" },
+      ])
     ).toEqual([])
   })
 
@@ -142,7 +164,12 @@ describe("answers in the workflow schema", () => {
         wf(
           [
             { id: "t", kind: "trigger", type: "manual" },
-            { id: "l", kind: "llm", cli: "claude", answers: [{ name: "risk", type: "choice", labels: ["low"] }] },
+            {
+              id: "l",
+              kind: "llm",
+              cli: "claude",
+              answers: [{ name: "risk", type: "choice", labels: ["low"] }],
+            },
             { id: "p", kind: "approval", question: "Risk is {{risk}}?" },
           ],
           [
@@ -159,8 +186,18 @@ describe("answers in the workflow schema", () => {
       wf(
         [
           { id: "t", kind: "trigger", type: "manual" },
-          { id: "a", kind: "llm", cli: "claude", answers: [{ name: "x", type: "text" }] },
-          { id: "b", kind: "agent", cli: "claude", answers: [{ name: "x", type: "text" }] },
+          {
+            id: "a",
+            kind: "llm",
+            cli: "claude",
+            answers: [{ name: "x", type: "text" }],
+          },
+          {
+            id: "b",
+            kind: "agent",
+            cli: "claude",
+            answers: [{ name: "x", type: "text" }],
+          },
           { id: "p", kind: "approval", question: "{{x}}?" },
         ],
         [
@@ -171,23 +208,31 @@ describe("answers in the workflow schema", () => {
         ]
       )
     )
-    expect(msgs).toEqual(["question: {{x}} is ambiguous: a and b both declare it"])
+    expect(msgs).toEqual([
+      "question: {{x}} is ambiguous: a and b both declare it",
+    ])
   })
 
   it("rejects bad declarations", () => {
     const one = (answers: object[]) =>
-      issues(
-        wf([{ id: "l", kind: "llm", cli: "claude", answers }], [])
-      )
+      issues(wf([{ id: "l", kind: "llm", cli: "claude", answers }], []))
     expect(one([{ name: "1x", type: "text" }]).length).toBeGreaterThan(0)
-    expect(one([{ name: "x", type: "choice" }])).toContain("choice needs labels")
+    expect(one([{ name: "x", type: "choice" }])).toContain(
+      "choice needs labels"
+    )
     expect(one([{ name: "x", type: "text", labels: ["a"] }])).toContain(
       "labels are only for choice"
     )
     expect(
-      one([{ name: "x", type: "text" }, { name: "x", type: "number" }])
+      one([
+        { name: "x", type: "text" },
+        { name: "x", type: "number" },
+      ])
     ).toContain("duplicate answer name")
-    const many = Array.from({ length: 21 }, (_, i) => ({ name: `n${i}`, type: "text" }))
+    const many = Array.from({ length: 21 }, (_, i) => ({
+      name: `n${i}`,
+      type: "text",
+    }))
     expect(one(many).length).toBeGreaterThan(0)
   })
 })

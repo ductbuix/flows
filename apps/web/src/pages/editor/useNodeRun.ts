@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { logChunkSchema, runDetailSchema, type RunDetail } from "@workspace/shared"
+import {
+  logChunkSchema,
+  runDetailSchema,
+  type RunDetail,
+} from "@workspace/shared"
 import { api } from "@/lib/api"
 import { useRunSocket } from "@/pages/run-view/useRunSocket"
 import {
@@ -21,14 +25,19 @@ async function fetchResult(
   attempt: number,
   failed: boolean
 ): Promise<string> {
-  for (const stream of failed ? (["stderr", "stdout"] as const) : (["stdout"] as const)) {
-    const res = await api.runs[":runId"].tasks[":taskId"].attempts[":n"].log.$get({
+  for (const stream of failed
+    ? (["stderr", "stdout"] as const)
+    : (["stdout"] as const)) {
+    const res = await api.runs[":runId"].tasks[":taskId"].attempts[
+      ":n"
+    ].log.$get({
       param: { runId, taskId, n: String(attempt) },
       query: { stream, offset: "0" },
     })
     if (!res.ok) continue
     const text = logChunkSchema.parse(await res.json()).text.trim()
-    if (text) return text.length > RESULT_MAX ? `${text.slice(0, RESULT_MAX)}…` : text
+    if (text)
+      return text.length > RESULT_MAX ? `${text.slice(0, RESULT_MAX)}…` : text
   }
   return ""
 }
@@ -99,9 +108,7 @@ export function useNodeRun() {
     const span = times[t.id]
     views[t.id] = {
       status,
-      ...(span
-        ? { timer: formatElapsed((span.end ?? now) - span.start) }
-        : {}),
+      ...(span ? { timer: formatElapsed((span.end ?? now) - span.start) } : {}),
       ...(results[t.id] ? { result: results[t.id] } : {}),
       ...(verdicts[t.id] ? { verdict: verdicts[t.id] } : {}),
       ...(passes[t.id] ? { pass: passes[t.id] } : {}),

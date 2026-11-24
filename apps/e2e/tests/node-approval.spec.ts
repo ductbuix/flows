@@ -26,7 +26,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("approval-question")).toHaveValue(
       "Ship the change?"
     )
-    await page.screenshot({ path: info.outputPath(`node-approval-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-approval-${theme}.png`),
+    })
 
     await page.getByTestId("canvas-run").click()
     await page.getByTestId("start-run-submit").click()
@@ -96,7 +98,10 @@ test("the run view leads with the question and Reject ends the run", async ({
   await page.screenshot({ path: info.outputPath("node-approval-rejected.png") })
 
   const res = await request.get(`${API}/api/runs/${runId}`)
-  const run = (await res.json()) as { status: string; steps?: { nodeId: string }[] }
+  const run = (await res.json()) as {
+    status: string
+    steps?: { nodeId: string }[]
+  }
   expect(run.status).toBe("cancelled")
   expect(run.steps?.some((s) => s.nodeId === "after")).toBeFalsy()
 })

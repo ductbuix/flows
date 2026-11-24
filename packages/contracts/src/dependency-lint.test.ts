@@ -29,7 +29,7 @@ async function lintCode(
   code: string,
   // eslint flat RulesConfig is stricter than our exported rule objects
   rules: object,
-  filename = "scratch.ts",
+  filename = "scratch.ts"
 ): Promise<ESLint.LintResult[]> {
   const eslint = new ESLint({
     overrideConfigFile: true,

@@ -27,6 +27,15 @@ describe("capabilitySchema", () => {
     })
   })
 
+  it("keeps a cli cmd argv mapping from the file", () => {
+    expect(
+      capabilitySchema.parse({
+        name: "repo clone",
+        cmd: ["repo", "clone"],
+      }).cmd
+    ).toEqual(["repo", "clone"])
+  })
+
   it("defaults write capabilities to allowed: false", () => {
     expect(
       capabilitySchema.parse({

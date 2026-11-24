@@ -1,4 +1,16 @@
-import { BookOpen, File, FileCode, GitBranch, Globe, Hammer, Image, Link2, ListChecks, ScrollText, Unlink } from "lucide-react"
+import {
+  BookOpen,
+  File,
+  FileCode,
+  GitBranch,
+  Globe,
+  Hammer,
+  Image,
+  Link2,
+  ListChecks,
+  ScrollText,
+  Unlink,
+} from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import {
   Table,
@@ -25,7 +37,13 @@ const ICON: Record<LibKind, typeof File> = {
   other: File,
 }
 
-export function KindIcon({ kind, className }: { kind: LibKind; className?: string }) {
+export function KindIcon({
+  kind,
+  className,
+}: {
+  kind: LibKind
+  className?: string
+}) {
   const Icon = ICON[kind]
   return <Icon className={className} />
 }
@@ -34,10 +52,13 @@ export function KindIcon({ kind, className }: { kind: LibKind; className?: strin
 export function useTypeLabel() {
   const providers = useProviders()
   return (i: LibItem) =>
-    i.source === "local" ? KIND_SINGULAR[i.kind] : (providers.find((p) => p.id === i.source)?.label ?? i.source)
+    i.source === "local"
+      ? KIND_SINGULAR[i.kind]
+      : (providers.find((p) => p.id === i.source)?.label ?? i.source)
 }
 
-const current = (i: LibItem) => i.versions.find((v) => v.n === i.current) ?? i.versions[0]
+const current = (i: LibItem) =>
+  i.versions.find((v) => v.n === i.current) ?? i.versions[0]
 
 function SyncCell({ item, date }: { item: LibItem; date?: boolean }) {
   return item.source === "local" ? (
@@ -50,7 +71,11 @@ function SyncCell({ item, date }: { item: LibItem; date?: boolean }) {
       <Badge variant="secondary">
         <Link2 />v{item.current}
       </Badge>
-      {date ? <span className="text-muted-foreground">{current(item).at.slice(0, 10)}</span> : null}
+      {date ? (
+        <span className="text-muted-foreground">
+          {current(item).at.slice(0, 10)}
+        </span>
+      ) : null}
     </div>
   )
 }
@@ -89,7 +114,12 @@ export function LibraryTable({ items, active, onOpen, onTag }: Props) {
                   <span className="truncate font-medium">{i.title}</span>
                   <span className="text-xs text-muted-foreground">
                     {typeLabel(i)}
-                    {i.remoteId ? <> · <span className={mono}>{i.remoteId}</span></> : null}
+                    {i.remoteId ? (
+                      <>
+                        {" "}
+                        · <span className={mono}>{i.remoteId}</span>
+                      </>
+                    ) : null}
                   </span>
                 </div>
               </div>
@@ -97,17 +127,28 @@ export function LibraryTable({ items, active, onOpen, onTag }: Props) {
             <TableCell onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-1">
                 {i.tags.slice(0, 1).map((t) => (
-                  <TagBadge key={t} tag={t} active={active.includes(t)} onClick={() => onTag(t)} />
+                  <TagBadge
+                    key={t}
+                    tag={t}
+                    active={active.includes(t)}
+                    onClick={() => onTag(t)}
+                  />
                 ))}
                 {i.tags.length > 1 ? (
-                  <span className="shrink-0 text-xs text-muted-foreground">+{i.tags.length - 1}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    +{i.tags.length - 1}
+                  </span>
                 ) : null}
               </div>
             </TableCell>
             <TableCell>
               <SyncCell item={i} />
             </TableCell>
-            <TableCell>{i.usedBy.length || <span className="text-muted-foreground">—</span>}</TableCell>
+            <TableCell>
+              {i.usedBy.length || (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -140,15 +181,26 @@ export function LibraryGallery({ items, active, onOpen, onTag }: Props) {
           <div className="flex flex-col px-1">
             <span className="truncate font-medium">{i.title}</span>
             <span className="text-xs text-muted-foreground">
-              {typeLabel(i)} · {i.assets.length} {i.assets.length === 1 ? "file" : "files"}
+              {typeLabel(i)} · {i.assets.length}{" "}
+              {i.assets.length === 1 ? "file" : "files"}
             </span>
           </div>
-          <div className="flex flex-wrap gap-1 px-1" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex flex-wrap gap-1 px-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             {i.tags.slice(0, 3).map((t) => (
-              <TagBadge key={t} tag={t} active={active.includes(t)} onClick={() => onTag(t)} />
+              <TagBadge
+                key={t}
+                tag={t}
+                active={active.includes(t)}
+                onClick={() => onTag(t)}
+              />
             ))}
             {i.tags.length > 3 ? (
-              <span className="self-center text-xs text-muted-foreground">+{i.tags.length - 3}</span>
+              <span className="self-center text-xs text-muted-foreground">
+                +{i.tags.length - 3}
+              </span>
             ) : null}
           </div>
           <div className="px-1 text-xs">

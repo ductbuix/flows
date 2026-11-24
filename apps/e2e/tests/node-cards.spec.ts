@@ -14,13 +14,15 @@ for (const theme of ["light", "dark"] as const) {
     // Every kind shows its settings on the card.
     const agent = page.getByTestId("node-plan")
     await expect(agent.getByTestId("node-cli")).toHaveText("claude")
-    await expect(agent.getByTestId("agent-task")).toHaveValue("Plan the work.\n")
-    await expect(page.getByTestId("node-rules").getByTestId("prompt-text")).toHaveValue(
-      "Be brief.\n"
+    await expect(agent.getByTestId("agent-task")).toHaveValue(
+      "Plan the work.\n"
     )
-    await expect(page.getByTestId("node-build").getByTestId("command-run")).toHaveValue(
-      "echo build"
-    )
+    await expect(
+      page.getByTestId("node-rules").getByTestId("prompt-text")
+    ).toHaveValue("Be brief.\n")
+    await expect(
+      page.getByTestId("node-build").getByTestId("command-run")
+    ).toHaveValue("echo build")
     await expect(page.getByTestId("trigger-type")).toHaveText("Manual")
     await expect(page.getByTestId("output-target")).toHaveText("Folder")
     // Steps are w-72 (288px), inputs and flow w-60 (240px) at zoom 1.
@@ -57,10 +59,14 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("node-save")).toBeDisabled()
 
     const file = (await (
-      await page.request.get("/api/workflows/node-cards/files/nodes/plan/prompt.md")
+      await page.request.get(
+        "/api/workflows/node-cards/files/nodes/plan/prompt.md"
+      )
     ).json()) as { content: string }
     expect(file.content).toBe("Write the release notes.")
-    const wf = (await (await page.request.get("/api/workflows/node-cards")).json()) as {
+    const wf = (await (
+      await page.request.get("/api/workflows/node-cards")
+    ).json()) as {
       yaml: string
     }
     expect(wf.yaml).toContain("cli: cursor")

@@ -26,7 +26,8 @@ export function topoTaskIds(state: RunState): string[] {
 export function toTaskViews(state: RunState): TaskView[] {
   return topoTaskIds(state).map((id) => {
     const taskState = state.tasks[id]
-    const node = state.graph.nodes.find((n) => n.id === id) as RetrySpec | undefined
+    const node = state.graph.nodes.find((n) => n.id === id) as
+      RetrySpec | undefined
     const attempts = (taskState?.attempts ?? []).map((a, index) => ({
       attempt: a.attempt,
       pid: a.pid,

@@ -46,8 +46,13 @@ export function cardPath(cardId: string): string {
   return `docket/cards/${cardId}/card.md`
 }
 
+/** Store-relative path; leading `/` from Node adapters is optional (DES-040). */
+export function storeRelPath(path: string): string {
+  return path.replace(/\\/g, "/").replace(/^\//, "")
+}
+
 export function cardIdFromPath(path: string): string | null {
-  return CARD_PATH_RE.exec(path.replace(/\\/g, "/"))?.[1] ?? null
+  return CARD_PATH_RE.exec(storeRelPath(path))?.[1] ?? null
 }
 
 export function createDocketStore(deps: DocketStoreDeps) {

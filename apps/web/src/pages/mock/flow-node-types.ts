@@ -12,4 +12,3 @@ export const nodeTypes = {
 
 export const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 export const portOf = (h?: string | null) => (h === "image" ? "image" : "text")
-

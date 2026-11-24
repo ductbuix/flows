@@ -72,7 +72,9 @@ export function AnswerEditDialog({ row, others, onSave, onClose }: Props) {
               data-testid="answer-edit-name"
               aria-invalid={problem ? true : undefined}
               value={draft.name}
-              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, name: e.target.value }))
+              }
             />
             {problem ? <FieldError>{problem}</FieldError> : null}
           </Field>

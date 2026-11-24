@@ -22,7 +22,12 @@ const workflow = workflowSchema.parse({
 describe("canvasEdges", () => {
   it("draws only the loop edge as a loop and keeps its branch", () => {
     const edges = canvasEdges(workflow)
-    expect(edges.map((e) => e.type)).toEqual([undefined, undefined, "loop", undefined])
+    expect(edges.map((e) => e.type)).toEqual([
+      undefined,
+      undefined,
+      "loop",
+      undefined,
+    ])
     expect(edges[2]!.data).toEqual({ branch: "no" })
     expect(edges[3]!.label).toBe("Yes")
   })

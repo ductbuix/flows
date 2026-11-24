@@ -21,7 +21,9 @@ export function summarizeRun(state: RunState): RunSummary | null {
       needsYou.push({
         taskId: spec.id,
         ...(question !== undefined ? { question } : {}),
-        ...(spec.kind === "output" && spec.target === "publish" && spec.connection
+        ...(spec.kind === "output" &&
+        spec.target === "publish" &&
+        spec.connection
           ? { connectionId: spec.connection }
           : {}),
       })

@@ -35,8 +35,7 @@ function decideStart(
   input: Extract<DecideInput, { kind: "start" }>
 ): DecideOutput {
   const trigger =
-    input.trigger ??
-    input.graph.nodes.find((n) => n.kind === "trigger")?.id
+    input.trigger ?? input.graph.nodes.find((n) => n.kind === "trigger")?.id
   const started: EngineEvent = {
     type: "run_started",
     runId: input.runId,
@@ -48,9 +47,7 @@ function decideStart(
     ...(input.only ? { only: input.only } : {}),
     ...(input.from ? { from: input.from } : {}),
     ...(input.queued ? { queued: true } : {}),
-    ...(input.workItemId !== undefined
-      ? { workItemId: input.workItemId }
-      : {}),
+    ...(input.workItemId !== undefined ? { workItemId: input.workItemId } : {}),
   }
   return { events: [started, ...(input.seed ?? [])], effects: [] }
 }

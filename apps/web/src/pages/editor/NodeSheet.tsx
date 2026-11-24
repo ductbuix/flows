@@ -79,7 +79,10 @@ export function NodeSheet({
   const number = (key: "timeout" | "retry", raw: string) => {
     const n = parsePositiveInt(raw)
     if (n === null) return
-    onSetting(key, n === undefined ? undefined : key === "retry" ? { max: n } : n)
+    onSetting(
+      key,
+      n === undefined ? undefined : key === "retry" ? { max: n } : n
+    )
   }
 
   return (
@@ -106,14 +109,19 @@ export function NodeSheet({
                 placeholder={node.id}
                 value={node.name ?? ""}
                 onChange={(e) =>
-                  onSetting("name", e.target.value.trim() ? e.target.value : undefined)
+                  onSetting(
+                    "name",
+                    e.target.value.trim() ? e.target.value : undefined
+                  )
                 }
                 onBlur={onEditEnd}
               />
             </Field>
             {keys.has("timeout") ? (
               <Field>
-                <FieldLabel htmlFor="node-timeout">Timeout (seconds)</FieldLabel>
+                <FieldLabel htmlFor="node-timeout">
+                  Timeout (seconds)
+                </FieldLabel>
                 <Input
                   id="node-timeout"
                   data-testid="node-timeout"
@@ -125,7 +133,9 @@ export function NodeSheet({
                   onChange={(e) => number("timeout", e.target.value)}
                   onBlur={onEditEnd}
                 />
-                <FieldDescription>Per attempt. Empty uses the default.</FieldDescription>
+                <FieldDescription>
+                  Per attempt. Empty uses the default.
+                </FieldDescription>
               </Field>
             ) : null}
             {keys.has("retry") ? (
@@ -165,7 +175,8 @@ export function NodeSheet({
                   </SelectContent>
                 </Select>
                 <FieldDescription>
-                  Propose gives wired steps a work copy; an Output can publish it.
+                  Propose gives wired steps a work copy; an Output can publish
+                  it.
                 </FieldDescription>
               </Field>
             ) : null}
@@ -175,12 +186,15 @@ export function NodeSheet({
                 <Select
                   value={loose.target ?? "folder"}
                   onValueChange={(v) => {
-                    if (v !== "folder" && v !== "publish" && v !== "notify") return
+                    if (v !== "folder" && v !== "publish" && v !== "notify")
+                      return
                     onSetting("target", v)
                     if (v !== "notify") onSetting("title", undefined)
                     onSetting(
                       "connection",
-                      v === "publish" ? (proposeOptions[0] ?? undefined) : undefined
+                      v === "publish"
+                        ? (proposeOptions[0] ?? undefined)
+                        : undefined
                     )
                     onEditEnd()
                   }}
@@ -206,12 +220,16 @@ export function NodeSheet({
                   value={loose.title ?? ""}
                   maxLength={120}
                   onChange={(e) =>
-                    onSetting("title", e.target.value.trim() ? e.target.value : undefined)
+                    onSetting(
+                      "title",
+                      e.target.value.trim() ? e.target.value : undefined
+                    )
                   }
                   onBlur={onEditEnd}
                 />
                 <FieldDescription>
-                  Posts this title and the input text to the bell in the sidebar.
+                  Posts this title and the input text to the bell in the
+                  sidebar.
                 </FieldDescription>
               </Field>
             ) : null}

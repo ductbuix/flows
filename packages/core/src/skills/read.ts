@@ -70,6 +70,7 @@ function toWireSummary(entry: SkillSummary): WireSkillSummary {
     description: entry.description,
     scope: entry.scope,
     dirs: entry.dirs,
+    ...(entry.from !== undefined ? { from: entry.from } : {}),
     problem: entry.problem,
   }
 }

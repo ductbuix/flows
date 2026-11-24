@@ -109,7 +109,10 @@ export function RunsPage() {
             </Select>
           </div>
           {runs.length === 0 ? (
-            <Empty className="ring-1 ring-foreground/10" data-testid="runs-empty">
+            <Empty
+              className="ring-1 ring-foreground/10"
+              data-testid="runs-empty"
+            >
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Play />

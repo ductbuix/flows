@@ -45,77 +45,77 @@ export function TaskDetail({ run, task, tab, onTabChange }: Props) {
           <TaskActions run={run} task={task} />
         </div>
       </div>
-        <Tabs
-          value={tab}
-          onValueChange={(v) => {
-            if (
-              v === "output" ||
-              v === "terminal" ||
-              v === "attempts" ||
-              v === "environment"
-            ) {
-              onTabChange(v)
-            }
-          }}
-          className="flex h-full min-h-0 flex-col gap-2"
+      <Tabs
+        value={tab}
+        onValueChange={(v) => {
+          if (
+            v === "output" ||
+            v === "terminal" ||
+            v === "attempts" ||
+            v === "environment"
+          ) {
+            onTabChange(v)
+          }
+        }}
+        className="flex h-full min-h-0 flex-col gap-2"
+      >
+        <TabsList variant="line">
+          <TabsTrigger value="output" data-testid="task-tab-output">
+            Output
+          </TabsTrigger>
+          <TabsTrigger value="terminal" data-testid="task-tab-terminal">
+            Terminal
+          </TabsTrigger>
+          <TabsTrigger value="attempts" data-testid="task-tab-attempts">
+            Attempts
+          </TabsTrigger>
+          <TabsTrigger value="environment" data-testid="task-tab-environment">
+            Environment
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent
+          value="output"
+          className="flex min-h-0 flex-1 flex-col gap-4"
         >
-          <TabsList variant="line">
-            <TabsTrigger value="output" data-testid="task-tab-output">
-              Output
-            </TabsTrigger>
-            <TabsTrigger value="terminal" data-testid="task-tab-terminal">
-              Terminal
-            </TabsTrigger>
-            <TabsTrigger value="attempts" data-testid="task-tab-attempts">
-              Attempts
-            </TabsTrigger>
-            <TabsTrigger value="environment" data-testid="task-tab-environment">
-              Environment
-            </TabsTrigger>
-          </TabsList>
+          <TaskDetailAnswer step={step} />
+          <TaskDetailSummary
+            runId={run.id}
+            taskId={task.id}
+            attemptN={attemptN}
+          />
+          <TaskDetailOutput
+            runId={run.id}
+            taskId={task.id}
+            attemptN={attemptN}
+          />
+        </TabsContent>
 
-          <TabsContent
-            value="output"
-            className="flex min-h-0 flex-1 flex-col gap-4"
-          >
-            <TaskDetailAnswer step={step} />
-            <TaskDetailSummary
-              runId={run.id}
-              taskId={task.id}
-              attemptN={attemptN}
-            />
-            <TaskDetailOutput
-              runId={run.id}
-              taskId={task.id}
-              attemptN={attemptN}
-            />
-          </TabsContent>
+        <TabsContent
+          value="terminal"
+          className="flex min-h-0 flex-1 flex-col gap-2"
+        >
+          <TaskDetailTerminal
+            run={run}
+            task={task}
+            attempt={attempt}
+            attemptN={attemptN}
+          />
+        </TabsContent>
 
-          <TabsContent
-            value="terminal"
-            className="flex min-h-0 flex-1 flex-col gap-2"
-          >
-            <TaskDetailTerminal
-              run={run}
-              task={task}
-              attempt={attempt}
-              attemptN={attemptN}
-            />
-          </TabsContent>
+        <TabsContent value="attempts" className="min-h-0 overflow-auto">
+          <TaskDetailAttempts run={run} task={task} />
+        </TabsContent>
 
-          <TabsContent value="attempts" className="min-h-0 overflow-auto">
-            <TaskDetailAttempts run={run} task={task} />
-          </TabsContent>
-
-          <TabsContent value="environment" className="min-h-0 overflow-auto">
-            <TaskDetailEnvironment
-              run={run}
-              task={task}
-              attempt={attempt}
-              attemptN={attemptN}
-            />
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="environment" className="min-h-0 overflow-auto">
+          <TaskDetailEnvironment
+            run={run}
+            task={task}
+            attempt={attempt}
+            attemptN={attemptN}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

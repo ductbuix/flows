@@ -35,7 +35,10 @@ describe("node-add", () => {
 
   it("wires a new node ahead of the one it was dragged from", () => {
     const a = yamlAfterAddNode(base, "output")
-    const b = yamlAfterAddNode(a.yaml, "command", { id: a.id, handle: "target" })
+    const b = yamlAfterAddNode(a.yaml, "command", {
+      id: a.id,
+      handle: "target",
+    })
     expect(parseNodeWorkflowYaml(b.yaml).workflow?.edges).toEqual([
       { from: "command", to: "output" },
     ])

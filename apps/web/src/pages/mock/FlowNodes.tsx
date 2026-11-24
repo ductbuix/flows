@@ -23,7 +23,12 @@ function RunButton({ id }: { id: string }) {
 function Result({ text }: { text?: string }) {
   if (!text) return null
   return (
-    <div className={cn(FIELD, "nowheel max-h-28 overflow-auto text-xs text-muted-foreground")}>
+    <div
+      className={cn(
+        FIELD,
+        "nowheel max-h-28 overflow-auto text-xs text-muted-foreground"
+      )}
+    >
       {text}
     </div>
   )
@@ -47,7 +52,11 @@ export function LlmNode({ id, data, selected }: NodeProps<FlowNode>) {
         />
         <ModelRow data={data} onChange={(p) => update(id, p)} />
       </div>
-      <ConnectorCount id={id} ids={data.connectors ?? []} skills={data.skills ?? []} />
+      <ConnectorCount
+        id={id}
+        ids={data.connectors ?? []}
+        skills={data.skills ?? []}
+      />
       <Result text={data.result} />
       <RunButton id={id} />
       <PortHandle io="out" port="text" />

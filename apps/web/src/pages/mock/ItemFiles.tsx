@@ -22,24 +22,37 @@ export function ItemFiles({ item }: { item: LibItem }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <p className={`${mono} min-w-0 flex-1 truncate text-xs text-muted-foreground`}>
+        <p
+          className={`${mono} min-w-0 flex-1 truncate text-xs text-muted-foreground`}
+        >
           ~/.flowapp/{libraryPath(item)}
         </p>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="outline" data-testid="item-open-menu" />}>
+          <DropdownMenuTrigger
+            render={<Button variant="outline" data-testid="item-open-menu" />}
+          >
             Open in
             <ChevronDown />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setViewing(true)} data-testid="item-view-files">
+            <DropdownMenuItem
+              onClick={() => setViewing(true)}
+              data-testid="item-view-files"
+            >
               <Expand />
               Browse in app
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setNote("Opened in Finder (mock)")} data-testid="item-open-finder">
+            <DropdownMenuItem
+              onClick={() => setNote("Opened in Finder (mock)")}
+              data-testid="item-open-finder"
+            >
               <FolderOpen />
               Finder
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setNote("Opened in Cursor (mock)")} data-testid="item-open-cursor">
+            <DropdownMenuItem
+              onClick={() => setNote("Opened in Cursor (mock)")}
+              data-testid="item-open-cursor"
+            >
               <Code />
               Cursor
             </DropdownMenuItem>
@@ -65,7 +78,9 @@ export function ItemFiles({ item }: { item: LibItem }) {
           onSelect={() => setViewing(true)}
         />
       )}
-      {viewing ? <ItemFilesDialog item={item} open onOpenChange={setViewing} /> : null}
+      {viewing ? (
+        <ItemFilesDialog item={item} open onOpenChange={setViewing} />
+      ) : null}
     </div>
   )
 }

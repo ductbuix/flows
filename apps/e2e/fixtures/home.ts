@@ -572,5 +572,38 @@ export function createE2eHome(): string {
     join(noTrigger, "workflow.yaml"),
     nodeRunYaml("node-run-none", "echo built", false)
   )
+  // Docket board + sample card for BL-177 e2e.
+  const docket = join(home, "docket")
+  mkdirSync(join(docket, "cards", "fix-login"), { recursive: true })
+  writeFileSync(
+    join(docket, "board.yaml"),
+    [
+      "version: 1",
+      "columns:",
+      "  - { id: todo, label: Todo, tone: idle }",
+      "  - { id: doing, label: Doing, tone: working }",
+      "  - { id: review, label: Review, tone: attention }",
+      "  - { id: done, label: Done, tone: done, done: true }",
+      "face: []",
+      "",
+    ].join("\n")
+  )
+  writeFileSync(
+    join(docket, "cards", "fix-login", "card.md"),
+    [
+      "---",
+      "id: fix-login",
+      "title: Fix flaky login",
+      "status: doing",
+      "rank: m",
+      "created: 2026-11-20T09:12:00Z",
+      "updated: 2026-11-23T10:00:00Z",
+      "due: 2026-11-28",
+      "---",
+      "",
+      "Stabilize the login e2e.",
+      "",
+    ].join("\n")
+  )
   return home
 }

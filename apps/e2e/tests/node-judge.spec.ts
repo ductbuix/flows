@@ -18,7 +18,10 @@ for (const theme of ["light", "dark"] as const) {
     // Two labelled ports, and the edges say which branch they take.
     await expect(page.getByTestId("port-check-yes")).toBeAttached()
     await expect(page.getByTestId("port-check-no")).toBeAttached()
-    await expect(page.locator(".react-flow__edge-text")).toHaveText(["Yes", "No"])
+    await expect(page.locator(".react-flow__edge-text")).toHaveText([
+      "Yes",
+      "No",
+    ])
     await page.screenshot({ path: info.outputPath(`node-judge-${theme}.png`) })
 
     await page.getByTestId("canvas-run").click()
@@ -62,7 +65,9 @@ for (const theme of ["light", "dark"] as const) {
       { timeout: 20_000 }
     )
     await expect(page.getByTestId("step-verdict-check-1")).toHaveText("Yes")
-    await expect(page.getByTestId("step-state-rejected-1")).toHaveText("skipped")
+    await expect(page.getByTestId("step-state-rejected-1")).toHaveText(
+      "skipped"
+    )
     await page.screenshot({
       path: info.outputPath(`node-judge-view-${theme}.png`),
     })

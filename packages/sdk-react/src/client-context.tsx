@@ -24,3 +24,8 @@ export function useFlowsClient(): FlowsClient {
   }
   return client
 }
+
+/** Null when no provider (browser without FCP bootstrap). */
+export function useOptionalFlowsClient(): FlowsClient | null {
+  return useContext(FlowsClientContext)
+}

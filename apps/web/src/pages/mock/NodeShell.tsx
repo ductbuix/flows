@@ -7,7 +7,20 @@ import {
   useNodeConnections,
   useNodeId,
 } from "@xyflow/react"
-import { Bell, Bot, Copy, GitFork, HandHelping, Image, Plus, Settings2, Trash2, Type, Zap, FileText } from "lucide-react"
+import {
+  Bell,
+  Bot,
+  Copy,
+  GitFork,
+  HandHelping,
+  Image,
+  Plus,
+  Settings2,
+  Trash2,
+  Type,
+  Zap,
+  FileText,
+} from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { useFlow } from "./flow-context"
 import { StatusPill, type Tone } from "@/components/brand/StatusPill"
@@ -62,7 +75,13 @@ type PortProps = {
 }
 
 /** A typed connection point: T carries text, the picture icon an image. */
-export function PortHandle({ io, port = "text", id, top = "50%", gap = 16 }: PortProps) {
+export function PortHandle({
+  io,
+  port = "text",
+  id,
+  top = "50%",
+  gap = 16,
+}: PortProps) {
   const Icon = port === "text" ? Type : port === "image" ? Image : Plus
   const handleId = id ?? port
   const linked =
@@ -99,7 +118,13 @@ type ShellProps = {
 }
 
 /** Label above, rounded body below; ports sit outside the body. */
-export function NodeShell({ kind, selected, wide, state, children }: ShellProps) {
+export function NodeShell({
+  kind,
+  selected,
+  wide,
+  state,
+  children,
+}: ShellProps) {
   const Icon = KIND_ICON[kind]
   const nodeId = useNodeId()
   const { duplicate, remove, openSettings, readOnly } = useFlow()
@@ -115,15 +140,30 @@ export function NodeShell({ kind, selected, wide, state, children }: ShellProps)
       {nodeId && !readOnly ? (
         <NodeToolbar isVisible={selected} position={Position.Top} offset={8}>
           <div className="flex gap-1 rounded-2xl bg-card p-1 ring-1 ring-foreground/10">
-            <Button variant="ghost" size="icon" aria-label="Node settings" onClick={() => openSettings(nodeId)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Node settings"
+              onClick={() => openSettings(nodeId)}
+            >
               <Settings2 />
             </Button>
             {kind === "trigger" ? null : (
               <>
-                <Button variant="ghost" size="icon" aria-label="Duplicate node" onClick={() => duplicate(nodeId)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Duplicate node"
+                  onClick={() => duplicate(nodeId)}
+                >
                   <Copy />
                 </Button>
-                <Button variant="ghost" size="icon" aria-label="Delete node" onClick={() => remove(nodeId)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Delete node"
+                  onClick={() => remove(nodeId)}
+                >
                   <Trash2 />
                 </Button>
               </>

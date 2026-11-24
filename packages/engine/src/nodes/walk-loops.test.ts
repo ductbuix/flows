@@ -76,7 +76,13 @@ async function run(
     nodes: [{ id: "t", kind: "trigger", type: "manual" }, ...nodes],
     edges,
   })
-  const state = await runNodes({ log, home, runId: "r1", graph, inputText: "hi" })
+  const state = await runNodes({
+    log,
+    home,
+    runId: "r1",
+    graph,
+    inputText: "hi",
+  })
   const events: EngineEvent[] = log.listByRun("r1").map((s) => s.event)
   log.close()
   return { home, state, events }
@@ -118,7 +124,12 @@ describe("loops", () => {
         { from: "j", to: "ok", branch: "yes" },
       ]
     )
-    expect(readFileSync(join(workflowDir(home, "wf"), "counts", "asked-j"), "utf8").trim()).toBe("2")
+    expect(
+      readFileSync(
+        join(workflowDir(home, "wf"), "counts", "asked-j"),
+        "utf8"
+      ).trim()
+    ).toBe("2")
   })
 
   it("stops with loop_limit when the Judge never says Yes", async () => {
@@ -160,7 +171,11 @@ describe("loops", () => {
     )
     expect(state.steps.a).toHaveLength(2)
     expect(state.steps.b).toHaveLength(3)
-    expect(state.steps.inner!.map((s) => s.branch)).toEqual(["no", "yes", "yes"])
+    expect(state.steps.inner!.map((s) => s.branch)).toEqual([
+      "no",
+      "yes",
+      "yes",
+    ])
     expect(state.steps.outer!.map((s) => s.branch)).toEqual(["no", "yes"])
     expect(passes(state, "end")).toEqual(["1:done"])
     expect(events.at(-1)?.type).toBe("run_succeeded")
@@ -221,7 +236,14 @@ describe("findLoopEdges", () => {
   const e = (from: string, to: string) => ({ from, to })
 
   it("marks self edges and the edges into each cycle's entry", () => {
-    const edges = [e("t", "a"), e("a", "b"), e("b", "c"), e("c", "b"), e("c", "a"), e("c", "c")]
+    const edges = [
+      e("t", "a"),
+      e("a", "b"),
+      e("b", "c"),
+      e("c", "b"),
+      e("c", "a"),
+      e("c", "c"),
+    ]
     expect([...findLoopEdges(nodes, edges)].sort()).toEqual([3, 4, 5])
   })
 
@@ -229,12 +251,18 @@ describe("findLoopEdges", () => {
     // a and b form a cycle that t enters at both; a comes first in the file.
     const edges = [e("t", "b"), e("t", "a"), e("b", "a"), e("a", "b")]
     expect([...findLoopEdges(nodes, edges)]).toEqual([2])
-    const swapped = [{ id: "t", kind: "command" }, { id: "b", kind: "command" }, { id: "a", kind: "command" }]
+    const swapped = [
+      { id: "t", kind: "command" },
+      { id: "b", kind: "command" },
+      { id: "a", kind: "command" },
+    ]
     expect([...findLoopEdges(swapped, edges)]).toEqual([3])
   })
 
   it("has none in a forward graph", () => {
-    expect(findLoopEdges(nodes, [e("t", "a"), e("a", "b"), e("t", "b")]).size).toBe(0)
+    expect(
+      findLoopEdges(nodes, [e("t", "a"), e("a", "b"), e("t", "b")]).size
+    ).toBe(0)
   })
 })
 

@@ -2,7 +2,12 @@ import { LOCAL_ITEMS } from "./library-local"
 import type { LibItem, LibVersion } from "./library-types"
 export * from "./library-types"
 
-const v = (n: number, at: string, note: string, size: string): LibVersion => ({ n, at, note, size })
+const v = (n: number, at: string, note: string, size: string): LibVersion => ({
+  n,
+  at,
+  note,
+  size,
+})
 
 const REMOTE_ITEMS: LibItem[] = [
   {
@@ -75,14 +80,25 @@ const REMOTE_ITEMS: LibItem[] = [
     source: "confluence",
     remoteId: "48213",
     remoteUrl: "https://confluence.example/pages/48213",
-    tags: ["project:auth", "space:ENG", "repo:auth-service", "team:platform", "type:architecture"],
+    tags: [
+      "project:auth",
+      "space:ENG",
+      "repo:auth-service",
+      "team:platform",
+      "type:architecture",
+    ],
     assets: [
       { name: "page.md", kind: "md", size: "6 KB" },
       { name: "attachments/login-sequence.png", kind: "image", size: "184 KB" },
       { name: "export.html", kind: "html", size: "42 KB" },
     ],
     versions: [
-      v(5, "2026-11-22 16:40", "Section 3 rewritten, diagram replaced", "232 KB"),
+      v(
+        5,
+        "2026-11-22 16:40",
+        "Section 3 rewritten, diagram replaced",
+        "232 KB"
+      ),
       v(4, "2026-11-18 09:15", "Added token lifetime table", "219 KB"),
       v(3, "2026-11-11 13:00", "Typo fixes", "210 KB"),
       v(2, "2026-11-04 10:30", "New diagram", "210 KB"),
@@ -114,7 +130,13 @@ const REMOTE_ITEMS: LibItem[] = [
     source: "rally",
     remoteId: "US1234",
     remoteUrl: "https://rally.example/slm/US1234",
-    tags: ["rally:story", "epic:EP7", "project:auth", "iteration:sprint-42", "repo:auth-service"],
+    tags: [
+      "rally:story",
+      "epic:EP7",
+      "project:auth",
+      "iteration:sprint-42",
+      "repo:auth-service",
+    ],
     assets: [
       { name: "ticket.json", kind: "json", size: "4 KB" },
       { name: "acceptance.md", kind: "md", size: "1 KB" },
@@ -154,7 +176,12 @@ const REMOTE_ITEMS: LibItem[] = [
     source: "rally",
     remoteId: "F12",
     remoteUrl: "https://rally.example/slm/F12",
-    tags: ["rally:feature", "project:auth", "team:platform", "iteration:sprint-43"],
+    tags: [
+      "rally:feature",
+      "project:auth",
+      "team:platform",
+      "iteration:sprint-43",
+    ],
     assets: [{ name: "feature.json", kind: "json", size: "7 KB" }],
     versions: [v(1, "2026-11-22 12:00", "First sync", "7 KB")],
     current: 1,

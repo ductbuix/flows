@@ -14,12 +14,18 @@ import {
   normSkillPath,
 } from "./paths.ts"
 
+export type SkillFrom = {
+  sourceId: string
+  version: number
+}
+
 export type SkillSummary = {
   slug: string
   name: string
   description: string
   scope: SkillScope
   dirs: SkillDir[]
+  from?: SkillFrom
   problem?: string
 }
 
@@ -41,6 +47,7 @@ type SkillCopy = {
   name: string
   description: string
   body: string
+  from?: SkillFrom
   problem?: string
 }
 
@@ -143,6 +150,7 @@ export class SkillCatalog {
       name: parsed.name,
       description: parsed.description,
       body: parsed.body,
+      from: parsed.from,
       problem: parsed.problem,
     }
   }
@@ -171,6 +179,7 @@ function mergeCopies(
     scope,
     dirs,
     body: preferred.body,
+    from: preferred.from,
     problem,
   }
 }
@@ -182,6 +191,7 @@ function toSummary(entry: SkillDetail): SkillSummary {
     description: entry.description,
     scope: entry.scope,
     dirs: entry.dirs,
+    from: entry.from,
     problem: entry.problem,
   }
 }

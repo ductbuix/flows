@@ -35,7 +35,9 @@ for (const theme of ["light", "dark"] as const) {
     await page.getByTestId("asset-picker-open").click()
     await expect(page.getByTestId("asset-group-asset-demo")).toBeVisible()
     await page.getByTestId("asset-picker-search").fill("alpha")
-    await page.screenshot({ path: info.outputPath(`node-asset-picker-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-asset-picker-${theme}.png`),
+    })
     await page.getByTestId("asset-use-asset-demo-repo").click()
     await page.getByTestId("asset-picker-open").click()
     await page.getByTestId("asset-picker-search").fill("notes")
@@ -49,9 +51,13 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("asset-fresh-0")).toBeVisible()
     await page.getByTestId("asset-remove-1").click()
     await expect(page.getByTestId("asset-resource-1")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-asset-sheet-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-asset-sheet-${theme}.png`),
+    })
     await page.keyboard.press("Escape")
-    await expect(page.getByTestId("asset-chips")).toContainText("asset-demo/alpha")
+    await expect(page.getByTestId("asset-chips")).toContainText(
+      "asset-demo/alpha"
+    )
     await page.screenshot({ path: info.outputPath(`node-asset-${theme}.png`) })
 
     await page.getByTestId("node-save").click()
@@ -65,7 +71,9 @@ for (const theme of ["light", "dark"] as const) {
       timeout: 20_000,
     })
     await expect(page.getByTestId("node-result-read")).toContainText("alpha")
-    await page.screenshot({ path: info.outputPath(`node-asset-run-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-asset-run-${theme}.png`),
+    })
   })
 }
 

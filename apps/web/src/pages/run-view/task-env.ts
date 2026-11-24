@@ -51,8 +51,7 @@ export function taskEnvVars(
     },
     {
       name: "PREV_ATTEMPT",
-      value:
-        attempt > 1 ? `${step}/pass-<n>/attempt-${attempt - 1}` : "",
+      value: attempt > 1 ? `${step}/pass-<n>/attempt-${attempt - 1}` : "",
       badge: "path",
     },
   ]

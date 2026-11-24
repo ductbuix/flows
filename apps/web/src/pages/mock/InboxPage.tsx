@@ -21,8 +21,8 @@ function Item({ run }: { run: MockRun }) {
   const workflow = useWorkflows().find((w) => w.id === run.workflowId)
   const card = CARDS.find((c) => c.id === run.cardId)
   const question =
-    getFlow(run.workflowId).nodes.find((n) => n.type === "approval")?.data.question ||
-    "Continue?"
+    getFlow(run.workflowId).nodes.find((n) => n.type === "approval")?.data
+      .question || "Continue?"
   const decided = !!run.decision
   const [note, setNote] = useState("")
   return (
@@ -63,16 +63,29 @@ function Item({ run }: { run: MockRun }) {
       )}
       <div className="flex items-center gap-2">
         {decided ? (
-          <Badge variant={run.decision === "approved" ? "secondary" : "destructive"}>
+          <Badge
+            variant={run.decision === "approved" ? "secondary" : "destructive"}
+          >
             {run.decision === "approved" ? "Approved" : "Rejected"}
           </Badge>
         ) : (
           <>
-            <Button onClick={() => decideRun(run.id, "approved", note.trim() || undefined)} data-testid={`inbox-approve-${run.id}`}>
+            <Button
+              onClick={() =>
+                decideRun(run.id, "approved", note.trim() || undefined)
+              }
+              data-testid={`inbox-approve-${run.id}`}
+            >
               <Check />
               Approve
             </Button>
-            <Button variant="outline" onClick={() => decideRun(run.id, "rejected", note.trim() || undefined)} data-testid={`inbox-reject-${run.id}`}>
+            <Button
+              variant="outline"
+              onClick={() =>
+                decideRun(run.id, "rejected", note.trim() || undefined)
+              }
+              data-testid={`inbox-reject-${run.id}`}
+            >
               <X />
               Reject
             </Button>
@@ -82,7 +95,9 @@ function Item({ run }: { run: MockRun }) {
           variant="ghost"
           className="ml-auto"
           nativeButton={false}
-          render={<Link to={`/mock/workflows/${run.workflowId}?run=${run.id}`} />}
+          render={
+            <Link to={`/mock/workflows/${run.workflowId}?run=${run.id}`} />
+          }
         >
           Open run
         </Button>
@@ -115,7 +130,9 @@ export function InboxPage() {
               <Inbox />
             </EmptyMedia>
             <EmptyTitle>Nothing needs you</EmptyTitle>
-            <EmptyDescription>Approvals from runs show up here.</EmptyDescription>
+            <EmptyDescription>
+              Approvals from runs show up here.
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (

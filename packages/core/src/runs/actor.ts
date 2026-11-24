@@ -1,0 +1,160 @@
+import type { EngineEvent } from "@workspace/contracts"
+import type { EventStore } from "../ports/event-store.ts"
+import { decide } from "./decide.ts"
+import { fold } from "./fold.ts"
+import { effectAttemptKey, pendingEffects } from "./pending-effects.ts"
+import type { DecideInput, EffectResult, RunEffect, RunState } from "./model.ts"
+
+export type RunActorDeps = {
+  events: EventStore
+  /** Execute a side effect; results return as `effect_result` inputs. */
+  runEffect: (effect: RunEffect, state: RunState) => Promise<EffectResult>
+}
+
+type MailboxEntry = {
+  input: DecideInput
+  resolve: () => void
+  reject: (err: unknown) => void
+}
+
+/**
+ * One mailbox per live run: decide, append, then run effects (DES-041).
+ * No two writers of one run.
+ */
+export class RunActor {
+  private state: RunState | null = null
+  private readonly mailbox: MailboxEntry[] = []
+  private draining = false
+  private readonly issued = new Set<string>()
+
+  constructor(
+    readonly runId: string,
+    private readonly deps: RunActorDeps
+  ) {}
+
+  getState(): RunState | null {
+    return this.state
+  }
+
+  /** Queue an input; resolves when that input has been handled. */
+  push(input: DecideInput): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.mailbox.push({ input, resolve, reject })
+      void this.drain()
+    })
+  }
+
+  /**
+   * Decide + append only (no effects). Simulates a crash between append
+   * and effect for recovery tests.
+   */
+  decideAndAppend(input: DecideInput): RunEffect[] {
+    const out = decide(this.state, input)
+    if (out.events.length > 0) this.append(out.events)
+    return out.effects
+  }
+
+  /**
+   * Replay the event log and re-issue effects whose result is missing.
+   * Idempotent by step attempt id.
+   */
+  async recover(): Promise<void> {
+    const stored = this.deps.events.read(this.runId)
+    this.state = null
+    this.issued.clear()
+    for (const s of stored) {
+      this.state = fold(this.state, s.event)
+      if (s.event.type === "attempt_started" && s.event.nodeId) {
+        this.issued.add(
+          `${s.event.nodeId}:${s.event.pass ?? 1}:${s.event.attempt}`
+        )
+      }
+    }
+    if (!this.state) return
+    for (const fx of pendingEffects(this.state)) {
+      await this.runOneEffect(fx)
+    }
+  }
+
+  private async drain(): Promise<void> {
+    if (this.draining) return
+    this.draining = true
+    try {
+      while (this.mailbox.length > 0) {
+        const entry = this.mailbox.shift()!
+        try {
+          await this.handle(entry.input)
+          entry.resolve()
+        } catch (err) {
+          entry.reject(err)
+        }
+      }
+    } finally {
+      this.draining = false
+      if (this.mailbox.length > 0) void this.drain()
+    }
+  }
+
+  private async handle(input: DecideInput): Promise<void> {
+    const out = decide(this.state, input)
+    if (out.events.length > 0) this.append(out.events)
+    for (const fx of out.effects) {
+      await this.runOneEffect(fx)
+    }
+    if (input.kind === "start" && this.state?.status === "running") {
+      await this.handle({ kind: "wake", at: input.at })
+    }
+  }
+
+  private append(events: readonly EngineEvent[]): void {
+    const expectSeq = this.state?.seq ?? 0
+    const result = this.deps.events.append(this.runId, events, { expectSeq })
+    if (!result.ok) {
+      throw new Error(
+        `event append conflict: expected ${expectSeq}, got ${result.lastSeq}`
+      )
+    }
+    for (const s of result.appended) {
+      this.state = fold(this.state, s.event)
+    }
+  }
+
+  private async runOneEffect(fx: RunEffect): Promise<void> {
+    if (!this.state) return
+    const key = effectAttemptKey(fx)
+    const at = new Date().toISOString()
+
+    if (fx.kind === "launch_step" && !this.issued.has(key)) {
+      this.append([
+        {
+          type: "attempt_started",
+          runId: this.runId,
+          at,
+          taskId: fx.nodeId,
+          nodeId: fx.nodeId,
+          pass: fx.pass,
+          attempt: fx.attempt,
+        },
+      ])
+    }
+    this.issued.add(key)
+
+    // post_inbox parks until an `answer` input; do not feed effect_result.
+    if (fx.kind === "post_inbox") {
+      await this.deps.runEffect(fx, this.state!)
+      return
+    }
+
+    const result = await this.deps.runEffect(fx, this.state!)
+    await this.handle({
+      kind: "effect_result",
+      at,
+      nodeId: fx.nodeId,
+      pass: fx.pass,
+      result,
+    })
+    if (this.state?.status === "running") {
+      await this.handle({ kind: "wake", at })
+    }
+  }
+}

@@ -1,5 +1,13 @@
 import { useState } from "react"
-import { ExternalLink, Link2, MoreHorizontal, RefreshCw, Trash2, Unlink, Upload } from "lucide-react"
+import {
+  ExternalLink,
+  Link2,
+  MoreHorizontal,
+  RefreshCw,
+  Trash2,
+  Unlink,
+  Upload,
+} from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import {
   DropdownMenu,
@@ -8,16 +16,32 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import { Link } from "react-router"
-import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { mono } from "@/components/data/mono"
 import type { LibItem } from "./library-data"
 import { connectorFor, useConnectors } from "./connectors-store"
-import { fetchItem, linkRemote, pushItem, unlinkRemote, useProviders } from "./library-store"
+import {
+  fetchItem,
+  linkRemote,
+  pushItem,
+  unlinkRemote,
+  useProviders,
+} from "./library-store"
 import { DetectCard, LinkInput, useLinkField } from "./ProviderDetect"
 
 /** One line of status plus the few actions that matter: fetch, and a menu for the rest. */
-export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => void }) {
+export function RemoteBar({
+  item,
+  onDelete,
+}: {
+  item: LibItem
+  onDelete: () => void
+}) {
   const [busy, setBusy] = useState(false)
   const link = useLinkField()
   const provider = useProviders().find((p) => p.id === item.source)
@@ -36,18 +60,35 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
 
   const menu = (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="More actions" data-testid="library-menu" />}>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="More actions"
+            data-testid="library-menu"
+          />
+        }
+      >
         <MoreHorizontal />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {linked && item.remoteUrl ? (
-          <DropdownMenuItem render={<a href={item.remoteUrl} target="_blank" rel="noreferrer" />}>
+          <DropdownMenuItem
+            render={
+              <a href={item.remoteUrl} target="_blank" rel="noreferrer" />
+            }
+          >
             <ExternalLink />
             Open remote
           </DropdownMenuItem>
         ) : null}
         {linked && writable ? (
-          <DropdownMenuItem disabled={busy} onClick={() => run(pushItem)} data-testid="library-push">
+          <DropdownMenuItem
+            disabled={busy}
+            onClick={() => run(pushItem)}
+            data-testid="library-push"
+          >
             <Upload />
             Push local changes
           </DropdownMenuItem>
@@ -58,7 +99,11 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
             Unlink from remote
           </DropdownMenuItem>
         ) : null}
-        <DropdownMenuItem variant="destructive" onClick={onDelete} data-testid="library-remove">
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={onDelete}
+          data-testid="library-remove"
+        >
           <Trash2 />
           Remove from Library
         </DropdownMenuItem>
@@ -69,15 +114,25 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
   if (!linked)
     return (
       <div className="flex items-center gap-2" data-testid="library-remote">
-        <p className="min-w-0 flex-1 text-sm text-muted-foreground">Only on this machine</p>
+        <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+          Only on this machine
+        </p>
         <Popover>
-          <PopoverTrigger render={<Button variant="outline" data-testid="library-link-open" />}>
+          <PopoverTrigger
+            render={
+              <Button variant="outline" data-testid="library-link-open" />
+            }
+          >
             <Link2 />
             Link to remote
           </PopoverTrigger>
           <PopoverContent align="end" className="flex w-96 flex-col gap-3">
             <LinkInput url={link.url} onUrl={link.setUrl} />
-            <DetectCard url={link.url} match={link.match} existing={link.existing} />
+            <DetectCard
+              url={link.url}
+              match={link.match}
+              existing={link.existing}
+            />
             <Button
               disabled={!link.match || !!link.existing}
               data-testid="library-link-remote"
@@ -100,9 +155,14 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
       <div className="flex items-center gap-2">
         <p className="min-w-0 flex-1 truncate text-sm">
           <Link2 className="mr-1.5 inline text-success" />
-          Linked to {provider?.label ?? item.source} <span className={mono}>{item.remoteId}</span>
+          Linked to {provider?.label ?? item.source}{" "}
+          <span className={mono}>{item.remoteId}</span>
         </p>
-        <Button disabled={busy || !provider || blocked} onClick={() => run(fetchItem)} data-testid="library-fetch">
+        <Button
+          disabled={busy || !provider || blocked}
+          onClick={() => run(fetchItem)}
+          data-testid="library-fetch"
+        >
           {busy ? <Spinner /> : <RefreshCw />}
           {busy ? "Working…" : "Fetch"}
         </Button>
@@ -113,8 +173,13 @@ export function RemoteBar({ item, onDelete }: { item: LibItem; onDelete: () => v
           "Its provider was removed. Add it back under Providers to fetch."
         ) : blocked && conn ? (
           <>
-            {conn.name} sign-in {conn.status === "expired" ? "expired" : "is off"}.{" "}
-            <Link to={`/mock/connectors?connector=${conn.id}`} className="underline" data-testid="library-sign-in">
+            {conn.name} sign-in{" "}
+            {conn.status === "expired" ? "expired" : "is off"}.{" "}
+            <Link
+              to={`/mock/connectors?connector=${conn.id}`}
+              className="underline"
+              data-testid="library-sign-in"
+            >
               Sign in to fetch
             </Link>
           </>

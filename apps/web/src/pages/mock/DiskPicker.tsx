@@ -6,36 +6,85 @@ import { mono } from "@/components/data/mono"
 import type { LibAsset, LibKind } from "./library-types"
 import { FilesTree, folderPaths } from "./FilesTree"
 
-export type DiskPick = { label: string; folder: boolean; assets: LibAsset[]; kind: LibKind }
+export type DiskPick = {
+  label: string
+  folder: boolean
+  assets: LibAsset[]
+  kind: LibKind
+}
 
 const size = (b: number) =>
-  b > 1_000_000 ? `${(b / 1_000_000).toFixed(1)} MB` : b > 1000 ? `${Math.round(b / 1000)} KB` : `${b} B`
+  b > 1_000_000
+    ? `${(b / 1_000_000).toFixed(1)} MB`
+    : b > 1000
+      ? `${Math.round(b / 1000)} KB`
+      : `${b} B`
 
 const assetKind = (n: string): LibAsset["kind"] =>
-  /\.(png|jpe?g|gif|webp|svg)$/i.test(n) ? "image" : /\.html?$/i.test(n) ? "html" : /\.md$/i.test(n) ? "md" : /\.json$/i.test(n) ? "json" : "file"
+  /\.(png|jpe?g|gif|webp|svg)$/i.test(n)
+    ? "image"
+    : /\.html?$/i.test(n)
+      ? "html"
+      : /\.md$/i.test(n)
+        ? "md"
+        : /\.json$/i.test(n)
+          ? "json"
+          : "file"
 
 /** Opens the system file dialog (Finder on macOS) for a file or a whole folder. */
 export function pickFrom(files: File[], folder: boolean): DiskPick | null {
   if (files.length === 0) return null
   const rel = (f: File) => (folder ? f.webkitRelativePath : f.name)
-  const assets = files.map((f) => ({ name: rel(f), kind: assetKind(f.name), size: size(f.size) }))
+  const assets = files.map((f) => ({
+    name: rel(f),
+    kind: assetKind(f.name),
+    size: size(f.size),
+  }))
   const first = files[0]!
-  const kind: LibKind = !folder && assetKind(first.name) === "image" ? "image" : !folder && assetKind(first.name) === "html" ? "html" : "other"
-  return { label: folder ? (first.webkitRelativePath.split("/")[0] ?? first.name) : first.name, folder, assets, kind }
+  const kind: LibKind =
+    !folder && assetKind(first.name) === "image"
+      ? "image"
+      : !folder && assetKind(first.name) === "html"
+        ? "html"
+        : "other"
+  return {
+    label: folder
+      ? (first.webkitRelativePath.split("/")[0] ?? first.name)
+      : first.name,
+    folder,
+    assets,
+    kind,
+  }
 }
 
-export function DiskPicker({ value, onChange }: { value: DiskPick | null; onChange: (p: DiskPick | null) => void }) {
+export function DiskPicker({
+  value,
+  onChange,
+}: {
+  value: DiskPick | null
+  onChange: (p: DiskPick | null) => void
+}) {
   const fileRef = useRef<HTMLInputElement>(null)
   const dirRef = useRef<HTMLInputElement | null>(null)
-  const nodes = value ? pathsToFileTree(value.assets.slice(0, 60).map((a) => a.name)) : []
+  const nodes = value
+    ? pathsToFileTree(value.assets.slice(0, 60).map((a) => a.name))
+    : []
   return (
     <div className="flex flex-col gap-2" data-testid="disk-picker">
       <div className="flex gap-2">
-        <Button variant="outline" onClick={() => fileRef.current?.click()} data-testid="disk-choose-file">
+        <Button
+          variant="outline"
+          onClick={() => fileRef.current?.click()}
+          data-testid="disk-choose-file"
+        >
           <FileIcon />
           Choose file…
         </Button>
-        <Button variant="outline" onClick={() => dirRef.current?.click()} data-testid="disk-choose-folder">
+        <Button
+          variant="outline"
+          onClick={() => dirRef.current?.click()}
+          data-testid="disk-choose-folder"
+        >
           <FolderOpen />
           Choose folder…
         </Button>
@@ -74,11 +123,20 @@ export function DiskPicker({ value, onChange }: { value: DiskPick | null; onChan
             </span>
           </p>
           <div className="max-h-40 overflow-y-auto">
-            <FilesTree nodes={nodes} open={new Set(folderPaths(nodes))} selected={null} onToggle={() => {}} onSelect={() => {}} />
+            <FilesTree
+              nodes={nodes}
+              open={new Set(folderPaths(nodes))}
+              selected={null}
+              onToggle={() => {}}
+              onSelect={() => {}}
+            />
           </div>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Nothing chosen. Files are copied into the Library; the originals stay where they are.</p>
+        <p className="text-sm text-muted-foreground">
+          Nothing chosen. Files are copied into the Library; the originals stay
+          where they are.
+        </p>
       )}
     </div>
   )

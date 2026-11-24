@@ -10,7 +10,12 @@ import {
 } from "@workspace/ui/components/dialog"
 import { Field, FieldLabel } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/ui/components/tabs"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@workspace/ui/components/tabs"
 import { addItem, addRemote } from "./library-store"
 import { DiskPicker, type DiskPick } from "./DiskPicker"
 import { DetectCard, LinkInput, useLinkField } from "./ProviderDetect"
@@ -24,7 +29,12 @@ type Props = {
 }
 
 /** Add by link (read-only fetch) or copy from disk. Every item becomes a folder. */
-export function AddLibraryDialog({ open, onOpenChange, onAdded, onOpenExisting }: Props) {
+export function AddLibraryDialog({
+  open,
+  onOpenChange,
+  onAdded,
+  onOpenExisting,
+}: Props) {
   const link = useLinkField()
   const [pick, setPick] = useState<DiskPick | null>(null)
   const [title, setTitle] = useState("")
@@ -46,13 +56,18 @@ export function AddLibraryDialog({ open, onOpenChange, onAdded, onOpenExisting }
         <DialogHeader>
           <DialogTitle>Add to Library</DialogTitle>
           <DialogDescription>
-            Each item is stored as its own folder, even if only one file is fetched.
+            Each item is stored as its own folder, even if only one file is
+            fetched.
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="link">
           <TabsList>
-            <TabsTrigger value="link" data-testid="library-add-tab-link">From a link</TabsTrigger>
-            <TabsTrigger value="disk" data-testid="library-add-tab-disk">From disk</TabsTrigger>
+            <TabsTrigger value="link" data-testid="library-add-tab-link">
+              From a link
+            </TabsTrigger>
+            <TabsTrigger value="disk" data-testid="library-add-tab-disk">
+              From disk
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="link" className="flex flex-col gap-3 pt-2">
             <LinkInput url={link.url} onUrl={link.setUrl} />
@@ -92,11 +107,21 @@ export function AddLibraryDialog({ open, onOpenChange, onAdded, onOpenExisting }
             />
             <Field>
               <FieldLabel htmlFor="lib-title">Name</FieldLabel>
-              <Input id="lib-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Brand guidelines" />
+              <Input
+                id="lib-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Brand guidelines"
+              />
             </Field>
             <Field>
               <FieldLabel htmlFor="lib-tags">Tags</FieldLabel>
-              <Input id="lib-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="project:auth type:design" />
+              <Input
+                id="lib-tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="project:auth type:design"
+              />
             </Field>
             <DialogFooter>
               <Button variant="outline" onClick={() => close(false)}>
@@ -106,7 +131,16 @@ export function AddLibraryDialog({ open, onOpenChange, onAdded, onOpenExisting }
                 disabled={!title.trim() || !pick}
                 data-testid="library-add-submit"
                 onClick={() => {
-                  onAdded(addItem(pick?.kind ?? "other", title.trim(), tags.split(/\s+/).filter((t) => /^[^\s:]+:[^\s:]+$/.test(t)), pick?.assets))
+                  onAdded(
+                    addItem(
+                      pick?.kind ?? "other",
+                      title.trim(),
+                      tags
+                        .split(/\s+/)
+                        .filter((t) => /^[^\s:]+:[^\s:]+$/.test(t)),
+                      pick?.assets
+                    )
+                  )
                   close(false)
                 }}
               >

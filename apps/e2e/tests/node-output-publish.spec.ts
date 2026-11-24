@@ -32,10 +32,14 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("output-target")).toHaveText("Publish")
     await expect(page.getByTestId("output-connection")).toHaveText("pub-demo")
     await expect(page.getByTestId("asset-access-badge")).toHaveText("Propose")
-    await page.screenshot({ path: info.outputPath(`node-publish-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-publish-${theme}.png`),
+    })
 
     await page.getByTestId("node-settings-ship").click()
-    await expect(page.getByTestId("output-target-select")).toContainText(/publish/i)
+    await expect(page.getByTestId("output-target-select")).toContainText(
+      /publish/i
+    )
     await expect(page.getByTestId("output-connection-select")).toContainText(
       "pub-demo"
     )
@@ -67,9 +71,12 @@ test("Reject on the Output stops the run and nothing is published", async ({
   page,
   request,
 }) => {
-  const res = await request.post(`${API}/api/workflows/node-publish-reject/runs`, {
-    data: { requestId: crypto.randomUUID() },
-  })
+  const res = await request.post(
+    `${API}/api/workflows/node-publish-reject/runs`,
+    {
+      data: { requestId: crypto.randomUUID() },
+    }
+  )
   expect(res.ok()).toBeTruthy()
   const { runId } = (await res.json()) as { runId: string }
   await page.goto(`/runs/${runId}`)
@@ -87,9 +94,12 @@ test("the run view lists the publish as a Cloud effect", async ({
   page,
   request,
 }, info) => {
-  const res = await request.post(`${API}/api/workflows/node-publish-ledger/runs`, {
-    data: { requestId: crypto.randomUUID() },
-  })
+  const res = await request.post(
+    `${API}/api/workflows/node-publish-ledger/runs`,
+    {
+      data: { requestId: crypto.randomUUID() },
+    }
+  )
   expect(res.ok()).toBeTruthy()
   const { runId } = (await res.json()) as { runId: string }
   await page.goto(`/runs/${runId}`)
@@ -102,7 +112,9 @@ test("the run view lists the publish as a Cloud effect", async ({
     timeout: 20_000,
   })
   await page.getByTestId("run-tab-changes").click()
-  await expect(page.getByTestId("run-effects")).toContainText("Published via ship")
+  await expect(page.getByTestId("run-effects")).toContainText(
+    "Published via ship"
+  )
   await expect(page.getByTestId("run-effects")).toContainText("example.test")
   await page.screenshot({ path: info.outputPath("node-publish-effects.png") })
 })

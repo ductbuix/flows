@@ -39,7 +39,9 @@ const started = (nodeId: string) =>
 
 function walk(graph: WalkGraph, events: EngineEvent[] = [], trigger = "t") {
   return nextActions(graph, { trigger }, foldSteps(events)).map((a) =>
-    a.type === "run" ? `run ${a.nodeId}<${a.inputs.join(",")}>` : `skip ${a.nodeId}`
+    a.type === "run"
+      ? `run ${a.nodeId}<${a.inputs.join(",")}>`
+      : `skip ${a.nodeId}`
   )
 }
 
@@ -110,9 +112,20 @@ describe("nextActions", () => {
     const events = [done("t"), done("j", "no"), done("no")]
     expect(walk(g, [...events, { ...started("yes") }])).toEqual([])
     expect(
-      nextActions(g, { trigger: "t" }, foldSteps([...events, {
-        type: "step_skipped", runId: "r", at: "t", nodeId: "yes", pass: 1,
-      } as unknown as EngineEvent])).map((a) => a.type + " " + a.nodeId)
+      nextActions(
+        g,
+        { trigger: "t" },
+        foldSteps([
+          ...events,
+          {
+            type: "step_skipped",
+            runId: "r",
+            at: "t",
+            nodeId: "yes",
+            pass: 1,
+          } as unknown as EngineEvent,
+        ])
+      ).map((a) => a.type + " " + a.nodeId)
     ).toEqual(["run m"])
   })
 
@@ -143,6 +156,8 @@ describe("nextActions", () => {
     }
     expect(walk(g)).toEqual(["run t<>"])
     expect(walk(g, [done("t")])).toEqual(["run a<t>"])
-    expect(() => walk({ nodes: [T, n("a")], edges: [e("a", "a")] })).not.toThrow()
+    expect(() =>
+      walk({ nodes: [T, n("a")], edges: [e("a", "a")] })
+    ).not.toThrow()
   })
 })

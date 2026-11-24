@@ -1,9 +1,19 @@
-import { splitCardMd, yamlMappingToJs } from "@workspace/contracts"
+import {
+  joinCardMd,
+  patchYamlMapping,
+  skillFromSchema,
+  splitCardMd,
+  yamlMappingToJs,
+  type WireSkillSummary,
+} from "@workspace/contracts"
+
+export type SkillFrom = NonNullable<WireSkillSummary["from"]>
 
 export type ParsedSkillMd = {
   name: string
   description: string
   body: string
+  from?: SkillFrom
   problem?: string
 }
 
@@ -40,15 +50,38 @@ export function parseSkillMd(text: string, folderSlug: string): ParsedSkillMd {
       : folderSlug
   const description =
     typeof fm.description === "string" ? fm.description.trim() : ""
+  const from = parseFrom(fm.from)
 
   if (!description) {
     return {
       name,
       description: "",
       body: split.body,
+      from,
       problem: "SKILL.md has no description",
     }
   }
 
-  return { name, description, body: split.body }
+  return { name, description, body: split.body, from }
+}
+
+/** Write a SKILL.md with optional install `from` (BL-169). */
+export function formatSkillMd(opts: {
+  name: string
+  description: string
+  body: string
+  from?: SkillFrom
+}): string {
+  const fm = patchYamlMapping("name: _\n", {
+    name: opts.name,
+    description: opts.description,
+    from: opts.from,
+  }).trimEnd()
+  return joinCardMd(fm, opts.body)
+}
+
+function parseFrom(raw: unknown): SkillFrom | undefined {
+  if (raw === undefined) return undefined
+  const parsed = skillFromSchema.safeParse(raw)
+  return parsed.success ? parsed.data : undefined
 }

@@ -19,7 +19,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("judge-check-value")).toHaveValue("high")
     // A check has no rule box and no CLI pills.
     await expect(page.getByTestId("judge-rule")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-judge-check-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-judge-check-${theme}.png`),
+    })
 
     await page.getByTestId("canvas-run").click()
     await page.getByTestId("start-run-submit").click()
@@ -49,18 +51,24 @@ for (const theme of ["light", "dark"] as const) {
     await page.getByRole("option", { name: "set", exact: true }).click()
     // `set` takes no value.
     await expect(page.getByTestId("judge-check-value")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-judge-check-set-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-judge-check-set-${theme}.png`),
+    })
 
     await page.getByTestId("judge-mode").click()
     await page.getByRole("option", { name: "Rule (model)" }).click()
     await expect(page.getByTestId("judge-rule")).toBeVisible()
     await expect(page.getByTestId("judge-check")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-judge-rule-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-judge-rule-${theme}.png`),
+    })
 
     await page.getByTestId("node-save").click()
     await expect(page.getByTestId("node-save")).toBeDisabled()
     const wf = (await (
-      await page.request.get(`${API}/api/workflows/node-judge-check-${theme}-view`)
+      await page.request.get(
+        `${API}/api/workflows/node-judge-check-${theme}-view`
+      )
     ).json()) as { yaml: string }
     expect(wf.yaml).not.toContain("mode: check")
     expect(wf.yaml).not.toContain("check:")

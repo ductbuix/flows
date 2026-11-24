@@ -20,7 +20,12 @@ type Props = {
   onCreate: (name: string, solves: string) => void
 }
 
-export function NewWorkflowDialog({ open, initial, onOpenChange, onCreate }: Props) {
+export function NewWorkflowDialog({
+  open,
+  initial,
+  onOpenChange,
+  onCreate,
+}: Props) {
   const [name, setName] = useState(initial?.name ?? "")
   const [solves, setSolves] = useState(initial?.solves ?? "")
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +52,9 @@ export function NewWorkflowDialog({ open, initial, onOpenChange, onCreate }: Pro
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-md" data-testid="workflows-new">
         <DialogHeader>
-          <DialogTitle>{initial ? "Rename workflow" : "New workflow"}</DialogTitle>
+          <DialogTitle>
+            {initial ? "Rename workflow" : "New workflow"}
+          </DialogTitle>
           <DialogDescription>
             {initial
               ? "Change the name or the type of task. The id and past runs stay the same."

@@ -36,7 +36,14 @@ import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
-import { fcpIndexResponse, fcpUpgrade } from "./fcp-routes.ts"
+import { createDocketFcp } from "./fcp-docket.ts"
+import { createFileFcp } from "./fcp-files.ts"
+import { blobRoutes } from "./blob-routes.ts"
+import {
+  fcpBootstrapResponse,
+  fcpIndexResponse,
+  fcpUpgrade,
+} from "./fcp-routes.ts"
 import { layoutRoutes } from "./layout-routes.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
 import { WsHub } from "./ws-hub.ts"
@@ -65,6 +72,8 @@ export function createApp({
 }: CreateAppOptions) {
   const bus = new UpdateBus()
   const hub = new WsHub(engine, bus)
+  const docket = createDocketFcp(engine, bus)
+  const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
 
@@ -81,6 +90,7 @@ export function createApp({
     .route("/", libraryRoutes(engine))
     .route("/", layoutRoutes(engine))
     .route("/", workItemRoutes(engine))
+    .get("/fcp", (c) => fcpBootstrapResponse(c, fcpToken, port))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
     )
@@ -176,7 +186,14 @@ export function createApp({
 
   return new Hono()
     .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
-    .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus))
+    .get(
+      "/fcp",
+      fcpUpgrade(engine, fcpToken, port, bus, idempotency, {
+        ...docket.bindings,
+        ...files,
+      })
+    )
+    .route("/blobs", blobRoutes(fcpToken))
     .route("/api", api)
 }
 

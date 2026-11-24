@@ -17,10 +17,7 @@ export function NodeEditorPage({ workflowId }: { workflowId: string }) {
   const editor = useNodeEditor(workflowId)
   const workflow = editor.workflow
   const label = useWorkflowLabel(workflowId, workflow?.name)
-  const crumbs = [
-    { label: "Workflows", to: "/workflows" },
-    { label },
-  ] as const
+  const crumbs = [{ label: "Workflows", to: "/workflows" }, { label }] as const
   const heading = (
     <WorkflowHeading
       workflowId={workflowId}
@@ -51,9 +48,7 @@ export function NodeEditorPage({ workflowId }: { workflowId: string }) {
       {heading}
       {!editor.detail || errors.length > 0 ? (
         <Alert variant="destructive" data-testid="yaml-errors">
-          <AlertTitle>
-            {editor.detail ? "YAML errors" : "Not found"}
-          </AlertTitle>
+          <AlertTitle>{editor.detail ? "YAML errors" : "Not found"}</AlertTitle>
           <AlertDescription>
             {editor.detail ? (
               <ul className="list-inside list-disc text-sm">

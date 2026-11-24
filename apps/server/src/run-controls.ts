@@ -113,8 +113,7 @@ async function startNodeRoute(
       pins,
       ...(partial ? { partial } : {}),
       // Without declared inputs the whole start text is `input/text.md`.
-      inputText:
-        keepInputs || decls.length > 0 ? undefined : body.values?.text,
+      inputText: keepInputs || decls.length > 0 ? undefined : body.values?.text,
       ...(withInputs
         ? { inputs: { decls, values: validated.values, files } }
         : {}),

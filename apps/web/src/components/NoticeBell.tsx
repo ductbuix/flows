@@ -81,7 +81,9 @@ export function NoticeBell() {
           <span>Notices</span>
         </PopoverTrigger>
         {unread > 0 ? (
-          <SidebarMenuBadge data-testid="notice-unread">{unread}</SidebarMenuBadge>
+          <SidebarMenuBadge data-testid="notice-unread">
+            {unread}
+          </SidebarMenuBadge>
         ) : null}
         <PopoverContent
           side="right"

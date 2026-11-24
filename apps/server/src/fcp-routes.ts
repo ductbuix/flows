@@ -5,6 +5,7 @@ import {
   createFcpConnection,
   createSubscribeBindings,
   defineBinding,
+  type MethodBindings,
   type UpdateBus,
 } from "@workspace/core"
 import { pingMethod } from "@workspace/contracts"
@@ -15,7 +16,10 @@ import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
 import { fcpIndexHtml } from "./fcp-index.ts"
 import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
+import { createWorkflowWriteBindings } from "./fcp-workflow-write.ts"
+import { createRunCommandBindings } from "./fcp-run-commands.ts"
 import { createRunReadBindings } from "./fcp-run-read.ts"
+import type { IdempotencyStore } from "./idempotency.ts"
 
 export const FCP_AUTH_CLOSE = 4401
 export const FCP_DEV_ORIGIN_PORT = 5173
@@ -23,7 +27,15 @@ export const FCP_DEV_ORIGIN_PORT = 5173
 const engineInfo = { name: "flows", version: "0.0.1" }
 
 export function fcpAllowedHosts(port: number): Set<string> {
-  return new Set([`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`])
+  return new Set([
+    `127.0.0.1:${port}`,
+    `localhost:${port}`,
+    `[::1]:${port}`,
+    // Vite proxies /api/fcp; without changeOrigin Host stays on the dev port.
+    `127.0.0.1:${FCP_DEV_ORIGIN_PORT}`,
+    `localhost:${FCP_DEV_ORIGIN_PORT}`,
+    `[::1]:${FCP_DEV_ORIGIN_PORT}`,
+  ])
 }
 
 export function fcpAllowedOrigins(port: number): Set<string> {
@@ -75,7 +87,14 @@ function fcpWsUrl(c: Context, port: number): string {
   return `ws://${host}/fcp`
 }
 
-function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
+function bindFcpPeer(
+  raw: WsLike,
+  engine: Engine,
+  bus: UpdateBus,
+  idempotency: IdempotencyStore,
+  port: number,
+  extra: Partial<MethodBindings>
+): void {
   const transport = wsTransport(raw)
   const peer = new RpcPeer(transport)
   const connection = createFcpConnection()
@@ -91,14 +110,20 @@ function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
   bindInitialize(peer, connection, {
     engineInfo,
     workspace: { home: engine.home, id: engine.home },
+    engineCapabilities: {
+      blobs: { http: `http://127.0.0.1:${port}/blobs` },
+    },
   })
   bindEngine(
     peer,
     {
       ping: defineBinding(pingMethod, () => ({ ok: true as const })),
       ...createWorkflowReadBindings(engine),
+      ...createWorkflowWriteBindings({ engine, bus }),
       ...subBindings,
       ...createRunReadBindings(engine),
+      ...createRunCommandBindings({ engine, idempotency }),
+      ...extra,
     },
     { signal: ac.signal },
     { connection }
@@ -110,7 +135,9 @@ function fcpEvents(
   engine: Engine,
   token: string,
   port: number,
-  bus: UpdateBus
+  bus: UpdateBus,
+  idempotency: IdempotencyStore,
+  extra: Partial<MethodBindings>
 ): WSEvents {
   if (!fcpAuthorized(c, token, port)) {
     return {
@@ -127,7 +154,7 @@ function fcpEvents(
         ws.close(1011, "no websocket")
         return
       }
-      bindFcpPeer(raw as WsLike, engine, bus)
+      bindFcpPeer(raw as WsLike, engine, bus, idempotency, port, extra)
     },
   }
 }
@@ -147,7 +174,28 @@ export function fcpUpgrade(
   engine: Engine,
   token: string,
   port: number,
-  bus: UpdateBus
+  bus: UpdateBus,
+  idempotency: IdempotencyStore,
+  extra: Partial<MethodBindings> = {}
 ) {
-  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port, bus))
+  return upgradeWebSocket((c) =>
+    fcpEvents(c, engine, token, port, bus, idempotency, extra)
+  )
+}
+
+/** JSON bootstrap for Vite (proxied as `/api/fcp`); same payload as `__FLOWS_FCP__`. */
+export function fcpBootstrapJson(token: string, port: number) {
+  return { token, url: `ws://127.0.0.1:${port}/fcp` }
+}
+
+/** Same Host + Origin guard as `/` and `/fcp` (loopback only). */
+export function fcpBootstrapResponse(
+  c: Context,
+  token: string,
+  port: number
+): Response {
+  if (!fcpHostAllowed(c, port) || !fcpOriginAllowed(c, port)) {
+    return c.text("Forbidden", 403)
+  }
+  return c.json(fcpBootstrapJson(token, port), 200)
 }

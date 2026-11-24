@@ -10,15 +10,31 @@ import {
   type FcpNotificationParams,
   jsonRpcCodeFor,
   skillGetMethod,
+  skillInstallMethod,
   skillListMethod,
+  skillUninstallMethod,
   skillUpdateNotification,
   fileListMethod,
   fileReadTextMethod,
   fileRevealMethod,
   fileStatMethod,
   fileWriteTextMethod,
+  runCancelMethod,
+  runDeleteMethod,
+  runGetChangesMethod,
+  runGetLogMethod,
+  runRerunMethod,
+  runRetryStepMethod,
+  runStartMethod,
+  workflowCreateMethod,
+  workflowDeleteMethod,
   workflowGetMethod,
   workflowListMethod,
+  workflowRenameMethod,
+  workflowSaveLayoutMethod,
+  workflowSaveMethod,
+  workflowUpdateNotification,
+  workflowValidateMethod,
 } from "./index.ts"
 
 describe("FCP helpers", () => {
@@ -71,6 +87,21 @@ describe("FCP helpers", () => {
     })
   })
 
+  it("declares workflow write methods and update notification", () => {
+    expect(fcpMethodTable["workflow/create"]).toBe(workflowCreateMethod)
+    expect(fcpMethodTable["workflow/save"]).toBe(workflowSaveMethod)
+    expect(fcpMethodTable["workflow/rename"]).toBe(workflowRenameMethod)
+    expect(fcpMethodTable["workflow/delete"]).toBe(workflowDeleteMethod)
+    expect(fcpMethodTable["workflow/save_layout"]).toBe(
+      workflowSaveLayoutMethod
+    )
+    expect(fcpMethodTable["workflow/validate"]).toBe(workflowValidateMethod)
+    expect(workflowCreateMethod.kind).toBe("command")
+    expect(workflowSaveMethod.kind).toBe("command")
+    expect(workflowValidateMethod.kind).toBe("query")
+    expect(workflowUpdateNotification.name).toBe("workflow/update")
+  })
+
   it("declares connector list/get as queries and save/remove/set_capability as commands", () => {
     expect(fcpMethodTable["connector/list"].kind).toBe("query")
     expect(fcpMethodTable["connector/get"].kind).toBe("query")
@@ -84,11 +115,15 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["library/save_provider"].kind).toBe("command")
   })
 
-  it("declares skill/list and skill/get as queries", () => {
+  it("declares skill/list and skill/get as queries and install/uninstall as commands", () => {
     expect(fcpMethodTable["skill/list"]).toBe(skillListMethod)
     expect(fcpMethodTable["skill/get"]).toBe(skillGetMethod)
+    expect(fcpMethodTable["skill/install"]).toBe(skillInstallMethod)
+    expect(fcpMethodTable["skill/uninstall"]).toBe(skillUninstallMethod)
     expect(skillListMethod.kind).toBe("query")
     expect(skillGetMethod.kind).toBe("query")
+    expect(skillInstallMethod.kind).toBe("command")
+    expect(skillUninstallMethod.kind).toBe("command")
     expect(
       skillGetMethod.params.parse({ slug: "write-tests", scope: "workspace" })
     ).toEqual({ slug: "write-tests", scope: "workspace" })
@@ -104,5 +139,20 @@ describe("FCP helpers", () => {
     expect(fileListMethod.kind).toBe("query")
     expect(fileWriteTextMethod.kind).toBe("command")
     expect(fileRevealMethod.kind).toBe("command")
+  })
+
+  it("declares run command methods", () => {
+    expect(fcpMethodTable["run/start"]).toBe(runStartMethod)
+    expect(fcpMethodTable["run/cancel"]).toBe(runCancelMethod)
+    expect(fcpMethodTable["run/rerun"]).toBe(runRerunMethod)
+    expect(fcpMethodTable["run/retry_step"]).toBe(runRetryStepMethod)
+    expect(fcpMethodTable["run/delete"]).toBe(runDeleteMethod)
+    expect(fcpMethodTable["run/get_log"]).toBe(runGetLogMethod)
+    expect(fcpMethodTable["run/get_changes"]).toBe(runGetChangesMethod)
+    expect(runStartMethod.kind).toBe("command")
+    expect(runGetLogMethod.kind).toBe("query")
+    expect(runStartMethod.result.parse({ runId: "r1" })).toEqual({
+      runId: "r1",
+    })
   })
 })
