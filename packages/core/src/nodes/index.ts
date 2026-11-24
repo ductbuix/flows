@@ -35,5 +35,11 @@ export {
   llmProfileId,
   llmPromptText,
 } from "./kinds/llm.ts"
+export {
+  CONDITION_BRANCHES,
+  conditionBranch,
+  conditionKind,
+  type ConditionBranch,
+} from "./kinds/condition.ts"
 export { approvalKind } from "./kinds/approval.ts"
 export { notifyKind } from "./kinds/notify.ts"

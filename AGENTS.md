@@ -33,7 +33,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   MCP trust, connections, library, work items, work copies, CliAdapter,
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
 - `packages/core`: UI-free kernel (ports, `bindEngine`, `runs/` decide+fold +
-  actor + scheduler, `nodes/` NodeKind+StepContext for trigger/approval/notify,
+  actor + scheduler, `nodes/` NodeKind+StepContext for trigger/asset/llm/
+  condition/approval/notify,
   `inbox/` projection + FCP list/answer/dismiss (approval, permission,
   question, plan_review), agents permission chain + ask gates, MCP
   gateway bridge + launch spec, testing fakes); no Node I/O.
