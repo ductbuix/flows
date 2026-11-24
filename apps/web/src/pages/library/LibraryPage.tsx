@@ -7,11 +7,6 @@ import {
   useQuery,
 } from "@workspace/sdk-react"
 import { Plug, Plus } from "lucide-react"
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { FlowsClientGate } from "@/components/FlowsClientGate"
@@ -19,6 +14,7 @@ import { Page, PageTitle } from "@/components/page"
 import { AddLibraryDialog } from "./AddLibraryDialog"
 import { LibraryBody } from "./LibraryBody"
 import { LibraryChrome } from "./LibraryChrome"
+import { LibraryConflictAlert } from "./LibraryConflictAlert"
 import { removeItem } from "./library-actions"
 import { filterItems, type KindFilter } from "./library-filter"
 import { LibrarySheet } from "./LibrarySheet"
@@ -138,14 +134,7 @@ function LibraryPageInner() {
         description="Local copies of the repositories, pages and tickets tasks refer to. Each item is a local folder. Linked items are fetched from their remote, one version per fetch."
       />
       {(conflict || actionError) && (
-        <Alert variant="destructive" data-testid="library-conflict">
-          <AlertTitle>{conflict ? "Conflict" : "Could not save"}</AlertTitle>
-          <AlertDescription>
-            {conflict
-              ? "A provider changed on disk. Close Providers and try again."
-              : actionError}
-          </AlertDescription>
-        </Alert>
+        <LibraryConflictAlert conflict={conflict} actionError={actionError} />
       )}
       <LibraryChrome
         items={items}
