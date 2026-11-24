@@ -15,13 +15,8 @@ import {
 import { errorMessage } from "@/lib/fcp-error"
 import { AddAssetDiskDialog } from "./AddAssetDiskDialog"
 import { AssetOpenMenu } from "./AssetOpenMenu"
-import {
-  Adder,
-  EmptyLine,
-  ListRow,
-  RemoveButton,
-  Section,
-} from "./SectionParts"
+import { AssetRowMenu } from "./AssetRowMenu"
+import { Adder, EmptyLine, ListRow, Section } from "./SectionParts"
 
 type IndexedAsset = FcpCallResult<"docket/get_card">["assets"][number]
 type LibItem = FcpCallResult<"library/list">["items"][number]
@@ -122,9 +117,9 @@ export function AssetsSection({
                 Missing
               </Badge>
             ) : null}
-            <RemoveButton
-              label={`Remove asset ${a.label ?? basename(a.path)}`}
-              onClick={() => void remove(a.path)}
+            <AssetRowMenu
+              label={a.label ?? basename(a.path)}
+              onRemove={() => void remove(a.path)}
             />
           </ListRow>
         ))

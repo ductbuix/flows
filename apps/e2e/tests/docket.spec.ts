@@ -221,12 +221,13 @@ test.describe("docket card panel assets (BL-199)", () => {
     await dialog.getByTestId("asset-disk-submit").click()
     await expect(dialog).toBeHidden()
     await expect(
-      panel.getByRole("button", { name: "Remove asset notes.md" })
+      panel.getByRole("button", { name: "Actions for notes.md" })
     ).toBeVisible()
 
-    await panel.getByRole("button", { name: "Remove asset notes.md" }).click()
+    await panel.getByRole("button", { name: "Actions for notes.md" }).click()
+    await page.getByTestId("asset-remove").click()
     await expect(
-      panel.getByRole("button", { name: "Remove asset notes.md" })
+      panel.getByRole("button", { name: "Actions for notes.md" })
     ).toHaveCount(0)
   })
 

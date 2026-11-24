@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronDown, Code, Expand, FolderOpen } from "lucide-react"
+import { Code, ExternalLink, Expand, FolderOpen } from "lucide-react"
 import { useNavigate } from "react-router"
 import type { FlowsClient } from "@workspace/sdk"
 import { Button } from "@workspace/ui/components/button"
@@ -54,10 +54,17 @@ export function AssetOpenMenu({ client, storePath, home }: Props) {
         </p>
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="outline" data-testid="item-open-menu" />}
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Open in"
+                className="shrink-0"
+                data-testid="item-open-menu"
+              />
+            }
           >
-            Open in
-            <ChevronDown />
+            <ExternalLink />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
