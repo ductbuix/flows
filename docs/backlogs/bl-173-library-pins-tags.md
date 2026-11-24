@@ -2,7 +2,7 @@
 id: BL-173
 title: Library pins and tags
 type: backlog
-status: todo
+status: done
 summary: library/pin_version, set_tags, remove and list by tag over FCP.
 tags: [library, fcp]
 related: [DES-041]
@@ -19,5 +19,5 @@ Mockup Library page actions.
 
 ## Done when
 
-- [ ] Tags are `namespace:value`; removing an item used by a card fails with `busy` listing users.
-- [ ] Protocol tests.
+- [x] Tags are `namespace:value`; removing an item used by a card fails with `busy` listing users.
+- [x] Protocol tests.

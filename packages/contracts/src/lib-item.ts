@@ -13,6 +13,13 @@ export const libVersionSchema = z.object({
 
 export type LibVersion = z.infer<typeof libVersionSchema>
 
+/** Tag shape `namespace:value` (BL-173 / Library mockup). */
+export const libTagSchema = z
+  .string()
+  .regex(/^[^:\s]+:.+$/, "tag must be namespace:value")
+
+export type LibTag = z.infer<typeof libTagSchema>
+
 /** On-disk `item.yaml` (versions live under `v<n>/`). */
 export const libItemDiskSchema = z.object({
   id: LibItemId,
@@ -22,7 +29,7 @@ export const libItemDiskSchema = z.object({
   source: z.string().min(1),
   remoteId: z.string().min(1).optional(),
   remoteUrl: z.string().min(1).optional(),
-  tags: z.array(z.string().min(1)).default([]),
+  tags: z.array(libTagSchema).default([]),
   /** Version tasks read; newest unless pinned older. */
   current: z.number().int().positive(),
 })

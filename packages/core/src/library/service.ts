@@ -5,6 +5,7 @@ import type { Ids } from "../kernel/ids.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { UpdateBus } from "../updates/update-bus.ts"
 import type { LibraryFetcher } from "./fetch.ts"
+import { cardUsersOfItem } from "./users.ts"
 import {
   contentHashOf,
   listItemIds,
@@ -12,6 +13,8 @@ import {
   newestVersionN,
   nextCurrent,
   readItemDisk,
+  removeItemTree,
+  toDisk,
   toLibItem,
   writeItemDisk,
   writeVersion,
@@ -34,10 +37,12 @@ export class LibraryService {
 
   constructor(private readonly deps: LibraryServiceDeps) {}
 
-  list(): LibItem[] {
-    return listItemIds(this.deps.docs)
+  list(tag?: string): LibItem[] {
+    const items = listItemIds(this.deps.docs)
       .map((id) => this.get(id))
       .filter((item): item is LibItem => item !== null)
+    if (tag === undefined) return items
+    return items.filter((item) => item.tags.includes(tag))
   }
 
   get(id: string): LibItem | null {
@@ -47,20 +52,39 @@ export class LibraryService {
     return toLibItem(disk, versions)
   }
 
-  /** Pin `current` to an existing version (BL-173 will expose over FCP). */
+  /** Pin `current` to an existing version. */
   pinVersion(id: string, n: number): LibItem {
     const item = this.require(id)
     if (!item.versions.some((v) => v.n === n)) {
       throw engineError("not_found", `Version not found: v${n}`)
     }
-    const next = { ...item, current: n }
-    writeItemDisk(this.deps.docs, next)
-    const updated = this.require(id)
-    this.deps.bus.publish("library/update", {
-      kind: "item_changed",
-      item: updated,
-    })
-    return updated
+    writeItemDisk(this.deps.docs, { ...toDisk(item), current: n })
+    return this.publishChanged(id)
+  }
+
+  /** Replace tags (`namespace:value` each). */
+  setTags(id: string, tags: string[]): LibItem {
+    this.require(id)
+    const disk = readItemDisk(this.deps.docs, id)!
+    writeItemDisk(this.deps.docs, { ...disk, tags: [...tags] })
+    return this.publishChanged(id)
+  }
+
+  /**
+   * Delete the item tree. Fails with `busy` and `data.users` when a card
+   * refs it (`system: library`).
+   */
+  remove(id: string): void {
+    this.require(id)
+    const users = cardUsersOfItem(this.deps.docs, id)
+    if (users.length > 0) {
+      throw engineError(
+        "busy",
+        `Library item is used by cards: ${users.join(", ")}`,
+        { users }
+      )
+    }
+    removeItemTree(this.deps.docs, id)
   }
 
   /** Starts a pull job; progress and finish arrive on `library/update`. */
@@ -79,6 +103,15 @@ export class LibraryService {
     while (this.pending.size > 0) {
       await Promise.all([...this.pending])
     }
+  }
+
+  private publishChanged(id: string): LibItem {
+    const updated = this.require(id)
+    this.deps.bus.publish("library/update", {
+      kind: "item_changed",
+      item: updated,
+    })
+    return updated
   }
 
   private require(id: string): LibItem {

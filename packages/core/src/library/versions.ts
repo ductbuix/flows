@@ -105,6 +105,30 @@ export function writeItemDisk(docs: DocumentStore, item: LibItemDisk): void {
   docs.write(itemYamlPath(item.id), libItemToYaml(item))
 }
 
+/** Drop `versions` (wire-only) before writing `item.yaml`. */
+export function toDisk(item: LibItem): LibItemDisk {
+  return {
+    id: item.id,
+    kind: item.kind,
+    title: item.title,
+    source: item.source,
+    ...(item.remoteId !== undefined ? { remoteId: item.remoteId } : {}),
+    ...(item.remoteUrl !== undefined ? { remoteUrl: item.remoteUrl } : {}),
+    tags: item.tags,
+    current: item.current,
+  }
+}
+
+/** Delete every file under `library/<id>/`. */
+export function removeItemTree(docs: DocumentStore, id: string): void {
+  const prefix = `${itemDir(id)}/`
+  for (const path of docs.list(`${prefix}**`)) {
+    docs.remove(path)
+  }
+  // Cover item.yaml when the glob only matches nested paths.
+  docs.remove(itemYamlPath(id))
+}
+
 export function writeVersion(
   docs: DocumentStore,
   id: string,

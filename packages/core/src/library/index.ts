@@ -24,6 +24,7 @@ export {
   LibraryService,
   type LibraryServiceDeps,
 } from "./service.ts"
+export { cardUsersOfItem } from "./users.ts"
 export {
   ITEM_YAML,
   VERSION_META,
@@ -35,6 +36,8 @@ export {
   newestVersionN,
   nextCurrent,
   readItemDisk,
+  removeItemTree,
+  toDisk,
   toLibItem,
   versionDir,
   versionFilePath,

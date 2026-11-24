@@ -39,8 +39,11 @@ import {
   libraryGetMethod,
   libraryListMethod,
   libraryListProvidersMethod,
+  libraryPinVersionMethod,
   libraryPullMethod,
+  libraryRemoveMethod,
   librarySaveProviderMethod,
+  librarySetTagsMethod,
   libraryUpdateNotification,
 } from "./library.ts"
 import { pingMethod } from "./ping.ts"
@@ -100,6 +103,9 @@ export const fcpMethodTable = {
   "library/list": libraryListMethod,
   "library/get": libraryGetMethod,
   "library/pull": libraryPullMethod,
+  "library/pin_version": libraryPinVersionMethod,
+  "library/set_tags": librarySetTagsMethod,
+  "library/remove": libraryRemoveMethod,
   "library/list_providers": libraryListProvidersMethod,
   "library/save_provider": librarySaveProviderMethod,
   "workflow/list": workflowListMethod,

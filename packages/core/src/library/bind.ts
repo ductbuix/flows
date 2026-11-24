@@ -2,8 +2,11 @@ import {
   libraryGetMethod,
   libraryListMethod,
   libraryListProvidersMethod,
+  libraryPinVersionMethod,
   libraryPullMethod,
+  libraryRemoveMethod,
   librarySaveProviderMethod,
+  librarySetTagsMethod,
   type LibItem,
   type ProviderDescriptor,
 } from "@workspace/contracts"
@@ -19,7 +22,12 @@ export type LibraryProviderBindings = Pick<
 
 export type LibraryItemBindings = Pick<
   MethodBindings,
-  "library/list" | "library/get" | "library/pull"
+  | "library/list"
+  | "library/get"
+  | "library/pull"
+  | "library/pin_version"
+  | "library/set_tags"
+  | "library/remove"
 >
 
 export type LibraryBindings = LibraryProviderBindings & LibraryItemBindings
@@ -47,7 +55,7 @@ export function createLibraryItemBindings(
 ): LibraryItemBindings {
   return {
     "library/list": defineBinding(libraryListMethod, (params) =>
-      pageItems(service.list(), params.cursor, params.limit)
+      pageItems(service.list(params.tag), params.cursor, params.limit)
     ),
     "library/get": defineBinding(libraryGetMethod, (params) => {
       const item = service.get(params.id)
@@ -58,6 +66,16 @@ export function createLibraryItemBindings(
     "library/pull": defineBinding(libraryPullMethod, (params, ctx) =>
       service.pull(params.id, ctx.signal)
     ),
+    "library/pin_version": defineBinding(libraryPinVersionMethod, (params) =>
+      service.pinVersion(params.id, params.n)
+    ),
+    "library/set_tags": defineBinding(librarySetTagsMethod, (params) =>
+      service.setTags(params.id, params.tags)
+    ),
+    "library/remove": defineBinding(libraryRemoveMethod, (params) => {
+      service.remove(params.id)
+      return {}
+    }),
   }
 }
 
