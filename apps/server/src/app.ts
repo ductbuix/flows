@@ -176,7 +176,7 @@ export function createApp({
 
   return new Hono()
     .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
-    .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus))
+    .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus, idempotency))
     .route("/api", api)
 }
 
