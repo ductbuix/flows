@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router"
-import { File, Settings } from "lucide-react"
+import { Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -45,7 +45,7 @@ export function AppSidebar({ onOpenSettings }: Props) {
                     render={<Link to={item.to} />}
                     isActive={pathname === item.to}
                   >
-                    <File />
+                    <item.icon />
                     {item.label}
                   </SidebarMenuButton>
                   {item.label === "Inbox" && <InboxNavBadge />}
