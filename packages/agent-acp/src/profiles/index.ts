@@ -13,5 +13,10 @@ export {
   toAcpMcpServers,
   type McpLaunchSpec,
 } from "./place-mcp.ts"
+export {
+  cleanupPlacedSkills,
+  CURSOR_SKILLS_DIR,
+  placeSkills,
+} from "./place-skills.ts"
 export { probeBinaryVersion, readStdout } from "./probe.ts"
 export type { AgentCommand, AgentProbeResult, AgentProfile } from "./types.ts"

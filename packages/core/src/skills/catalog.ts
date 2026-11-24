@@ -31,6 +31,12 @@ export type SkillSummary = {
 
 export type SkillDetail = SkillSummary & { body: string }
 
+/**
+ * Skill content for agent work-dir placement (DES-041 `Skill[]`).
+ * Same fields as a catalog detail minus discovery metadata.
+ */
+export type Skill = Pick<SkillDetail, "slug" | "name" | "description" | "body">
+
 export type SkillRoot = {
   scope: SkillScope
   docs: DocumentStore

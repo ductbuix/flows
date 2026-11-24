@@ -1,4 +1,4 @@
-import type { ProcessRunner, SessionSpec } from "@workspace/core"
+import type { ProcessRunner, SessionSpec, Skill } from "@workspace/core"
 import type { McpLaunchSpec } from "./place-mcp.ts"
 
 /** Spawn argv for one ACP agent CLI (DES-041). */
@@ -26,8 +26,7 @@ export type AgentProfile = {
     setModel: boolean
     modes: string[]
   }
-  /** BL-170 fills this; stub accepts slugs until skills are placed. */
-  placeSkills(skills: readonly string[], workDir: string): Promise<void>
+  placeSkills(skills: readonly Skill[], workDir: string): Promise<void>
   placeMcp?(servers: readonly McpLaunchSpec[], workDir: string): Promise<void>
   /** Remove files this profile placed for the step (BL-170). */
   cleanup?(workDir: string): Promise<void>

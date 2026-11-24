@@ -1,5 +1,9 @@
-import type { ProcessRunner, SessionSpec } from "@workspace/core"
+import type { ProcessRunner, SessionSpec, Skill } from "@workspace/core"
 import { cleanupPlacedMcp, placeMcp, type McpLaunchSpec } from "./place-mcp.ts"
+import {
+  cleanupPlacedSkills,
+  placeSkills as placeCursorSkills,
+} from "./place-skills.ts"
 import { probeBinaryVersion } from "./probe.ts"
 import type { AgentCommand, AgentProfile, AgentProbeResult } from "./types.ts"
 
@@ -39,13 +43,14 @@ export const cursorProfile: AgentProfile = {
     setModel: false,
     modes: [...CURSOR_MODES],
   },
-  async placeSkills() {
-    // BL-170
+  async placeSkills(skills: readonly Skill[], workDir: string) {
+    await placeCursorSkills(skills, workDir)
   },
   async placeMcp(servers: readonly McpLaunchSpec[], workDir: string) {
     await placeMcp(servers, workDir)
   },
   async cleanup(workDir: string) {
+    await cleanupPlacedSkills(workDir)
     await cleanupPlacedMcp(workDir)
   },
   extensions: {},
