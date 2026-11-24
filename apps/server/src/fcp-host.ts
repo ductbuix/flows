@@ -45,6 +45,9 @@ export function createFcpHost(engine: Engine): FcpHost {
   const unsubBus = bindEngineToBus(engine, bus, events)
   const docket = createDocketFcp(engine, bus, events)
   const coreRuns = createCoreRunHost(engine)
+  // Core owns live runs; engine only keeps removals/trust/summary (BL-196).
+  void coreRuns.resumeAll()
+  engine.bootHousekeeping()
   const inbox = createInboxFcp(engine, bus, coreRuns)
   const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)

@@ -85,7 +85,6 @@ async function startLockedDaemon(home: string): Promise<{
   const token = "cli-attach-token"
   const port = await freePort()
   const engine = createEngine({ home })
-  engine.resumeAll()
   const app = createApp({ engine, fcpToken: token, port })
   const lock = acquireLock(home, {
     url: `ws://127.0.0.1:${port}/fcp`,

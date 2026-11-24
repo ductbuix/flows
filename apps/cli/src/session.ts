@@ -68,7 +68,6 @@ export async function openInProcess(home: string): Promise<CliSession> {
 
 function hostInProcess(home: string): Promise<CliSession> {
   const engine = createEngine({ home })
-  engine.resumeAll()
   const host = createFcpHost(engine)
   const [serverTransport, clientTransport] = createLinkedTransports()
   bindFcpTransport(serverTransport, engine, host)
