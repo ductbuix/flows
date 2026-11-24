@@ -1,3 +1,4 @@
+import { SkillSlug } from "@workspace/contracts"
 import type { FlowsClient } from "@workspace/sdk"
 import { errorMessage, isConflictError } from "@/lib/fcp-error"
 
@@ -8,7 +9,10 @@ export async function installSkill(
   params: { sourceId: string; slug: string; version: number }
 ): Promise<SkillActionResult> {
   try {
-    await client.call("skill/install", params)
+    await client.call("skill/install", {
+      ...params,
+      slug: SkillSlug.parse(params.slug),
+    })
     return "ok"
   } catch (err) {
     if (isConflictError(err)) return "conflict"
@@ -21,7 +25,7 @@ export async function uninstallSkill(
   slug: string
 ): Promise<SkillActionResult> {
   try {
-    await client.call("skill/uninstall", { slug })
+    await client.call("skill/uninstall", { slug: SkillSlug.parse(slug) })
     return "ok"
   } catch (err) {
     if (isConflictError(err)) return "conflict"

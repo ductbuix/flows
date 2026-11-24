@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { useState } from "react"
+import type { Effort } from "@workspace/contracts"
 import {
   Accordion,
   AccordionContent,
@@ -62,7 +63,7 @@ const RUN_STATUSES = [
 export function DevKitPage() {
   const [prompt, setPrompt] = useState("")
   const [model, setModel] = useState<string | undefined>()
-  const [effort, setEffort] = useState<"low" | "high" | undefined>()
+  const [effort, setEffort] = useState<Effort | undefined>()
   return (
     <Page crumbs={[{ label: "Dev kit" }]} data-testid="dev-kit">
       <PageTitle

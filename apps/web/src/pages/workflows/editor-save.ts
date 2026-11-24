@@ -30,15 +30,15 @@ export async function saveEditor(opts: {
       }
     }
     const result = await saveWorkflowYaml(client, id, yaml, baseHash)
-    if (typeof result === "object" && result.ok) hash = result.hash
-    else if (result === "conflict") return { kind: "conflict" }
-    else return { kind: "error", message: result }
+    if (result === "conflict") return { kind: "conflict" }
+    if (typeof result === "string") return { kind: "error", message: result }
+    hash = result.hash
   }
   let layout: LayoutFile | undefined
   if (layoutDirty && layoutDraft) {
     const result = await saveWorkflowLayout(client, id, layoutDraft)
-    if (typeof result === "object" && result.ok) layout = result.layout
-    else return { kind: "error", message: result }
+    if (typeof result === "string") return { kind: "error", message: result }
+    layout = result.layout
   }
   return { kind: "ok", hash, layout }
 }

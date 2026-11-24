@@ -36,7 +36,10 @@ describe("uploadBlob", () => {
     })
     expect(ref.id).toBe("b1")
     expect(fetchMock).toHaveBeenCalledOnce()
-    const [url, init] = fetchMock.mock.calls[0]!
+    const call = fetchMock.mock.calls.at(0) as
+      [unknown, RequestInit | undefined] | undefined
+    expect(call).toBeDefined()
+    const [url, init] = call!
     expect(String(url)).toContain("/blobs?")
     expect(String(url)).toContain("token=tok")
     expect(String(url)).toContain("name=note.md")

@@ -382,6 +382,7 @@ export {
   proposeConnectionsUpstream,
   assetResourceSchema,
   type AssetResource,
+  type NodeKindName,
 } from "./nodes/index.ts"
 export {
   ANSWER_NAME_PATTERN,

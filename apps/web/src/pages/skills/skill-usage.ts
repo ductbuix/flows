@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { SkillSlug } from "@workspace/contracts"
 import { useFlowsClient } from "@workspace/sdk-react"
 
 export type SkillUse = {
@@ -26,7 +27,7 @@ export function useSkillUses(slug: string): SkillUse[] {
           if (!wf) continue
           for (const n of wf.nodes) {
             if (n.kind !== "llm" && n.kind !== "agent") continue
-            if (!n.skills?.includes(slug)) continue
+            if (!n.skills?.includes(SkillSlug.parse(slug))) continue
             found.push({
               workflowId: summary.id,
               workflow: summary.name ?? summary.id,

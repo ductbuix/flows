@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { ProviderDescriptor } from "@workspace/contracts"
+import { LibItemId, type ProviderDescriptor } from "@workspace/contracts"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import {
   Sheet,
@@ -71,7 +71,7 @@ function LibrarySheetBody({
   const client = useFlowsClient()
   const detailQ = useQuery(
     "library/get",
-    { id: itemId },
+    { id: LibItemId.parse(itemId) },
     { topics: ["library"] }
   )
   const [busy, setBusy] = useState(false)

@@ -18,10 +18,6 @@ export default defineConfig({
         import.meta.dirname,
         "../../packages/contracts/src/index.ts"
       ),
-      "@workspace/contracts": resolve(
-        import.meta.dirname,
-        "../../packages/contracts/src/index.ts"
-      ),
     },
   },
   server: {

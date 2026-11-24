@@ -1,5 +1,9 @@
 import { useState } from "react"
-import type { LibItem, WireSkillSummary } from "@workspace/contracts"
+import {
+  SkillSlug,
+  type LibItem,
+  type WireSkillSummary,
+} from "@workspace/contracts"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import {
   Alert,
@@ -95,7 +99,7 @@ function SkillSheetBody({
   const scope = pick.scope ?? installed?.scope ?? "workspace"
   const detailQ = useQuery(
     "skill/get",
-    { slug: pick.slug, scope },
+    { slug: SkillSlug.parse(pick.slug), scope },
     { topics: ["skill"] }
   )
   const [busy, setBusy] = useState(false)
