@@ -131,16 +131,7 @@ export class RunActor {
         }
         return
       }
-    }
-    // A wake that only skips/fails leaves no effect; keep draining so the
-    // run can emit run_failed / run_succeeded (command fail → skip output).
-    if (
-      input.kind === "wake" &&
-      out.effects.length === 0 &&
-      out.events.length > 0 &&
-      this.state?.status === "running"
-    ) {
-      await this.handle({ kind: "wake", at: input.at })
+      // Events with no effects (skip/fail chain): keep waking until settled.
     }
   }
 
