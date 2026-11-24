@@ -66,6 +66,23 @@ export {
   type PermissionRule,
 } from "./agents/index.ts"
 export {
+  buildGatewayLaunchSpec,
+  createGatewayCallHandler,
+  createMcpGatewayBridge,
+  gatewayArgsToCli,
+  gatewayToolsJson,
+  type BuildGatewayLaunchSpecInput,
+  type GatewayCallHandlerDeps,
+  type GatewayLaunchSpec,
+  type GatewayStepCallContext,
+  type GatewayStepSession,
+  type GatewayToolBinding,
+  type GatewayToolSpec,
+  type McpGatewayBridge,
+  type McpGatewayBridgeDeps,
+  type OpenGatewayStepInput,
+} from "./gateway/index.ts"
+export {
   createDocketIndex,
   DocketIndex,
   UNSORTED_COLUMN_ID,
@@ -194,6 +211,7 @@ export {
   type InboxServiceDeps,
 } from "./inbox/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
+export { GATEWAY_CALL_METHOD, GATEWAY_TOKEN_ENV } from "./ports/index.ts"
 export type {
   AgentEvent,
   AgentProfileInfo,
@@ -214,6 +232,11 @@ export type {
   EventStore,
   FileWatchChange,
   FileWatcher,
+  GatewaySocketCall,
+  GatewaySocketCallResult,
+  GatewaySocketHandle,
+  GatewaySocketListenOpts,
+  GatewaySocketServer,
   Money,
   PlanEntry,
   ProcessRunner,

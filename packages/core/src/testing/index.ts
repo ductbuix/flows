@@ -44,3 +44,7 @@ export {
   describeSecretStoreContract,
   type SecretStoreFactory,
 } from "./secret-store.contract.ts"
+export {
+  createFakeGatewaySocketServer,
+  FakeGatewaySocketServer,
+} from "./fake-gateway-socket.ts"

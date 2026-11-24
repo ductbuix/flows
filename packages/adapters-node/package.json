@@ -14,6 +14,7 @@
   "dependencies": {
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",
+    "@workspace/protocol": "workspace:*",
     "minimatch": "^10.2.6",
     "zod": "^4.6.7"
   },

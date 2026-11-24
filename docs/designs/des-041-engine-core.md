@@ -243,20 +243,18 @@ settings, never globally.
 
 ## Flows MCP gateway
 
-Agents never get connector credentials. `packages/mcp-gateway` runs one
-local MCP server per step (stdio, launched by the agent from the
-`mcpServers`/`mcp.json` entry) that exposes exactly the node's allowed
-connector capabilities as tools (`rally.artifact_read`,
-`github.pr_create`, ...). Each tool call goes to the engine over a
-private socket, passes the permission chain, then runs through
-`ConnectorRuntime` with secrets from `SecretStore`.
+Agents never get connector credentials. `packages/mcp-gateway` is one
+stdio MCP server per step (`mcpServers`/`mcp.json`) exposing the node's
+allowed capabilities as tools. Each call goes to the engine over a private
+socket, through the permission chain and `ConnectorRuntime` (secrets from
+`SecretStore`). One audit choke point: every call is a run event.
 
-Why: one choke point for audit (each call is a run event), and every
-connector transport looks the same to every agent.
+Server (BL-165): `--tools` + `--socket`; `tools/call` → `gateway/call`
+(ndjson) with `FLOWS_GATEWAY_TOKEN`. No secrets or connector code.
 
-Server half (BL-165): `--tools <spec.json> --socket <path>`; speaks MCP
-over stdio and forwards each `tools/call` as `gateway/call` (ndjson on the
-unix socket). No secrets or connector code; the engine side is BL-166.
+Engine (BL-166): `createMcpGatewayBridge` opens one token-auth socket per
+step, appends `connector_called`; profiles use `launchSpec` for mcp.json
+(BL-167).
 
 ## Inbox
 

@@ -32,3 +32,4 @@ export {
   type AcquireLockResult,
   type EngineLockSelf,
 } from "./engine-lock.ts"
+export { createNodeGatewaySocketServer } from "./gateway-socket.ts"
