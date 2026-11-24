@@ -61,7 +61,13 @@ export class ConnectorService {
 
   list(): ConnectorSummary[] {
     return this.listRecords()
-      .map((r) => toConnectorSummary(r.connector))
+      .map((r) => {
+        const live = this.statusById.get(r.connector.id)
+        return toConnectorSummary(
+          r.connector,
+          live ? { status: live.status, checkedAt: live.checkedAt } : undefined
+        )
+      })
       .sort((a, b) => a.id.localeCompare(b.id))
   }
 

@@ -535,6 +535,10 @@ export function createE2eHome(): string {
     ].join("\n"),
     { mode: 0o755 }
   )
+  // Stub `gh` so connector/check for github-cli is deterministic (BL-207).
+  writeFileSync(join(bin, "gh"), "#!/bin/sh\necho gh version 2.0.0\n", {
+    mode: 0o755,
+  })
   // Fake Cursor ACP agent on PATH (BL-142); used when agents.runtime=acp.
   const agentBin = join(bin, "agent")
   copyFileSync(
@@ -642,8 +646,10 @@ export function createE2eHome(): string {
       "id: github-cli",
       "name: GitHub",
       "transport: cli",
-      "how: gh",
+      // Absolute stub so connector/check does not depend on PATH (BL-207).
+      `how: ${join(bin, "gh")}`,
       "auth: cli-login",
+      "providerId: github",
       "capabilities:",
       "  - name: repo clone",
       "    desc: Read repositories",
@@ -672,6 +678,36 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  // Library item linked via github-cli providerId (BL-207 used-by).
+  const libItemDir = join(home, "library", "github-acme-demo")
+  mkdirSync(libItemDir, { recursive: true })
+  writeFileSync(
+    join(libItemDir, "item.yaml"),
+    [
+      "id: github-acme-demo",
+      "kind: repo",
+      "title: GitHub acme/demo",
+      "source: github",
+      "remoteId: acme/demo",
+      "remoteUrl: https://github.com/acme/demo",
+      "tags:",
+      "  - repo:acme/demo",
+      "current: 1",
+      "",
+    ].join("\n")
+  )
+  mkdirSync(join(libItemDir, "v1"), { recursive: true })
+  writeFileSync(
+    join(libItemDir, "v1", ".version.yaml"),
+    [
+      "n: 1",
+      "at: 2026-11-24T00:00:00.000Z",
+      "note: seed",
+      "contentHash: seed",
+      "",
+    ].join("\n")
+  )
+  writeFileSync(join(libItemDir, "v1", "README.md"), "# demo\n")
   // Workspace skills for BL-183 e2e.
   for (const dir of [".agents", ".claude"] as const) {
     const skillDir = join(home, dir, "skills", "write-tests")

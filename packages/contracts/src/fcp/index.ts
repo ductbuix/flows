@@ -207,6 +207,9 @@ export {
   connectorSignInMethod,
   connectorSignInParamsSchema,
   connectorSignInResultSchema,
+  connectorSignOutMethod,
+  connectorSignOutParamsSchema,
+  connectorSignOutResultSchema,
   connectorUpdateNotification,
 } from "./connector.ts"
 export {

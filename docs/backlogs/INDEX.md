@@ -212,7 +212,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-204 | todo | P1 | BL-193 | [Library sheet, versions, pin and pull](bl-204-library-sheet-versions.md) | Library items open in a sheet with versions, pin, pull, update and remove. | web, library |
 | BL-205 | todo | P1 | BL-204 | [Library: add dialog, tags and views](bl-205-library-add-tags-views.md) | Add from a link or a file, tag items and switch views, as in the mock. | web, library, tags |
 | BL-206 | todo | P2 | BL-193 | [Skill sources](bl-206-skill-sources.md) | Add and remove skill sources and update installed skills, as in the mock. | web, skills |
-| BL-207 | todo | P1 | BL-193 | [Connector sign-in, check and update](bl-207-connector-sign-in-check.md) | Connector sheet can sign in, check status and update settings. | web, connectors, desktop |
+| BL-207 | done | P1 | BL-193 | [Connector sign-in, check and update](bl-207-connector-sign-in-check.md) | Connector sheet can sign in, check status and update settings. | web, connectors, desktop |
 | BL-208 | todo | P2 | BL-193 | [Inbox and Files parity fixes](bl-208-inbox-files-parity.md) | Close the Inbox and Files rows of the parity checklist. | web, inbox, files |
 | BL-209 | todo | P1 | BL-200, BL-203 | [Remove the Runs page](bl-209-remove-runs-page.md) | Delete /runs and pages/runs list; run detail opens in context only. | web, runs, cleanup |
 | BL-210 | todo | P1 | BL-193 | [Settings panel and trust methods](bl-210-settings-panel-trust-fcp.md) | Settings opens from the sidebar footer as a panel; CLI, trust and MCP trust have FCP methods. | web, settings, trust, fcp |

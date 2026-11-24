@@ -118,6 +118,7 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
     expect(fcpMethodTable["connector/check"].kind).toBe("command")
     expect(fcpMethodTable["connector/sign_in"].kind).toBe("command")
+    expect(fcpMethodTable["connector/sign_out"].kind).toBe("command")
     expect(fcpNotificationTable["connector/update"].name).toBe(
       "connector/update"
     )
