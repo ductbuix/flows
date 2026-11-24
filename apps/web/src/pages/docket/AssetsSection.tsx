@@ -15,7 +15,6 @@ import {
 import { errorMessage } from "@/lib/fcp-error"
 import { AddAssetDiskDialog } from "./AddAssetDiskDialog"
 import { AssetOpenMenu } from "./AssetOpenMenu"
-import { AssetRowMenu } from "./AssetRowMenu"
 import { Adder, EmptyLine, ListRow, Section } from "./SectionParts"
 
 type IndexedAsset = FcpCallResult<"docket/get_card">["assets"][number]
@@ -27,6 +26,11 @@ type Props = {
   baseHash: string
   assets: IndexedAsset[]
   onMutated: () => void
+}
+
+function relativeToHome(path: string, home: string): string {
+  const root = home.replace(/\/$/, "") + "/"
+  return path.startsWith(root) ? path.slice(root.length) : path
 }
 
 function basename(path: string): string {
@@ -117,8 +121,12 @@ export function AssetsSection({
                 Missing
               </Badge>
             ) : null}
-            <AssetRowMenu
-              label={a.label ?? basename(a.path)}
+            <AssetOpenMenu
+              client={client}
+              storePath={relativeToHome(a.path, home)}
+              home={home}
+              compact
+              triggerTestId="asset-open-menu"
               onRemove={() => void remove(a.path)}
             />
           </ListRow>

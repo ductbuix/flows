@@ -220,15 +220,11 @@ test.describe("docket card panel assets (BL-199)", () => {
     await expect(dialog.getByTestId("disk-picker")).toContainText("notes.md")
     await dialog.getByTestId("asset-disk-submit").click()
     await expect(dialog).toBeHidden()
-    await expect(
-      panel.getByRole("button", { name: "Actions for notes.md" })
-    ).toBeVisible()
+    await expect(panel.getByTestId("asset-open-menu")).toBeVisible()
 
-    await panel.getByRole("button", { name: "Actions for notes.md" }).click()
+    await panel.getByTestId("asset-open-menu").click()
     await page.getByTestId("asset-remove").click()
-    await expect(
-      panel.getByRole("button", { name: "Actions for notes.md" })
-    ).toHaveCount(0)
+    await expect(panel.getByTestId("asset-open-menu")).toHaveCount(0)
   })
 
   test("item files", async ({ page }) => {
