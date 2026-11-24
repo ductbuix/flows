@@ -77,32 +77,32 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Workflows / canvas
 
-| id    | item                                      | status  | test id                               | backlog |
-| ----- | ----------------------------------------- | ------- | ------------------------------------- | ------- |
-| WF-01 | Workflows list + search                   | app     | `workflows.spec.ts › list`            | —       |
-| WF-02 | New workflow dialog                       | app     | `workflows.spec.ts › new`             | —       |
-| WF-03 | Row menu: rename, delete                  | app     | `workflows.spec.ts › rename delete`   | —       |
-| WF-04 | Workflow sheet (open from row)            | partial | `workflows.spec.ts › sheet`           | BL-203  |
-| WF-05 | Sheet: open editor                        | app     | `workflows.spec.ts › open editor`     | —       |
-| WF-06 | Sheet: inputs a card supplies             | missing | `workflows.spec.ts › sheet inputs`    | BL-203  |
-| WF-07 | Sheet: runs by card                       | missing | `workflows.spec.ts › sheet runs`      | BL-203  |
-| WF-08 | Sheet: start run for a card               | missing | `workflows.spec.ts › sheet start`     | BL-203  |
-| WF-09 | Editor route (YAML textarea today)        | app     | `workflows.spec.ts › editor yaml`     | BL-201  |
-| WF-10 | Node canvas, cards, edges, save layout    | app     | `workflows.spec.ts › canvas`          | BL-201  |
-| WF-11 | Add node menu with search                 | app     | `workflows.spec.ts › add node`        | BL-202  |
-| WF-12 | Node settings (prompt, format, limits, …) | app     | `workflows.spec.ts › node settings`   | BL-202  |
-| WF-13 | Toolbar: undo, redo, fit view             | app     | `workflows.spec.ts › undo redo`       | BL-202  |
-| WF-14 | Trigger inputs editor                     | app     | `workflows.spec.ts › trigger inputs`  | BL-202  |
-| WF-15 | Step connectors / skills multi-pick       | app     | `workflows.spec.ts › step connectors` | BL-202  |
-| WF-16 | Model row on node                         | app     | `workflows.spec.ts › model row`       | BL-202  |
-| WF-17 | Duplicate / delete node                   | app     | `workflows.spec.ts › node actions`    | BL-202  |
+| id    | item                                      | status | test id                               | backlog |
+| ----- | ----------------------------------------- | ------ | ------------------------------------- | ------- |
+| WF-01 | Workflows list + search                   | app    | `workflows.spec.ts › list`            | —       |
+| WF-02 | New workflow dialog                       | app    | `workflows.spec.ts › new`             | —       |
+| WF-03 | Row menu: rename, delete                  | app    | `workflows.spec.ts › rename delete`   | —       |
+| WF-04 | Workflow sheet (open from row)            | app    | `workflows.spec.ts › sheet`           | BL-203  |
+| WF-05 | Sheet: open editor                        | app    | `workflows.spec.ts › open editor`     | —       |
+| WF-06 | Sheet: inputs a card supplies             | app    | `workflows.spec.ts › sheet inputs`    | BL-203  |
+| WF-07 | Sheet: runs by card                       | app    | `workflows.spec.ts › sheet runs`      | BL-203  |
+| WF-08 | Sheet: start run for a card               | app    | `workflows.spec.ts › sheet start`     | BL-203  |
+| WF-09 | Editor route (YAML textarea today)        | app    | `workflows.spec.ts › editor yaml`     | BL-201  |
+| WF-10 | Node canvas, cards, edges, save layout    | app    | `workflows.spec.ts › canvas`          | BL-201  |
+| WF-11 | Add node menu with search                 | app    | `workflows.spec.ts › add node`        | BL-202  |
+| WF-12 | Node settings (prompt, format, limits, …) | app    | `workflows.spec.ts › node settings`   | BL-202  |
+| WF-13 | Toolbar: undo, redo, fit view             | app    | `workflows.spec.ts › undo redo`       | BL-202  |
+| WF-14 | Trigger inputs editor                     | app    | `workflows.spec.ts › trigger inputs`  | BL-202  |
+| WF-15 | Step connectors / skills multi-pick       | app    | `workflows.spec.ts › step connectors` | BL-202  |
+| WF-16 | Model row on node                         | app    | `workflows.spec.ts › model row`       | BL-202  |
+| WF-17 | Duplicate / delete node                   | app    | `workflows.spec.ts › node actions`    | BL-202  |
 
 ## Runs in context
 
 | id    | item                                  | status  | test id                              | backlog |
 | ----- | ------------------------------------- | ------- | ------------------------------------ | ------- |
 | RN-01 | Run entry on card (dialog + list)     | app     | `docket.spec.ts › run on card`       | BL-200  |
-| RN-02 | RunBar on canvas (select card, start) | missing | `workflows.spec.ts › canvas run bar` | BL-203  |
+| RN-02 | RunBar on canvas (select card, start) | app     | `workflows.spec.ts › canvas run bar` | BL-203  |
 | RN-03 | Run detail sheet (reuse `RunSheet`)   | partial | `runs.spec.ts › sheet in context`    | BL-209  |
 | RN-04 | `/runs` page + start-from-list        | drop    | `runs.spec.ts › page gone`           | BL-209  |
 
@@ -150,25 +150,25 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
-| id    | item                                           | status  | test id                             | backlog |
-| ----- | ---------------------------------------------- | ------- | ----------------------------------- | ------- |
-| IB-01 | Empty state                                    | app     | `inbox.spec.ts › empty`             | —       |
-| IB-02 | Approval: approve / reject / note              | app     | `inbox.spec.ts › approval`          | —       |
-| IB-03 | Permission allow / deny                        | app     | `inbox.spec.ts › permission`        | —       |
-| IB-04 | Question answer / skip                         | app     | `inbox.spec.ts › question`          | —       |
-| IB-05 | Plan review accept / reject                    | app     | `inbox.spec.ts › plan review`       | —       |
-| IB-06 | Dismiss                                        | app     | `inbox.spec.ts › dismiss`           | —       |
-| IB-07 | Sidebar badge from live inbox (not mock store) | app     | `shell-smoke.spec.ts › inbox badge` | BL-208  |
+| id    | item                                           | status | test id                             | backlog |
+| ----- | ---------------------------------------------- | ------ | ----------------------------------- | ------- |
+| IB-01 | Empty state                                    | app    | `inbox.spec.ts › empty`             | —       |
+| IB-02 | Approval: approve / reject / note              | app    | `inbox.spec.ts › approval`          | —       |
+| IB-03 | Permission allow / deny                        | app    | `inbox.spec.ts › permission`        | —       |
+| IB-04 | Question answer / skip                         | app    | `inbox.spec.ts › question`          | —       |
+| IB-05 | Plan review accept / reject                    | app    | `inbox.spec.ts › plan review`       | —       |
+| IB-06 | Dismiss                                        | app    | `inbox.spec.ts › dismiss`           | —       |
+| IB-07 | Sidebar badge from live inbox (not mock store) | app    | `shell-smoke.spec.ts › inbox badge` | BL-208  |
 
 ## Files
 
-| id    | item                                        | status  | test id                       | backlog |
-| ----- | ------------------------------------------- | ------- | ----------------------------- | ------- |
-| FL-01 | Tree, search, expand/collapse, count        | app     | `files.spec.ts › tree`        | —       |
-| FL-02 | Preview, markdown, edit, save               | app     | `files.spec.ts › edit save`   | —       |
-| FL-03 | Reveal in Finder (`file/reveal` / host)     | app     | `files.spec.ts › reveal`      | BL-208  |
-| FL-04 | `file/stat` for preview metadata            | app     | `files.spec.ts › stat`        | BL-208  |
-| FL-05 | DiskPicker (shared; used by library/assets) | app     | `library.spec.ts › disk pick` | BL-205  |
+| id    | item                                        | status | test id                       | backlog |
+| ----- | ------------------------------------------- | ------ | ----------------------------- | ------- |
+| FL-01 | Tree, search, expand/collapse, count        | app    | `files.spec.ts › tree`        | —       |
+| FL-02 | Preview, markdown, edit, save               | app    | `files.spec.ts › edit save`   | —       |
+| FL-03 | Reveal in Finder (`file/reveal` / host)     | app    | `files.spec.ts › reveal`      | BL-208  |
+| FL-04 | `file/stat` for preview metadata            | app    | `files.spec.ts › stat`        | BL-208  |
+| FL-05 | DiskPicker (shared; used by library/assets) | app    | `library.spec.ts › disk pick` | BL-205  |
 
 ## Shell / sidebar
 
@@ -183,14 +183,14 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 ## Settings
 
-| id    | item                                  | status  | test id                                   | backlog |
-| ----- | ------------------------------------- | ------- | ----------------------------------------- | ------- |
-| ST-01 | Theme toggle (light / dark / system)  | app     | `sidebar-settings.spec.ts › theme`        | BL-210  |
-| ST-02 | Open as panel (not `/settings` route) | app     | `sidebar-settings.spec.ts › panel`        | BL-210  |
-| ST-03 | CLI status / trust                    | app     | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
-| ST-04 | Always-trust paths                    | app     | `sidebar-settings.spec.ts › always trust` | BL-210  |
-| ST-05 | MCP trust allow list                  | app     | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
-| ST-06 | `/settings` route                     | drop    | `sidebar-settings.spec.ts › no route`     | BL-210  |
+| id    | item                                  | status | test id                                   | backlog |
+| ----- | ------------------------------------- | ------ | ----------------------------------------- | ------- |
+| ST-01 | Theme toggle (light / dark / system)  | app    | `sidebar-settings.spec.ts › theme`        | BL-210  |
+| ST-02 | Open as panel (not `/settings` route) | app    | `sidebar-settings.spec.ts › panel`        | BL-210  |
+| ST-03 | CLI status / trust                    | app    | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
+| ST-04 | Always-trust paths                    | app    | `sidebar-settings.spec.ts › always trust` | BL-210  |
+| ST-05 | MCP trust allow list                  | app    | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
+| ST-06 | `/settings` route                     | drop   | `sidebar-settings.spec.ts › no route`     | BL-210  |
 
 ## Counts
 

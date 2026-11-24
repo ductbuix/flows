@@ -378,14 +378,39 @@ export function createE2eHome(): string {
   }
   // Node run workflows for node-run.spec.ts (BL-086); each test owns one.
   for (const theme of ["light", "dark"]) {
-    for (const [id, run] of [
-      [`node-run-ok-${theme}`, "echo built"],
-      [`node-run-fail-${theme}`, "echo broken >&2; exit 1"],
-    ] as const) {
-      const dir = join(home, "workflows", id)
-      mkdirSync(dir, { recursive: true })
-      writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, run))
-    }
+    const okId = `node-run-ok-${theme}`
+    const okDir = join(home, "workflows", okId)
+    mkdirSync(okDir, { recursive: true })
+    writeFileSync(join(okDir, "workflow.yaml"), nodeRunYaml(okId, "echo built"))
+    const id = `node-run-fail-${theme}`
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "talk"), { recursive: true })
+    // LLM keeps this on the engine path (core can hang on non-zero exit; BL-203).
+    const run = "echo broken >&2; exit 1"
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      `id: ${id}
+goal: e2e node run fail
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: build
+    kind: command
+    run: ${JSON.stringify(run)}
+  - id: talk
+    kind: llm
+    cli: claude
+  - id: done
+    kind: output
+    target: folder
+edges:
+  - { from: start, to: build }
+  - { from: build, to: talk }
+  - { from: talk, to: done }
+`
+    )
+    writeFileSync(join(dir, "nodes", "talk", "prompt.md"), "unused\n")
   }
   // Out-file preview for node-out-preview.spec.ts.
   {
