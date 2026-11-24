@@ -9,9 +9,14 @@ import {
   restrictedSyntaxSelectors,
 } from "./eslint-tailwind-guard.js"
 import { uiGuardPlugin } from "./eslint-ui-guards.js"
+import {
+  noCycleBlock,
+  webRestrictedImports,
+} from "../../eslint-dependency-guards.mjs"
 
 export default defineConfig([
   globalIgnores(["dist"]),
+  noCycleBlock,
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
@@ -25,6 +30,7 @@ export default defineConfig([
     },
     rules: {
       "react-refresh/only-export-components": "off",
+      ...webRestrictedImports,
     },
   },
   // DES-024 / DES-025: ban arbitrary values, palette colors, and size/radius

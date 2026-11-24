@@ -2,7 +2,7 @@
 id: BL-129
 title: SecretStore port, fake and adapter
 type: backlog
-status: todo
+status: done
 summary: SecretStore port in core with an in-memory fake, one contract suite, and the Node adapter in adapters-node passing it.
 tags: [core, ports, adapters]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Move `secrets.ts` (keychain and `secrets/`) behind the `SecretStore` port (DES-0
 
 ## Done when
 
-- [ ] `SecretStore` interface: `get`, `set`, `delete` by key.
-- [ ] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
-- [ ] `secrets.ts` (keychain and `secrets/`) lives in `packages/adapters-node` and passes the suite.
+- [x] `SecretStore` interface: `get`, `set`, `delete` by key.
+- [x] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
+- [x] `secrets.ts` (keychain and `secrets/`) lives in `packages/adapters-node` and passes the suite.

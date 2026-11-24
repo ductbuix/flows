@@ -2,7 +2,7 @@
 id: BL-124
 title: run/list, run/get and run_changed over FCP
 type: backlog
-status: todo
+status: done
 summary: Read runs through FCP and push run/update run_changed when the run list changes.
 tags: [fcp, runs]
 related: [DES-040]
@@ -19,6 +19,6 @@ Second slice: a query plus an update stream, backed by today's run summary and `
 
 ## Done when
 
-- [ ] `run/list` pages by cursor; `run/get` returns the run summary.
-- [ ] Today's `runs_changed` event publishes `run/update { kind: run_changed }` on the bus.
-- [ ] Integration test: start a run via REST, see `run_changed` on an FCP subscriber.
+- [x] `run/list` pages by cursor; `run/get` returns the run summary.
+- [x] Today's `runs_changed` event publishes `run/update { kind: run_changed }` on the bus.
+- [x] Integration test: start a run via REST, see `run_changed` on an FCP subscriber.

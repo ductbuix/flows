@@ -2,7 +2,7 @@
 id: BL-110
 title: Rename shared to contracts
 type: backlog
-status: todo
+status: done
 summary: packages/shared becomes packages/contracts; a re-export shim keeps @workspace/shared imports working until callers move.
 tags: [contracts, packages]
 related: [DES-039]
@@ -19,6 +19,6 @@ Rename the package that holds zod schemas so its name says what it is (DES-039).
 
 ## Done when
 
-- [ ] `packages/contracts` (`@workspace/contracts`) holds the code; `packages/shared` only re-exports it.
-- [ ] AGENTS.md layout updated.
-- [ ] `pnpm typecheck`, `pnpm test` and `pnpm lint` pass with no other source change.
+- [x] `packages/contracts` (`@workspace/contracts`) holds the code; `packages/shared` only re-exports it.
+- [x] AGENTS.md layout updated.
+- [x] `pnpm typecheck`, `pnpm test` and `pnpm lint` pass with no other source change.

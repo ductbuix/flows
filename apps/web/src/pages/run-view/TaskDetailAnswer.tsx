@@ -1,5 +1,9 @@
 import type { RunStep } from "@workspace/shared"
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
 import { mono } from "@/components/data/mono"
 
 function show(v: unknown): string {
@@ -26,11 +30,15 @@ export function TaskDetailAnswer({ step }: { step: RunStep | undefined }) {
   return (
     <section data-testid="task-answer" className="flex flex-col gap-1.5">
       <h3 className="text-sm font-medium">Answer</h3>
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 rounded-md border px-3 py-2 text-sm">
+      <dl className="flex flex-col gap-1 rounded-md border px-3 py-2 text-sm">
         {entries.map(([name, value]) => (
-          <div key={name} className="contents" data-testid={`task-answer-${name}`}>
-            <dt className={`${mono} text-muted-foreground`}>{name}</dt>
-            <dd className="min-w-0 break-words">{show(value)}</dd>
+          <div
+            key={name}
+            className="flex gap-4"
+            data-testid={`task-answer-${name}`}
+          >
+            <dt className={`${mono} shrink-0 text-muted-foreground`}>{name}</dt>
+            <dd className="min-w-0 flex-1 break-words">{show(value)}</dd>
           </div>
         ))}
       </dl>

@@ -2,7 +2,7 @@
 id: BL-111
 title: FCP method table and error codes
 type: backlog
-status: todo
+status: done
 summary: contracts exports defineMethod, an empty FCP method table, FCP_VERSION and the DES-040 error code enum.
 tags: [contracts, protocol]
 related: [DES-040, DES-042]
@@ -19,6 +19,6 @@ Give every FCP method one declaration (`name`, `params` zod, `result` zod, `kind
 
 ## Done when
 
-- [ ] `defineMethod` and `defineNotification` infer param and result types.
-- [ ] `FCP_VERSION = 1` and `ErrorCode` (`invalid_params` ... `internal`) with their JSON-RPC numbers from DES-040.
-- [ ] Unit test: a sample method infers types (type test) and the error table has unique numbers.
+- [x] `defineMethod` and `defineNotification` infer param and result types.
+- [x] `FCP_VERSION = 1` and `ErrorCode` (`invalid_params` ... `internal`) with their JSON-RPC numbers from DES-040.
+- [x] Unit test: a sample method infers types (type test) and the error table has unique numbers.

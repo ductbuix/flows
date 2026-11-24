@@ -1,0 +1,35 @@
+{
+  "name": "@workspace/core",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./ports": "./src/ports/index.ts",
+    "./kernel/hash": "./src/kernel/hash.ts",
+    "./testing": "./src/testing/index.ts",
+    "./testing/document-store.contract": "./src/testing/document-store.contract.ts",
+    "./testing/event-store.contract": "./src/testing/event-store.contract.ts",
+    "./testing/file-watcher.contract": "./src/testing/file-watcher.contract.ts",
+    "./testing/process-runner.contract": "./src/testing/process-runner.contract.ts",
+    "./testing/secret-store.contract": "./src/testing/secret-store.contract.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.1",
+    "zod": "^4.6.7"
+  },
+  "dependencies": {
+    "@workspace/contracts": "workspace:*",
+    "@workspace/protocol": "workspace:*"
+  }
+}

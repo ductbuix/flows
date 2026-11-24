@@ -2,7 +2,7 @@
 id: BL-128
 title: ProcessRunner port, fake and adapter
 type: backlog
-status: todo
+status: done
 summary: ProcessRunner port in core with an in-memory fake, one contract suite, and the Node adapter in adapters-node passing it.
 tags: [core, ports, adapters]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Move `runner.ts`, `pid.ts` and `sandbox.ts` behind the `ProcessRunner` port (DES
 
 ## Done when
 
-- [ ] `ProcessRunner` interface: `spawn(spec, signal) -> { stdin, stdout, stderr, exit }` in its own process group, sandbox profile in the spec.
-- [ ] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
-- [ ] `runner.ts`, `pid.ts` and `sandbox.ts` lives in `packages/adapters-node` and passes the suite.
+- [x] `ProcessRunner` interface: `spawn(spec, signal) -> { stdin, stdout, stderr, exit }` in its own process group, sandbox profile in the spec.
+- [x] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
+- [x] `runner.ts`, `pid.ts` and `sandbox.ts` lives in `packages/adapters-node` and passes the suite.

@@ -1,18 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { healthSchema } from "./index"
+import { healthSchema } from "@workspace/shared"
 
-describe("healthSchema", () => {
-  it("accepts a healthy payload", () => {
+describe("@workspace/shared re-exports contracts", () => {
+  it("exposes healthSchema", () => {
     expect(healthSchema.parse({ ok: true, version: "1.2.3" })).toEqual({
       ok: true,
       version: "1.2.3",
     })
-  })
-
-  it("rejects ok: false and a missing version", () => {
-    expect(healthSchema.safeParse({ ok: false, version: "1" }).success).toBe(
-      false
-    )
-    expect(healthSchema.safeParse({ ok: true }).success).toBe(false)
   })
 })

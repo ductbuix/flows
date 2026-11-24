@@ -2,7 +2,7 @@
 id: BL-122
 title: sdk-react hooks
 type: backlog
-status: todo
+status: done
 summary: useQuery and useSubscription hooks over the sdk, with refetch on matching updates and on resync.
 tags: [sdk, web, react]
 related: [DES-039]
@@ -19,6 +19,6 @@ Give pages one data pattern: a query plus the update topics that invalidate it. 
 
 ## Done when
 
-- [ ] `useQuery(method, params, { topics })` returns `{ data, error, loading }` and refetches on a matching update or resync.
-- [ ] `useSubscription(topic, handler)` for streams (run chunks).
-- [ ] Component tests with a fake client.
+- [x] `useQuery(method, params, { topics })` returns `{ data, error, loading }` and refetches on a matching update or resync.
+- [x] `useSubscription(topic, handler)` for streams (run chunks).
+- [x] Component tests with a fake client.

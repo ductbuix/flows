@@ -36,20 +36,23 @@ import { ActionButton } from "@/components/ActionButton"
 import { TrustStartGate } from "@/components/TrustStartGate"
 import { mono } from "@/components/data/mono"
 
+type Loaded = {
+  id: string
+  item: WorkItem
+  hash: string
+  attachments: WorkItemAttachment[]
+}
+
 export function WorkItemPage() {
   const { workItemId } = useParams() as { workItemId: string }
-  const [item, setItem] = useState<WorkItem | null>(null)
-  const [hash, setHash] = useState<string | null>(null)
-  const [attachments, setAttachments] = useState<WorkItemAttachment[] | null>(
-    null
-  )
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const [errorFor, setErrorFor] = useState<{
+    id: string
+    message: string
+  } | null>(null)
 
   useEffect(() => {
     let alive = true
-    setLoading(true)
-    setError(null)
     void (async () => {
       const [detailRes, filesRes] = await Promise.all([
         api.workitems[":id"].$get({ param: { id: workItemId } }),
@@ -57,25 +60,26 @@ export function WorkItemPage() {
       ])
       if (!alive) return
       if (!detailRes.ok) {
-        setLoading(false)
-        setError(
-          detailRes.status === 404
-            ? `Work item ${workItemId} was not found.`
-            : "Could not load work item"
-        )
+        setErrorFor({
+          id: workItemId,
+          message:
+            detailRes.status === 404
+              ? `Work item ${workItemId} was not found.`
+              : "Could not load work item",
+        })
         return
       }
       const detail = workItemDetailSchema.parse(await detailRes.json())
-      setItem(detail.item)
-      setHash(detail.hash)
-      if (filesRes.ok) {
-        setAttachments(
-          workItemAttachmentListSchema.parse(await filesRes.json()).files
-        )
-      } else {
-        setAttachments([])
-      }
-      setLoading(false)
+      const attachments = filesRes.ok
+        ? workItemAttachmentListSchema.parse(await filesRes.json()).files
+        : []
+      setErrorFor(null)
+      setLoaded({
+        id: workItemId,
+        item: detail.item,
+        hash: detail.hash,
+        attachments,
+      })
     })()
     return () => {
       alive = false
@@ -85,6 +89,13 @@ export function WorkItemPage() {
   function onStarted(runId: string) {
     toast.success(`Started run ${runId}`)
   }
+
+  const match = loaded?.id === workItemId
+  const item = match ? loaded.item : null
+  const hash = match ? loaded.hash : null
+  const attachments = match ? loaded.attachments : null
+  const error = errorFor?.id === workItemId ? errorFor.message : null
+  const loading = !match && !error
 
   const crumbs = [
     { label: "Work items", to: "/work-items" },
@@ -138,8 +149,11 @@ export function WorkItemPage() {
                 item={item}
                 hash={hash}
                 onUpdated={(next, nextHash) => {
-                  setItem(next)
-                  setHash(nextHash)
+                  setLoaded((prev) =>
+                    prev && prev.id === workItemId
+                      ? { ...prev, item: next, hash: nextHash }
+                      : prev
+                  )
                 }}
               />
 

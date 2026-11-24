@@ -8,6 +8,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
+import { ItemActions } from "@workspace/ui/components/item"
 import { ModelSelector } from "@/components/ai-elements/model-selector"
 import { useCliModels } from "@/hooks/use-cli-models"
 
@@ -23,7 +24,7 @@ export function CliModelRow({ cli, model, effort, onSetting }: Props) {
   const { catalog } = useCliModels(cli)
   const [cliOpen, setCliOpen] = useState(false)
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <ItemActions className="flex-wrap gap-1.5">
       <DropdownMenu open={cliOpen} onOpenChange={setCliOpen}>
         <DropdownMenuTrigger
           render={
@@ -58,6 +59,6 @@ export function CliModelRow({ cli, model, effort, onSetting }: Props) {
         onChangeModel={(m) => onSetting("model", m)}
         onChangeEffort={(e: Effort | undefined) => onSetting("effort", e)}
       />
-    </div>
+    </ItemActions>
   )
 }

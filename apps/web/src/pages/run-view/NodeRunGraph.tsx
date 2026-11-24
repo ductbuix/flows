@@ -1,13 +1,30 @@
 import { useEffect, useMemo, useState } from "react"
-import { runCanvasSchema, type RunCanvas, type RunDetail } from "@workspace/shared"
-import { Background, Controls, ReactFlow, type Edge, type Node } from "@xyflow/react"
+import {
+  runCanvasSchema,
+  type RunCanvas,
+  type RunDetail,
+} from "@workspace/shared"
+import {
+  Background,
+  Controls,
+  ReactFlow,
+  type Edge,
+  type Node,
+} from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { api } from "@/lib/api"
+import { useTickingNow } from "@/hooks/use-ticking-now"
 import { decideStep, type Decision } from "@/nodes/decide"
 import { NodeCard, NodeRunContext, type NodeCardData } from "@/nodes/NodeCard"
 import { edgeTypes } from "@/nodes/LoopEdge"
 import { nodeTextPath } from "@/nodes"
-import { formatElapsed, nodeStatus, passesOf, verdictsOf, type NodeRunView } from "@/pages/editor/node-run"
+import {
+  formatElapsed,
+  nodeStatus,
+  passesOf,
+  verdictsOf,
+  type NodeRunView,
+} from "@/pages/editor/node-run"
 import { canvasEdges } from "@/pages/editor/canvas-edges"
 import { placeNodes } from "@/pages/editor/node-canvas-layout"
 
@@ -57,6 +74,9 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
     [canvas]
   )
 
+  const stepsLive = (run.steps ?? []).some((s) => !!s.startedAt && !s.endedAt)
+  const now = useTickingNow(stepsLive)
+
   const state = useMemo(() => {
     const views: Record<string, NodeRunView> = {}
     const verdicts = verdictsOf(run.steps)
@@ -64,7 +84,7 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
     for (const s of run.steps ?? []) {
       const status = nodeStatus(s.status)
       if (!status) continue
-      const end = s.endedAt ? Date.parse(s.endedAt) : Date.now()
+      const end = s.endedAt ? Date.parse(s.endedAt) : now
       views[s.nodeId] = {
         status,
         ...(verdicts[s.nodeId] ? { verdict: verdicts[s.nodeId] } : {}),
@@ -81,7 +101,7 @@ export function NodeRunGraph({ run, selectedTaskId, onSelectTask }: Props) {
         decideStep(run.id, id, decision),
       readOnly: true,
     }
-  }, [run.steps, run.id])
+  }, [run, now])
 
   return (
     <div className="h-full min-h-80 w-full" data-testid="run-graph">

@@ -1,5 +1,6 @@
 import { upgradeWebSocket } from "@hono/node-server"
 import { zValidator } from "@hono/zod-validator"
+import { UpdateBus } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
 import {
   putWorkflowBodySchema,
@@ -35,6 +36,7 @@ import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
+import { fcpIndexResponse, fcpUpgrade } from "./fcp-routes.ts"
 import { layoutRoutes } from "./layout-routes.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
 import { WsHub } from "./ws-hub.ts"
@@ -48,13 +50,25 @@ const runsQuery = z.object({
   limit: z.coerce.number().int().positive().optional(),
 })
 
-export function createApp({ engine }: { engine: Engine }) {
-  const hub = new WsHub(engine)
+export type CreateAppOptions = {
+  engine: Engine
+  /** Per-launch lock token; defaults for API-only tests. */
+  fcpToken?: string
+  /** Daemon listen port; used for FCP Host/Origin allowlists. */
+  port?: number
+}
+
+export function createApp({
+  engine,
+  fcpToken = "test-fcp-token",
+  port = Number(process.env.PORT ?? 8787),
+}: CreateAppOptions) {
+  const bus = new UpdateBus()
+  const hub = new WsHub(engine, bus)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
 
-  return new Hono()
-    .basePath("/api")
+  const api = new Hono()
     .route("/", lifecycleRoutes(engine, hub))
     .route("/", fileRoutes(engine))
     .route("/", runInputRoutes(engine))
@@ -159,6 +173,11 @@ export function createApp({ engine }: { engine: Engine }) {
       "/ws",
       upgradeWebSocket(() => hub.connection())
     )
+
+  return new Hono()
+    .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
+    .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus))
+    .route("/api", api)
 }
 
 export type AppType = ReturnType<typeof createApp>

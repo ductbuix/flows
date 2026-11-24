@@ -2,7 +2,7 @@
 id: BL-112
 title: Branded ids
 type: backlog
-status: todo
+status: done
 summary: Branded zod ids (CardId, RunId, WorkflowId, StepId, ConnectorId, SkillSlug, LibItemId) in contracts for new code.
 tags: [contracts, types]
 related: [DES-042]
@@ -19,5 +19,5 @@ Add branded id schemas so new signatures cannot mix ids. Existing code is not mi
 
 ## Done when
 
-- [ ] Each id is `z.string().regex(...).brand<...>()` with the slug rules already used for that entity.
-- [ ] Type test: passing a `RunId` where a `CardId` is expected fails to compile.
+- [x] Each id is `z.string().regex(...).brand<...>()` with the slug rules already used for that entity.
+- [x] Type test: passing a `RunId` where a `CardId` is expected fails to compile.

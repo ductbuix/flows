@@ -254,6 +254,10 @@ private socket, passes the permission chain, then runs through
 Why: one choke point for audit (each call is a run event), and every
 connector transport looks the same to every agent.
 
+Server half (BL-165): `--tools <spec.json> --socket <path>`; speaks MCP
+over stdio and forwards each `tools/call` as `gateway/call` (ndjson on the
+unix socket). No secrets or connector code; the engine side is BL-166.
+
 ## Inbox
 
 A projection, not a store: items come from run events

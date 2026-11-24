@@ -66,8 +66,10 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
   const nodeRun = useNodeRun()
   const { runId, follow } = nodeRun
   const latest = useRef(editor)
-  latest.current = editor
   const beginRef = useRef<(target: StartTarget) => void>(undefined)
+  useEffect(() => {
+    latest.current = editor
+  }, [editor])
   const live = nodeRun.live
   const runState = useMemo(
     () => ({
@@ -155,7 +157,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
   return (
     <>
       <div
-        className="flex shrink-0 items-center justify-end gap-2 px-6 py-2"
+        className="flex shrink-0 items-center justify-end gap-2 py-2"
         data-testid="node-toolbar"
       >
         <Button
@@ -261,7 +263,7 @@ export function NodeEditorSurface({ editor }: { editor: Editor }) {
         </Button>
       </div>
       {warnings.length > 0 ? (
-        <div className="shrink-0 px-6 pb-2">
+        <div className="shrink-0 pb-2">
           <Alert data-testid="loop-warnings">
             <AlertTitle>Loop without a Judge</AlertTitle>
             <AlertDescription>

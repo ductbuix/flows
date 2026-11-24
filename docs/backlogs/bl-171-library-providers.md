@@ -2,7 +2,7 @@
 id: BL-171
 title: Library provider descriptors
 type: backlog
-status: todo
+status: done
 summary: Providers are data (pattern, layout, tags, access, fetch) with library/list_providers and save_provider over FCP.
 tags: [library, fcp]
 related: [DES-041]
@@ -19,6 +19,6 @@ Add a system without a release, as the mockup's `library-providers.ts` shows.
 
 ## Done when
 
-- [ ] Pattern needs a named group `id`; invalid regex is `invalid_params`.
-- [ ] Presets ship for GitHub, Confluence and Rally.
-- [ ] Tests: link recognition per preset.
+- [x] Pattern needs a named group `id`; invalid regex is `invalid_params`.
+- [x] Presets ship for GitHub, Confluence and Rally.
+- [x] Tests: link recognition per preset.

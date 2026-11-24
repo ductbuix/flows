@@ -207,6 +207,9 @@ the engine resolves them, so the UI never builds a filesystem path.
   previous version for one release through an adapter in the binding.
 - `contracts` exports `FCP_VERSION`; a contract test fails when the method
   table changes without a version note in this doc.
+- v1 additive (2026-11-24): `workflow/list`, `workflow/get` (BL-123).
+- v1 additive (2026-11-24): `file/list`, `file/stat`, `file/read_text`,
+  `file/write_text`, `file/reveal` (BL-174).
 
 ## Example
 

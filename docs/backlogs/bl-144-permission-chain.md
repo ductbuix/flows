@@ -2,7 +2,7 @@
 id: BL-144
 title: Permission policy chain
 type: backlog
-status: todo
+status: done
 summary: Pure chain of permission rules (path, connector capability, node allowlist, remembered answer) returning allow, reject or ask.
 tags: [security, permissions, core]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ One ordered, testable place for safety rules (DES-041 rules 1-4).
 
 ## Done when
 
-- [ ] `decidePermission(request, context) -> allow_once | allow_always | reject | ask` with the rule that decided.
-- [ ] `allow_always` memory is per workflow and tool, stored in settings.
-- [ ] Table tests for each rule and their order.
+- [x] `decidePermission(request, context) -> allow_once | allow_always | reject | ask` with the rule that decided.
+- [x] `allow_always` memory is per workflow and tool, stored in settings.
+- [x] Table tests for each rule and their order.

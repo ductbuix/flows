@@ -2,7 +2,7 @@
 id: BL-154
 title: Docket index projection
 type: backlog
-status: todo
+status: done
 summary: In-memory index of card faces, backlinks and missing linked assets, rebuilt from files and kept live by the watcher.
 tags: [docket, core]
 related: [DES-038, DES-041]
@@ -19,6 +19,6 @@ Fast board lists without a second source of truth.
 
 ## Done when
 
-- [ ] Index rebuilds from files on start; a file change updates one entry.
-- [ ] Backlinks computed from links; unknown status goes to Unsorted.
-- [ ] Tests: hand edit on disk shows up; dangling link flagged.
+- [x] Index rebuilds from files on start; a file change updates one entry.
+- [x] Backlinks computed from links; unknown status goes to Unsorted.
+- [x] Tests: hand edit on disk shows up; dangling link flagged.

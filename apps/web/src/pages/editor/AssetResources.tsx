@@ -11,6 +11,7 @@ import {
 } from "@workspace/shared"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { ItemActions } from "@workspace/ui/components/item"
 import {
   Command,
   CommandEmpty,
@@ -55,7 +56,9 @@ function usePickerData() {
         ])
         if (!alive) return
         if (c.ok)
-          setConnections(connectionsListSchema.parse(await c.json()).connections)
+          setConnections(
+            connectionsListSchema.parse(await c.json()).connections
+          )
         if (k.ok)
           setConnectors(connectorsListSchema.parse(await k.json()).connectors)
         if (l.ok) setEntities(libraryListSchema.parse(await l.json()).entities)
@@ -119,16 +122,20 @@ export function AssetResources({ resources, onChange }: Props) {
                     data-testid={`asset-fresh-${i}`}
                   />
                 )}
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={`Remove ${r.id}`}
-                  data-testid={`asset-remove-${i}`}
-                  onClick={() => onChange(resources.filter((_, j) => j !== i))}
-                >
-                  <XIcon />
-                </Button>
+                <ItemActions>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={`Remove ${r.id}`}
+                    data-testid={`asset-remove-${i}`}
+                    onClick={() =>
+                      onChange(resources.filter((_, j) => j !== i))
+                    }
+                  >
+                    <XIcon />
+                  </Button>
+                </ItemActions>
               </li>
             )
           })}
@@ -141,19 +148,21 @@ export function AssetResources({ resources, onChange }: Props) {
           if (!o) setQuery("")
         }}
       >
-        <PopoverTrigger
-          render={
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              data-testid="asset-picker-open"
-            />
-          }
-        >
-          <PlusIcon data-icon="inline-start" />
-          Add resource
-        </PopoverTrigger>
+        <ItemActions>
+          <PopoverTrigger
+            render={
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                data-testid="asset-picker-open"
+              />
+            }
+          >
+            <PlusIcon data-icon="inline-start" />
+            Add resource
+          </PopoverTrigger>
+        </ItemActions>
         <PopoverContent className="w-80 p-0" data-testid="asset-picker">
           <Command>
             <CommandInput
@@ -171,9 +180,7 @@ export function AssetResources({ resources, onChange }: Props) {
                 const kinds =
                   connectors.find((k) => k.id === conn.connector)
                     ?.entityKinds ?? []
-                const pulled = entities.filter(
-                  (e) => e.connection === conn.id
-                )
+                const pulled = entities.filter((e) => e.connection === conn.id)
                 return (
                   <CommandGroup
                     key={conn.id}

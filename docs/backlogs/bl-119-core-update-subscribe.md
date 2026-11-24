@@ -2,7 +2,7 @@
 id: BL-119
 title: Update bus, subscribe and resync
 type: backlog
-status: todo
+status: done
 summary: UpdateBus with engine-wide seq, subscribe/unsubscribe by topic, a bounded replay buffer and resync when the buffer is short.
 tags: [core, protocol, fcp]
 related: [DES-040, DES-041]
@@ -19,6 +19,6 @@ Give every update stream one ordering and one recovery path, as DES-040 Subscrip
 
 ## Done when
 
-- [ ] `subscribe({ topics, since })` returns `{ seq, resync }`; updates carry `seq`; `run:<id>` topics filter heavy kinds.
-- [ ] Replay buffer is bounded (setting); a `since` older than it lists the topic in `resync`.
-- [ ] Unit tests: ordering, replay, resync, unsubscribe on peer close.
+- [x] `subscribe({ topics, since })` returns `{ seq, resync }`; updates carry `seq`; `run:<id>` topics filter heavy kinds.
+- [x] Replay buffer is bounded (setting); a `since` older than it lists the topic in `resync`.
+- [x] Unit tests: ordering, replay, resync, unsubscribe on peer close.

@@ -2,7 +2,7 @@
 id: BL-113
 title: packages/core skeleton and kernel
 type: backlog
-status: todo
+status: done
 summary: "New packages/core with kernel types (EngineError, Result, Clock, Ids, Logger) and a lint rule that forbids node: imports inside core."
 tags: [core, engine]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Start the UI-free core next to today's `packages/engine`. Only the kernel lands 
 
 ## Done when
 
-- [ ] `packages/core/src/kernel/` exports `EngineError` (code from the error enum or a string for now), `Result`, `Clock`, `Ids`, `Logger` interfaces and test fakes in `core/src/testing/`.
-- [ ] ESLint `no-restricted-imports` in `packages/core/**` bans `node:*`, `fs`, `child_process`, `better-sqlite3`.
-- [ ] Unit tests for `Result` helpers and the fake clock.
+- [x] `packages/core/src/kernel/` exports `EngineError` (code from the error enum or a string for now), `Result`, `Clock`, `Ids`, `Logger` interfaces and test fakes in `core/src/testing/`.
+- [x] ESLint `no-restricted-imports` in `packages/core/**` bans `node:*`, `fs`, `child_process`, `better-sqlite3`.
+- [x] Unit tests for `Result` helpers and the fake clock.

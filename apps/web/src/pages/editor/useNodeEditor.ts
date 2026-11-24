@@ -184,11 +184,15 @@ export function useNodeEditor(workflowId: string) {
   )
 
   const dirtyPaths = textPaths.filter(
-    (p) => state.files[p] !== undefined && state.files[p] !== (state.base[p]?.content ?? "")
+    (p) =>
+      state.files[p] !== undefined &&
+      state.files[p] !== (state.base[p]?.content ?? "")
   )
   const yamlDirty = !!state.detail && state.draft !== state.detail.yaml
   const isDirty = yamlDirty || dirtyPaths.length > 0
-  dirty.current = isDirty
+  useEffect(() => {
+    dirty.current = isDirty
+  }, [isDirty])
 
   /** Adds a node at `pos` (and wires it when dropped from a wire). */
   const addNode = useCallback(
@@ -217,17 +221,14 @@ export function useNodeEditor(workflowId: string) {
   }, [])
 
   /** Sets a node's YAML key; `undefined` removes it. */
-  const setSetting = useCallback(
-    (id: string, key: string, value: unknown) => {
-      setState((s) =>
-        applyChange(s, {
-          yaml: setNodeKey(s.draft, id, key, value),
-          key: `set:${id}:${key}`,
-        })
-      )
-    },
-    []
-  )
+  const setSetting = useCallback((id: string, key: string, value: unknown) => {
+    setState((s) =>
+      applyChange(s, {
+        yaml: setNodeKey(s.draft, id, key, value),
+        key: `set:${id}:${key}`,
+      })
+    )
+  }, [])
 
   /** Removes a node and its edges; Save trashes its folder (the PUT). */
   const removeNode = useCallback((id: string) => {
@@ -247,7 +248,10 @@ export function useNodeEditor(workflowId: string) {
   }, [])
 
   const endEdit = useCallback(
-    () => setState((s) => (s.typing === undefined ? s : { ...s, typing: undefined })),
+    () =>
+      setState((s) =>
+        s.typing === undefined ? s : { ...s, typing: undefined }
+      ),
     []
   )
 

@@ -26,7 +26,6 @@ export function PastRunCanvas({
 
   useEffect(() => {
     let alive = true
-    setRun(null)
     void (async () => {
       const res = await api.runs[":runId"].$get({ param: { runId } })
       if (alive && res.ok) apply(runDetailSchema.parse(await res.json()))
@@ -40,11 +39,10 @@ export function PastRunCanvas({
 
   return (
     <div className="flex h-full flex-col" data-testid="past-run">
-      <div className="flex shrink-0 items-center gap-3 border-b px-6 py-2">
+      <div className="flex shrink-0 items-center gap-3 border-b px-4 py-2">
         <Button
           type="button"
           variant="outline"
-          size="sm"
           data-testid="back-to-editing"
           onClick={onBack}
         >

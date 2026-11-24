@@ -2,7 +2,7 @@
 id: BL-151
 title: Docket schemas
 type: backlog
-status: todo
+status: done
 summary: cardSchema, refSchema, assetSchema, linkSchema and boardSchema in contracts, loose with passthrough as DES-038 specifies.
 tags: [docket, contracts]
 related: [DES-038]
@@ -19,5 +19,5 @@ Types for the board before any store.
 
 ## Done when
 
-- [ ] Required: id, title, status, created, updated; unknown keys pass through.
-- [ ] Unit tests: minimal card, card with unknown keys keeps them, invalid date warns via a tolerant parse result.
+- [x] Required: id, title, status, created, updated; unknown keys pass through.
+- [x] Unit tests: minimal card, card with unknown keys keeps them, invalid date warns via a tolerant parse result.

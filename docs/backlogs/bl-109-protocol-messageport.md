@@ -2,7 +2,7 @@
 id: BL-109
 title: MessagePort transport
 type: backlog
-status: todo
+status: done
 summary: Transport over a MessagePort (structured clone), for Electron renderer to utility process and for workers.
 tags: [protocol, electron]
 related: [DES-040, DES-039]
@@ -19,6 +19,6 @@ Add `messagePortTransport(port)` for any port with `postMessage`/`onmessage` (DO
 
 ## Done when
 
-- [ ] Messages are posted as plain objects, no JSON string round trip.
-- [ ] Closing either end calls `onClose` on the other where the platform reports it.
-- [ ] Unit test with `node:worker_threads` `MessageChannel`.
+- [x] Messages are posted as plain objects, no JSON string round trip.
+- [x] Closing either end calls `onClose` on the other where the platform reports it.
+- [x] Unit test with `node:worker_threads` `MessageChannel`.

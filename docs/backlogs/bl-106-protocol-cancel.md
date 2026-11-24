@@ -2,7 +2,7 @@
 id: BL-106
 title: Request cancellation in the peer
 type: backlog
-status: todo
+status: done
 summary: Peer sends and honours $/cancel_request; handlers receive an AbortSignal and a cancelled request ends with the cancelled error.
 tags: [protocol, cancellation]
 related: [DES-040, DES-042]
@@ -19,6 +19,6 @@ Add cancellation to the peer as DES-040 specifies: callers pass an `AbortSignal`
 
 ## Done when
 
-- [ ] `request(method, params, { signal })` sends `$/cancel_request` on abort.
-- [ ] Handlers get `ctx.signal`; aborting settles the caller with code -32800 and `data.code: cancelled`.
-- [ ] Unit tests: cancel before and after the handler starts; late result after cancel is dropped.
+- [x] `request(method, params, { signal })` sends `$/cancel_request` on abort.
+- [x] Handlers get `ctx.signal`; aborting settles the caller with code -32800 and `data.code: cancelled`.
+- [x] Unit tests: cancel before and after the handler starts; late result after cancel is dropped.
