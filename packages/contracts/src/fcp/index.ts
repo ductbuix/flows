@@ -210,6 +210,9 @@ export {
   connectorUpdateNotification,
 } from "./connector.ts"
 export {
+  libraryAddMethod,
+  libraryAddParamsSchema,
+  libraryAddResultSchema,
   libraryGetMethod,
   libraryGetParamsSchema,
   libraryGetResultSchema,
@@ -225,6 +228,9 @@ export {
   libraryPullJobResultSchema,
   libraryPullMethod,
   libraryPullParamsSchema,
+  libraryPushMethod,
+  libraryPushParamsSchema,
+  libraryPushResultSchema,
   libraryRemoveMethod,
   libraryRemoveParamsSchema,
   libraryRemoveResultSchema,
@@ -234,6 +240,9 @@ export {
   librarySetTagsMethod,
   librarySetTagsParamsSchema,
   librarySetTagsResultSchema,
+  libraryUnlinkMethod,
+  libraryUnlinkParamsSchema,
+  libraryUnlinkResultSchema,
   libraryUpdateNotification,
 } from "./library.ts"
 export {

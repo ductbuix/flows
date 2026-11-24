@@ -123,10 +123,13 @@ describe("FCP helpers", () => {
     )
   })
 
-  it("declares library list/get as queries and pull/pin/set_tags/remove/save_provider as commands", () => {
+  it("declares library list/get as queries and pull/push/add/unlink/pin/set_tags/remove/save_provider as commands", () => {
     expect(fcpMethodTable["library/list"].kind).toBe("query")
     expect(fcpMethodTable["library/get"].kind).toBe("query")
     expect(fcpMethodTable["library/pull"].kind).toBe("command")
+    expect(fcpMethodTable["library/push"].kind).toBe("command")
+    expect(fcpMethodTable["library/add"].kind).toBe("command")
+    expect(fcpMethodTable["library/unlink"].kind).toBe("command")
     expect(fcpMethodTable["library/pin_version"].kind).toBe("command")
     expect(fcpMethodTable["library/set_tags"].kind).toBe("command")
     expect(fcpMethodTable["library/remove"].kind).toBe("command")

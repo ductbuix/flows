@@ -224,6 +224,8 @@ the engine resolves them, so the UI never builds a filesystem path.
   `library/remove`, and `library/list` optional `tag` filter (BL-173).
 - v1 additive (2026-11-24): `library/update` `item_removed` on remove
   (BL-204).
+- v1 additive (2026-11-24): `library/add`, `library/push`, `library/unlink`
+  (BL-205).
 
 ## Example
 
