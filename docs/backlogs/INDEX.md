@@ -186,7 +186,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-178 | done | P2 | BL-122, BL-145 | [Inbox page on the sdk](bl-178-web-inbox-sdk.md) | The Inbox page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-179 | done | P2 | BL-122, BL-175 | [Workflows and editor page on the sdk](bl-179-web-workflows-sdk.md) | The Workflows and editor page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-180 | done | P2 | BL-122, BL-176, BL-141 | [Run views page on the sdk](bl-180-web-runs-sdk.md) | The Run views page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
-| BL-181 | todo | P2 | BL-122, BL-164 | [Connectors page on the sdk](bl-181-web-connectors-sdk.md) | The Connectors page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
+| BL-181 | done | P2 | BL-122, BL-164 | [Connectors page on the sdk](bl-181-web-connectors-sdk.md) | The Connectors page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-182 | todo | P2 | BL-122, BL-173 | [Library page on the sdk](bl-182-web-library-sdk.md) | The Library page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-183 | done | P2 | BL-122, BL-169 | [Skills page on the sdk](bl-183-web-skills-sdk.md) | The Skills page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-184 | done | P2 | BL-122, BL-174 | [Files page on the sdk](bl-184-web-files-sdk.md) | The Files page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |

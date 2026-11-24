@@ -18,7 +18,8 @@ export function connectorPath(id: string): string {
 }
 
 export function connectorIdFromPath(path: string): string | null {
-  return CONNECTOR_PATH_RE.exec(path.replace(/\\/g, "/"))?.[1] ?? null
+  const norm = path.replace(/\\/g, "/").replace(/^\//, "")
+  return CONNECTOR_PATH_RE.exec(norm)?.[1] ?? null
 }
 
 export type ConnectorRecord = {

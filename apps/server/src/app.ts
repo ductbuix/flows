@@ -36,6 +36,7 @@ import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
+import { createConnectorsFcp } from "./fcp-connectors.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
 import { createInboxFcp } from "./fcp-inbox.ts"
 import { createSkillsFcp } from "./fcp-skills.ts"
@@ -77,6 +78,7 @@ export function createApp({
   const docket = createDocketFcp(engine, bus)
   const inbox = createInboxFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
+  const connectors = createConnectorsFcp(engine)
   const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
@@ -196,6 +198,7 @@ export function createApp({
         ...docket.bindings,
         ...inbox.bindings,
         ...skills.bindings,
+        ...connectors,
         ...files,
       })
     )
