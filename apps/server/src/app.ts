@@ -37,6 +37,7 @@ import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
+import { createFileFcp } from "./fcp-files.ts"
 import { fcpBootstrapJson, fcpIndexResponse, fcpUpgrade } from "./fcp-routes.ts"
 import { layoutRoutes } from "./layout-routes.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
@@ -67,6 +68,7 @@ export function createApp({
   const bus = new UpdateBus()
   const hub = new WsHub(engine, bus)
   const docket = createDocketFcp(engine, bus)
+  const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
 
@@ -179,7 +181,13 @@ export function createApp({
 
   return new Hono()
     .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
-    .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus, docket.bindings))
+    .get(
+      "/fcp",
+      fcpUpgrade(engine, fcpToken, port, bus, {
+        ...docket.bindings,
+        ...files,
+      })
+    )
     .route("/api", api)
 }
 
