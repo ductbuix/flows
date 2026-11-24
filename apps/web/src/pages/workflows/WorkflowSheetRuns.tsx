@@ -2,7 +2,7 @@ import { Link } from "react-router"
 import type { RunSummary, WireCardFace } from "@workspace/contracts"
 import { StatusPill } from "@/components/brand/StatusPill"
 import { RelativeTime } from "@/components/data/RelativeTime"
-import { statusOf } from "@/pages/runs/status"
+import { statusOf } from "@/components/runs/status"
 
 type Group = { card: WireCardFace | null; cardId: string; runs: RunSummary[] }
 

@@ -4,7 +4,6 @@ import { BrandPage } from "@/pages/brand/BrandPage"
 import { DevKitPage } from "@/pages/DevKitPage"
 import { ConnectorsPage } from "@/pages/connectors/ConnectorsPage"
 import { SkillsPage } from "@/pages/skills/SkillsPage"
-import { RunsPage } from "@/pages/runs/RunsPage"
 import { DocketPage } from "@/pages/docket/DocketPage"
 import { FilesPage } from "@/pages/files/FilesPage"
 import { InboxPage } from "@/pages/inbox/InboxPage"
@@ -25,7 +24,6 @@ export function App() {
         <Route path="files" element={<FilesPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="skills" element={<SkillsPage />} />
-        <Route path="runs" element={<RunsPage />} />
         <Route path="connectors" element={<ConnectorsPage />} />
         {import.meta.env.DEV ? (
           <Route path="dev/kit" element={<DevKitPage />} />

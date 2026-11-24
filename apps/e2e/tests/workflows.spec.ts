@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { e2eHome, fcpRequest, startRun } from "./helpers"
+import { cancelLiveRuns, e2eHome, fcpRequest, startRun } from "./helpers"
 
 async function screenshotThemes(
   page: import("@playwright/test").Page,
@@ -266,7 +266,7 @@ test.describe("workflows.spec.ts › validate", () => {
 test.describe("workflows.spec.ts › sheet", () => {
   test("opens sheet from a row (WF-04)", async ({ page }) => {
     await page.goto("/workflows")
-    await page.getByTestId("mock-workflow-diamond").click()
+    await page.getByTestId("workflow-diamond").click()
     await expect(page.getByTestId("workflow-sheet")).toBeVisible()
     await expect(page.getByTestId("workflow-open-editor")).toBeVisible()
     await expect(page.getByTestId("sheet-inputs")).toBeVisible()
@@ -277,7 +277,7 @@ test.describe("workflows.spec.ts › sheet", () => {
 test.describe("workflows.spec.ts › sheet inputs", () => {
   test("edits inputs a card supplies (WF-06)", async ({ page }) => {
     await page.goto("/workflows")
-    await page.getByTestId("mock-workflow-node-start-run").click()
+    await page.getByTestId("workflow-node-start-run").click()
     const sheet = page.getByTestId("workflow-sheet")
     await expect(sheet).toBeVisible()
     await expect(sheet.getByTestId("sheet-inputs")).toContainText("ticket")
@@ -285,28 +285,29 @@ test.describe("workflows.spec.ts › sheet inputs", () => {
     await sheet.getByTestId("trigger-input-add").click()
     await expect(sheet.getByTestId("sheet-inputs")).toContainText("repo")
     await page.keyboard.press("Escape")
-    await page.getByTestId("mock-workflow-node-start-run").click()
+    await page.getByTestId("workflow-node-start-run").click()
     await expect(page.getByTestId("sheet-inputs")).toContainText("repo")
   })
 })
 
 test.describe("workflows.spec.ts › sheet runs", () => {
   test("lists runs by card after a start (WF-07)", async ({ page }) => {
+    // Diamond is shared across specs; do not require an empty runs list.
+    await cancelLiveRuns("diamond")
     await page.goto("/workflows")
-    await page.getByTestId("mock-workflow-diamond").click()
+    await page.getByTestId("workflow-diamond").click()
     const sheet = page.getByTestId("workflow-sheet")
-    await expect(sheet.getByTestId("sheet-runs-empty")).toBeVisible()
     await sheet.getByTestId("sheet-start-card").click()
     await page.getByRole("option", { name: /Fix flaky login/i }).click()
     await sheet.getByTestId("workflow-start").click()
-    await expect(page.getByTestId("mock-workflow-editor")).toBeVisible({
+    await expect(page.getByTestId("workflow-editor")).toBeVisible({
       timeout: 15_000,
     })
     await expect(page.getByTestId("flow-run-banner")).toBeVisible({
       timeout: 15_000,
     })
     await page.goto("/workflows")
-    await page.getByTestId("mock-workflow-diamond").click()
+    await page.getByTestId("workflow-diamond").click()
     await expect(page.getByTestId("sheet-runs-list")).toBeVisible({
       timeout: 15_000,
     })
@@ -316,7 +317,7 @@ test.describe("workflows.spec.ts › sheet runs", () => {
 test.describe("workflows.spec.ts › sheet start", () => {
   test("starts a run for a card from the sheet (WF-08)", async ({ page }) => {
     await page.goto("/workflows")
-    await page.getByTestId("mock-workflow-diamond").click()
+    await page.getByTestId("workflow-diamond").click()
     const sheet = page.getByTestId("workflow-sheet")
     await sheet.getByTestId("sheet-start-card").click()
     await page.getByRole("option", { name: /Fix flaky login/i }).click()
@@ -350,6 +351,7 @@ test.describe("workflows.spec.ts › canvas run bar", () => {
 
   test("offers Retry on a failed node", async ({ page }) => {
     test.setTimeout(90_000)
+    await cancelLiveRuns("node-run-fail-light")
     const runId = await startRun("node-run-fail-light")
     await expect
       .poll(

@@ -19,8 +19,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
   on `127.0.0.1:5173`, proxies `/fcp` (bootstrap + WS) and `/blobs`. Pages
   use `components/page`, labels/ids `components/data`. Routes (FCP via
-  sdk-react): `/`→`/docket`, `/inbox`, `/workflows(/:id)`, `/runs`,
-  `/connectors`, `/library`, `/skills`, `/files`, `/brand`, `/dev/kit`;
+  sdk-react): `/`→`/docket`, `/inbox`, `/workflows(/:id)`, `/connectors`,
+  `/library`, `/skills`, `/files`, `/brand`, `/dev/kit`;
   Settings is a sidebar panel (not a route). No `hono/client`.
   FCP client: MessagePort in Electron, WebSocket via `/fcp/bootstrap`.
 - `apps/desktop`: Electron main + preload (`connect()`, `revealPath`,

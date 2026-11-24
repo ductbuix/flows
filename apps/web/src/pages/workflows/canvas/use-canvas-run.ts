@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { RunStep, RunSummary } from "@workspace/contracts"
 import { useFlowsClient, useSubscription } from "@workspace/sdk-react"
-import { retryStep } from "@/pages/runs/run-actions"
+import { retryStep } from "@/components/runs/run-actions"
 import { statesFromSteps } from "./node-run-view"
 import type { RunState } from "./flow-kinds"
 
@@ -42,9 +42,7 @@ async function fetchLog(
       })
       const text = chunk.text.trim()
       if (text) {
-        return text.length > RESULT_MAX
-          ? `${text.slice(0, RESULT_MAX)}…`
-          : text
+        return text.length > RESULT_MAX ? `${text.slice(0, RESULT_MAX)}…` : text
       }
     } catch {
       // attempt or stream may not exist yet
@@ -61,17 +59,14 @@ export function useCanvasRun(runId: string | null) {
   const active = cache?.runId === runId ? cache : null
   const steps = active?.steps
 
-  const applyGet = useCallback(
-    (id: string, data: RunGet) => {
-      setCache((prev) => ({
-        runId: id,
-        steps: data.steps ?? [],
-        results: prev?.runId === id ? prev.results : {},
-        summary: data,
-      }))
-    },
-    []
-  )
+  const applyGet = useCallback((id: string, data: RunGet) => {
+    setCache((prev) => ({
+      runId: id,
+      steps: data.steps ?? [],
+      results: prev?.runId === id ? prev.results : {},
+      summary: data,
+    }))
+  }, [])
 
   useEffect(() => {
     if (!runId) return

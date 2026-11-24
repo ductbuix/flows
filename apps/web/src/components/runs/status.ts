@@ -1,7 +1,7 @@
 import type { RunStatus } from "@workspace/contracts"
 import type { Tone } from "@/components/brand/StatusPill"
 
-/** Status → StatusPill for the mock Runs list (CardRunsSection look). */
+/** Status → StatusPill for card and workflow run lists. */
 export function statusOf(
   status: RunStatus,
   needsYou: boolean
