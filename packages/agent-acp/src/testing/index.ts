@@ -1,5 +1,6 @@
 export {
   runFakeAgent,
+  type FakeAgentClientRequest,
   type FakeAgentExpect,
   type FakeAgentHandle,
   type FakeAgentNotification,

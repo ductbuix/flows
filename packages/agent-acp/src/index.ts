@@ -1,4 +1,8 @@
 export {
+  CANCELLED_PERMISSION_RESULT,
+  DEFAULT_CANCEL_GRACE_MS,
+} from "./cancel.ts"
+export {
   ACP_CLIENT_CAPABILITIES,
   openAcpSession,
   type OpenAcpSessionOptions,
@@ -11,6 +15,7 @@ export {
 } from "./map-update.ts"
 export {
   runFakeAgent,
+  type FakeAgentClientRequest,
   type FakeAgentExpect,
   type FakeAgentHandle,
   type FakeAgentNotification,
