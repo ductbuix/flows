@@ -119,7 +119,7 @@ export class DocketIndex {
   }
 
   private applyChange(path: string): void {
-    const norm = path.replace(/\\/g, "/")
+    const norm = path.replace(/\\/g, "/").replace(/^\//, "")
     if (norm === DOCKET_BOARD_PATH) {
       const boardFile = this.deps.store.readBoard()
       this.board = boardFile?.data ?? null

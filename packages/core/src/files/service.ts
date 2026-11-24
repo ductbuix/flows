@@ -9,7 +9,7 @@ import {
 import { engineError } from "../kernel/engine-error.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import { defineBinding, type MethodBindings } from "../rpc/bind.ts"
-import { confineToRoots } from "./paths.ts"
+import { confineToRoots, normalizeStorePath } from "./paths.ts"
 
 const DEFAULT_LIST_LIMIT = 100
 const ALL_FILES_GLOB = "**"
@@ -97,7 +97,7 @@ function confineOrThrow(path: string, roots: readonly string[]): string {
 }
 
 function listUnder(docs: DocumentStore, prefix: string): FileEntry[] {
-  const files = docs.list(ALL_FILES_GLOB)
+  const files = docs.list(ALL_FILES_GLOB).map((p) => normalizeStorePath(p) ?? p)
   const entries = new Map<string, FileEntry>()
   for (const filePath of files) {
     if (
@@ -123,10 +123,9 @@ function listUnder(docs: DocumentStore, prefix: string): FileEntry[] {
 }
 
 function hasDescendant(docs: DocumentStore, prefix: string): boolean {
-  if (prefix === "") return docs.list(ALL_FILES_GLOB).length > 0
-  return docs
-    .list(ALL_FILES_GLOB)
-    .some((p) => p === prefix || p.startsWith(`${prefix}/`))
+  const files = docs.list(ALL_FILES_GLOB).map((p) => normalizeStorePath(p) ?? p)
+  if (prefix === "") return files.length > 0
+  return files.some((p) => p === prefix || p.startsWith(`${prefix}/`))
 }
 
 function pageEntries(

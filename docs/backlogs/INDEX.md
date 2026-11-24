@@ -182,7 +182,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-174 | done | P2 | BL-126, BL-115 | [File methods](bl-174-fcp-files.md) | file/list, stat, read_text, write_text (baseHash) and reveal over FCP for workspace folders. | files, fcp |
 | BL-175 | todo | P1 | BL-123 | [Workflow writes over FCP](bl-175-fcp-workflow-write.md) | workflow/create, save (baseHash), rename, delete (busy while live), save_layout and validate over FCP. | workflows, fcp |
 | BL-176 | todo | P1 | BL-124 | [Run commands over FCP](bl-176-fcp-run-commands.md) | run/start (requestKey), cancel, rerun, retry_step, delete, get_log and get_changes over FCP. | runs, fcp |
-| BL-177 | todo | P2 | BL-122, BL-157 | [Docket page on the sdk](bl-177-web-docket-sdk.md) | The Docket page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
+| BL-177 | done | P2 | BL-122, BL-157 | [Docket page on the sdk](bl-177-web-docket-sdk.md) | The Docket page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-178 | todo | P2 | BL-122, BL-145 | [Inbox page on the sdk](bl-178-web-inbox-sdk.md) | The Inbox page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-179 | todo | P2 | BL-122, BL-175 | [Workflows and editor page on the sdk](bl-179-web-workflows-sdk.md) | The Workflows and editor page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |
 | BL-180 | todo | P2 | BL-122, BL-176, BL-141 | [Run views page on the sdk](bl-180-web-runs-sdk.md) | The Run views page reads and writes through sdk-react; its mock store or REST calls are removed. | web, sdk |

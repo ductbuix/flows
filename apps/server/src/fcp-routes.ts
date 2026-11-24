@@ -5,6 +5,7 @@ import {
   createFcpConnection,
   createSubscribeBindings,
   defineBinding,
+  type MethodBindings,
   type UpdateBus,
 } from "@workspace/core"
 import { pingMethod } from "@workspace/contracts"
@@ -75,7 +76,12 @@ function fcpWsUrl(c: Context, port: number): string {
   return `ws://${host}/fcp`
 }
 
-function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
+function bindFcpPeer(
+  raw: WsLike,
+  engine: Engine,
+  bus: UpdateBus,
+  extra: Partial<MethodBindings>
+): void {
   const transport = wsTransport(raw)
   const peer = new RpcPeer(transport)
   const connection = createFcpConnection()
@@ -99,6 +105,7 @@ function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
       ...createWorkflowReadBindings(engine),
       ...subBindings,
       ...createRunReadBindings(engine),
+      ...extra,
     },
     { signal: ac.signal },
     { connection }
@@ -110,7 +117,8 @@ function fcpEvents(
   engine: Engine,
   token: string,
   port: number,
-  bus: UpdateBus
+  bus: UpdateBus,
+  extra: Partial<MethodBindings>
 ): WSEvents {
   if (!fcpAuthorized(c, token, port)) {
     return {
@@ -127,7 +135,7 @@ function fcpEvents(
         ws.close(1011, "no websocket")
         return
       }
-      bindFcpPeer(raw as WsLike, engine, bus)
+      bindFcpPeer(raw as WsLike, engine, bus, extra)
     },
   }
 }
@@ -147,7 +155,13 @@ export function fcpUpgrade(
   engine: Engine,
   token: string,
   port: number,
-  bus: UpdateBus
+  bus: UpdateBus,
+  extra: Partial<MethodBindings> = {}
 ) {
-  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port, bus))
+  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port, bus, extra))
+}
+
+/** JSON bootstrap for Vite (proxied as `/api/fcp`); same payload as `__FLOWS_FCP__`. */
+export function fcpBootstrapJson(token: string, port: number) {
+  return { token, url: `ws://127.0.0.1:${port}/fcp` }
 }

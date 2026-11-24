@@ -70,6 +70,17 @@ export {
   type PathExists,
 } from "./docket/index.ts"
 export {
+  cardIdFromPath,
+  cardPath,
+  createDocketStore,
+  DOCKET_BOARD_PATH,
+  DOCKET_CARDS_GLOB,
+  DocketStore,
+  type BoardFile,
+  type CardFile,
+  type DocketStoreDeps,
+} from "./docket/store.ts"
+export {
   createDocketReadBindings,
   type DocketReadBindings,
   type DocketReadDeps,

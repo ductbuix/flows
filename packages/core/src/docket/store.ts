@@ -47,7 +47,8 @@ export function cardPath(cardId: string): string {
 }
 
 export function cardIdFromPath(path: string): string | null {
-  return CARD_PATH_RE.exec(path.replace(/\\/g, "/"))?.[1] ?? null
+  const norm = path.replace(/\\/g, "/").replace(/^\//, "")
+  return CARD_PATH_RE.exec(norm)?.[1] ?? null
 }
 
 export function createDocketStore(deps: DocketStoreDeps) {
