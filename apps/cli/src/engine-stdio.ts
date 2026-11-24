@@ -20,7 +20,6 @@ export function serveEngineStdio(home: string): void {
   }
 
   const engine = createEngine({ home })
-  engine.resumeAll()
   const host = createFcpHost(engine)
   const transport = ndjsonTransport(process.stdin, process.stdout)
 

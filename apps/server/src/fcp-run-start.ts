@@ -77,8 +77,20 @@ export async function startRunForFcp(
       keepInputs || decls.length > 0 ? undefined : args.values?.text
     const inputs = withInputs ? { decls, values, files: [] } : undefined
 
-    // Core path for trigger+command (BL-194); other kinds / queue → engine.
-    if (coreRuns && !partial && coreRuns.canHandle(graph)) {
+    // Core path (BL-194..196): all eligible kinds, partial, and queue.
+    if (coreRuns && coreRuns.canHandle(graph)) {
+      const corePartial = partial
+        ? {
+            only: partial.only,
+            from: partial.from,
+            bases: partialBases(
+              engine,
+              args.workflowId,
+              runId,
+              partial.baseRunId
+            ),
+          }
+        : undefined
       const core = await coreRuns.tryStart({
         graph,
         runId,
@@ -86,6 +98,7 @@ export async function startRunForFcp(
         inputText,
         inputs,
         workItemId,
+        ...(corePartial ? { partial: corePartial } : {}),
       })
       if (core) return core
     }
@@ -146,6 +159,26 @@ function resolveWorkItem(
   }
   void workItemItemKey(workItemId)
   return workItemId
+}
+
+/** Earlier runs for a partial seed: baseRunId first, then the rest (BL-102). */
+function partialBases(
+  engine: Engine,
+  workflowId: string,
+  runId: string,
+  baseRunId?: string
+): string[] {
+  const earlier = engine
+    .listRunsForWorkflow(workflowId)
+    .filter((r) => r.graph && !r.deleted && r.runId !== runId)
+    .map((r) => r.runId)
+  if (baseRunId !== undefined && !earlier.includes(baseRunId)) {
+    throw engineError("invalid_params", `unknown base run ${baseRunId}`)
+  }
+  return [
+    ...(baseRunId !== undefined ? [baseRunId] : []),
+    ...earlier.filter((id) => id !== baseRunId),
+  ]
 }
 
 function mapStartError(err: unknown): never {

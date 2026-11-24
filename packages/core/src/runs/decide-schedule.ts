@@ -2,6 +2,7 @@ import { activeInputs, effectForRun } from "./decide-effects.ts"
 import { scheduleNext } from "./decide-next.ts"
 import {
   isOpenStep,
+  latestStep,
   retryMax,
   type DecideOutput,
   type RunState,
@@ -10,6 +11,57 @@ import {
 import type { EngineEvent } from "@workspace/contracts"
 
 const DEFAULT_RETRY_BACKOFF_MS = 2000
+
+/** Activate a queued run (DES-021). */
+export function decideActivate(state: RunState, at: string): DecideOutput {
+  if (state.status !== "queued") return { events: [], effects: [] }
+  return {
+    events: [{ type: "run_activated", runId: state.runId, at }],
+    effects: [],
+  }
+}
+
+/**
+ * Manual retry (DES-034): reset the failed step and every step after it.
+ * Throws when the step cannot be retried.
+ */
+export function decideRetryStep(
+  state: RunState,
+  at: string,
+  nodeId: string
+): DecideOutput {
+  const step = latestStep(state.steps, nodeId)
+  if (!step || step.status !== "failed") {
+    throw new Error(`task ${nodeId} cannot be retried`)
+  }
+  if (!state.steps.ended) throw new Error(`task ${nodeId} cannot be retried`)
+  if (state.status === "cancelled") {
+    throw new Error(`task ${nodeId} cannot be retried`)
+  }
+  const reset = new Set([nodeId])
+  for (let grew = true; grew;) {
+    grew = false
+    for (const e of state.graph.edges) {
+      if (reset.has(e.from) && !reset.has(e.to)) {
+        reset.add(e.to)
+        grew = true
+      }
+    }
+  }
+  const events: EngineEvent[] = []
+  for (const id of reset) {
+    const s = latestStep(state.steps, id)
+    if (!s) continue
+    events.push({
+      type: "step_retry_requested",
+      runId: state.runId,
+      at,
+      nodeId: id,
+      pass: s.pass,
+    })
+  }
+  return { events, effects: [] }
+}
 
 /** Cancel open steps then end the run. */
 export function decideCancel(state: RunState, at: string): DecideOutput {

@@ -3,7 +3,7 @@ import { parseNodeWorkflowYaml } from "@workspace/contracts"
 import { isCoreRunEligible } from "./core-run-eligible.ts"
 
 describe("isCoreRunEligible", () => {
-  it("accepts ported kinds including llm/agent/publish; rejects loops", () => {
+  it("accepts ported kinds including llm/agent/publish and loops", () => {
     const ok = parseNodeWorkflowYaml(`
 id: demo
 nodes:
@@ -116,7 +116,6 @@ edges:
   - { from: a, to: b }
   - { from: b, to: a }
 `).workflow!
-    expect(isCoreRunEligible(loop)).toBe(false)
+    expect(isCoreRunEligible(loop)).toBe(true)
   })
 })
-

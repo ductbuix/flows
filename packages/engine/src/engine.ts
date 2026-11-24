@@ -486,8 +486,19 @@ export class Engine {
     this.nodeRuns.delete(runId)
   }
 
-  resumeAll(): RunHandle[] {
+  /**
+   * Removals, trust marker and summary cache after a process start.
+   * Run drivers resume via the core host (BL-196); this keeps the
+   * housekeeping that resumeAll used to do beside resumeNodes.
+   */
+  bootHousekeeping(): void {
     this.finishPendingRemovals()
+    this.reconcileTrustMarker()
+    this.rebuildSummaryCache()
+  }
+
+  resumeAll(): RunHandle[] {
+    this.bootHousekeeping()
     const handles: RunHandle[] = []
     for (const runId of this.log.listRunIds()) {
       const handle = this.resumeRun(runId)
@@ -498,8 +509,6 @@ export class Engine {
     )) {
       this.activateQueuedForWorkflow(workflowId)
     }
-    this.reconcileTrustMarker()
-    this.rebuildSummaryCache()
     return handles
   }
 

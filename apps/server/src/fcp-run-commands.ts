@@ -114,8 +114,14 @@ export function createRunCommandBindings(
       }
       return result
     }),
-    "run/retry_step": defineBinding(runRetryStepMethod, (params) => {
+    "run/retry_step": defineBinding(runRetryStepMethod, async (params) => {
       try {
+        if (
+          coreRuns &&
+          (await coreRuns.retryStep(params.runId, params.stepId))
+        ) {
+          return {}
+        }
         engine.retryTask(params.runId, params.stepId)
         return {}
       } catch (err) {
