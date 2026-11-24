@@ -7,6 +7,7 @@ import type { Workflow } from "@workspace/contracts"
 import {
   createNodeEffectRunner,
   createScheduler,
+  latestStep,
   RunActor,
   type Scheduler,
 } from "@workspace/core"
@@ -27,6 +28,12 @@ export type CoreStartArgs = {
   workItemId?: string
 }
 
+export type CoreApprovalAnswer = {
+  runId: string
+  nodeId: string
+  decision: "approved" | "rejected"
+}
+
 export type CoreRunHost = {
   /** Graphs this host can drive (BL-194; widen in BL-195). */
   canHandle(graph: Workflow): boolean
@@ -35,6 +42,13 @@ export type CoreRunHost = {
    * Returns null when the caller should use the engine path instead.
    */
   tryStart(args: CoreStartArgs): Promise<{ runId: string } | null>
+  /** True when this host owns a live actor for the run. */
+  isLive(runId: string): boolean
+  /**
+   * Route an inbox approval answer to the live actor.
+   * Returns false when this host is not driving the run.
+   */
+  answerApproval(args: CoreApprovalAnswer): Promise<boolean>
   /** Cancel a live core run; false if this host is not driving it. */
   cancel(runId: string): boolean | Promise<boolean>
   dispose(): void
@@ -75,6 +89,7 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
     absolutePathOf: (storePath) =>
       join(engine.home, storePath.replace(/^\//, "")),
     signalOf: (state) => aborts.get(state.runId)?.signal,
+    postNotice: (n) => engine.postNotice(n),
   })
 
   function endLive(runId: string): void {
@@ -83,8 +98,23 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
     scheduler.endRun(runId)
   }
 
+  function endIfTerminal(runId: string, actor: RunActor): void {
+    const status = actor.getState()?.status
+    if (
+      status === "succeeded" ||
+      status === "failed" ||
+      status === "cancelled"
+    ) {
+      endLive(runId)
+    }
+  }
+
   return {
     canHandle: isCoreRunEligible,
+
+    isLive(runId) {
+      return live.has(runId)
+    },
 
     async tryStart(args) {
       if (!isCoreRunEligible(args.graph)) return null
@@ -124,21 +154,33 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
           ...(seed && seed.length > 0 ? { seed } : {}),
         })
         .then(() => {
-          const status = actor.getState()?.status
-          // Abort leaves status running until a queued cancel settles.
-          if (
-            status === "succeeded" ||
-            status === "failed" ||
-            status === "cancelled"
-          ) {
-            endLive(args.runId)
-          }
+          endIfTerminal(args.runId, actor)
         })
         .catch(() => {
           endLive(args.runId)
         })
 
       return { runId: args.runId }
+    },
+
+    async answerApproval(args) {
+      const entry = live.get(args.runId)
+      if (!entry) return false
+      const state = entry.actor.getState()
+      if (!state) return false
+      const step = latestStep(state.steps, args.nodeId)
+      if (!step || step.status !== "waiting") return false
+      const at = new Date().toISOString()
+      await entry.actor.push({
+        kind: "answer",
+        at,
+        nodeId: args.nodeId,
+        pass: step.pass,
+        decision: args.decision,
+      })
+      await entry.actor.push({ kind: "wake", at })
+      endIfTerminal(args.runId, entry.actor)
+      return true
     },
 
     async cancel(runId) {

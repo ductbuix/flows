@@ -43,12 +43,12 @@ export function createFcpHost(engine: Engine): FcpHost {
   const events = createEventBus()
   const unsubBus = bindEngineToBus(engine, bus, events)
   const docket = createDocketFcp(engine, bus, events)
-  const inbox = createInboxFcp(engine, bus)
+  const coreRuns = createCoreRunHost(engine)
+  const inbox = createInboxFcp(engine, bus, coreRuns)
   const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
   const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const idempotency = new IdempotencyStore()
-  const coreRuns = createCoreRunHost(engine)
   return {
     bus,
     idempotency,

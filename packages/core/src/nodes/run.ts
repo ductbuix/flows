@@ -5,6 +5,7 @@ import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
 import { latestStep } from "../runs/model.ts"
 import { runCommandEffect } from "./command-effect.ts"
 import { createStepContext, loadRunInputs, loadStepInputs } from "./context.ts"
+import { runWriteOutputEffect } from "./write-output-effect.ts"
 import {
   createNodeKindRegistry,
   kindKeyForNode,
@@ -141,7 +142,10 @@ export function createNodeEffectRunner(
       return { ok: true, outputs: [] }
     }
     if (effect.kind === "write_output") {
-      return { ok: true, outputs: [] }
+      return runWriteOutputEffect(effect, state, {
+        docs: deps.docs,
+        runDirOf: deps.runDirOf,
+      })
     }
 
     const node = state.graph.nodes.find((n) => n.id === effect.nodeId)
