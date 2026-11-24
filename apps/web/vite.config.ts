@@ -8,6 +8,8 @@ const apiPort = process.env.PW_API_PORT ?? "8787"
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Relative asset URLs so Electron can loadFile the dist (BL-186).
+  base: process.env.FLOWAPP_DESKTOP_BUILD === "1" ? "./" : "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
