@@ -100,7 +100,39 @@ nodes:
 edges:
   - { from: t, to: l }
 `).workflow!
-    expect(isCoreRunEligible(llm)).toBe(false)
+    expect(isCoreRunEligible(llm)).toBe(true)
+
+    const judge = parseNodeWorkflowYaml(`
+id: judge-demo
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: j, kind: judge, cli: cursor }
+edges:
+  - { from: t, to: j }
+`).workflow!
+    expect(isCoreRunEligible(judge)).toBe(true)
+
+    const agent = parseNodeWorkflowYaml(`
+id: agent-demo
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: a, kind: agent, cli: cursor }
+edges:
+  - { from: t, to: a }
+`).workflow!
+    expect(isCoreRunEligible(agent)).toBe(true)
+
+    // Publish needs a propose Asset upstream; build a minimal graph for eligibility.
+    expect(
+      isCoreRunEligible({
+        id: "publish-demo",
+        nodes: [
+          { id: "t", kind: "trigger", type: "manual" },
+          { id: "p", kind: "output", target: "publish", connection: "demo" },
+        ],
+        edges: [{ from: "t", to: "p" }],
+      })
+    ).toBe(false)
 
     const loop = parseNodeWorkflowYaml(`
 id: loop-demo

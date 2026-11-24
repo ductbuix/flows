@@ -11,6 +11,7 @@ import {
   kindKeyForNode,
   type NodeKindRegistry,
 } from "./registry.ts"
+import { agentKind } from "./kinds/agent.ts"
 import { approvalKind } from "./kinds/approval.ts"
 import { assetKind } from "./kinds/asset.ts"
 import { conditionKind } from "./kinds/condition.ts"
@@ -26,6 +27,7 @@ export const CORE_NODE_KINDS: readonly NodeKind[] = [
   triggerKind,
   promptKind,
   assetKind,
+  agentKind,
   llmKind,
   conditionKind,
   judgeCheckKind,

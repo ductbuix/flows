@@ -3,6 +3,7 @@ import { findLoopEdges, type Workflow } from "@workspace/contracts"
 /**
  * YAML kinds the core host can execute (BL-194 / BL-195).
  * Loops, partial, retry and resume stay on the engine until BL-196.
+ * Publish output stays on the engine until a connector publish port lands.
  */
 const CORE_HOST_KINDS = new Set([
   "trigger",
@@ -10,6 +11,9 @@ const CORE_HOST_KINDS = new Set([
   "prompt",
   "asset",
   "approval",
+  "llm",
+  "judge",
+  "agent",
 ])
 
 /** Output targets ready on core. */

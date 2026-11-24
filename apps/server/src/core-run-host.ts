@@ -1,4 +1,5 @@
 import { join } from "node:path"
+import { createAcpRuntime } from "@workspace/agent-acp"
 import {
   createNodeDocumentStore,
   createNodeProcessRunner,
@@ -66,6 +67,7 @@ type LiveRun = {
 export function createCoreRunHost(engine: Engine): CoreRunHost {
   const docs = createNodeDocumentStore({ root: engine.home })
   const processRunner = createNodeProcessRunner()
+  const agentRuntime = createAcpRuntime({ processRunner })
   const scheduler: Scheduler = createScheduler({
     maxConcurrent: 32,
     maxConcurrentRuns: (workflowId) => caps.get(workflowId) ?? 1,
@@ -78,16 +80,21 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
   const relRunDir = (workflowId: string, runId: string) =>
     `/workflows/${workflowId}/runs/${runId}`
   const relWorkflowDir = (workflowId: string) => `/workflows/${workflowId}`
+  const absOf = (storePath: string) =>
+    join(engine.home, storePath.replace(/^\//, ""))
 
   const runEffect = createNodeEffectRunner({
     docs,
     process: processRunner,
     processEnv: process.env,
-    // Store paths for DocumentStore; absolutePathOf for spawn/NODE_OUT.
+    agentRuntime,
     runDirOf: (state) => relRunDir(state.workflowId, state.runId),
     workflowDirOf: (state) => relWorkflowDir(state.workflowId),
-    absolutePathOf: (storePath) =>
-      join(engine.home, storePath.replace(/^\//, "")),
+    absolutePathOf: absOf,
+    agentCwdOf: (state, nodeId, pass) =>
+      absOf(
+        `${relRunDir(state.workflowId, state.runId)}/nodes/${nodeId}/pass-${pass}`
+      ),
     signalOf: (state) => aborts.get(state.runId)?.signal,
     postNotice: (n) => engine.postNotice(n),
   })

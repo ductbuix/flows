@@ -35,6 +35,7 @@ export {
 export { triggerKind } from "./kinds/trigger.ts"
 export { promptKind } from "./kinds/prompt.ts"
 export { assetKind } from "./kinds/asset.ts"
+export { agentKind } from "./kinds/agent.ts"
 export {
   llmKind,
   llmContentBlocks,
