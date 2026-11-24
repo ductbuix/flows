@@ -5,7 +5,12 @@ import {
   decideQuestionAnswer,
 } from "./decide-inbox.ts"
 import { decideAnswer, decideEffectResult } from "./decide-result.ts"
-import { decideCancel, decideWake } from "./decide-schedule.ts"
+import {
+  decideActivate,
+  decideCancel,
+  decideRetryStep,
+  decideWake,
+} from "./decide-schedule.ts"
 import type { DecideInput, DecideOutput, RunState } from "./model.ts"
 
 /**
@@ -25,6 +30,12 @@ export function decide(
     case "cancel":
       if (!state) return { events: [], effects: [] }
       return decideCancel(state, input.at)
+    case "activate":
+      if (!state) return { events: [], effects: [] }
+      return decideActivate(state, input.at)
+    case "retry_step":
+      if (!state) return { events: [], effects: [] }
+      return decideRetryStep(state, input.at, input.nodeId)
     case "answer":
       if (!state) return { events: [], effects: [] }
       return decideAnswer(state, input)

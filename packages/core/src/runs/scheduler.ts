@@ -36,6 +36,11 @@ export type Scheduler = {
 
   /** Admit a run: `running` under the workflow cap, else `queued` (DES-021). */
   admit(runId: string, workflowId: string, at: string): "running" | "queued"
+  /**
+   * Put a run in `running` even over the cap (manual retry parity with
+   * the old engine, which did not re-check maxConcurrentRuns).
+   */
+  forceRunning(runId: string, workflowId: string, at: string): void
   /** Run left `running` (succeeded/failed); activates next queued by `at`. */
   endRun(runId: string): void
   activeRuns(): readonly SchedulerRun[]
@@ -163,6 +168,12 @@ export function createScheduler(limits: SchedulerLimits): Scheduler {
       }
       queued.push(record)
       return "queued"
+    },
+
+    forceRunning(runId: string, workflowId: string, at: string): void {
+      const q = queued.findIndex((r) => r.runId === runId)
+      if (q >= 0) queued.splice(q, 1)
+      active.set(runId, { runId, workflowId, at })
     },
 
     endRun(runId: string): void {

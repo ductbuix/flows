@@ -186,6 +186,12 @@ export type DecideInput =
       reason?: string
     }
   | { kind: "cancel"; at: string }
+  | { kind: "activate"; at: string }
+  | {
+      kind: "retry_step"
+      at: string
+      nodeId: string
+    }
   | {
       kind: "agent_event"
       at: string
