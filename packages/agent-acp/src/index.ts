@@ -1,4 +1,21 @@
+export { CURSOR_ASK_QUESTION_METHOD } from "./ask-question.ts"
+export { CURSOR_CREATE_PLAN_METHOD } from "./create-plan.ts"
 export {
+  CURSOR_TASK_METHOD,
+  completedTaskResult,
+  parseTaskParams,
+  rejectedTaskResult,
+} from "./task.ts"
+export {
+  CURSOR_UPDATE_TODOS_METHOD,
+  acceptedUpdateTodosResult,
+  mergeTodos,
+  parseUpdateTodosParams,
+  rejectedUpdateTodosResult,
+} from "./update-todos.ts"
+export {
+  CANCELLED_ASK_QUESTION_RESULT,
+  CANCELLED_CREATE_PLAN_RESULT,
   CANCELLED_PERMISSION_RESULT,
   DEFAULT_CANCEL_GRACE_MS,
 } from "./cancel.ts"
@@ -33,12 +50,14 @@ export {
   asMcpLaunchSpecs,
   cleanupPlacedMcp,
   cleanupPlacedSkills,
+  createGenericProfile,
   CURSOR_AUTH_METHOD,
   CURSOR_MODES,
   CURSOR_SKILLS_DIR,
   cursorCommand,
   cursorProfile,
   FLOWS_MCP_KEY,
+  GENERIC_MODES,
   placeMcp,
   placeSkills,
   probeBinaryVersion,
@@ -47,6 +66,7 @@ export {
   type AgentCommand,
   type AgentProbeResult,
   type AgentProfile,
+  type GenericProfileSettings,
   type McpLaunchSpec,
 } from "./profiles/index.ts"
 export {

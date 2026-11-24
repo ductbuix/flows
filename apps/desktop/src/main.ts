@@ -75,6 +75,9 @@ app.whenReady().then(() => {
   installFlowsBlobProtocol(home)
 
   engineMode = resolveEngineMode(home)
+  if (engineMode.kind === "busy") {
+    throw new Error(`FLOWAPP_HOME engine busy, pid ${engineMode.pid}`)
+  }
   if (engineMode.kind === "own") {
     engineChild = startEngineHost()
   }
@@ -88,6 +91,8 @@ app.whenReady().then(() => {
       engineChild.postMessage({ type: "connect" }, [port])
       return
     }
+
+    if (engineMode.kind !== "attach") return
 
     bridges.push(
       bridgePortToWebSocket(

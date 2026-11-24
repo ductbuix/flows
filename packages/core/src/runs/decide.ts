@@ -1,9 +1,10 @@
 import type { EngineEvent } from "@workspace/contracts"
 import {
-  decideAnswer,
-  decideEffectResult,
   decidePermissionAnswer,
-} from "./decide-result.ts"
+  decidePlanReviewAnswer,
+  decideQuestionAnswer,
+} from "./decide-inbox.ts"
+import { decideAnswer, decideEffectResult } from "./decide-result.ts"
 import { decideCancel, decideWake } from "./decide-schedule.ts"
 import type { DecideInput, DecideOutput, RunState } from "./model.ts"
 
@@ -30,6 +31,12 @@ export function decide(
     case "permission_answer":
       if (!state) return { events: [], effects: [] }
       return decidePermissionAnswer(state, input)
+    case "question_answer":
+      if (!state) return { events: [], effects: [] }
+      return decideQuestionAnswer(state, input)
+    case "plan_review_answer":
+      if (!state) return { events: [], effects: [] }
+      return decidePlanReviewAnswer(state, input)
     case "effect_result":
       if (!state) return { events: [], effects: [] }
       return decideEffectResult(state, input)

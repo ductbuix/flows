@@ -8,6 +8,8 @@ const settings = z.object({
   cli: z.enum(["claude", "cursor"]).default("cursor"),
   model: z.string().optional(),
   effort: z.string().optional(),
+  /** Cursor create_plan: auto-accept or Inbox review (default auto). */
+  planReview: z.enum(["auto", "ask"]).optional(),
   /** Inline prompt for tests; otherwise read frozen prompt.md. */
   prompt: z.string().optional(),
   system: z.string().optional(),

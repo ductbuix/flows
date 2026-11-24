@@ -8,6 +8,8 @@ import { Button } from "@workspace/ui/components/button"
 import { RelativeTime } from "@/components/data/RelativeTime"
 import { mono } from "@/components/data/mono"
 import { answerInboxItem, dismissInboxItem } from "./inbox-actions"
+import { InboxPlanReviewActions } from "./InboxPlanReviewActions"
+import { InboxQuestionActions } from "./InboxQuestionActions"
 
 export function InboxItemCard({
   item,
@@ -21,11 +23,15 @@ export function InboxItemCard({
   const client = useFlowsClient()
   const [busy, setBusy] = useState(false)
 
-  async function answer(optionId: string) {
+  async function answer(
+    optionId: string,
+    answers?: { questionId: string; selectedOptionIds: string[] }[]
+  ) {
     setBusy(true)
     const result = await answerInboxItem(client, {
       itemId: item.id,
       optionId,
+      ...(answers ? { answers } : {}),
     })
     setBusy(false)
     if (result === "conflict") onConflict()
@@ -50,90 +56,177 @@ export function InboxItemCard({
           {item.question}
         </span>
         <span className="text-sm text-muted-foreground">
-          {item.workflowId ? `${item.workflowId} · ` : null}
-          <span className={mono}>{item.runId}</span>
-          {` · #${item.pass} · `}
-          <RelativeTime value={item.at} />
+          <InboxItemMeta item={item} />
         </span>
         {item.kind === "permission" ? (
           <Badge variant="outline" className="w-fit">
             {item.tool}
           </Badge>
         ) : null}
+        {item.kind === "question" ? (
+          <Badge variant="outline" className="w-fit">
+            Question
+          </Badge>
+        ) : null}
+        {item.kind === "plan_review" ? (
+          <Badge variant="outline" className="w-fit">
+            Plan
+          </Badge>
+        ) : null}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {item.kind === "approval" ? (
-          <>
+      {item.kind === "question" ? (
+        <InboxQuestionActions
+          item={item}
+          busy={busy}
+          onAnswer={(answers) => void answer("answered", answers)}
+          onSkip={() => void answer("skipped")}
+          onDismiss={() => void dismiss()}
+        />
+      ) : item.kind === "plan_review" ? (
+        <InboxPlanReviewActions
+          item={item}
+          busy={busy}
+          onAccept={() => void answer("accepted")}
+          onReject={() => void answer("rejected")}
+          onDismiss={() => void dismiss()}
+        />
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <InboxItemActions
+            item={item}
+            busy={busy}
+            onAnswer={(id) => void answer(id)}
+            onDismiss={() => void dismiss()}
+          />
+          {item.kind !== "sign_in" && item.workflowId ? (
             <Button
-              disabled={busy}
-              onClick={() => void answer("approved")}
-              data-testid={`inbox-approve-${item.id}`}
+              variant="ghost"
+              className="ml-auto"
+              nativeButton={false}
+              render={
+                <Link to={`/workflows/${item.workflowId}?run=${item.runId}`} />
+              }
             >
-              <Check />
-              Approve
+              Open run
             </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void answer("rejected")}
-              data-testid={`inbox-reject-${item.id}`}
-            >
-              <X />
-              Reject
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              disabled={busy}
-              onClick={() => void answer("allow-once")}
-              data-testid={`inbox-allow-once-${item.id}`}
-            >
-              <Check />
-              Allow once
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void answer("allow-always")}
-              data-testid={`inbox-allow-always-${item.id}`}
-            >
-              Always allow
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void answer("reject-once")}
-              data-testid={`inbox-reject-${item.id}`}
-            >
-              <X />
-              Reject
-            </Button>
-          </>
-        )}
+          ) : null}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function InboxItemMeta({ item }: { item: WireInboxItem }) {
+  if (item.kind === "sign_in") {
+    return (
+      <>
+        <span className={mono}>{item.connectorId}</span>
+        {" · "}
+        <RelativeTime value={item.at} />
+      </>
+    )
+  }
+  return (
+    <>
+      {item.workflowId ? `${item.workflowId} · ` : null}
+      <span className={mono}>{item.runId}</span>
+      {` · #${item.pass} · `}
+      <RelativeTime value={item.at} />
+    </>
+  )
+}
+
+function InboxItemActions({
+  item,
+  busy,
+  onAnswer,
+  onDismiss,
+}: {
+  item: Extract<WireInboxItem, { kind: "approval" | "permission" | "sign_in" }>
+  busy: boolean
+  onAnswer: (optionId: string) => void
+  onDismiss: () => void
+}) {
+  if (item.kind === "sign_in") {
+    return (
+      <Button
+        variant="ghost"
+        disabled={busy}
+        onClick={onDismiss}
+        data-testid={`inbox-dismiss-${item.id}`}
+      >
+        Dismiss
+      </Button>
+    )
+  }
+
+  if (item.kind === "approval") {
+    return (
+      <>
+        <Button
+          disabled={busy}
+          onClick={() => onAnswer("approved")}
+          data-testid={`inbox-approve-${item.id}`}
+        >
+          <Check />
+          Approve
+        </Button>
+        <Button
+          variant="outline"
+          disabled={busy}
+          onClick={() => onAnswer("rejected")}
+          data-testid={`inbox-reject-${item.id}`}
+        >
+          <X />
+          Reject
+        </Button>
         <Button
           variant="ghost"
           disabled={busy}
-          onClick={() => void dismiss()}
+          onClick={onDismiss}
           data-testid={`inbox-dismiss-${item.id}`}
         >
           Dismiss
         </Button>
-        {item.workflowId ? (
-          <Button
-            variant="ghost"
-            className="ml-auto"
-            nativeButton={false}
-            render={
-              <Link
-                to={`/workflows/${item.workflowId}?run=${item.runId}`}
-              />
-            }
-          >
-            Open run
-          </Button>
-        ) : null}
-      </div>
-    </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Button
+        disabled={busy}
+        onClick={() => onAnswer("allow-once")}
+        data-testid={`inbox-allow-once-${item.id}`}
+      >
+        <Check />
+        Allow once
+      </Button>
+      <Button
+        variant="outline"
+        disabled={busy}
+        onClick={() => onAnswer("allow-always")}
+        data-testid={`inbox-allow-always-${item.id}`}
+      >
+        Always allow
+      </Button>
+      <Button
+        variant="outline"
+        disabled={busy}
+        onClick={() => onAnswer("reject-once")}
+        data-testid={`inbox-reject-${item.id}`}
+      >
+        <X />
+        Reject
+      </Button>
+      <Button
+        variant="ghost"
+        disabled={busy}
+        onClick={onDismiss}
+        data-testid={`inbox-dismiss-${item.id}`}
+      >
+        Dismiss
+      </Button>
+    </>
   )
 }

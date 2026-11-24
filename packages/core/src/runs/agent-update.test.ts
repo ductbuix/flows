@@ -58,6 +58,40 @@ describe("mapAgentEventToRunUpdate", () => {
       entries: [{ content: "one" }],
     })
     expect(
+      mapAgentEventToRunUpdate(
+        {
+          kind: "todos",
+          entries: [{ id: "1", content: "one", status: "pending" }],
+        },
+        ctx
+      )
+    ).toEqual({
+      kind: "todos",
+      runId: "r-1",
+      stepId: "llm",
+      entries: [{ id: "1", content: "one", status: "pending" }],
+    })
+    expect(
+      mapAgentEventToRunUpdate(
+        {
+          kind: "subagent",
+          id: "c1",
+          description: "Explore",
+          subagentType: "explore",
+          durationMs: 10,
+        },
+        ctx
+      )
+    ).toEqual({
+      kind: "subagent",
+      runId: "r-1",
+      stepId: "llm",
+      id: "c1",
+      description: "Explore",
+      subagentType: "explore",
+      durationMs: 10,
+    })
+    expect(
       mapAgentEventToRunUpdate({ kind: "usage", used: 1, size: 10 }, ctx)
     ).toEqual({
       kind: "usage",

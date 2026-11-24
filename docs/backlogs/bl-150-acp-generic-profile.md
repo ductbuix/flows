@@ -2,7 +2,7 @@
 id: BL-150
 title: Generic ACP profile
 type: backlog
-status: todo
+status: done
 summary: A profile that uses only spec ACP methods, configured by command and args, so any ACP agent can run.
 tags: [acp, agents]
 related: [DES-041]
@@ -19,6 +19,6 @@ Proves the runtime is not Cursor-only.
 
 ## Done when
 
-- [ ] Profile settings: command, args, env names, optional auth method.
-- [ ] Extensions are ignored with a log line.
-- [ ] Fake agent test with no Cursor extension calls.
+- [x] Profile settings: command, args, env names, optional auth method.
+- [x] Extensions are ignored with a log line.
+- [x] Fake agent test with no Cursor extension calls.

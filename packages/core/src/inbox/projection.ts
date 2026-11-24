@@ -5,6 +5,16 @@ import {
   permissionItemId,
   resolvePermission,
 } from "./projection-permission.ts"
+import {
+  addPlanReview,
+  planReviewItemId,
+  resolvePlanReview,
+} from "./projection-plan-review.ts"
+import {
+  addQuestion,
+  questionItemId,
+  resolveQuestion,
+} from "./projection-question.ts"
 
 export type InboxItem = WireInboxItem
 
@@ -13,7 +23,9 @@ export type InboxProjectionState = {
   readonly workflowByRun: ReadonlyMap<string, string>
 }
 
-export type InboxDecision = NonNullable<InboxItem["decision"]>
+export type InboxDecision = NonNullable<
+  Exclude<InboxItem, { kind: "sign_in" }>["decision"]
+>
 
 export type InboxChange =
   | { kind: "item_added"; item: InboxItem }
@@ -36,7 +48,7 @@ export function approvalItemId(
   return `approval:${runId}:${nodeId}:${pass}`
 }
 
-export { permissionItemId }
+export { permissionItemId, planReviewItemId, questionItemId }
 
 export function foldInboxEvent(
   state: InboxProjectionState,
@@ -52,12 +64,20 @@ export function foldInboxEvent(
       return addApproval(state, event)
     case "permission_requested":
       return addPermission(state, event)
+    case "question_asked":
+      return addQuestion(state, event)
+    case "plan_review_requested":
+      return addPlanReview(state, event)
     case "step_approved":
       return resolveApproval(state, event, "approved")
     case "step_rejected":
       return resolveApproval(state, event, "rejected")
     case "permission_answered":
       return resolvePermission(state, event, resolveItem)
+    case "question_answered":
+      return resolveQuestion(state, event)
+    case "plan_review_answered":
+      return resolvePlanReview(state, event)
     case "step_cancelled":
       return resolveOpenForStep(state, event.runId, event.nodeId, event.pass)
     case "run_deleted":
@@ -136,10 +156,12 @@ function resolveApproval(
 function resolveItem(
   state: InboxProjectionState,
   id: string,
-  decision: InboxItem["decision"] | undefined
+  decision: InboxDecision | undefined
 ): { state: InboxProjectionState; changes: InboxChange[] } {
   const cur = state.items.get(id)
-  if (!cur || cur.status !== "open") return { state, changes: [] }
+  if (!cur || cur.status !== "open" || cur.kind === "sign_in") {
+    return { state, changes: [] }
+  }
   const item = {
     ...cur,
     status: "resolved" as const,
@@ -168,12 +190,8 @@ function resolveOpenForStep(
   let next = state
   const changes: InboxChange[] = []
   for (const item of state.items.values()) {
-    if (
-      item.runId !== runId ||
-      item.nodeId !== nodeId ||
-      item.pass !== pass ||
-      item.status !== "open"
-    ) {
+    if (item.kind === "sign_in" || item.status !== "open") continue
+    if (item.runId !== runId || item.nodeId !== nodeId || item.pass !== pass) {
       continue
     }
     const folded = resolveItem(next, item.id, undefined)
@@ -190,7 +208,8 @@ function resolveAllForRun(
   let next = state
   const changes: InboxChange[] = []
   for (const item of state.items.values()) {
-    if (item.runId !== runId || item.status !== "open") continue
+    if (item.kind === "sign_in" || item.status !== "open") continue
+    if (item.runId !== runId) continue
     const folded = resolveItem(next, item.id, undefined)
     next = folded.state
     changes.push(...folded.changes)

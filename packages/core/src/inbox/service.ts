@@ -1,8 +1,4 @@
-import {
-  inboxApprovalOptionIdSchema,
-  inboxPermissionOptionIdSchema,
-  type WireInboxItem,
-} from "@workspace/contracts"
+import type { CursorAskAnswer, WireInboxItem } from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
 import { engineError } from "../kernel/engine-error.ts"
 import type { EventStore, StoredEvent } from "../ports/event-store.ts"
@@ -15,17 +11,26 @@ import {
   type InboxItem,
   type InboxProjectionState,
 } from "./projection.ts"
+import {
+  applySignInStatus,
+  type SignInStatusInput,
+} from "./projection-sign-in.ts"
+import { answerInboxItem, dismissOptionId } from "./service-answer.ts"
+
+type RunInboxItem = Exclude<InboxItem, { kind: "sign_in" }>
 
 export type InboxAnswerPush = (input: {
   runId: string
   at: string
   nodeId: string
   pass: number
-  /** Approval or permission option id. */
+  /** Approval, permission, question, or plan_review option id. */
   optionId: InboxDecision
-  /** Set for permission items (DES-041). */
+  /** Set for permission, question, and plan_review items (DES-041). */
   requestId?: string
-  kind: InboxItem["kind"]
+  /** Selected options when answering a question (BL-147). */
+  answers?: CursorAskAnswer[]
+  kind: RunInboxItem["kind"]
 }) => Promise<void>
 
 export type InboxServiceDeps = {
@@ -113,37 +118,54 @@ export class InboxService {
     return openInboxItems(this.state)
   }
 
-  async answer(itemId: string, optionId: string): Promise<void> {
-    const item = this.requireOpen(itemId)
-    if (item.kind === "approval") {
-      const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
-      if (!parsed.success) {
-        throw engineError(
-          "invalid_params",
-          `Unknown optionId for approval: ${optionId}`
-        )
+  /**
+   * Connector check → Inbox: `expired` adds a sign-in item, `connected`
+   * resolves it (DES-039 / BL-164).
+   */
+  applyConnectorStatus(input: SignInStatusInput): void {
+    const folded = applySignInStatus(this.state, input)
+    this.state = folded.state
+    if (!this.live) return
+    for (const change of folded.changes) {
+      if (change.kind === "item_added") {
+        this.deps.bus.publish("inbox/update", {
+          kind: "item_added",
+          item: change.item,
+        })
+      } else {
+        this.deps.bus.publish("inbox/update", {
+          kind: "item_resolved",
+          itemId: change.itemId,
+          ...(change.decision ? { decision: change.decision } : {}),
+        })
       }
-      await this.route(item, parsed.data)
-      return
     }
-    const parsed = inboxPermissionOptionIdSchema.safeParse(optionId)
-    if (!parsed.success) {
-      throw engineError(
-        "invalid_params",
-        `Unknown optionId for permission: ${optionId}`
-      )
-    }
-    await this.route(item, parsed.data)
   }
 
-  /** Dismiss rejects so the run does not stay parked. */
+  async answer(
+    itemId: string,
+    optionId: string,
+    answers?: readonly CursorAskAnswer[]
+  ): Promise<void> {
+    const item = this.requireOpen(itemId)
+    await answerInboxItem(item, optionId, answers, (i, o, a) =>
+      this.route(i, o, a)
+    )
+  }
+
+  /** Dismiss rejects so the run does not stay parked. Sign-in resolves here. */
   async dismiss(itemId: string): Promise<void> {
     const item = this.requireOpen(itemId)
-    if (item.kind === "approval") {
-      await this.route(item, "rejected")
+    if (item.kind === "sign_in") {
+      this.applyConnectorStatus({
+        connectorId: item.connectorId,
+        name: item.connectorId,
+        status: "connected",
+        at: new Date(this.deps.clock.now()).toISOString(),
+      })
       return
     }
-    await this.route(item, "reject-once")
+    await this.route(item, dismissOptionId(item))
   }
 
   private requireOpen(itemId: string): InboxItem {
@@ -154,7 +176,11 @@ export class InboxService {
     return item
   }
 
-  private async route(item: InboxItem, optionId: InboxDecision): Promise<void> {
+  private async route(
+    item: RunInboxItem,
+    optionId: InboxDecision,
+    answers?: CursorAskAnswer[]
+  ): Promise<void> {
     const at = new Date(this.deps.clock.now()).toISOString()
     await this.deps.pushAnswer({
       runId: item.runId,
@@ -163,7 +189,12 @@ export class InboxService {
       pass: item.pass,
       kind: item.kind,
       optionId,
-      ...(item.kind === "permission" ? { requestId: item.requestId } : {}),
+      ...(item.kind === "permission" ||
+      item.kind === "question" ||
+      item.kind === "plan_review"
+        ? { requestId: item.requestId }
+        : {}),
+      ...(answers ? { answers } : {}),
     })
     this.syncRun(item.runId)
   }

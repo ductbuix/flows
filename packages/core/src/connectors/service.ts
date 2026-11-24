@@ -3,6 +3,7 @@ import {
   safeParseConnectorYaml,
   toConnectorSummary,
   type ConnectorFile,
+  type ConnectorStatus,
   type ConnectorSummary,
 } from "@workspace/contracts"
 import { engineError } from "../kernel/engine-error.ts"
@@ -28,6 +29,13 @@ export type ConnectorRecord = {
   path: string
 }
 
+/** In-memory check result (not in YAML; DES-041 secrets stay out of files). */
+export type ConnectorStatusInfo = {
+  status: ConnectorStatus
+  checkedAt: string
+  detail?: string
+}
+
 export type ConnectorServiceDeps = {
   docs: DocumentStore
 }
@@ -39,7 +47,17 @@ export function createConnectorService(
 }
 
 export class ConnectorService {
+  private readonly statusById = new Map<string, ConnectorStatusInfo>()
+
   constructor(private readonly deps: ConnectorServiceDeps) {}
+
+  getStatus(id: string): ConnectorStatusInfo | undefined {
+    return this.statusById.get(id)
+  }
+
+  setStatus(id: string, info: ConnectorStatusInfo): void {
+    this.statusById.set(id, info)
+  }
 
   list(): ConnectorSummary[] {
     return this.listRecords()
@@ -73,6 +91,7 @@ export class ConnectorService {
     if (!result.ok) {
       throw engineError("not_found", `Connector not found: ${id}`)
     }
+    this.statusById.delete(id)
   }
 
   setCapability(

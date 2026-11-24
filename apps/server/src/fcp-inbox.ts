@@ -5,6 +5,7 @@ import {
   type Clock,
   type EventStore,
   type InboxBindings,
+  type InboxService,
   type UpdateBus,
 } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
@@ -12,11 +13,12 @@ import type { Engine } from "@workspace/engine"
 const systemClock: Clock = { now: () => Date.now() }
 
 export type InboxFcp = {
+  inbox: InboxService
   bindings: InboxBindings
   dispose: () => void
 }
 
-/** Live inbox projection over the engine event log (BL-145 / BL-178). */
+/** Live inbox projection over the engine event log (BL-145 / BL-178 / BL-192). */
 export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
   const events: EventStore = {
     append() {
@@ -43,17 +45,36 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
     clock: systemClock,
     events,
     pushAnswer: async (input) => {
-      if (input.kind !== "approval") {
-        throw engineError(
-          "failed_precondition",
-          "Permission inbox answers are not wired on the daemon yet"
-        )
-      }
-      if (input.optionId === "approved") {
-        engine.approveTask(input.runId, input.nodeId)
+      if (input.kind === "approval") {
+        if (input.optionId === "approved") {
+          engine.approveTask(input.runId, input.nodeId)
+          return
+        }
+        engine.rejectTask(input.runId, input.nodeId)
         return
       }
-      engine.rejectTask(input.runId, input.nodeId)
+      if (!input.requestId) {
+        throw engineError(
+          "failed_precondition",
+          "ACP inbox answer is missing requestId"
+        )
+      }
+      const ok = engine.answerAcpAsk({
+        kind: input.kind,
+        runId: input.runId,
+        at: input.at,
+        nodeId: input.nodeId,
+        pass: input.pass,
+        requestId: input.requestId,
+        optionId: input.optionId,
+        ...(input.answers ? { answers: input.answers } : {}),
+      })
+      if (!ok) {
+        throw engineError(
+          "failed_precondition",
+          "No live ACP session for this inbox item"
+        )
+      }
     },
   })
 
@@ -65,6 +86,7 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
 
   const unsub = engine.onEvent((stored) => inbox.apply(stored))
   return {
+    inbox,
     bindings: createInboxBindings(inbox),
     dispose: () => unsub(),
   }

@@ -27,6 +27,61 @@ importers:
         specifier: ~6.0.2
         version: 6.0.3
 
+  apps/cli:
+    dependencies:
+      '@workspace/adapters-node':
+        specifier: workspace:*
+        version: link:../../packages/adapters-node
+      '@workspace/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@workspace/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@workspace/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+      '@workspace/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      server:
+        specifier: workspace:*
+        version: link:../server
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+    devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.15.0(jiti@2.7.0))
+      '@hono/node-server':
+        specifier: ^2.1.9
+        version: 2.1.9(hono@4.13.19)
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
+      '@types/ws':
+        specifier: ^8.18.2
+        version: 8.18.2
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)
+      globals:
+        specifier: ^17.14.0
+        version: 17.14.0
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.72.2
+        version: 8.72.2(eslint@10.15.0(jiti@2.7.0))(typescript@6.0.3)
+      vitest:
+        specifier: ^5.1.1
+        version: 5.1.1(@types/node@24.19.2)(jsdom@31.0.1)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+      ws:
+        specifier: ^8.23.0
+        version: 8.23.0
+
   apps/desktop:
     dependencies:
       '@workspace/adapters-node':
@@ -157,6 +212,9 @@ importers:
       '@types/ws':
         specifier: ^8.18.2
         version: 8.18.2
+      '@workspace/agent-acp':
+        specifier: workspace:*
+        version: link:../../packages/agent-acp
       eslint:
         specifier: ^10.15.0
         version: 10.15.0(jiti@2.7.0)
@@ -342,6 +400,9 @@ importers:
 
   packages/agent-acp:
     dependencies:
+      '@workspace/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@workspace/core':
         specifier: workspace:*
         version: link:../core

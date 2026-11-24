@@ -19,6 +19,8 @@ export const llmKind = defineNodeKind({
     model: modelIdSchema.optional(),
     effort: effortSchema.optional(),
     answers: answersSchema.optional(),
+    /** Cursor create_plan: auto-accept or Inbox review (DES-041 / BL-148). */
+    planReview: z.enum(["auto", "ask"]).optional(),
     ...stepSettings,
   },
 })

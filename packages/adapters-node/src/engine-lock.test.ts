@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import { acquireLock, liveOwner, releaseLock } from "./engine-lock.ts"
+import { acquireLock, liveOwner, peekLock, releaseLock } from "./engine-lock.ts"
 
 const temps: string[] = []
 
@@ -67,7 +67,7 @@ describe("acquireLock", () => {
 
     const second = acquireLock(home, selfB)
     expect(second).toEqual({
-      attachTo: { url: selfA.url, token: selfA.token },
+      attachTo: { url: selfA.url, token: selfA.token, pid: process.pid },
     })
     expect(
       JSON.parse(readFileSync(join(home, "engine.lock"), "utf8"))
@@ -104,11 +104,46 @@ describe("acquireLock", () => {
   })
 })
 
+describe("peekLock", () => {
+  it("returns live owner without taking the lock", () => {
+    const home = tempHome()
+    expect(peekLock(home)).toBeNull()
+    expect(acquireLock(home, selfA)).toEqual({ owned: true })
+    expect(peekLock(home)).toEqual({
+      url: selfA.url,
+      token: selfA.token,
+      pid: process.pid,
+    })
+    expect(acquireLock(home, selfB)).toEqual({
+      attachTo: { url: selfA.url, token: selfA.token, pid: process.pid },
+    })
+  })
+
+  it("returns null for a stale or missing lock", () => {
+    const home = tempHome()
+    writeFileSync(
+      join(home, "engine.lock"),
+      JSON.stringify({
+        pid: deadPid(),
+        url: selfA.url,
+        token: selfA.token,
+      }),
+      { mode: 0o600 }
+    )
+    expect(peekLock(home)).toBeNull()
+  })
+})
+
 describe("liveOwner", () => {
-  it("returns null when the lock is missing or the pid is gone", () => {
+  it("returns url and token for a live owner (no pid)", () => {
     const home = tempHome()
     expect(liveOwner(home)).toBeNull()
+    expect(acquireLock(home, selfA)).toEqual({ owned: true })
+    expect(liveOwner(home)).toEqual({ url: selfA.url, token: selfA.token })
+  })
 
+  it("returns null for a stale lock", () => {
+    const home = tempHome()
     writeFileSync(
       join(home, "engine.lock"),
       JSON.stringify({
@@ -119,15 +154,6 @@ describe("liveOwner", () => {
       { mode: 0o600 }
     )
     expect(liveOwner(home)).toBeNull()
-  })
-
-  it("returns url and token for a live owner without taking the lock", () => {
-    const home = tempHome()
-    expect(acquireLock(home, selfA)).toEqual({ owned: true })
-    expect(liveOwner(home)).toEqual({ url: selfA.url, token: selfA.token })
-    expect(
-      JSON.parse(readFileSync(join(home, "engine.lock"), "utf8"))
-    ).toMatchObject({ pid: process.pid, token: selfA.token })
   })
 })
 

@@ -26,7 +26,9 @@ export type EngineLockSelf = {
 }
 
 export type AcquireLockResult =
-  { owned: true } | { attachTo: { url: string; token: string } }
+  { owned: true } | { attachTo: { url: string; token: string; pid: number } }
+
+export type PeekLockResult = { url: string; token: string; pid: number }
 
 function lockPath(home: string): string {
   return join(home, LOCK_NAME)
@@ -89,15 +91,25 @@ function removeStale(path: string): void {
 }
 
 /**
- * Read a live owner from `$FLOWAPP_HOME/engine.lock`, or null when absent/stale.
- * Does not take the lock (desktop/CLI attach probe; DES-039).
+ * Read a live owner from `$FLOWAPP_HOME/engine.lock`, or null if none/stale.
+ * Does not take or replace the lock (clients attach; hosts use acquireLock).
  */
-export function liveOwner(home: string): { url: string; token: string } | null {
+export function peekLock(home: string): PeekLockResult | null {
   const path = lockPath(home)
   if (!existsSync(path)) return null
   const existing = readLock(path)
   if (!existing || !isPidAlive(existing.pid)) return null
-  return { url: existing.url, token: existing.token }
+  return { url: existing.url, token: existing.token, pid: existing.pid }
+}
+
+/**
+ * Live owner url+token without pid (desktop/CLI attach probe; DES-039).
+ * Thin wrapper over peekLock — same staleness rules, no second read path.
+ */
+export function liveOwner(home: string): { url: string; token: string } | null {
+  const owner = peekLock(home)
+  if (!owner) return null
+  return { url: owner.url, token: owner.token }
 }
 
 /**
@@ -119,7 +131,13 @@ export function acquireLock(
 
     const existing = readLock(path)
     if (existing && isPidAlive(existing.pid)) {
-      return { attachTo: { url: existing.url, token: existing.token } }
+      return {
+        attachTo: {
+          url: existing.url,
+          token: existing.token,
+          pid: existing.pid,
+        },
+      }
     }
 
     // Stale or corrupt: remove and retry with O_EXCL.

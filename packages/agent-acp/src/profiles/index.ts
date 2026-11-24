@@ -1,10 +1,19 @@
 export {
+  CURSOR_ASK_QUESTION_METHOD,
   CURSOR_AUTH_METHOD,
+  CURSOR_CREATE_PLAN_METHOD,
   CURSOR_MODES,
+  CURSOR_TASK_METHOD,
+  CURSOR_UPDATE_TODOS_METHOD,
   cursorCommand,
   cursorProfile,
   probeCursor,
 } from "./cursor.ts"
+export {
+  createGenericProfile,
+  GENERIC_MODES,
+  type GenericProfileSettings,
+} from "./generic.ts"
 export {
   asMcpLaunchSpecs,
   cleanupPlacedMcp,

@@ -1,31 +1,14 @@
 import { upgradeWebSocket } from "@hono/node-server"
-import {
-  bindEngine,
-  bindInitialize,
-  createFcpConnection,
-  createSubscribeBindings,
-  defineBinding,
-  type MethodBindings,
-  type UpdateBus,
-} from "@workspace/core"
-import { pingMethod } from "@workspace/contracts"
 import type { Engine } from "@workspace/engine"
-import { RpcPeer, wsTransport, type WsLike } from "@workspace/protocol"
-import { randomUUID, timingSafeEqual } from "node:crypto"
+import { wsTransport, type WsLike } from "@workspace/protocol"
+import { timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
+import { bindFcpTransport, type FcpHost } from "./fcp-host.ts"
 import { fcpIndexHtml } from "./fcp-index.ts"
-import { createFileFcp } from "./fcp-files.ts"
-import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
-import { createWorkflowWriteBindings } from "./fcp-workflow-write.ts"
-import { createRunCommandBindings } from "./fcp-run-commands.ts"
-import { createRunReadBindings } from "./fcp-run-read.ts"
-import type { IdempotencyStore } from "./idempotency.ts"
 
 export const FCP_AUTH_CLOSE = 4401
 export const FCP_DEV_ORIGIN_PORT = 5173
-
-const engineInfo = { name: "flows", version: "0.0.1" }
 
 /** Vite ports allowed as FCP Host/Origin (default 5173; e2e sets PW_WEB_PORT). */
 export function fcpDevOriginPorts(): number[] {
@@ -105,58 +88,12 @@ function fcpWsUrl(c: Context, port: number): string {
   return `ws://${host}/fcp`
 }
 
-function bindFcpPeer(
-  raw: WsLike,
-  engine: Engine,
-  bus: UpdateBus,
-  idempotency: IdempotencyStore,
-  port: number,
-  extra: Partial<MethodBindings>
-): void {
-  const transport = wsTransport(raw)
-  const peer = new RpcPeer(transport)
-  const connection = createFcpConnection()
-  const ac = new AbortController()
-  const peerId = randomUUID()
-  const { bindings: subBindings, dispose: subDispose } =
-    createSubscribeBindings(bus, peer, peerId)
-  transport.onClose(() => {
-    ac.abort()
-    subDispose.dispose()
-  })
-
-  bindInitialize(peer, connection, {
-    engineInfo,
-    workspace: { home: engine.home, id: engine.home },
-    engineCapabilities: {
-      blobs: { http: `http://127.0.0.1:${port}/blobs` },
-    },
-  })
-  bindEngine(
-    peer,
-    {
-      ping: defineBinding(pingMethod, () => ({ ok: true as const })),
-      ...createWorkflowReadBindings(engine),
-      ...createWorkflowWriteBindings({ engine, bus }),
-      ...subBindings,
-      ...createRunReadBindings(engine),
-      ...createRunCommandBindings({ engine, idempotency }),
-      ...createFileFcp(engine, peer, connection),
-      ...extra,
-    },
-    { signal: ac.signal },
-    { connection }
-  )
-}
-
 function fcpEvents(
   c: Context,
   engine: Engine,
   token: string,
   port: number,
-  bus: UpdateBus,
-  idempotency: IdempotencyStore,
-  extra: Partial<MethodBindings>
+  host: FcpHost
 ): WSEvents {
   if (!fcpAuthorized(c, token, port)) {
     return {
@@ -173,7 +110,9 @@ function fcpEvents(
         ws.close(1011, "no websocket")
         return
       }
-      bindFcpPeer(raw as WsLike, engine, bus, idempotency, port, extra)
+      bindFcpTransport(wsTransport(raw as WsLike), engine, host, {
+        blobsHttp: `http://127.0.0.1:${port}/blobs`,
+      })
     },
   }
 }
@@ -193,13 +132,9 @@ export function fcpUpgrade(
   engine: Engine,
   token: string,
   port: number,
-  bus: UpdateBus,
-  idempotency: IdempotencyStore,
-  extra: Partial<MethodBindings> = {}
+  host: FcpHost
 ) {
-  return upgradeWebSocket((c) =>
-    fcpEvents(c, engine, token, port, bus, idempotency, extra)
-  )
+  return upgradeWebSocket((c) => fcpEvents(c, engine, token, port, host))
 }
 
 /** JSON bootstrap for Vite (proxied as `/fcp/bootstrap`); same as `__FLOWS_FCP__`. */

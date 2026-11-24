@@ -164,6 +164,13 @@ type AgentEvent =
     }
   | { kind: "tool_call_update"; id: string; status: string; content?: unknown }
   | { kind: "plan" | "todos"; entries: PlanEntry[] }
+  | {
+      kind: "subagent"
+      id: string
+      description: string
+      subagentType: string
+      durationMs?: number
+    }
   | { kind: "usage"; used: number; size: number; cost?: Money }
   | {
       kind: "stop"
@@ -220,9 +227,8 @@ Cursor specifics, each behind a profile flag so a gap is one switch:
 | `cursor/update_todos` | `todos` run update (merge flag honoured)                                                                                                                                                                                                                                                    |
 | `cursor/task`         | subagent trace row under the step                                                                                                                                                                                                                                                           |
 
-A `generic` ACP profile (spec methods only, no extensions) lets other
-ACP agents run with no new code; a `spawn` profile wraps today's
-`cli-adapters.ts` for non-ACP CLIs during migration.
+A `generic` ACP profile (spec methods only) runs other agents with no
+new code; a `spawn` profile wraps today's `cli-adapters.ts` for migration.
 
 ## Permission policy (Chain of Responsibility)
 
@@ -258,12 +264,10 @@ step, appends `connector_called`; profiles use `launchSpec` for mcp.json
 
 ## Inbox
 
-A projection, not a store: items come from run events
-(`approval_requested`, `permission_requested`, `question_asked`,
-`plan_review_requested`) and connector events (`sign_in_expired`). An
-item resolves when its answer event is appended. `inbox/answer` is a
-command routed to the owning run actor, so the answer and the run's
-next step are in one ordered log.
+A projection over run events (`approval_requested`,
+`permission_requested`, `question_asked`, `plan_review_requested`) and
+connector events (`sign_in_expired`). `inbox/answer` goes to the owning
+run actor so the answer and next step share one ordered log.
 
 ## Docket, Library, Connectors, Skills
 
@@ -293,4 +297,4 @@ interface EnginePlugin {
 }
 ```
 
-Registered statically at `createEngine`; no dynamic loading in v2 (YAGNI).
+Registered at `createEngine`; no dynamic loading in v2 (YAGNI).
