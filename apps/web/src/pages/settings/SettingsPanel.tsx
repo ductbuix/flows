@@ -5,6 +5,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet"
+import { SettingsTextSizeSection } from "./SettingsTextSizeSection"
 import { SettingsThemeSection } from "./SettingsThemeSection"
 import { SettingsTrustBody } from "./SettingsTrustSections"
 
@@ -24,11 +25,12 @@ export function SettingsPanel({ open, onClose }: Props) {
         <SheetHeader className="pr-12">
           <SheetTitle>Settings</SheetTitle>
           <SheetDescription>
-            Theme, agent CLIs, always-trust and allowed MCP servers.
+            Theme, text size, agent CLIs, always-trust and allowed MCP servers.
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-6 px-4 pb-6">
           <SettingsThemeSection />
+          <SettingsTextSizeSection />
           {open ? <SettingsTrustBody /> : null}
         </div>
       </SheetContent>
