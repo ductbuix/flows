@@ -50,17 +50,8 @@ export function pendingAnswerFix(
   return error === undefined ? undefined : { error, previous }
 }
 
-/** What an Agent is told about `out/answer.json`. */
-export function agentAnswerPrompt(decls: readonly AnswerDecl[]): string {
-  return [
-    "## Answer",
-    "",
-    "When you finish, write `out/answer.json`: one JSON object with exactly these fields.",
-    "",
-    ...decls.map((d) => `- ${d.name}: ${answerTypeHint(d)}`),
-    "",
-  ].join("\n")
-}
+/** What an Agent is told about `out/answer.json` (core port; BL-195). */
+export { agentAnswerPrompt, agentFixPrompt } from "@workspace/core"
 
 /** What an LLM step is told about its reply. */
 export function llmAnswerPrompt(decls: readonly AnswerDecl[]): string {
@@ -70,17 +61,6 @@ export function llmAnswerPrompt(decls: readonly AnswerDecl[]): string {
     "End your reply with one JSON object in a ```json block, with exactly these fields.",
     "",
     ...decls.map((d) => `- ${d.name}: ${answerTypeHint(d)}`),
-    "",
-  ].join("\n")
-}
-
-/** The fix request for an Agent: keep the work, rewrite only the answer. */
-export function agentFixPrompt(error: string): string {
-  return [
-    "## Fix the answer",
-    "",
-    `Your \`out/answer.json\` was rejected: ${error.trim()}`,
-    "Your earlier files are kept in out/. Do not redo the work; write a corrected `out/answer.json`.",
     "",
   ].join("\n")
 }

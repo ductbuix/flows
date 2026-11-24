@@ -7,6 +7,7 @@ import { judgeCheckKind } from "./kinds/judge-check.ts"
 import { llmKind } from "./kinds/llm.ts"
 import { notifyKind } from "./kinds/notify.ts"
 import { promptKind } from "./kinds/prompt.ts"
+import { publishKind } from "./kinds/publish.ts"
 import { triggerKind } from "./kinds/trigger.ts"
 import type { NodeKind } from "./types.ts"
 
@@ -21,6 +22,7 @@ export const CORE_NODE_KINDS: readonly NodeKind[] = [
   judgeCheckKind,
   approvalKind,
   notifyKind,
+  publishKind,
 ]
 
 export function createCoreNodeRegistry(

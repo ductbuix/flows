@@ -75,7 +75,7 @@ export function createInboxFcp(
           "ACP inbox answer is missing requestId"
         )
       }
-      const ok = engine.answerAcpAsk({
+      const ask = {
         kind: input.kind,
         runId: input.runId,
         at: input.at,
@@ -84,13 +84,13 @@ export function createInboxFcp(
         requestId: input.requestId,
         optionId: input.optionId,
         ...(input.answers ? { answers: input.answers } : {}),
-      })
-      if (!ok) {
-        throw engineError(
-          "failed_precondition",
-          "No live ACP session for this inbox item"
-        )
       }
+      if (coreRuns?.answerAcpAsk(ask)) return
+      if (engine.answerAcpAsk(ask)) return
+      throw engineError(
+        "failed_precondition",
+        "No live ACP session for this inbox item"
+      )
     },
   })
 

@@ -29,6 +29,39 @@ function settleLaunch(actor: RunActor, fx: RunEffect, atIso: string): void {
 }
 
 describe("RunActor mailbox", () => {
+  it("appends after another run advanced the global event seq", async () => {
+    const events = createFakeEventStore()
+    // Other run claims seq 1 so this run's first row id is 2 (e2e flake).
+    events.append(
+      "other",
+      [
+        {
+          type: "run_started",
+          runId: "other",
+          at,
+          workflowId: "wf",
+          graph,
+          trigger: "manual",
+        },
+      ],
+      { expectSeq: 0 }
+    )
+    const actor = new RunActor("r1", {
+      events,
+      runEffect: async (fx) => {
+        if (fx.kind === "launch_step") return ok(fx.nodeId)
+        return { ok: true, outputs: [] }
+      },
+    })
+    await actor.push({
+      kind: "start",
+      at,
+      runId: "r1",
+      graph,
+    })
+    expect(actor.getState()?.status).toBe("succeeded")
+  })
+
   it("handles start, effect_result, answer, cancel, agent_event in order", async () => {
     const order: string[] = []
     const g = parse(

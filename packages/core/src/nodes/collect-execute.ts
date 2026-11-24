@@ -17,6 +17,8 @@ export async function collectExecute(
         return { waiting: true, question: ev.question }
       }
       if (ev.kind === "failed") {
+        // Agent answer mismatch asks for one fix attempt (DES-032 / BL-195).
+        if (ev.message === "fix") return { fix: true }
         return {
           ok: false,
           reason: ev.reason,
