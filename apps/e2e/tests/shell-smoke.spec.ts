@@ -5,7 +5,6 @@ const routes = [
   { path: "/docket", ready: "docket-page" },
   { path: "/inbox", ready: "inbox-page" },
   { path: "/workflows", ready: "workflows-page" },
-  { path: "/runs", ready: "runs-page" },
   { path: "/connectors", ready: "connectors-page" },
   { path: "/library", ready: "library-page" },
   { path: "/skills", ready: "skills-page" },
@@ -55,6 +54,19 @@ test.describe("shell smoke (BL-185)", () => {
     })
     await expect(page.getByTestId("docket-page")).toBeVisible()
     await expect(page.locator("[data-testid^='mock-']")).toHaveCount(0)
+  })
+
+  test("no runs nav", async ({ page }) => {
+    await page.goto("/docket")
+    await expect(page.getByTestId("app-sidebar")).toBeVisible({
+      timeout: 30_000,
+    })
+    await expect(
+      page.getByTestId("app-sidebar").getByRole("link", { name: "Runs" })
+    ).toHaveCount(0)
+    await expect(
+      page.getByTestId("app-sidebar").getByRole("link", { name: "Docket" })
+    ).toBeVisible()
   })
 
   test("no mock routes", async ({ page }) => {

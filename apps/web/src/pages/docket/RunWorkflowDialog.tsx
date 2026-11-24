@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { workflowLabel } from "@/lib/labels"
-import { startRun } from "@/pages/runs/run-actions"
+import { startRun } from "@/components/runs/run-actions"
 
 type CardFace = {
   id: string

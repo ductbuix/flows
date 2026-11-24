@@ -1,41 +1,38 @@
 import { expect, test } from "@playwright/test"
 import { cancelLiveRuns } from "./helpers"
 
-async function screenshotThemes(
-  page: import("@playwright/test").Page,
-  name: string
-) {
-  await page.screenshot({
-    path: `test-results/${name}-light.png`,
-    fullPage: true,
-  })
-  await page.locator("body").click({ position: { x: 0, y: 0 } })
-  await page.keyboard.press("d")
-  await expect(page.locator("html")).toHaveClass(/dark/)
-  await page.screenshot({
-    path: `test-results/${name}-dark.png`,
-    fullPage: true,
-  })
-  await page.keyboard.press("d")
-  await expect(page.locator("html")).toHaveClass(/light/)
+async function openFixLogin(page: import("@playwright/test").Page) {
+  await page.goto("/docket")
+  await expect(page.getByTestId("docket-page")).toBeVisible()
+  await page.getByTestId("docket-card-fix-login").click()
+  await expect(page.getByTestId("docket-panel")).toBeVisible()
 }
 
-test.describe("runs page (BL-180)", () => {
-  test("starts a run, opens sheet, deletes it", async ({ page }) => {
-    // Free the diamond slot if a prior live run is still holding it.
-    await cancelLiveRuns("diamond")
+test.describe("runs.spec.ts › page gone", () => {
+  test("page gone", async ({ page }) => {
     await page.goto("/runs")
-    await expect(page.getByTestId("runs-page")).toBeVisible()
-    await expect(page.getByTestId("runs-start-open")).toBeVisible()
-    await screenshotThemes(page, "runs-page")
+    await expect(page.getByTestId("runs-page")).toHaveCount(0)
+    await expect(page.getByTestId("runs-start-open")).toHaveCount(0)
+    await page.goto("/docket")
+    await expect(page.getByTestId("app-sidebar")).toBeVisible()
+    await expect(
+      page.getByTestId("app-sidebar").getByRole("link", { name: "Runs" })
+    ).toHaveCount(0)
+  })
+})
 
-    await page.getByTestId("runs-start-open").click()
-    await expect(page.getByTestId("runs-start-dialog")).toBeVisible()
-    await page.getByTestId("runs-start-workflow").click()
-    // Own fixture: diamond shares maxConcurrentRuns=1 with docket card runs
-    // and flaked when a prior diamond run was still live (BL-195).
-    await page.getByRole("option", { name: /runs page demo/i }).click()
-    await page.getByTestId("runs-start-submit").click()
+test.describe("runs.spec.ts › sheet in context", () => {
+  test("sheet in context", async ({ page }) => {
+    // Own fixture: avoid diamond concurrency with docket card-run specs.
+    await cancelLiveRuns("sheet-delete-demo")
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+
+    await panel.getByTestId("card-run-open").click()
+    const dialog = page.getByTestId("card-run-dialog")
+    await dialog.getByTestId("card-run-workflow").click()
+    await page.getByRole("option", { name: /sheet delete demo/i }).click()
+    await dialog.getByTestId("card-run-start").click()
 
     await expect(page.getByTestId("runs-sheet")).toBeVisible({
       timeout: 15_000,
@@ -44,11 +41,10 @@ test.describe("runs page (BL-180)", () => {
       .getByTestId("runs-sheet")
       .getAttribute("data-run-id")
     expect(runId).toBeTruthy()
-    await expect(page.getByTestId(`runs-row-${runId}`)).toBeVisible({
+    await expect(panel.getByTestId(`card-run-row-${runId}`)).toBeVisible({
       timeout: 15_000,
     })
 
-    // Wait until the workflow finishes so delete is allowed.
     await expect(page.getByTestId("runs-rerun")).toBeVisible({
       timeout: 20_000,
     })
@@ -56,12 +52,9 @@ test.describe("runs page (BL-180)", () => {
     await page.getByTestId("runs-delete").click()
     await page
       .getByTestId("confirm-dialog")
-      .getByRole("button", {
-        name: "Delete run",
-      })
+      .getByRole("button", { name: "Delete run" })
       .click()
     await expect(page.getByTestId("runs-sheet")).toHaveCount(0)
-    // Other specs share the e2e home, so the list may not be empty.
-    await expect(page.getByTestId(`runs-row-${runId}`)).toHaveCount(0)
+    await expect(panel.getByTestId(`card-run-row-${runId}`)).toHaveCount(0)
   })
 })

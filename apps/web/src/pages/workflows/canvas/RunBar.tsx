@@ -12,7 +12,7 @@ import {
 } from "@workspace/ui/components/select"
 import { StatusPill } from "@/components/brand/StatusPill"
 import { RelativeTime } from "@/components/data/RelativeTime"
-import { statusOf } from "@/pages/runs/status"
+import { statusOf } from "@/components/runs/status"
 
 type Props = {
   runs: RunSummary[]

@@ -18,7 +18,7 @@ import {
 import { mono } from "@/components/data/mono"
 import { workflowLabel } from "@/lib/labels"
 import { InlineText } from "@/pages/docket/InlineText"
-import { startRun } from "@/pages/runs/run-actions"
+import { startRun } from "@/components/runs/run-actions"
 import { TriggerInputs } from "./canvas/TriggerInputs"
 import {
   renameWorkflowId,

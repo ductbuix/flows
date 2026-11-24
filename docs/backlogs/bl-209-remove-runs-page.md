@@ -2,7 +2,7 @@
 id: BL-209
 title: "Remove the Runs page"
 type: backlog
-status: todo
+status: done
 summary: Delete /runs and pages/runs list; run detail opens in context only.
 tags: [web, runs, cleanup]
 related: [DES-043]
@@ -19,6 +19,6 @@ Remove the route, sidebar entry, `RunsPage`, `RunsList` and `RunStartDialog`. Ke
 
 ## Done when
 
-- [ ] `/runs` is not a route and not in the sidebar.
-- [ ] Runs are reachable from a card and from a workflow.
-- [ ] `pnpm test:e2e` passes.
+- [x] `/runs` is not a route and not in the sidebar.
+- [x] Runs are reachable from a card and from a workflow.
+- [x] `pnpm test:e2e` passes.

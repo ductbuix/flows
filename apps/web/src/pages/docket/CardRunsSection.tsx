@@ -10,8 +10,8 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { StatusPill } from "@/components/brand/StatusPill"
 import { RelativeTime } from "@/components/data/RelativeTime"
-import { RunSheet } from "@/pages/runs/RunSheet"
-import { statusOf } from "@/pages/runs/status"
+import { RunSheet } from "@/components/runs/RunSheet"
+import { statusOf } from "@/components/runs/status"
 import { EmptyLine, Section } from "./SectionParts"
 import { RunWorkflowDialog } from "./RunWorkflowDialog"
 

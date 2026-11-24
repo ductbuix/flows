@@ -1,45 +1,7 @@
 import { expect, test, type Page } from "@playwright/test"
-import { fcpRequest } from "./helpers"
 
 // Layout check (DES-030): every root shell route, light and dark, 1440x900.
 test.use({ viewport: { width: 1440, height: 900 } })
-
-/** Drop leftover runs so /runs matches the empty-list baseline. */
-async function clearRunsForLayout() {
-  const listed = (await fcpRequest("run/list", { limit: 100 })) as {
-    items: { id: string; status: string }[]
-  }
-  for (const run of listed.items) {
-    if (run.status === "running" || run.status === "queued") {
-      await fcpRequest("run/cancel", {
-        runId: run.id,
-        requestKey: crypto.randomUUID(),
-      }).catch(() => undefined)
-    }
-  }
-  const deadline = Date.now() + 10_000
-  while (Date.now() < deadline) {
-    const live = (await fcpRequest("run/list", { limit: 100 })) as {
-      items: { id: string; status: string }[]
-    }
-    if (
-      !live.items.some((r) => r.status === "running" || r.status === "queued")
-    ) {
-      break
-    }
-    await new Promise((r) => setTimeout(r, 100))
-  }
-  const after = (await fcpRequest("run/list", { limit: 100 })) as {
-    items: { id: string; status: string }[]
-  }
-  for (const run of after.items) {
-    if (run.status === "running" || run.status === "queued") continue
-    await fcpRequest("run/delete", {
-      runId: run.id,
-      requestKey: crypto.randomUUID(),
-    }).catch(() => undefined)
-  }
-}
 
 const CONTENT = '[class~="@container/main"]'
 const DENSE =
@@ -123,14 +85,6 @@ const routes: Route[] = [
     ready: "workflow-editor-tab-canvas",
     dynamic: true,
   },
-  // Clip above the run list — shared FLOWAPP_HOME accumulates rows across specs.
-  {
-    name: "runs",
-    path: "/runs",
-    ready: "runs-start-open",
-    dynamic: true,
-    clipHeight: 96,
-  },
   {
     name: "connectors",
     path: "/connectors",
@@ -157,8 +111,6 @@ test.describe("layout check (BL-061 / BL-185)", () => {
     for (const route of routes) {
       test(`${route.name} (${theme})`, async ({ page }) => {
         await setTheme(page, theme)
-        // Docket/inbox leave runs; empty the list so the baseline still matches.
-        if (route.name === "runs") await clearRunsForLayout()
         await page.goto(route.path)
         await expect(page.getByTestId(route.ready).first()).toBeVisible({
           timeout: 30_000,

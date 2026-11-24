@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
-import { startRun } from "@/pages/runs/run-actions"
+import { startRun } from "@/components/runs/run-actions"
 import type { CanvasNode } from "./flow-graph"
 import { useCanvasRun } from "./use-canvas-run"
 

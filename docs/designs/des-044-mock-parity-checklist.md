@@ -99,12 +99,12 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Runs in context
 
-| id    | item                                  | status  | test id                              | backlog |
-| ----- | ------------------------------------- | ------- | ------------------------------------ | ------- |
-| RN-01 | Run entry on card (dialog + list)     | app     | `docket.spec.ts › run on card`       | BL-200  |
-| RN-02 | RunBar on canvas (select card, start) | app     | `workflows.spec.ts › canvas run bar` | BL-203  |
-| RN-03 | Run detail sheet (reuse `RunSheet`)   | partial | `runs.spec.ts › sheet in context`    | BL-209  |
-| RN-04 | `/runs` page + start-from-list        | drop    | `runs.spec.ts › page gone`           | BL-209  |
+| id    | item                                  | status | test id                              | backlog |
+| ----- | ------------------------------------- | ------ | ------------------------------------ | ------- |
+| RN-01 | Run entry on card (dialog + list)     | app    | `docket.spec.ts › run on card`       | BL-200  |
+| RN-02 | RunBar on canvas (select card, start) | app    | `workflows.spec.ts › canvas run bar` | BL-203  |
+| RN-03 | Run detail sheet (reuse `RunSheet`)   | app    | `runs.spec.ts › sheet in context`    | BL-209  |
+| RN-04 | `/runs` page + start-from-list        | drop   | `runs.spec.ts › page gone`           | BL-209  |
 
 ## Library
 

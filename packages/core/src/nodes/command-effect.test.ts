@@ -72,4 +72,40 @@ describe("command effect on RunActor", () => {
     expect(actor.getState()?.status).toBe("failed")
     expect(latestStep(actor.getState()!.steps, "a")?.status).toBe("failed")
   })
+
+  it("fails the run after skipping successors of a failed command", async () => {
+    const docs = createFakeDocumentStore()
+    const runDir = "workflows/wf/runs/r1"
+    docs.write(`${runDir}/input/text.md`, "")
+    const runner = createFakeProcessRunner()
+    runner.on("/bin/sh", () => ({ exitCode: 1, stderr: "boom" }))
+
+    const events = createFakeEventStore()
+    const actor = new RunActor("r1", {
+      events,
+      runEffect: createNodeEffectRunner({
+        docs,
+        process: runner,
+        runDirOf: () => runDir,
+        workflowDirOf: () => "workflows/wf",
+      }),
+    })
+    const graph = parse(
+      [
+        { id: "a", kind: "command", run: "false" },
+        { id: "done", kind: "output", target: "folder" },
+      ],
+      [
+        { from: "t", to: "a" },
+        { from: "a", to: "done" },
+      ]
+    )
+    await actor.push({ kind: "start", at, runId: "r1", graph })
+    expect(actor.getState()?.status).toBe("failed")
+    expect(latestStep(actor.getState()!.steps, "done")?.status).toBe("skipped")
+    const types = events.read("r1").map((s) => s.event.type)
+    expect(types).toContain("step_failed")
+    expect(types).toContain("step_skipped")
+    expect(types).toContain("run_failed")
+  })
 })
