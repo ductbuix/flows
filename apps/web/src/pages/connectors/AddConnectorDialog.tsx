@@ -1,4 +1,6 @@
 import { useState } from "react"
+import type { ConnectorAuth, ConnectorTransport } from "@workspace/contracts"
+import { useFlowsClient } from "@workspace/sdk-react"
 import { Button } from "@workspace/ui/components/button"
 import {
   Dialog,
@@ -25,43 +27,79 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
-import {
-  AUTH,
-  AUTH_FOR,
-  TRANSPORT,
-  type Auth,
-  type Transport,
-} from "./connectors-data"
-import { addConnector } from "./connectors-store"
+import { AUTH, AUTH_FOR, TRANSPORT } from "./connector-labels"
+import { saveConnector, slugFromName } from "./connector-actions"
 
 type Props = {
   open: boolean
   onOpenChange: (o: boolean) => void
   onAdded: (id: string) => void
+  onConflict: () => void
+  onError: (message: string) => void
 }
 
-/** Two choices: how it connects, then how it signs in (only the sign-ins that fit). */
-export function AddConnectorDialog({ open, onOpenChange, onAdded }: Props) {
-  const [transport, setTransport] = useState<Transport>("api")
-  const [auth, setAuth] = useState<Auth>("cookies")
+export function AddConnectorDialog({
+  open,
+  onOpenChange,
+  onAdded,
+  onConflict,
+  onError,
+}: Props) {
+  const client = useFlowsClient()
+  const [transport, setTransport] = useState<ConnectorTransport>("api")
+  const [auth, setAuth] = useState<ConnectorAuth>("cookies")
   const [name, setName] = useState("")
   const [how, setHow] = useState("")
+  const [busy, setBusy] = useState(false)
   const t = TRANSPORT[transport]
   const authItems = AUTH_FOR[transport].map((a) => ({
     value: a,
     label: AUTH[a].label,
   }))
 
-  function pick(next: Transport) {
+  function pick(next: ConnectorTransport) {
     setTransport(next)
     setAuth(AUTH_FOR[next][0])
   }
+
   function close(o: boolean) {
     if (!o) {
       setName("")
       setHow("")
+      setBusy(false)
     }
     onOpenChange(o)
+  }
+
+  async function onSubmit() {
+    const trimmed = name.trim()
+    const howTrimmed = how.trim()
+    if (!trimmed || !howTrimmed) return
+    const id = slugFromName(trimmed, `connector-${Date.now()}`)
+    setBusy(true)
+    const result = await saveConnector(client, {
+      id,
+      name: trimmed,
+      transport,
+      how: howTrimmed,
+      auth,
+      capabilities: [
+        {
+          name: "read",
+          desc: "Read data (discovered on first connect)",
+          write: false,
+          allowed: true,
+        },
+      ],
+    })
+    setBusy(false)
+    if (!result.ok) {
+      if (result.kind === "conflict") onConflict()
+      else onError(result.message)
+      return
+    }
+    onAdded(id)
+    close(false)
   }
 
   return (
@@ -77,10 +115,10 @@ export function AddConnectorDialog({ open, onOpenChange, onAdded }: Props) {
           <FieldLabel>Connects via</FieldLabel>
           <ToggleGroup
             value={[transport]}
-            onValueChange={(v) => v[0] && pick(v[0] as Transport)}
+            onValueChange={(v) => v[0] && pick(v[0] as ConnectorTransport)}
             variant="outline"
           >
-            {(Object.keys(TRANSPORT) as Transport[]).map((k) => (
+            {(Object.keys(TRANSPORT) as ConnectorTransport[]).map((k) => (
               <ToggleGroupItem
                 key={k}
                 value={k}
@@ -99,6 +137,7 @@ export function AddConnectorDialog({ open, onOpenChange, onAdded }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Wiki"
+            data-testid="connector-add-name"
           />
         </Field>
         <Field>
@@ -108,6 +147,7 @@ export function AddConnectorDialog({ open, onOpenChange, onAdded }: Props) {
             value={how}
             onChange={(e) => setHow(e.target.value)}
             placeholder={t.example}
+            data-testid="connector-add-how"
           />
         </Field>
         <Field>
@@ -115,7 +155,7 @@ export function AddConnectorDialog({ open, onOpenChange, onAdded }: Props) {
           <Select
             value={auth}
             items={authItems}
-            onValueChange={(v) => v && setAuth(v as Auth)}
+            onValueChange={(v) => v && setAuth(v as ConnectorAuth)}
           >
             <SelectTrigger>
               <SelectValue />
@@ -135,12 +175,9 @@ export function AddConnectorDialog({ open, onOpenChange, onAdded }: Props) {
             Cancel
           </Button>
           <Button
-            disabled={!name.trim() || !how.trim()}
+            disabled={busy || !name.trim() || !how.trim()}
             data-testid="connector-add-submit"
-            onClick={() => {
-              onAdded(addConnector(name.trim(), transport, how.trim(), auth))
-              close(false)
-            }}
+            onClick={() => void onSubmit()}
           >
             Add
           </Button>

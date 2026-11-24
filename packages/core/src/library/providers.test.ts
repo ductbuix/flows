@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest"
 import { bindEngine } from "../rpc/bind.ts"
 import { createFakeDocumentStore } from "../testing/index.ts"
 import { createLibraryProviderBindings } from "./bind.ts"
-import { createProviderService } from "./providers.ts"
+import { createProviderService, providerIdFromPath } from "./providers.ts"
 
 function stack(presets?: readonly ProviderDescriptor[]) {
   const docs = createFakeDocumentStore()
@@ -35,6 +35,11 @@ function linkedClient(service: ReturnType<typeof createProviderService>) {
 }
 
 describe("library providers", () => {
+  it("reads provider id from store paths with or without a leading slash", () => {
+    expect(providerIdFromPath("providers/github.yaml")).toBe("github")
+    expect(providerIdFromPath("/providers/github.yaml")).toBe("github")
+  })
+
   it("seeds GitHub, Confluence and Rally presets", () => {
     const { service } = stack()
     expect(service.list().map((p) => p.id)).toEqual([

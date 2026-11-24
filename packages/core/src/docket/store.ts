@@ -88,6 +88,12 @@ export class DocketStore {
 
   saveBoard(board: Board, baseHash?: string): DocumentWriteResult {
     const disk = this.deps.docs.read(DOCKET_BOARD_PATH)
+    // get_board reports hash "" when no board file exists yet.
+    if (baseHash === "") {
+      if (disk)
+        return { ok: false, kind: "conflict", text: disk.text, hash: disk.hash }
+      baseHash = undefined
+    }
     const baseText = disk?.text ?? "version: 1\ncolumns: []\n"
     const text = patchYamlMapping(baseText, {
       version: board.version,

@@ -36,7 +36,10 @@ import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
+import { createConnectorsFcp } from "./fcp-connectors.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
+import { createInboxFcp } from "./fcp-inbox.ts"
+import { createLibraryFcp } from "./fcp-library.ts"
 import { createSkillsFcp } from "./fcp-skills.ts"
 import { createFileFcp } from "./fcp-files.ts"
 import { blobRoutes } from "./blob-routes.ts"
@@ -74,7 +77,10 @@ export function createApp({
   const bus = new UpdateBus()
   const hub = new WsHub(engine, bus)
   const docket = createDocketFcp(engine, bus)
+  const inbox = createInboxFcp(engine, bus)
+  const library = createLibraryFcp(engine)
   const skills = createSkillsFcp(engine, bus)
+  const connectors = createConnectorsFcp(engine)
   const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
@@ -192,7 +198,10 @@ export function createApp({
       "/fcp",
       fcpUpgrade(engine, fcpToken, port, bus, idempotency, {
         ...docket.bindings,
+        ...inbox.bindings,
+        ...library.bindings,
         ...skills.bindings,
+        ...connectors,
         ...files,
       })
     )

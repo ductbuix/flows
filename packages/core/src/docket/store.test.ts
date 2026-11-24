@@ -32,6 +32,20 @@ Notes.
 `
 
 describe("DocketStore", () => {
+  it("creates the first board when baseHash is empty", () => {
+    const docs = createFakeDocumentStore()
+    const store = createDocketStore({ docs, clock: createFakeClock() })
+    const board = {
+      version: 1,
+      columns: [{ id: "todo", label: "Todo" }],
+      face: [],
+    }
+    const first = store.saveBoard(board as never, "")
+    expect(first.ok).toBe(true)
+    const second = store.saveBoard(board as never, "")
+    expect(second.ok).toBe(false)
+  })
+
   it("returns warnings instead of throwing for a half-valid card", () => {
     const docs = createFakeDocumentStore()
     const path = cardPath("half-valid")

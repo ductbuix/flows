@@ -1,10 +1,7 @@
 import { test, expect, _electron as electron } from "@playwright/test"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import {
-  materializeSmokeHome,
-  removeSmokeHome,
-} from "../playwright.config.ts"
+import { materializeSmokeHome, removeSmokeHome } from "../playwright.config.ts"
 
 const root = dirname(fileURLToPath(import.meta.url))
 const desktopRoot = join(root, "..")

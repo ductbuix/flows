@@ -633,6 +633,45 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  // Connectors for BL-181 e2e.
+  const connectorsDir = join(home, "connectors")
+  mkdirSync(connectorsDir, { recursive: true })
+  writeFileSync(
+    join(connectorsDir, "github-cli.yaml"),
+    [
+      "id: github-cli",
+      "name: GitHub",
+      "transport: cli",
+      "how: gh",
+      "auth: cli-login",
+      "capabilities:",
+      "  - name: repo clone",
+      "    desc: Read repositories",
+      "    write: false",
+      "    allowed: true",
+      "  - name: pr merge",
+      "    desc: Merge a pull request",
+      "    write: true",
+      "    allowed: false",
+      "",
+    ].join("\n")
+  )
+  writeFileSync(
+    join(connectorsDir, "rally.yaml"),
+    [
+      "id: rally",
+      "name: Rally",
+      "transport: api",
+      "how: https://rally.example/api",
+      "auth: cookies",
+      "capabilities:",
+      "  - name: artifact read",
+      "    desc: Read stories and defects",
+      "    write: false",
+      "    allowed: true",
+      "",
+    ].join("\n")
+  )
   // Workspace skills for BL-183 e2e.
   for (const dir of [".agents", ".claude"] as const) {
     const skillDir = join(home, dir, "skills", "write-tests")

@@ -9,12 +9,13 @@ import { DevKitPage } from "@/pages/DevKitPage"
 import { HomePage } from "@/pages/HomePage"
 import { ConnectionPage } from "@/pages/connections/ConnectionPage"
 import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
-import { ConnectorsPage } from "@/pages/mock/ConnectorsPage"
+import { ConnectorsPage } from "@/pages/connectors/ConnectorsPage"
 import { SkillsPage } from "@/pages/skills/SkillsPage"
+import { RunsPage as MockRunsPage } from "@/pages/runs/RunsPage"
 import { DocketPage } from "@/pages/docket/DocketPage"
 import { FilesPage } from "@/pages/files/FilesPage"
-import { LibraryPage } from "@/pages/mock/LibraryPage"
-import { InboxPage } from "@/pages/mock/InboxPage"
+import { InboxPage } from "@/pages/inbox/InboxPage"
+import { LibraryPage } from "@/pages/library/LibraryPage"
 import { MockBlankPage } from "@/pages/mock/MockBlankPage"
 import { MockShell } from "@/pages/mock/MockShell"
 import { WorkflowEditorPage as MockWorkflowEditorPage } from "@/pages/workflows/WorkflowEditorPage"
@@ -56,6 +57,7 @@ export function App() {
         <Route path="files" element={<FilesPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="skills" element={<SkillsPage />} />
+        <Route path="runs" element={<MockRunsPage />} />
         <Route path="connectors" element={<ConnectorsPage />} />
         <Route path="workflows/:id" element={<MockWorkflowEditorPage />} />
       </Route>
