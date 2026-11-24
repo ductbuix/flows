@@ -8,7 +8,7 @@ import {
   type InboxService,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import type { CoreRunHost } from "./core-run-host.ts"
 
 const systemClock: Clock = { now: () => Date.now() }

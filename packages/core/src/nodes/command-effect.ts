@@ -1,3 +1,4 @@
+import { connectionEnvName, type WorkflowNode } from "@workspace/contracts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { ProcessRunner } from "../ports/process-runner.ts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
@@ -65,6 +66,7 @@ export async function runCommandEffect(
 
   const workflowAbs = abs(workflowDir)
   const outAbs = abs(outDir)
+  const runAbs = abs(runDir)
   const signal = deps.signalOf?.(state) ?? new AbortController().signal
   const proc = deps.process.spawn(
     {
@@ -73,6 +75,7 @@ export async function runCommandEffect(
       cwd: workflowAbs,
       env: {
         ...deps.baseEnv,
+        ...assetResourceEnv(state, effect.nodeId, runAbs),
         RUN_ID: state.runId,
         WF_DIR: workflowAbs,
         NODE_ID: effect.nodeId,
@@ -122,4 +125,46 @@ export async function runCommandEffect(
   }
 
   return { ok: true, outputs }
+}
+
+/** Upstream Asset → RESOURCE_* env; propose uses work/, else resources/ (BL-084). */
+function assetResourceEnv(
+  state: RunState,
+  nodeId: string,
+  runRootAbs: string
+): Record<string, string> {
+  const up = ancestorsOf(state.graph.edges, nodeId)
+  const env: Record<string, string> = {}
+  for (const node of state.graph.nodes) {
+    if (node.kind !== "asset" || !up.has(node.id)) continue
+    const folder = assetAccess(node) === "propose" ? "work" : "resources"
+    for (const r of node.resources ?? []) {
+      env[connectionEnvName(r.connection)] =
+        `${runRootAbs}/${folder}/${r.connection}`
+    }
+  }
+  return env
+}
+
+function assetAccess(node: WorkflowNode): "read" | "propose" {
+  if (node.kind !== "asset") return "read"
+  return node.access === "propose" ? "propose" : "read"
+}
+
+function ancestorsOf(
+  edges: readonly { from: string; to: string }[],
+  id: string
+): Set<string> {
+  const seen = new Set<string>()
+  const todo = [id]
+  while (todo.length > 0) {
+    const at = todo.pop()!
+    for (const e of edges) {
+      if (e.to === at && !seen.has(e.from)) {
+        seen.add(e.from)
+        todo.push(e.from)
+      }
+    }
+  }
+  return seen
 }

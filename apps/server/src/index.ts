@@ -6,7 +6,7 @@ import {
   fakeConnector,
   registerBuiltinConnectors,
   registerConnector,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 import { WebSocketServer } from "ws"
 import { createApp } from "./app.ts"
 

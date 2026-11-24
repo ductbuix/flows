@@ -15,7 +15,7 @@ import {
   type LibraryBindings,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { randomUUID } from "node:crypto"
 
 const systemClock: Clock = { now: () => Date.now() }

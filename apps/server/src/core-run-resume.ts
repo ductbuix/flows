@@ -1,6 +1,6 @@
 import type { Workflow } from "@workspace/contracts"
 import { fold, type RunActor } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import type { CoreRunSession } from "./core-run-session.ts"
 
 export type ResumeDeps = {

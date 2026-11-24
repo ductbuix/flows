@@ -1,4 +1,4 @@
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { bindFcpTransport, createFcpHost } from "server/fcp-host"
 import {
   messagePortTransport,

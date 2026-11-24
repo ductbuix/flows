@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { acquireLock, releaseLock } from "@workspace/adapters-node"
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { createLinkedTransports } from "@workspace/protocol"
 import { createClient, type FlowsClient } from "@workspace/sdk"
 import { bindFcpTransport, createFcpHost } from "server/fcp-host"

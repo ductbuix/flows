@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/engine"
+import { workflowDir, type Engine } from "@workspace/adapters-node"
 import {
   setWorkflowField,
   workflowIdSchema,

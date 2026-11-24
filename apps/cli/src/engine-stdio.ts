@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { acquireLock, releaseLock } from "@workspace/adapters-node"
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { ndjsonTransport } from "@workspace/protocol/node"
 import { bindFcpTransport, createFcpHost } from "server/fcp-host"
 import { engineBusyMessage, INPROC_URL, isInprocUrl } from "./session.ts"

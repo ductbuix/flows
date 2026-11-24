@@ -20,7 +20,7 @@ import {
   type PartialBase,
   type PartialRun,
 } from "@workspace/core"
-import { runDir, workflowDir, type Engine } from "@workspace/engine"
+import { runDir, workflowDir, type Engine } from "@workspace/adapters-node"
 
 function dirSnapshot(
   dir: string,

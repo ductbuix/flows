@@ -9,12 +9,7 @@ import {
   type Workflow,
   type WorkflowInputDecl,
 } from "@workspace/contracts"
-import {
-  readWorkItem,
-  workflowDir,
-  workItemItemKey,
-  type Engine,
-} from "@workspace/engine"
+import { workflowDir, type Engine } from "@workspace/adapters-node"
 import type { CoreRunHost } from "./core-run-host.ts"
 
 export type FcpStartArgs = {
@@ -134,14 +129,10 @@ function resolveWorkItem(
   workItemId: string | undefined
 ): string | undefined {
   if (workItemId === undefined) return undefined
-  // Legacy work items and Docket cards share the same branded id (DES-038).
-  if (
-    !readWorkItem(engine.home, workItemId) &&
-    !existsSync(join(engine.home, cardPath(workItemId)))
-  ) {
+  // TODO(BL-213): work-item store gone; Docket cards only (DES-038).
+  if (!existsSync(join(engine.home, cardPath(workItemId)))) {
     throw engineError("invalid_params", `unknown_work_item: ${workItemId}`)
   }
-  void workItemItemKey(workItemId)
   return workItemId
 }
 

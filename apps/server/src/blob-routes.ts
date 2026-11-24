@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto"
 import type { BlobStore } from "@workspace/core"
-import { getBlobStore } from "@workspace/engine"
+import { getBlobStore } from "@workspace/adapters-node"
 import { Hono } from "hono"
 import { stream } from "hono/streaming"
 import { z } from "zod"

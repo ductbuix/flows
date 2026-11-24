@@ -10,7 +10,7 @@ import {
   defineBinding,
   type MethodBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { RpcPeer, type Transport } from "@workspace/protocol"
 import { createCoreRunHost, type CoreRunHost } from "./core-run-host.ts"
 import { bindEngineToBus } from "./engine-bus.ts"

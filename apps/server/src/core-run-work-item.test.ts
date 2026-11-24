@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { workflowSchema } from "@workspace/contracts"
-import { createEngine, createWorkItem } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
@@ -32,13 +32,14 @@ describe("core runs carry workItemId (BL-197)", () => {
     homes.push(home)
     const engine = createEngine({ home })
     const host = createCoreRunHost(engine)
-    const { item } = createWorkItem(home, { title: "Story one" })
+    // TODO(BL-213): opaque card id; work-item store no longer required.
+    const workItemId = "card_story_one"
 
     await host.tryStart({
       graph,
       runId: "r1",
       inputText: "T-1",
-      workItemId: item.id,
+      workItemId,
     })
     const deadline = Date.now() + 10_000
     while (Date.now() < deadline) {
@@ -47,10 +48,10 @@ describe("core runs carry workItemId (BL-197)", () => {
       await new Promise((r) => setTimeout(r, 25))
     }
 
-    expect(engine.fold("r1")?.workItemId).toBe(item.id)
-    const summary = engine.listRunSummaries({ workItemId: item.id })
+    expect(engine.fold("r1")?.workItemId).toBe(workItemId)
+    const summary = engine.listRunSummaries({ workItemId })
     expect(summary).toHaveLength(1)
-    expect(summary[0]).toMatchObject({ id: "r1", workItemId: item.id })
+    expect(summary[0]).toMatchObject({ id: "r1", workItemId })
     expect(engine.listRunSummaries({ workItemId: "other" })).toEqual([])
     host.dispose()
     engine.close()

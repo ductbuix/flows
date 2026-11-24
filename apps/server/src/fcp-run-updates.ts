@@ -1,5 +1,5 @@
 import type { EventBus, UpdateBus } from "@workspace/core"
-import type { Engine, StoredEvent } from "@workspace/engine"
+import type { Engine, StoredEvent } from "@workspace/adapters-node"
 import type { RunSummary } from "@workspace/contracts"
 import { stepOfNode } from "./run-steps.ts"
 

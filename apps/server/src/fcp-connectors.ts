@@ -19,7 +19,7 @@ import {
   type InboxService,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import type { RpcPeer } from "@workspace/protocol"
 
 const systemClock: Clock = { now: () => Date.now() }

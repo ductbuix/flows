@@ -4,7 +4,8 @@ import type {
   Engine,
   ManualItem,
   MaterializeResourcesResult,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
+import { ensureWorkCopiesFor } from "@workspace/adapters-node"
 import { copyPartialInput, seedCorePartial } from "./core-run-partial.ts"
 import { prepareCoreRunDir } from "./core-run-prepare.ts"
 import type { CoreRunSession } from "./core-run-session.ts"
@@ -30,7 +31,7 @@ export async function startCoreRun(
   const queued =
     session.scheduler.admit(args.runId, args.graph.id, at) === "queued"
 
-  prepareCoreRunDir({
+  const runRoot = prepareCoreRunDir({
     home: engine.home,
     graph: args.graph,
     runId: args.runId,
@@ -38,6 +39,8 @@ export async function startCoreRun(
     inputs: args.partial ? undefined : args.inputs,
     workItemId: args.workItemId,
   })
+  // Asset access:propose → per-connection work copies under work/ (BL-084 / BL-214).
+  ensureWorkCopiesFor(runRoot, proposeConnectionIds(args.graph))
   if (args.partial) {
     copyPartialInput({
       home: engine.home,
@@ -105,4 +108,14 @@ export async function retryCoreStep(
   await actor.push({ kind: "wake", at })
   session.endIfTerminal(runId, actor)
   return true
+}
+
+/** Connections with Asset access:propose on this graph (BL-084). */
+function proposeConnectionIds(graph: Workflow): string[] {
+  const ids = new Set<string>()
+  for (const node of graph.nodes) {
+    if (node.kind !== "asset" || node.access !== "propose") continue
+    for (const r of node.resources) ids.add(r.connection)
+  }
+  return [...ids]
 }

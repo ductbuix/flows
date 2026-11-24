@@ -15,7 +15,6 @@
   "dependencies": {
     "@workspace/adapters-node": "workspace:*",
     "@workspace/contracts": "workspace:*",
-    "@workspace/engine": "workspace:*",
     "@workspace/protocol": "workspace:*",
     "@workspace/sdk": "workspace:*",
     "server": "workspace:*",

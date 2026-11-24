@@ -15,7 +15,7 @@ import {
   workflowValidateMethod,
   type WorkflowSummary,
 } from "@workspace/contracts"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { writeLayout } from "./layout-files.ts"
 import {
   readNodeWorkflowDetail,

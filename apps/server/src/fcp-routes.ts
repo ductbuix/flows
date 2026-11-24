@@ -1,5 +1,5 @@
 import { upgradeWebSocket } from "@hono/node-server"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { wsTransport, type WsLike } from "@workspace/protocol"
 import { timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"

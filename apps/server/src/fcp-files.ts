@@ -5,7 +5,7 @@ import {
   type FcpConnection,
   type FileBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import type { RpcPeer } from "@workspace/protocol"
 import { join } from "node:path"
 

@@ -8,7 +8,7 @@ import {
   runDir,
   workflowDir,
   type Engine,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 import {
   runCancelMethod,
   runChangesResponseSchema,

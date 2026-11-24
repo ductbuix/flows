@@ -30,7 +30,6 @@
     "@workspace/agent-acp": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",
-    "@workspace/engine": "workspace:*",
     "@workspace/protocol": "workspace:*",
     "@workspace/shared": "workspace:*",
     "hono": "^4.13.19",

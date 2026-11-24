@@ -8,7 +8,7 @@ import {
   createEngine,
   getProcessRunner,
   setProcessRunner,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
