@@ -91,4 +91,5 @@ export {
   registerConnector,
   fakeConnector,
   type Connector,
+  resolveAppHome,
 } from "./host/index.ts"

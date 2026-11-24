@@ -1,4 +1,4 @@
-import { acquireLock, releaseLock } from "@workspace/adapters-node"
+import { acquireLock, releaseLock, resolveAppHome } from "@workspace/adapters-node"
 import type { MessagePortLike } from "@workspace/protocol"
 import { randomBytes } from "node:crypto"
 import { composeDesktopEngine } from "./compose-engine.ts"
@@ -7,12 +7,7 @@ import { composeDesktopEngine } from "./compose-engine.ts"
  * Electron utilityProcess entry. Main sends `{ type: "connect" }` with a
  * transferred MessagePortMain for each renderer FCP session.
  */
-const homeEnv = process.env.FLOWAPP_HOME
-if (!homeEnv) {
-  console.error("engine-host: FLOWAPP_HOME is required")
-  process.exit(1)
-}
-const home: string = homeEnv
+const home = resolveAppHome()
 
 const lockToken = randomBytes(32).toString("base64url")
 const lock = acquireLock(home, {

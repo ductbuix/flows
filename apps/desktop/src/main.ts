@@ -7,6 +7,7 @@ import {
 } from "electron"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { resolveAppHome } from "@workspace/adapters-node"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
 import { notifyInboxIfUnfocused, notifySystem } from "./host-notifications.ts"
 import { openBrowserSignIn } from "./host-browser-sign-in.ts"
@@ -33,10 +34,7 @@ let engineMode: EngineMode | undefined
 const bridges: Array<{ dispose: () => void }> = []
 
 function startEngineHost(): UtilityProcess {
-  const home = process.env.FLOWAPP_HOME
-  if (!home) {
-    throw new Error("FLOWAPP_HOME is required")
-  }
+  const home = resolveAppHome()
   const child = utilityProcess.fork(engineHostPath, [], {
     env: { ...process.env, FLOWAPP_HOME: home },
     serviceName: "flows-engine",
@@ -68,10 +66,7 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  const home = process.env.FLOWAPP_HOME
-  if (!home) {
-    throw new Error("FLOWAPP_HOME is required")
-  }
+  const home = resolveAppHome()
 
   installFlowsBlobProtocol(home)
 
