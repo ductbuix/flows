@@ -25,4 +25,6 @@ interface FlowsFcpBootstrap {
 interface Window {
   flowsDesktop?: FlowsDesktopApi
   __FLOWS_FCP__?: FlowsFcpBootstrap
+  /** Last absolute path from browser `host/reveal_path` (e2e). */
+  __FLOWS_LAST_REVEAL__?: string
 }

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { FileText } from "lucide-react"
+import { toast } from "sonner"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import {
   Alert,
@@ -17,6 +18,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { mono } from "@/components/data/mono"
 import { errorMessage, isConflictError } from "@/lib/fcp-error"
+import { formatStatLine } from "./file-meta"
 import { FilePreviewHeader, MarkdownViews } from "./FilePreviewParts"
 
 type Props = {
@@ -56,19 +58,25 @@ function FilePreviewBody({
     { path },
     { topics: [] }
   )
+  const statQ = useQuery("file/stat", { path }, { topics: [] })
   const [draft, setDraft] = useState<string | null>(null)
+  const [baseline, setBaseline] = useState<string | null>(null)
   const [hash, setHash] = useState<string | null>(null)
   const [view, setView] = useState<"raw" | "preview">("preview")
   const [copied, setCopied] = useState<"path" | "contents" | null>(null)
   const [conflict, setConflict] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [revealing, setRevealing] = useState(false)
 
-  const text = draft ?? data?.text ?? ""
+  const serverText = data?.text ?? ""
+  const baseText = baseline ?? serverText
+  const text = draft ?? baseText
   const baseHash = hash ?? data?.hash ?? ""
-  const dirty = draft !== null && data !== undefined && draft !== data.text
+  const dirty = draft !== null && draft !== baseText
   const full = `~/${homeLabel}/${path}`
   const isMarkdown = path.endsWith(".md")
+  const metaLine = statQ.data ? formatStatLine(path, statQ.data) : null
 
   async function save() {
     setPending(true)
@@ -81,12 +89,25 @@ function FilePreviewBody({
         baseHash,
       })
       setHash(result.hash)
-      setDraft(text)
+      setBaseline(text)
+      setDraft(null)
     } catch (err) {
       if (isConflictError(err)) setConflict(true)
       else setSaveError(errorMessage(err))
     } finally {
       setPending(false)
+    }
+  }
+
+  async function reveal() {
+    setRevealing(true)
+    try {
+      await client.call("file/reveal", { path })
+      toast.success("Revealed in Finder")
+    } catch (err) {
+      toast.error(errorMessage(err))
+    } finally {
+      setRevealing(false)
     }
   }
 
@@ -125,11 +146,14 @@ function FilePreviewBody({
         full={full}
         homeLabel={homeLabel}
         text={text}
+        metaLine={metaLine}
         dirty={dirty}
         pending={pending}
+        revealing={revealing}
         copied={copied}
         onCopy={setCopied}
         onSave={() => void save()}
+        onReveal={() => void reveal()}
       />
       {(conflict || saveError) && (
         <Alert variant="destructive" data-testid="files-conflict">

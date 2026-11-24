@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { startRun } from "./helpers"
 
 const routes = [
   { path: "/docket", ready: "docket-page" },
@@ -29,4 +30,16 @@ test.describe("shell smoke (BL-185)", () => {
       expect(real, real.join("\n")).toEqual([])
     })
   }
+
+  test("inbox badge", async ({ page }) => {
+    await page.goto("/docket")
+    await expect(page.getByTestId("app-sidebar")).toBeVisible()
+    await expect(page.getByTestId("inbox-badge")).toBeVisible()
+    await expect(page.getByTestId("inbox-badge")).toHaveText("")
+
+    await startRun("node-approval-home")
+    await expect(page.getByTestId("inbox-badge")).toHaveText(/^[1-9]\d*$/, {
+      timeout: 20_000,
+    })
+  })
 })

@@ -13,15 +13,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
-import { useRuns } from "./runs-store"
+import { InboxNavBadge } from "@/components/InboxNavBadge"
 import { APP_NAV } from "./mock-data"
 
 /** Sidebar 11 layout (shadcn blocks), reworked for Flows. */
 export function MockSidebar() {
   const { pathname } = useLocation()
-  const waiting = useRuns().filter(
-    (r) => r.tone === "attention" && !r.decision
-  ).length
   return (
     <Sidebar data-testid="app-sidebar">
       <SidebarHeader>
@@ -47,11 +44,11 @@ export function MockSidebar() {
                     <File />
                     {item.label}
                   </SidebarMenuButton>
-                  <SidebarMenuBadge>
-                    {item.label === "Inbox" && waiting > 0
-                      ? waiting
-                      : item.badge}
-                  </SidebarMenuBadge>
+                  {item.label === "Inbox" ? (
+                    <InboxNavBadge />
+                  ) : (
+                    <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

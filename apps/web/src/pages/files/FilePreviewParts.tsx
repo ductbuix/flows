@@ -1,4 +1,4 @@
-import { Check, ChevronRight, Copy } from "lucide-react"
+import { Check, ChevronRight, Copy, FolderOpen } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import {
   ToggleGroup,
@@ -12,21 +12,27 @@ export function FilePreviewHeader({
   full,
   homeLabel,
   text,
+  metaLine,
   dirty,
   pending,
+  revealing,
   copied,
   onCopy,
   onSave,
+  onReveal,
 }: {
   path: string
   full: string
   homeLabel: string
   text: string
+  metaLine: string | null
   dirty: boolean
   pending: boolean
+  revealing: boolean
   copied: "path" | "contents" | null
   onCopy: (v: "path" | "contents" | null) => void
   onSave: () => void
+  onReveal: () => void
 }) {
   const copyButton = (
     what: "path" | "contents",
@@ -54,6 +60,15 @@ export function FilePreviewHeader({
         {copyButton("path", "Copy path", full)}
         {text ? copyButton("contents", "Copy contents", text) : null}
         <Button
+          variant="outline"
+          data-testid="files-reveal"
+          disabled={revealing}
+          onClick={onReveal}
+        >
+          <FolderOpen />
+          Reveal in Finder
+        </Button>
+        <Button
           data-testid="files-save"
           disabled={!dirty || pending}
           onClick={onSave}
@@ -69,6 +84,11 @@ export function FilePreviewHeader({
           </span>
         ))}
       </span>
+      {metaLine ? (
+        <span className="text-xs text-muted-foreground" data-testid="files-stat">
+          {metaLine}
+        </span>
+      ) : null}
     </div>
   )
 }
