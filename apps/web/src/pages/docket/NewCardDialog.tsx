@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { Textarea } from "@workspace/ui/components/textarea"
-import { refFromLink } from "@/pages/mock/ref-from-link"
+import { refFromLink } from "./ref-from-link"
 
 export type NewCardInput = {
   id: string

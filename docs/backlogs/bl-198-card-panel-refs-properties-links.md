@@ -2,7 +2,7 @@
 id: BL-198
 title: "Card panel: refs, properties and links"
 type: backlog
-status: todo
+status: done
 summary: The card panel shows and edits refs, properties and links as in the mock.
 tags: [web, docket, card]
 related: [DES-043]
@@ -19,6 +19,6 @@ Rebuild `RefsSection`, `PropertiesSection` and `LinksSection` on `docket/update_
 
 ## Done when
 
-- [ ] Each section edits and saves through FCP with the base hash.
-- [ ] A conflict shows the existing conflict alert.
-- [ ] e2e covers add, edit and remove of one entry per section.
+- [x] Each section edits and saves through FCP with the base hash.
+- [x] A conflict shows the existing conflict alert.
+- [x] e2e covers add, edit and remove of one entry per section.
