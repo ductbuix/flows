@@ -60,6 +60,11 @@ export const workflowNameSchema = z.string().trim().min(1).max(80)
 /** Default library size cap: 5 GB (DES-026 / BL-047). */
 export const DEFAULT_LIBRARY_MAX_BYTES = 5 * 1024 * 1024 * 1024
 
+/** Agent runtime selection (DES-039 M4 / DES-041). Default spawn. */
+export const agentsConfigSchema = z.object({
+  runtime: z.enum(["spawn", "acp"]).default("spawn"),
+})
+
 /** Global limits in ~/.flowapp/config.yaml (DES-002, DES-003). */
 export const appConfigSchema = z.object({
   limits: workflowLimitsSchema.optional(),
@@ -68,6 +73,7 @@ export const appConfigSchema = z.object({
       maxBytes: z.number().int().positive().optional(),
     })
     .optional(),
+  agents: agentsConfigSchema.optional(),
 })
 
 export type RetryPolicy = z.infer<typeof retrySchema>

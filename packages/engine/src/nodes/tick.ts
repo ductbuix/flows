@@ -17,6 +17,7 @@ import { runDir, workflowDir } from "../paths.ts"
 import { manualItemKey } from "../item-key.ts"
 import { manualSource, type ManualItem } from "../source-manual.ts"
 import {
+  isAcpPlan,
   isLaunchPlan,
   isPublishPlan,
   isWaitPlan,
@@ -24,6 +25,7 @@ import {
   type ExecInput,
 } from "./define.ts"
 import { foldSteps, latestStep, type StepsState } from "./fold-steps.ts"
+import { launchAcpAttempt } from "./llm-acp.ts"
 import {
   launchAttempt,
   reattachAttempts,
@@ -293,6 +295,9 @@ export function tickNodes(opts: NodeRunOptions): StepsState {
         const result = executor.run(ctx)
         if (isLaunchPlan(result)) {
           return launchAttempt({ ...opts, runId }, ctx, result.launch, steps)
+        }
+        if (isAcpPlan(result)) {
+          return launchAcpAttempt({ ...opts, runId }, ctx, result.acp, steps)
         }
         if (isPublishPlan(result)) {
           // Runs in the background; true only when a job started (BL-084).

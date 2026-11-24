@@ -1,4 +1,5 @@
 import type { z } from "zod"
+import type { AgentSession, SessionSpec } from "../ports/agent-runtime.ts"
 
 /** Port types on a kind (DES-041). */
 export type PortSpec = "text" | "image" | "any" | "file"
@@ -66,6 +67,10 @@ export type StepContext<S> = {
   node: { id: string; name?: string; pass: number }
   inbox: {
     ask(question: string): Promise<"approved" | "rejected">
+  }
+  /** ACP sessions for llm / condition (DES-041). */
+  agent: {
+    session(spec: SessionSpec): Promise<AgentSession>
   }
   outputs: {
     /** Write text under the step folder; returns the run-relative output path. */

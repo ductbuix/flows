@@ -90,7 +90,8 @@ export function createAcpRuntime(
           command: command.cmd,
           args: command.args,
           cwd: spec.cwd,
-          env: { ...options.env, ...command.env },
+          // Keep PATH and the host env; overlay test / profile env (BL-142).
+          env: { ...process.env, ...options.env, ...command.env },
         },
         procCtl.signal
       )

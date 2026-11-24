@@ -475,6 +475,9 @@ importers:
       '@workspace/adapters-node':
         specifier: workspace:*
         version: link:../adapters-node
+      '@workspace/agent-acp':
+        specifier: workspace:*
+        version: link:../agent-acp
       '@workspace/core':
         specifier: workspace:*
         version: link:../core

@@ -74,6 +74,19 @@ export type LaunchSpec = {
 
 export type LaunchPlan = { launch: LaunchSpec }
 
+/** ACP session for an llm step when `agents.runtime=acp` (BL-142). */
+export type AcpLaunchSpec = {
+  agent: boolean
+  profileId: string
+  mode: string
+  cli?: "claude" | "cursor"
+  modelFields?: LaunchSpec["modelFields"]
+  model?: string
+  effort?: string
+}
+
+export type AcpPlan = { acp: AcpLaunchSpec }
+
 /** The step waits for a person: the tick appends `approval_requested` (BL-080). */
 export type WaitPlan = { wait: { question: string } }
 
@@ -83,17 +96,23 @@ export type PublishPlan = { publish: { connection: string } }
 export type NodeExecutor = {
   kind: string
   /** A no-process kind settles at once; a process kind returns a plan. */
-  run(ctx: ExecContext): ExecResult | LaunchPlan | WaitPlan | PublishPlan
+  run(
+    ctx: ExecContext
+  ): ExecResult | LaunchPlan | AcpPlan | WaitPlan | PublishPlan
   /** Process kinds: reads a finished attempt into the step output. */
   finish?(ctx: ExecContext, attemptRoot: string): ExecResult
   /** Waiting kinds: settles the step once a person approved it. */
   approved?(ctx: ExecContext): ExecResult
 }
 
-type Plans = ExecResult | LaunchPlan | WaitPlan | PublishPlan
+type Plans = ExecResult | LaunchPlan | AcpPlan | WaitPlan | PublishPlan
 
 export function isLaunchPlan(r: Plans): r is LaunchPlan {
   return "launch" in r
+}
+
+export function isAcpPlan(r: Plans): r is AcpPlan {
+  return "acp" in r
 }
 
 export function isWaitPlan(r: Plans): r is WaitPlan {

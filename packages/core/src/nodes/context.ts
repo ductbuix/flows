@@ -1,3 +1,4 @@
+import type { AgentRuntime } from "../ports/agent-runtime.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import { AskPending, type StepContext, type StepInput } from "./types.ts"
 
@@ -15,6 +16,10 @@ export type StepContextDeps = {
   signal?: AbortSignal
   /** When set, `inbox.ask` returns it; otherwise throws AskPending. */
   resolveAsk?: "approved" | "rejected"
+  /** Absolute cwd for agent sessions (defaults to stepDir). */
+  agentCwd?: string
+  /** Required for llm / condition kinds (DES-041). */
+  agentRuntime?: AgentRuntime
 }
 
 /** Build a StepContext over a DocumentStore (tests use the fake). */
@@ -22,13 +27,14 @@ export function createStepContext<S>(
   deps: StepContextDeps & { settings: S }
 ): StepContext<S> {
   const stepDir = `${deps.runDir}/nodes/${deps.nodeId}/pass-${deps.pass}`
+  const signal = deps.signal ?? new AbortController().signal
 
   const ctx: StepContext<S> = {
     settings: deps.settings,
     inputs: deps.inputs,
     runDir: deps.runDir,
     stepDir,
-    signal: deps.signal ?? new AbortController().signal,
+    signal,
     answers: deps.answers ?? {},
     decision: deps.decision,
     graph: deps.graph,
@@ -38,6 +44,20 @@ export function createStepContext<S>(
         if (deps.resolveAsk) return deps.resolveAsk
         if (deps.decision) return deps.decision
         throw new AskPending(question)
+      },
+    },
+    agent: {
+      async session(spec) {
+        if (!deps.agentRuntime) {
+          throw new Error("agent runtime is not configured")
+        }
+        return deps.agentRuntime.open(
+          {
+            ...spec,
+            cwd: deps.agentCwd || spec.cwd || stepDir,
+          },
+          signal
+        )
       },
     },
     outputs: {
