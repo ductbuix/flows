@@ -2,7 +2,7 @@
 id: BL-158
 title: Docket assets
 type: backlog
-status: todo
+status: done
 summary: docket/add_asset (owned via blob upload or linked by path) and remove_asset; owned file deletion is a separate confirmed call.
 tags: [docket, assets, fcp]
 related: [DES-038, DES-040]
@@ -19,6 +19,6 @@ Attach files the way DES-038 Asset describes.
 
 ## Done when
 
-- [ ] Owned uploads land in `assets/`; linked paths are stored, never copied; missing linked paths flagged.
-- [ ] Removing an entry never deletes the target file.
-- [ ] Protocol tests for both scopes.
+- [x] Owned uploads land in `assets/`; linked paths are stored, never copied; missing linked paths flagged.
+- [x] Removing an entry never deletes the target file.
+- [x] Protocol tests for both scopes.

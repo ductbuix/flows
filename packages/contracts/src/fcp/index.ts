@@ -53,6 +53,16 @@ export {
   indexedLinkSchema,
   type WireCardFace,
 } from "./docket.ts"
+export {
+  docketAddAssetMethod,
+  docketAddAssetParamsSchema,
+  docketAddAssetResultSchema,
+  docketAddLinkedAssetParamsSchema,
+  docketAddOwnedAssetParamsSchema,
+  docketRemoveAssetMethod,
+  docketRemoveAssetParamsSchema,
+  docketRemoveAssetResultSchema,
+} from "./docket-assets.ts"
 export { pingMethod, pingParamsSchema, pingResultSchema } from "./ping.ts"
 export {
   runCancelMethod,

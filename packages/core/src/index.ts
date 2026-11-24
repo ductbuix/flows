@@ -76,6 +76,8 @@ export {
   DOCKET_BOARD_PATH,
   DOCKET_CARDS_GLOB,
   DocketStore,
+  ownedAssetRelPath,
+  ownedAssetStorePath,
   storeRelPath,
   type BoardFile,
   type CardFile,

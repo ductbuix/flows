@@ -215,6 +215,8 @@ the engine resolves them, so the UI never builds a filesystem path.
 - v1 additive (2026-11-24): `run/start`, `cancel`, `rerun`, `retry_step`,
   `delete`, `get_log`, `get_changes` and `run/update` `step_state` /
   `run_finished` (BL-176).
+- v1 additive (2026-11-24): `docket/add_asset`, `docket/remove_asset`
+  (BL-158).
 
 ## Example
 

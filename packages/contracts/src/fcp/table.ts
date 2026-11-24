@@ -18,6 +18,10 @@ import {
   docketUpdateNotification,
 } from "./docket.ts"
 import {
+  docketAddAssetMethod,
+  docketRemoveAssetMethod,
+} from "./docket-assets.ts"
+import {
   fileListMethod,
   fileReadTextMethod,
   fileRevealMethod,
@@ -81,6 +85,8 @@ export const fcpMethodTable = {
   "docket/update_card": docketUpdateCardMethod,
   "docket/move_card": docketMoveCardMethod,
   "docket/delete_card": docketDeleteCardMethod,
+  "docket/add_asset": docketAddAssetMethod,
+  "docket/remove_asset": docketRemoveAssetMethod,
   "docket/save_board": docketSaveBoardMethod,
   "connector/list": connectorListMethod,
   "connector/get": connectorGetMethod,
