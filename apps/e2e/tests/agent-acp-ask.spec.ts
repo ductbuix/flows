@@ -2,9 +2,7 @@ import { expect, test } from "@playwright/test"
 import { fcpRequest, startRun } from "./helpers"
 
 test.describe("agent ACP permission ask (BL-195)", () => {
-  test("permission inbox item resumes the core agent run", async ({
-    page,
-  }) => {
+  test("permission inbox item resumes the core agent run", async ({ page }) => {
     const runId = await startRun("agent-acp-ask")
 
     await expect

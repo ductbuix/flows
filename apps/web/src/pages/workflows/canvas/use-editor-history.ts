@@ -5,8 +5,7 @@ export type EditorSnapshot = { yaml: string; layout: LayoutFile }
 
 function same(a: EditorSnapshot, b: EditorSnapshot): boolean {
   return (
-    a.yaml === b.yaml &&
-    JSON.stringify(a.layout) === JSON.stringify(b.layout)
+    a.yaml === b.yaml && JSON.stringify(a.layout) === JSON.stringify(b.layout)
   )
 }
 

@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { safeParseLibItemYaml } from "@workspace/contracts"
 import { defineNodeKind } from "../define.ts"
 import type { StepContext, StepEvent, StepInput } from "../types.ts"
 
@@ -11,6 +12,8 @@ const resourceSchema = z.object({
 const settings = z.object({
   resources: z.array(resourceSchema).default([]),
   access: z.enum(["read", "propose"]).default("read"),
+  /** Library item ids; each emits its current version. */
+  items: z.array(z.string().min(1)).optional(),
   assetKind: z.enum(["image", "markdown"]).optional(),
   /**
    * Fixed (no inputs): store-relative path of a pinned library file or card
@@ -132,6 +135,53 @@ async function* emitFixedResources(
   yield { kind: "done" }
 }
 
+const TEXT_FILE = /\.(md|markdown|txt)$/i
+
+/**
+ * Library items picked on the canvas: files of each item's current version
+ * go under `files/<id>/`, and text.md joins the text files for prompts.
+ */
+async function* emitLibraryItems(
+  ctx: StepContext<Settings>
+): AsyncIterable<StepEvent> {
+  const parts: string[] = []
+  for (const id of ctx.settings.items ?? []) {
+    const disk = ctx.docs.read(`library/${id}/item.yaml`)
+    const parsed = disk ? safeParseLibItemYaml(disk.text) : null
+    if (!parsed?.success) {
+      yield fail(`library item missing: ${id}`)
+      return
+    }
+    const item = parsed.data
+    const prefix = `library/${id}/v${item.current}/`
+    const files: Record<string, string> = {}
+    for (const path of ctx.docs.list(`${prefix}**`)) {
+      const rel = path.replace(/^\//, "").slice(prefix.length)
+      if (!rel || rel.endsWith(".version.yaml")) continue
+      const body = ctx.docs.read(path)
+      if (body) files[rel] = body.text
+    }
+    const texts: string[] = []
+    for (const [rel, body] of Object.entries(files).sort(([a], [b]) =>
+      a.localeCompare(b)
+    )) {
+      yield {
+        kind: "output_written",
+        path: await ctx.outputs.write(`files/${id}/${rel}`, body),
+      }
+      if (TEXT_FILE.test(rel)) texts.push(body.trimEnd())
+    }
+    parts.push(
+      [`## ${item.title} (v${item.current})`, ...texts].join("\n\n") + "\n"
+    )
+  }
+  yield {
+    kind: "output_written",
+    path: await ctx.outputs.write("text.md", parts.join("\n")),
+  }
+  yield { kind: "done" }
+}
+
 async function* emitFixedPath(
   ctx: StepContext<Settings>,
   name: string
@@ -174,6 +224,11 @@ export const assetKind = defineNodeKind({
       return
     }
 
+    if ((parsed.items ?? []).length > 0) {
+      yield* emitLibraryItems(runCtx)
+      return
+    }
+
     if (parsed.resources.length > 0) {
       yield* emitFixedResources(runCtx)
       return
@@ -185,6 +240,6 @@ export const assetKind = defineNodeKind({
       return
     }
 
-    yield fail("asset has no resources or name to resolve")
+    yield fail("asset has no library items to read")
   },
 })

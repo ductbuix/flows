@@ -6,7 +6,11 @@ import { at, parse } from "../runs/decide-harness.ts"
 import { latestStep } from "../runs/model.ts"
 import { createStepContext } from "./context.ts"
 import { notifyKind } from "./kinds/notify.ts"
-import { collectExecute, createNodeEffectRunner } from "./run.ts"
+import {
+  collectExecute,
+  createNodeEffectRunner,
+  type NoticePost,
+} from "./run.ts"
 
 describe("notify kind", () => {
   it("yields a notice with title and joined input text", async () => {
@@ -38,6 +42,26 @@ describe("notify kind", () => {
     })
   })
 
+  it("carries channel system for a system notification", async () => {
+    const ctx = createStepContext({
+      docs: createFakeDocumentStore(),
+      runDir: "runs/r1",
+      nodeId: "n",
+      pass: 1,
+      settings: {
+        target: "notify" as const,
+        title: "Shipped",
+        channel: "system" as const,
+      },
+      inputs: [],
+      graph: { id: "wf" },
+    })
+    const result = await collectExecute(notifyKind.execute(ctx))
+    expect(result).toMatchObject({
+      notice: { title: "Shipped", channel: "system" },
+    })
+  })
+
   it("falls back to the workflow name for the title", async () => {
     const docs = createFakeDocumentStore()
     const ctx = createStepContext({
@@ -61,7 +85,7 @@ describe("notify kind", () => {
     const runDir = "workflows/wf/runs/r1"
     docs.write(`${runDir}/input/text.md`, "all green")
     const events = createFakeEventStore()
-    const notices: { title: string; text: string; key: string }[] = []
+    const notices: NoticePost[] = []
     const actor = new RunActor("r1", {
       events,
       runEffect: createNodeEffectRunner({
@@ -77,6 +101,7 @@ describe("notify kind", () => {
           kind: "output",
           target: "notify",
           title: "Report ready",
+          channel: "system",
         },
       ],
       [{ from: "t", to: "n" }]
@@ -88,6 +113,7 @@ describe("notify kind", () => {
     expect(notices[0]).toMatchObject({
       key: "r1:n:1",
       title: "Report ready",
+      channel: "system",
     })
     expect(notices[0]!.text).toContain("all green")
   })

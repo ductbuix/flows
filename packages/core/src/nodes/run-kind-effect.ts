@@ -88,7 +88,7 @@ function postNotice(
   deps: { postNotice?: (n: NoticePost) => void },
   state: RunState,
   effect: { nodeId: string; pass: number },
-  notice: { title: string; text: string },
+  notice: { title: string; text: string; channel?: "app" | "system" },
   now: () => string
 ): void {
   deps.postNotice?.({
@@ -99,5 +99,6 @@ function postNotice(
     workflowId: state.workflowId,
     nodeId: effect.nodeId,
     at: now(),
+    ...(notice.channel ? { channel: notice.channel } : {}),
   })
 }

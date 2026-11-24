@@ -5,9 +5,14 @@ import type { CanvasNodeData } from "./flow-kinds"
  * Actions the node cards call (BL-202: update, settings, duplicate, delete).
  */
 export type FlowActions = {
-  update: (id: string, patch: Partial<CanvasNodeData>) => void
+  update: (
+    id: string,
+    patch: Partial<CanvasNodeData> | Record<string, unknown>
+  ) => void
   run: (id: string) => void
   runAll: () => void
+  /** Workflow folder id, for node files. */
+  workflowId?: string
   /** Viewing a past or live run. */
   readOnly: boolean
   duplicate: (id: string) => void

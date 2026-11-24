@@ -177,6 +177,12 @@ function outputProblems(wf: {
         path: ["nodes", i, "title"],
       })
     }
+    if (n.channel !== undefined && n.target !== "notify") {
+      out.push({
+        message: "channel is only for the notify target",
+        path: ["nodes", i, "channel"],
+      })
+    }
     if (n.target !== "publish") {
       if (n.connection !== undefined) {
         out.push({

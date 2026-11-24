@@ -22,7 +22,12 @@ export type StepInput = {
  */
 export type StepEvent =
   | { kind: "output_written"; path: string }
-  | { kind: "notify"; title: string; text: string }
+  | {
+      kind: "notify"
+      title: string
+      text: string
+      channel?: "app" | "system"
+    }
   | { kind: "waiting"; question: string }
   | {
       kind: "done"

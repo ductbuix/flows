@@ -1,8 +1,5 @@
 import type { WorkflowSummary } from "@workspace/contracts"
-import {
-  Sheet,
-  SheetContent,
-} from "@workspace/ui/components/sheet"
+import { Sheet, SheetContent } from "@workspace/ui/components/sheet"
 import { WorkflowSheetBody } from "./WorkflowSheetBody"
 
 type Props = {

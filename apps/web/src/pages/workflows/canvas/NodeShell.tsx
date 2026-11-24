@@ -3,7 +3,6 @@ import {
   Handle,
   NodeToolbar,
   Position,
-  useConnection,
   useNodeConnections,
   useNodeId,
 } from "@xyflow/react"
@@ -13,6 +12,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { StatusPill, type Tone } from "@/components/brand/StatusPill"
 import { useFlow } from "./flow-context"
 import {
+  HAS_SETTINGS,
   KIND_ICON,
   KIND_LABEL,
   type NodeKindName,
@@ -41,9 +41,16 @@ const STATE_RING: Partial<Record<RunState, string>> = {
 }
 
 export const PORT_STYLE = {
-  text: "bg-info/20! text-info ring-info/40",
-  file: "bg-warning/20! text-warning ring-warning/40",
-  any: "bg-muted! text-foreground ring-foreground/20",
+  text: "text-info ring-info/50",
+  file: "text-warning ring-warning/50",
+  any: "text-foreground ring-foreground/30",
+}
+
+/** Fill once a wire is attached. */
+const PORT_LINKED = {
+  text: "bg-info/20!",
+  file: "bg-warning/20!",
+  any: "bg-muted!",
 }
 
 type Port = keyof typeof PORT_STYLE
@@ -52,17 +59,24 @@ type PortProps = {
   io: "in" | "out"
   port?: Port
   id?: string
-  top?: number | string
-  gap?: number
+  /** Position on the edge: index of `count` ports, spread evenly. */
+  index?: number
+  count?: number
+  /** Extra offset when the port sits inside a padded row (Judge). */
+  inset?: number
 }
 
-/** Typed connection point: T for text, file icon for file. */
+/**
+ * Typed connection point centred on the card edge: T for text, file icon
+ * for file. Drag from an out port to an in port of the same type.
+ */
 export function PortHandle({
   io,
   port = "text",
   id,
-  top = "50%",
-  gap = 16,
+  index = 0,
+  count = 1,
+  inset = 0,
 }: PortProps) {
   const Icon = port === "text" ? Type : port === "file" ? File : Plus
   const handleId = id ?? port
@@ -71,28 +85,64 @@ export function PortHandle({
       handleType: io === "in" ? "target" : "source",
       handleId,
     }).length > 0
-  const { inProgress } = useConnection()
+  const side = io === "in" ? "left" : "right"
   return (
     <Handle
       id={handleId}
       type={io === "in" ? "target" : "source"}
       position={io === "in" ? Position.Left : Position.Right}
-      style={{ top, [io === "in" ? "left" : "right"]: -gap }}
+      title={`${port === "file" ? "Files" : "Text"} ${io === "in" ? "in" : "out"}`}
+      style={{
+        top: `${((index + 1) * 100) / (count + 1)}%`,
+        [side]: -inset,
+      }}
       className={cn(
-        "flex size-6! items-center justify-center rounded-full! border-0! ring-1 transition-opacity hover:opacity-100",
+        "z-10 flex size-5! items-center justify-center rounded-full! border-0! bg-card! ring-1 transition-transform hover:scale-125",
         PORT_STYLE[port],
-        !linked &&
-          !inProgress &&
-          "opacity-0 group-hover/node:opacity-100 group-data-[selected=true]/node:opacity-100"
+        linked && PORT_LINKED[port]
       )}
     >
-      <Icon className="pointer-events-none size-3" />
+      <Icon className="pointer-events-none size-2.5" />
     </Handle>
+  )
+}
+
+/** In and out ports of a kind, spread along the card edges. */
+export function KindPorts({
+  ins,
+  outs,
+}: {
+  ins: readonly Port[]
+  outs: readonly Port[]
+}) {
+  return (
+    <>
+      {ins.map((port, i) => (
+        <PortHandle
+          key={`in-${port}`}
+          io="in"
+          port={port}
+          index={i}
+          count={ins.length}
+        />
+      ))}
+      {outs.map((port, i) => (
+        <PortHandle
+          key={`out-${port}`}
+          io="out"
+          port={port}
+          index={i}
+          count={outs.length}
+        />
+      ))}
+    </>
   )
 }
 
 type ShellProps = {
   kind: NodeKindName
+  /** Node name from YAML; the kind label shows when unset. */
+  name?: string
   selected?: boolean
   wide?: boolean
   state?: RunState
@@ -103,6 +153,7 @@ type ShellProps = {
 /** Label above, rounded body below; ports sit outside the body. */
 export function NodeShell({
   kind,
+  name,
   selected,
   wide,
   state,
@@ -118,11 +169,11 @@ export function NodeShell({
       data-testid={`canvas-node-${kind}`}
       className={cn(
         "group/node flex flex-col gap-1.5",
-        wide ? "w-96" : "w-64",
+        wide ? "w-96" : "w-72",
         state === "skipped" && "opacity-40"
       )}
     >
-      {nodeId && !readOnly ? (
+      {nodeId && !readOnly && kind !== "trigger" ? (
         <NodeToolbar
           isVisible={selected}
           position={Position.Top}
@@ -130,43 +181,50 @@ export function NodeShell({
           className="!z-50"
         >
           <div className="flex gap-1 rounded-2xl bg-card p-1 ring-1 ring-foreground/10">
+            {HAS_SETTINGS.has(kind) ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Node settings"
+                data-testid="node-open-settings"
+                onClick={() => openSettings(nodeId)}
+              >
+                <Settings2 />
+              </Button>
+            ) : null}
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Node settings"
-              data-testid="node-open-settings"
-              onClick={() => openSettings(nodeId)}
+              aria-label="Duplicate node"
+              data-testid="node-duplicate"
+              onClick={() => duplicate(nodeId)}
             >
-              <Settings2 />
+              <Copy />
             </Button>
-            {kind === "trigger" ? null : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Duplicate node"
-                  data-testid="node-duplicate"
-                  onClick={() => duplicate(nodeId)}
-                >
-                  <Copy />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Delete node"
-                  data-testid="node-delete"
-                  onClick={() => remove(nodeId)}
-                >
-                  <Trash2 />
-                </Button>
-              </>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Delete node"
+              data-testid="node-delete"
+              onClick={() => remove(nodeId)}
+            >
+              <Trash2 />
+            </Button>
           </div>
         </NodeToolbar>
       ) : null}
       <div className="flex min-h-6 items-center gap-1.5 px-1 text-xs text-muted-foreground">
         <Icon className="size-3.5" />
-        <span className="flex-1">{KIND_LABEL[kind]}</span>
+        <span className="flex-1 truncate">
+          {name ? (
+            <>
+              <span className="text-foreground">{name}</span>
+              <span> · {KIND_LABEL[kind]}</span>
+            </>
+          ) : (
+            KIND_LABEL[kind]
+          )}
+        </span>
         {state && state !== "skipped" ? (
           <StatusPill tone={STATE_TONE[state]}>{STATE_LABEL[state]}</StatusPill>
         ) : state === "skipped" ? (

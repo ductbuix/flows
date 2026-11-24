@@ -15,6 +15,8 @@ export type NewNotice = {
   workflowId: string
   nodeId: string
   at: string
+  /** Not stored: only says how the host shows it when posted. */
+  channel?: "app" | "system"
 }
 
 export function ensureNoticesTable(db: DatabaseSync): void {
@@ -33,12 +35,16 @@ export function ensureNoticesTable(db: DatabaseSync): void {
   `)
 }
 
-export function postNotice(db: DatabaseSync, n: NewNotice): void {
-  db.prepare(
-    `INSERT OR IGNORE INTO notices
+/** True when the notice is new (a repeated step key posts nothing). */
+export function postNotice(db: DatabaseSync, n: NewNotice): boolean {
+  const r = db
+    .prepare(
+      `INSERT OR IGNORE INTO notices
        (key, run_id, workflow_id, node_id, title, text, at)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
-  ).run(n.key, n.runId, n.workflowId, n.nodeId, n.title, n.text, n.at)
+    )
+    .run(n.key, n.runId, n.workflowId, n.nodeId, n.title, n.text, n.at)
+  return Number(r.changes) > 0
 }
 
 type Row = {

@@ -10,13 +10,21 @@ import {
 import "@xyflow/react/dist/style.css"
 import type { LayoutFile, Workflow } from "@workspace/contracts"
 import { FlowContext, type FlowActions } from "./flow-context"
-import { canvasToLayout, workflowToCanvas, type CanvasNode } from "./flow-graph"
+import {
+  canvasToLayout,
+  connectionToEdge,
+  workflowToCanvas,
+  type CanvasEdge,
+  type CanvasNode,
+} from "./flow-graph"
 import { CanvasChrome } from "./CanvasChrome"
 import { nodeTypes } from "./node-types"
 import { useCanvasKeys } from "./use-canvas-keys"
 import { useCanvasOps } from "./use-canvas-ops"
 import { useRunOverlay } from "./use-run-overlay"
 import { useSystemPrompt } from "./use-system-prompt"
+
+const SELECTED_EDGE = { stroke: "var(--ring)", strokeWidth: 2 }
 
 type History = {
   undo: () => void
@@ -112,7 +120,29 @@ export function WorkflowCanvas({
     [workflow.nodes, loadSystem, clearSystem]
   )
 
-  useCanvasKeys(nodes, ops.duplicate, ops.remove, !overlay.readOnly)
+  const kindOf = useCallback(
+    (id: string) => workflow.nodes.find((n) => n.id === id)?.kind,
+    [workflow.nodes]
+  )
+  const { disconnect } = ops
+  const removeEdges = useCallback(
+    (wires: CanvasEdge[]) =>
+      disconnect(
+        wires.flatMap((w) => {
+          const e = connectionToEdge(w, kindOf)
+          return e ? [e] : []
+        })
+      ),
+    [disconnect, kindOf]
+  )
+  useCanvasKeys(
+    nodes,
+    edges,
+    ops.duplicate,
+    ops.remove,
+    removeEdges,
+    !overlay.readOnly
+  )
   const editing = !overlay.readOnly
     ? workflow.nodes.find((n) => n.id === settingsId)
     : undefined
@@ -121,6 +151,7 @@ export function WorkflowCanvas({
   const actions = useMemo<FlowActions>(
     () => ({
       update: ops.update,
+      workflowId,
       run: () => {},
       runAll: () => {},
       readOnly,
@@ -129,7 +160,15 @@ export function WorkflowCanvas({
       remove: ops.remove,
       retry: onRetry ? (id) => void onRetry(id) : undefined,
     }),
-    [ops.update, ops.duplicate, ops.remove, openSettings, readOnly, onRetry]
+    [
+      ops.update,
+      ops.duplicate,
+      ops.remove,
+      openSettings,
+      readOnly,
+      onRetry,
+      workflowId,
+    ]
   )
 
   return (
@@ -140,13 +179,15 @@ export function WorkflowCanvas({
       <FlowContext.Provider value={actions}>
         <ReactFlow
           nodes={overlay.shown}
-          edges={edges}
+          edges={edges.map((e) =>
+            e.selected ? { ...e, style: SELECTED_EDGE } : e
+          )}
           nodeTypes={nodeTypes}
           onNodesChange={overlay.readOnly ? undefined : onNodesChange}
           onEdgesChange={overlay.readOnly ? undefined : onEdgesChange}
           onNodeDragStop={overlay.readOnly ? undefined : onNodeDragStop}
           onBeforeDelete={async ({ nodes: del, edges: ed }) => ({
-            nodes: del.filter((n) => n.type !== "trigger"),
+            nodes: del.filter((n) => n.data.kind !== "trigger"),
             edges: ed,
           })}
           onNodesDelete={(del) => {
@@ -159,7 +200,31 @@ export function WorkflowCanvas({
             },
           }}
           nodesDraggable={!overlay.readOnly}
-          nodesConnectable={false}
+          nodesConnectable={!overlay.readOnly}
+          isValidConnection={(c) => {
+            const e = connectionToEdge(c, kindOf)
+            return (
+              e !== null &&
+              !edges.some(
+                (x) =>
+                  x.source === c.source &&
+                  x.target === c.target &&
+                  x.sourceHandle === c.sourceHandle &&
+                  x.targetHandle === c.targetHandle
+              )
+            )
+          }}
+          onConnect={(c) => {
+            const e = connectionToEdge(c, kindOf)
+            if (e) ops.connect(e)
+          }}
+          connectionRadius={28}
+          connectionLineStyle={{
+            stroke: "var(--ring)",
+            strokeWidth: 2,
+            strokeDasharray: "6 6",
+          }}
+          edgesFocusable={!overlay.readOnly}
           elementsSelectable={!overlay.readOnly}
           selectionOnDrag={!overlay.readOnly}
           deleteKeyCode={null}

@@ -133,9 +133,10 @@ test.describe("workflows.spec.ts › canvas", () => {
     const command = page.getByTestId("canvas-node-command")
     const box = await command.boundingBox()
     expect(box).toBeTruthy()
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    // Grab the header: the card body is an editable field (nodrag).
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + 8)
     await page.mouse.down()
-    await page.mouse.move(box!.x + box!.width / 2 + 120, box!.y + 40, {
+    await page.mouse.move(box!.x + box!.width / 2 + 120, box!.y + 48, {
       steps: 8,
     })
     await page.mouse.up()
@@ -213,26 +214,39 @@ test.describe("workflows.spec.ts › undo redo", () => {
   })
 })
 
-test.describe("workflows.spec.ts › trigger inputs", () => {
-  test("trigger inputs", async ({ page }) => {
-    // Own workflow so later diamond start-run tests are not blocked by a
-    // required input left on disk.
-    await page.goto("/workflows/node-run-ok-light")
-    await page.getByTestId("workflow-canvas-fit").click()
+test.describe("workflows.spec.ts › canvas edit", () => {
+  test("trigger has no settings; edit, wire and notify inline", async ({
+    page,
+  }) => {
+    await page.goto("/workflows/canvas-edit-e2e")
     await page.getByTestId("canvas-node-trigger").click()
-    await expect(page.getByTestId("node-open-settings")).toBeVisible()
-    await page.getByTestId("node-open-settings").click()
-    await expect(page.getByTestId("node-settings")).toBeVisible()
-    await expect(page.getByTestId("trigger-inputs")).toBeVisible()
-    await page.getByTestId("trigger-input-draft").fill("ticket")
-    await page.getByTestId("trigger-input-add").click()
-    await expect(page.getByText("ticket")).toBeVisible()
+    await expect(page.getByTestId("node-open-settings")).toHaveCount(0)
+
+    const instructions = page
+      .getByTestId("canvas-node-llm")
+      .getByTestId("node-field-prompt")
+    await expect(instructions).toHaveValue("Plan it.\n")
+    await instructions.fill("Plan the ticket.")
+    await instructions.blur()
+
+    await page
+      .getByTestId("canvas-node-trigger")
+      .locator('.react-flow__handle[data-handleid="text"]')
+      .dragTo(
+        page
+          .getByTestId("canvas-node-llm")
+          .locator('.react-flow__handle-left[data-handleid="text"]')
+      )
+    await page.getByTestId("output-channel-system").click()
     await saveAndWait(page)
-    const onDisk = readFileSync(
-      join(e2eHome(), "workflows", "node-run-ok-light", "workflow.yaml"),
-      "utf8"
-    )
-    expect(onDisk).toContain("ticket")
+
+    const dir = join(e2eHome(), "workflows", "canvas-edit-e2e")
+    const onDisk = readFileSync(join(dir, "workflow.yaml"), "utf8")
+    expect(onDisk).toContain("{ from: start, to: plan }")
+    expect(onDisk).toContain("channel: system")
+    await expect
+      .poll(() => readFileSync(join(dir, "nodes", "plan", "prompt.md"), "utf8"))
+      .toBe("Plan the ticket.")
   })
 })
 
@@ -278,7 +292,8 @@ test.describe("workflows.spec.ts › node actions", () => {
     await page.goto("/workflows/diamond")
     await page.getByTestId("workflow-canvas-fit").click()
     const command = page.getByTestId("canvas-node-command")
-    await command.click()
+    // Header: the body is an editable field and may sit under a neighbour.
+    await command.getByText("Command").click()
     // evaluate: toolbar remounts on mutate and stalls Playwright's click.
     // Duplicate offsets +40,+40 under a wide card — don't click .last().
     await page.getByTestId("node-duplicate").evaluate((el: HTMLElement) => {

@@ -20,6 +20,7 @@ export function installDesktopHost(client: FlowsClient): () => void {
   let unsubReveal: (() => void) | undefined
   let unsubSignIn: (() => void) | undefined
   let unsubInbox: (() => void) | undefined
+  let unsubNotice: (() => void) | undefined
   let closed = false
 
   void client.ready.then(() => {
@@ -31,7 +32,7 @@ export function installDesktopHost(client: FlowsClient): () => void {
     unsubSignIn = client.onRequest("host/browser_sign_in", (params) =>
       api.browserSignIn(params)
     )
-    void client.call("subscribe", { topics: ["inbox"] })
+    void client.call("subscribe", { topics: ["inbox", "notice"] })
     unsubInbox = client.onNotification("inbox/update", (params) => {
       if (params.kind !== "item_added") return
       const title =
@@ -40,6 +41,13 @@ export function installDesktopHost(client: FlowsClient): () => void {
           : "Approval needed"
       api.notifyInboxItem({ title, body: params.item.question })
     })
+    unsubNotice = client.onNotification("notice/update", (params) => {
+      if (params.notice.channel !== "system") return
+      api.notifySystem?.({
+        title: params.notice.title,
+        body: firstLine(params.notice.text),
+      })
+    })
   })
 
   return () => {
@@ -47,6 +55,16 @@ export function installDesktopHost(client: FlowsClient): () => void {
     unsubReveal?.()
     unsubSignIn?.()
     unsubInbox?.()
-    void client.call("unsubscribe", { topics: ["inbox"] })
+    unsubNotice?.()
+    void client.call("unsubscribe", { topics: ["inbox", "notice"] })
   }
+}
+
+/** Body for a system notification: the first non-heading line of the text. */
+function firstLine(text: string): string {
+  const line = text
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l && !l.startsWith("#"))
+  return (line ?? "").slice(0, 200)
 }

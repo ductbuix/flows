@@ -20,8 +20,7 @@ const sourcesFileSchema = z.object({
   sources: z.array(z.string().min(1)).default([]),
 })
 
-const SKILL_MD_RE =
-  /^library\/([^/]+)\/v(\d+)\/skills\/([^/]+)\/SKILL\.md$/
+const SKILL_MD_RE = /^library\/([^/]+)\/v(\d+)\/skills\/([^/]+)\/SKILL\.md$/
 
 export type SkillSourcesDeps = {
   docs: DocumentStore

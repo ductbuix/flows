@@ -122,7 +122,10 @@ function LibraryPageInner() {
             <Plug />
             Providers
           </Button>
-          <Button onClick={() => setAdding(true)} data-testid="library-add-open">
+          <Button
+            onClick={() => setAdding(true)}
+            data-testid="library-add-open"
+          >
             <Plus />
             Add to Library
           </Button>

@@ -8,7 +8,7 @@ import {
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
-import { notifyInboxIfUnfocused } from "./host-notifications.ts"
+import { notifyInboxIfUnfocused, notifySystem } from "./host-notifications.ts"
 import { openBrowserSignIn } from "./host-browser-sign-in.ts"
 import { revealPathInFolder } from "./host-shell.ts"
 import {
@@ -114,6 +114,13 @@ app.whenReady().then(() => {
     const { title, body } = payload as { title?: unknown; body?: unknown }
     if (typeof title !== "string" || typeof body !== "string") return
     notifyInboxIfUnfocused({ title, body })
+  })
+
+  ipcMain.on("flows:notify-system", (_event, payload: unknown) => {
+    if (!payload || typeof payload !== "object") return
+    const { title, body } = payload as { title?: unknown; body?: unknown }
+    if (typeof title !== "string" || typeof body !== "string") return
+    notifySystem({ title, body })
   })
 
   ipcMain.handle("flows:browser-sign-in", async (_event, raw: unknown) => {

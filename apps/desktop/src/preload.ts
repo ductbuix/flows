@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld("flowsDesktop", {
   notifyInboxItem(payload: { title: string; body: string }): void {
     ipcRenderer.send("flows:notify-inbox", payload)
   },
+  notifySystem(payload: { title: string; body: string }): void {
+    ipcRenderer.send("flows:notify-system", payload)
+  },
   browserSignIn(params: {
     connectorId: string
     url: string

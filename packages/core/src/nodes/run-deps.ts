@@ -13,6 +13,8 @@ export type NoticePost = {
   workflowId: string
   nodeId: string
   at: string
+  /** `system` also shows a system notification on the desktop host. */
+  channel?: "app" | "system"
 }
 
 export type NodeEffectRunnerDeps = {

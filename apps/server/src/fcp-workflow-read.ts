@@ -20,9 +20,7 @@ export type WorkflowReadBindings = Pick<
   "workflow/list" | "workflow/get"
 >
 
-export function createWorkflowReadBindings(
-  engine: Host
-): WorkflowReadBindings {
+export function createWorkflowReadBindings(engine: Host): WorkflowReadBindings {
   return {
     "workflow/list": defineBinding(workflowListMethod, (params) =>
       pageWorkflowSummaries(

@@ -1,4 +1,8 @@
-import { LibItemId, type LibItem, type ProviderIcon } from "@workspace/contracts"
+import {
+  LibItemId,
+  type LibItem,
+  type ProviderIcon,
+} from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
 import { engineError } from "../kernel/engine-error.ts"
 import type { Ids } from "../kernel/ids.ts"

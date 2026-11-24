@@ -127,13 +127,16 @@ edges:
 id: notify-demo
 nodes:
   - { id: t, kind: trigger, type: manual }
-  - { id: n, kind: output, target: notify, title: Ready }
+  - { id: n, kind: output, target: notify, title: Ready, channel: system }
 edges:
   - { from: t, to: n }
 `
     writeWorkflow(home, yaml)
     const engine = createHost({ home })
-    const host = createCoreRunHost(engine)
+    const posted: { title: string; channel?: string }[] = []
+    const host = createCoreRunHost(engine, {
+      onNotice: (n) => posted.push(n),
+    })
     const graph = parseNodeWorkflowYaml(yaml).workflow!
 
     const runId = "core-notify"
@@ -158,6 +161,9 @@ edges:
         }),
       ])
     )
+    expect(posted).toEqual([
+      expect.objectContaining({ title: "Ready", channel: "system" }),
+    ])
     host.dispose()
     engine.close()
   })

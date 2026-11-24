@@ -49,7 +49,9 @@ test.describe("skills page", () => {
     await expect(page.getByTestId("skills-available")).toBeVisible()
     await page.getByTestId("skills-tab-sources").click()
     await expect(page.getByTestId("skill-sources")).toBeVisible()
-    await expect(page.getByTestId("skill-source-repo-team-skills")).toBeVisible()
+    await expect(
+      page.getByTestId("skill-source-repo-team-skills")
+    ).toBeVisible()
   })
 
   test("used by", async ({ page }) => {
@@ -94,7 +96,9 @@ test.describe("skills page", () => {
   test("sources", async ({ page }) => {
     await page.goto("/skills")
     await page.getByTestId("skills-tab-sources").click()
-    await expect(page.getByTestId("skill-source-repo-team-skills")).toBeVisible()
+    await expect(
+      page.getByTestId("skill-source-repo-team-skills")
+    ).toBeVisible()
     await page.getByTestId("skill-sync-repo-team-skills").click()
     await expect(page.getByTestId("skill-sync-repo-team-skills")).toHaveText(
       "Sync",
@@ -102,15 +106,17 @@ test.describe("skills page", () => {
     )
 
     await page.getByTestId("skill-source-remove-repo-team-skills").click()
-    await expect(
-      page.getByTestId("skill-source-repo-team-skills")
-    ).toHaveCount(0)
+    await expect(page.getByTestId("skill-source-repo-team-skills")).toHaveCount(
+      0
+    )
 
     await page.getByTestId("skill-source-open").click()
     await expect(page.getByTestId("skill-source-add")).toBeVisible()
     await page.getByTestId("skill-source-pick-repo-team-skills").click()
     await page.getByTestId("skill-source-submit").click()
-    await expect(page.getByTestId("skill-source-repo-team-skills")).toBeVisible()
+    await expect(
+      page.getByTestId("skill-source-repo-team-skills")
+    ).toBeVisible()
   })
 
   test("uninstall", async ({ page }) => {

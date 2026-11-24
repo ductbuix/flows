@@ -29,9 +29,12 @@ export function createSettingsBindings(ports: SettingsPorts): SettingsBindings {
     "settings/set_trust": defineBinding(settingsSetTrustMethod, (params) =>
       ports.trust.setTrust(params.grant)
     ),
-    "settings/list_mcp_trust": defineBinding(settingsListMcpTrustMethod, () => ({
-      servers: [...ports.mcp.listServers()],
-    })),
+    "settings/list_mcp_trust": defineBinding(
+      settingsListMcpTrustMethod,
+      () => ({
+        servers: [...ports.mcp.listServers()],
+      })
+    ),
     "settings/set_mcp_trust": defineBinding(
       settingsSetMcpTrustMethod,
       (params) => ({

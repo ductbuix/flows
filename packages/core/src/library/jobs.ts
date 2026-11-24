@@ -61,8 +61,7 @@ export async function runPullJob(
     const meta = {
       n,
       at: new Date(deps.clock.now()).toISOString(),
-      note:
-        fetched.note ?? (previousNewest === 0 ? "First fetch" : "Updated"),
+      note: fetched.note ?? (previousNewest === 0 ? "First fetch" : "Updated"),
       contentHash: hash,
     }
     writeVersion(deps.docs, itemId, meta, fetched.files)

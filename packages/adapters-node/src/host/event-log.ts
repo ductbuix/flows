@@ -46,8 +46,8 @@ export class EventLog {
   }
 
   /** Posts a notice once per key; a repeat of the same step adds nothing (BL-100). */
-  postNotice(n: NewNotice): void {
-    postNotice(this.db, n)
+  postNotice(n: NewNotice): boolean {
+    return postNotice(this.db, n)
   }
 
   listNotices(limit?: number): NoticeList {

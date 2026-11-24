@@ -9,6 +9,8 @@ interface FlowsDesktopApi {
   revealPath(path: string): void
   /** OS notification when the window is not focused (`host.notifications`). */
   notifyInboxItem(payload: { title: string; body: string }): void
+  /** OS notification even when focused: Output `channel: system` (BL-100). */
+  notifySystem?(payload: { title: string; body: string }): void
   /** Cookie sign-in window (`host.browserSignIn` / `host/browser_sign_in`). */
   browserSignIn(params: {
     connectorId: string

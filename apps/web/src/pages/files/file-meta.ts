@@ -8,10 +8,7 @@ const EXT_KIND: Record<string, string> = {
   db: "SQLite database",
 }
 
-export function fileKindLabel(
-  path: string,
-  kind: "file" | "dir"
-): string {
+export function fileKindLabel(path: string, kind: "file" | "dir"): string {
   if (kind === "dir") return "Folder"
   const ext = path.split(".").pop()?.toLowerCase() ?? ""
   return EXT_KIND[ext] ?? "File"

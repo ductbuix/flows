@@ -6,13 +6,20 @@ export async function collectExecute(
   events: AsyncIterable<StepEvent>
 ): Promise<EffectResult> {
   const outputs: string[] = []
-  let notice: { title: string; text: string } | undefined
+  let notice:
+    { title: string; text: string; channel?: "app" | "system" } | undefined
   let branch: string | undefined
   let answer: Record<string, unknown> | undefined
   try {
     for await (const ev of events) {
       if (ev.kind === "output_written") outputs.push(ev.path)
-      if (ev.kind === "notify") notice = { title: ev.title, text: ev.text }
+      if (ev.kind === "notify") {
+        notice = {
+          title: ev.title,
+          text: ev.text,
+          ...(ev.channel ? { channel: ev.channel } : {}),
+        }
+      }
       if (ev.kind === "waiting") {
         return { waiting: true, question: ev.question }
       }

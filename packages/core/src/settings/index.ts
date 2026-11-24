@@ -1,7 +1,4 @@
-export {
-  createSettingsBindings,
-  type SettingsBindings,
-} from "./service.ts"
+export { createSettingsBindings, type SettingsBindings } from "./service.ts"
 export type {
   AppTrustPort,
   CliInfo,

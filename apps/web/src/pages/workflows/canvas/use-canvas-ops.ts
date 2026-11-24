@@ -1,11 +1,14 @@
 import { useCallback, useRef, useEffect } from "react"
 import {
+  addEdge,
   addNode,
+  removeEdge,
   removeNode,
   setNodeKey,
   type LayoutFile,
   type NodeKindName,
   type Workflow,
+  type WorkflowEdge,
 } from "@workspace/contracts"
 import type { CanvasNodeData } from "./flow-kinds"
 import { cloneNodeRecord, defaultNode, newNodeId } from "./default-node"
@@ -101,5 +104,19 @@ export function useCanvasOps(
     [onYamlChange, onLayoutChange]
   )
 
-  return { update, remove, duplicate, add }
+  const connect = useCallback(
+    (edge: WorkflowEdge) => onYamlChange(addEdge(yamlRef.current, edge)),
+    [onYamlChange]
+  )
+
+  const disconnect = useCallback(
+    (edges: readonly WorkflowEdge[]) => {
+      let next = yamlRef.current
+      for (const e of edges) next = removeEdge(next, e)
+      if (next !== yamlRef.current) onYamlChange(next)
+    },
+    [onYamlChange]
+  )
+
+  return { update, remove, duplicate, add, connect, disconnect }
 }

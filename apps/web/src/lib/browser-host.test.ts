@@ -17,8 +17,7 @@ describe("browser-host", () => {
 
   it("records host/reveal_path on the window", async () => {
     let handler:
-      | ((params: { path: string }) => Record<string, never>)
-      | undefined
+      ((params: { path: string }) => Record<string, never>) | undefined
     const client = {
       ready: Promise.resolve({}),
       onRequest: (

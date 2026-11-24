@@ -19,7 +19,7 @@ export function SettingsPanel({ open, onClose }: Props) {
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
-        className="data-[side=right]:sm:max-w-lg overflow-y-auto"
+        className="overflow-y-auto data-[side=right]:sm:max-w-lg"
         data-testid="settings-panel"
       >
         <SheetHeader className="pr-12">

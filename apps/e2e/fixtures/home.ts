@@ -71,6 +71,22 @@ edges:
   - { from: build, to: done }
 `
 
+/** Canvas inline editing and drag-to-connect (no edges on purpose). */
+const canvasEditYaml = `id: canvas-edit-e2e
+goal: e2e canvas edit
+nodes:
+  - id: start
+    kind: trigger
+    type: manual
+  - id: plan
+    kind: llm
+    cli: claude
+  - id: done
+    kind: output
+    target: notify
+    title: Done
+`
+
 const nodeRunYaml = (id: string, run: string, trigger = true) => `id: ${id}
 goal: e2e node run
 nodes:
@@ -368,6 +384,22 @@ export function createE2eHome(): string {
       })
     )
   }
+  const edit = join(home, "workflows", "canvas-edit-e2e")
+  mkdirSync(join(edit, "nodes", "plan"), { recursive: true })
+  writeFileSync(join(edit, "workflow.yaml"), canvasEditYaml)
+  writeFileSync(join(edit, "nodes", "plan", "prompt.md"), "Plan it.\n")
+  writeFileSync(
+    join(edit, "workflow.layout.json"),
+    JSON.stringify({
+      version: 1,
+      nodes: {
+        start: { x: 0, y: 0 },
+        plan: { x: 380, y: 0 },
+        done: { x: 900, y: 0 },
+      },
+      viewport: { x: 40, y: 120, zoom: 1 },
+    })
+  )
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)

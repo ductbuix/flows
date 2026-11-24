@@ -1,11 +1,13 @@
 import { useEffect } from "react"
-import type { CanvasNode } from "./flow-graph"
+import type { CanvasEdge, CanvasNode } from "./flow-graph"
 
-/** Duplicate / delete selected nodes from the keyboard while editing. */
+/** Duplicate / delete selected nodes and wires from the keyboard. */
 export function useCanvasKeys(
   nodes: CanvasNode[],
+  edges: CanvasEdge[],
   duplicate: (id: string) => void,
   remove: (id: string) => void,
+  removeEdges: (edges: CanvasEdge[]) => void,
   enabled: boolean
 ) {
   useEffect(() => {
@@ -24,12 +26,14 @@ export function useCanvasKeys(
         return
       }
       if (ev.key === "Backspace" || ev.key === "Delete") {
-        if (selected.length === 0) return
+        const wires = edges.filter((e) => e.selected)
+        if (selected.length === 0 && wires.length === 0) return
         ev.preventDefault()
+        if (wires.length > 0) removeEdges(wires)
         selected.forEach((id) => remove(id))
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [nodes, duplicate, remove, enabled])
+  }, [nodes, edges, duplicate, remove, removeEdges, enabled])
 }

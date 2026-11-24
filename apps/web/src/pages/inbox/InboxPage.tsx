@@ -32,10 +32,7 @@ function InboxPageInner() {
   if (listQ.error && !listQ.data) return <InboxLoadError error={listQ.error} />
 
   return (
-    <Page
-      crumbs={[{ label: "Inbox" }]}
-      data-testid="inbox-page"
-    >
+    <Page crumbs={[{ label: "Inbox" }]} data-testid="inbox-page">
       <PageTitle
         title="Inbox"
         description="Runs waiting for you to approve or reject a step."

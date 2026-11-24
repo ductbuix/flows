@@ -82,8 +82,8 @@ export class Host {
   }
 
   /** Post an in-app notice (core notify path; BL-195). */
-  postNotice(n: Parameters<EventLog["postNotice"]>[0]): void {
-    this.log.postNotice(n)
+  postNotice(n: Parameters<EventLog["postNotice"]>[0]): boolean {
+    return this.log.postNotice(n)
   }
 
   markNoticesRead(ids?: number[]): void {

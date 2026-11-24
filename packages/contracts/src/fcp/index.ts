@@ -284,6 +284,11 @@ export {
   type WireInboxItem,
 } from "./inbox.ts"
 export {
+  noticeChannelSchema,
+  noticeUpdateNotification,
+  type NoticeChannel,
+} from "./notice.ts"
+export {
   settingsCliStatusMethod,
   settingsCliStatusParamsSchema,
   settingsCliStatusResultSchema,

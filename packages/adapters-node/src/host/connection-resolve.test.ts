@@ -68,9 +68,7 @@ function publishGraph(connectionId: string) {
         id: "lib",
         kind: "asset",
         access: "propose",
-        resources: [
-          { connection: connectionId, entity: "item", id: "alpha" },
-        ],
+        resources: [{ connection: connectionId, entity: "item", id: "alpha" }],
       },
       {
         id: "edit",

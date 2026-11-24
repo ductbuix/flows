@@ -7,6 +7,9 @@ import type {
   WorkflowEdge,
 } from "@workspace/contracts"
 
+/** Where a notice shows: in the app only, or also as a system notification. */
+export type NoticeChannel = "app" | "system"
+
 /** Step states (DES-034). */
 export type StepStatus =
   | "pending"
@@ -110,7 +113,7 @@ export type EffectResult =
       outputs?: string[]
       branch?: string
       answer?: Record<string, unknown>
-      notice?: { title: string; text: string }
+      notice?: { title: string; text: string; channel?: NoticeChannel }
     }
   | {
       ok: false
