@@ -18,7 +18,8 @@ export function providerPath(id: string): string {
 }
 
 export function providerIdFromPath(path: string): string | null {
-  return PROVIDER_PATH_RE.exec(path.replace(/\\/g, "/"))?.[1] ?? null
+  const normalized = path.replace(/\\/g, "/").replace(/^\//, "")
+  return PROVIDER_PATH_RE.exec(normalized)?.[1] ?? null
 }
 
 export type ProviderServiceDeps = {
