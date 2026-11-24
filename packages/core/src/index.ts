@@ -1,5 +1,6 @@
 export type {
   Clock,
+  DomainEventMap,
   EngineError,
   EngineErrorCode,
   Err,
@@ -8,9 +9,12 @@ export type {
   Logger,
   Ok,
   Result,
+  RunFinishedEvent,
 } from "./kernel/index.ts"
 export {
+  EventBus,
   andThen,
+  createEventBus,
   engineError,
   err,
   isErr,
@@ -94,6 +98,13 @@ export {
   type IndexedLink,
   type PathExists,
 } from "./docket/index.ts"
+export {
+  FLOWS_RUN_SYSTEM,
+  applyRunFinishedRef,
+  attachRunFinishedRef,
+  flowsRunRefLabel,
+  type RunRefDeps,
+} from "./docket/run-ref.ts"
 export {
   cardIdFromPath,
   cardPath,

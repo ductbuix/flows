@@ -1,4 +1,4 @@
-import { UpdateBus } from "@workspace/core"
+import { createEventBus, UpdateBus } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
 import { type Health } from "@workspace/shared"
 import { Hono } from "hono"
@@ -31,8 +31,9 @@ export function createApp({
   port = Number(process.env.PORT ?? 8787),
 }: CreateAppOptions) {
   const bus = new UpdateBus()
-  bindEngineToBus(engine, bus)
-  const docket = createDocketFcp(engine, bus)
+  const events = createEventBus()
+  bindEngineToBus(engine, bus, events)
+  const docket = createDocketFcp(engine, bus, events)
   const inbox = createInboxFcp(engine, bus)
   const library = createLibraryFcp(engine)
   const skills = createSkillsFcp(engine, bus)

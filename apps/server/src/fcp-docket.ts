@@ -4,6 +4,7 @@ import {
   createNodeFileWatcher,
 } from "@workspace/adapters-node"
 import {
+  attachRunFinishedRef,
   createDocketIndex,
   createDocketReadBindings,
   createDocketStore,
@@ -12,6 +13,7 @@ import {
   type DocketIndex,
   type DocketReadBindings,
   type DocketWriteBindings,
+  type EventBus,
   type UpdateBus,
 } from "@workspace/core"
 import { getBlobStore, type Engine } from "@workspace/engine"
@@ -24,7 +26,11 @@ export type DocketFcp = {
 }
 
 /** One docket index per daemon; shared by every FCP peer. */
-export function createDocketFcp(engine: Engine, bus: UpdateBus): DocketFcp {
+export function createDocketFcp(
+  engine: Engine,
+  bus: UpdateBus,
+  events: EventBus
+): DocketFcp {
   const docs = createNodeDocumentStore({ root: engine.home })
   const store = createDocketStore({ docs, clock: systemClock })
   const watcher = createNodeFileWatcher({ root: engine.home })
@@ -35,6 +41,7 @@ export function createDocketFcp(engine: Engine, bus: UpdateBus): DocketFcp {
     exists: (path) => existsSync(path),
   })
   index.start()
+  const runRef = attachRunFinishedRef(events, { store, index, bus })
   return {
     bindings: {
       ...createDocketReadBindings({ index, store }),
@@ -45,6 +52,9 @@ export function createDocketFcp(engine: Engine, bus: UpdateBus): DocketFcp {
         blobs: getBlobStore(),
       }),
     },
-    dispose: () => index.dispose(),
+    dispose: () => {
+      runRef.dispose()
+      index.dispose()
+    },
   }
 }
