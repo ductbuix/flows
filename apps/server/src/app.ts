@@ -37,6 +37,7 @@ import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
+import { createSkillsFcp } from "./fcp-skills.ts"
 import { createFileFcp } from "./fcp-files.ts"
 import { blobRoutes } from "./blob-routes.ts"
 import {
@@ -73,6 +74,7 @@ export function createApp({
   const bus = new UpdateBus()
   const hub = new WsHub(engine, bus)
   const docket = createDocketFcp(engine, bus)
+  const skills = createSkillsFcp(engine, bus)
   const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   const controls = createRunControls({ engine, idempotency })
@@ -190,6 +192,7 @@ export function createApp({
       "/fcp",
       fcpUpgrade(engine, fcpToken, port, bus, idempotency, {
         ...docket.bindings,
+        ...skills.bindings,
         ...files,
       })
     )
