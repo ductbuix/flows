@@ -2,7 +2,7 @@
 id: BL-138
 title: ACP cancel
 type: backlog
-status: todo
+status: done
 summary: Aborting a prompt sends session/cancel, answers pending permission requests with cancelled and ends with stop cancelled.
 tags: [acp, agents, cancellation]
 related: [DES-041]
@@ -19,6 +19,6 @@ Run cancel and step timeout must stop an agent the ACP way.
 
 ## Done when
 
-- [ ] Abort sends `session/cancel { sessionId }`; pending `session/request_permission` get outcome `cancelled`.
-- [ ] If the agent does not stop within a grace period the process group is killed.
-- [ ] Fake agent tests for both paths.
+- [x] Abort sends `session/cancel { sessionId }`; pending `session/request_permission` get outcome `cancelled`.
+- [x] If the agent does not stop within a grace period the process group is killed.
+- [x] Fake agent tests for both paths.

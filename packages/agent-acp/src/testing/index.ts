@@ -1,5 +1,6 @@
 export {
   runFakeAgent,
+  type FakeAgentClientRequest,
   type FakeAgentExpect,
   type FakeAgentHandle,
   type FakeAgentNotification,
@@ -7,3 +8,8 @@ export {
   type FakeAgentScript,
   type FakeAgentStep,
 } from "./fake-agent.ts"
+export {
+  createScriptedProcessRunner,
+  type ScriptedProcessRunner,
+  type ScriptedSpawn,
+} from "./scripted-runner.ts"

@@ -1,4 +1,4 @@
-import type { EngineEvent, Workflow } from "@workspace/contracts"
+import type { Workflow } from "@workspace/contracts"
 import { effectForRun } from "./decide-effects.ts"
 import { isOpenStep, type DecideOutput, type RunState } from "./model.ts"
 import { nextActions } from "./walk.ts"
@@ -72,27 +72,17 @@ export function scheduleNext(state: RunState, at: string): DecideOutput {
     }
   }
 
-  const node = state.graph.nodes.find((n) => n.id === a.nodeId)
   const effect = effectForRun(state, a.nodeId, a.pass, a.inputs, 1)
-  const events: EngineEvent[] = [
-    {
-      type: "step_started",
-      runId: state.runId,
-      at,
-      nodeId: a.nodeId,
-      pass: a.pass,
-    },
-  ]
-  if (node?.kind === "approval" && effect.kind === "post_inbox") {
-    events.push({
-      type: "approval_requested",
-      runId: state.runId,
-      at,
-      taskId: a.nodeId,
-      nodeId: a.nodeId,
-      pass: a.pass,
-      question: effect.question,
-    })
+  return {
+    events: [
+      {
+        type: "step_started",
+        runId: state.runId,
+        at,
+        nodeId: a.nodeId,
+        pass: a.pass,
+      },
+    ],
+    effects: [effect],
   }
-  return { events, effects: [effect] }
 }

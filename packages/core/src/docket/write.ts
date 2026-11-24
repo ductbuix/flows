@@ -7,6 +7,7 @@ import {
 } from "@workspace/contracts"
 import { engineError } from "../kernel/engine-error.ts"
 import { defineBinding, type MethodBindings } from "../rpc/bind.ts"
+import { bindDocketAddAsset, bindDocketRemoveAsset } from "./assets-fcp.ts"
 import { toWireFace } from "./wire-face.ts"
 import { bindDocketMoveCard } from "./move-fcp.ts"
 import { rankAtColumnEnd } from "./move.ts"
@@ -25,6 +26,8 @@ export type DocketWriteBindings = Pick<
   | "docket/update_card"
   | "docket/move_card"
   | "docket/delete_card"
+  | "docket/add_asset"
+  | "docket/remove_asset"
   | "docket/save_board"
 >
 
@@ -80,6 +83,8 @@ export function createDocketWriteBindings(
       return { hash: written.hash }
     }),
     "docket/move_card": bindDocketMoveCard(deps),
+    "docket/add_asset": bindDocketAddAsset(deps),
+    "docket/remove_asset": bindDocketRemoveAsset(deps),
     "docket/delete_card": defineBinding(docketDeleteCardMethod, (params) => {
       if (!deps.index.getCard(params.id)) {
         throw engineError("not_found", `Card not found: ${params.id}`)

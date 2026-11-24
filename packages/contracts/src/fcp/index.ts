@@ -53,6 +53,16 @@ export {
   indexedLinkSchema,
   type WireCardFace,
 } from "./docket.ts"
+export {
+  docketAddAssetMethod,
+  docketAddAssetParamsSchema,
+  docketAddAssetResultSchema,
+  docketAddLinkedAssetParamsSchema,
+  docketAddOwnedAssetParamsSchema,
+  docketRemoveAssetMethod,
+  docketRemoveAssetParamsSchema,
+  docketRemoveAssetResultSchema,
+} from "./docket-assets.ts"
 export { pingMethod, pingParamsSchema, pingResultSchema } from "./ping.ts"
 export {
   runCancelMethod,
@@ -189,3 +199,23 @@ export {
   librarySaveProviderParamsSchema,
   librarySaveProviderResultSchema,
 } from "./library.ts"
+export {
+  inboxAnswerMethod,
+  inboxAnswerParamsSchema,
+  inboxAnswerResultSchema,
+  inboxApprovalItemSchema,
+  inboxApprovalOptionIdSchema,
+  inboxDismissMethod,
+  inboxDismissParamsSchema,
+  inboxDismissResultSchema,
+  inboxItemKindSchema,
+  inboxItemOptionIdSchema,
+  inboxItemSchema,
+  inboxListMethod,
+  inboxListParamsSchema,
+  inboxListResultSchema,
+  inboxPermissionItemSchema,
+  inboxPermissionOptionIdSchema,
+  inboxUpdateNotification,
+  type WireInboxItem,
+} from "./inbox.ts"

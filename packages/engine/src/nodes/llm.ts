@@ -18,6 +18,7 @@ import {
   settleAnswer,
 } from "./answers.ts"
 import { defineExecutor } from "./define.ts"
+import { agentsRuntimeIsAcp, homeOfWorkflowRoot } from "./llm-acp.ts"
 import { readOptional, settleProcessOutput } from "./process.ts"
 
 /** The prompt file of one call: system, prompt, then the input (DES-032). */
@@ -38,7 +39,7 @@ export function llmPromptText(parts: {
 /**
  * LLM step (DES-032): one CLI call in print mode with tools off. The
  * prompt goes in on stdin from `input/prompt.txt`; stdout is `text`.
- * The sandbox writes only the attempt folder.
+ * When `agents.runtime=acp`, opens an ACP session instead (BL-142).
  */
 export const llmExecutor = defineExecutor({
   kind: "llm",
@@ -53,11 +54,25 @@ export const llmExecutor = defineExecutor({
       ...(node.model !== undefined ? { model: node.model } : {}),
       ...(node.effort !== undefined ? { effort: node.effort } : {}),
     }
+    const modelFields = resolveAttemptModelFields(task, ctx.graph)
+    if (agentsRuntimeIsAcp(homeOfWorkflowRoot(ctx.workflowRoot))) {
+      return {
+        acp: {
+          agent: true,
+          profileId: "cursor",
+          mode: "agent",
+          cli: node.cli,
+          modelFields,
+          ...(node.model !== undefined ? { model: node.model } : {}),
+          ...(node.effort !== undefined ? { effort: node.effort } : {}),
+        },
+      }
+    }
     return {
       launch: {
         agent: true,
         cli: node.cli,
-        modelFields: resolveAttemptModelFields(task, ctx.graph),
+        modelFields,
         prepare({ attemptRoot, inputDir }) {
           const fix = pendingAnswerFix(attemptRoot)
           const prompt = [filledFile(ctx, "prompt.md") ?? ""]

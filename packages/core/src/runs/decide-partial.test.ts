@@ -113,6 +113,9 @@ describe("effects union", () => {
       for (const e of r.events) state = fold(state, e)!
     }
     out = decide(state, { kind: "wake", at })
-    expect(out.effects[0]).toMatchObject({ kind: "notify", title: "Hi" })
+    expect(out.effects[0]).toMatchObject({
+      kind: "launch_step",
+      nodeId: "o",
+    })
   })
 })

@@ -2,7 +2,7 @@
 id: BL-137
 title: "ACP session: initialize, new, prompt, updates"
 type: backlog
-status: todo
+status: done
 summary: "agent-acp runs a session: initialize, session/new, session/prompt, maps session/update to AgentEvent, ends on stopReason."
 tags: [acp, agents]
 related: [DES-041]
@@ -19,6 +19,6 @@ The core of the agent runtime over the shared JSON-RPC peer.
 
 ## Done when
 
-- [ ] Maps `agent_message_chunk`, `agent_thought_chunk`, `tool_call`, `tool_call_update`, `plan`, `usage_update` and `stopReason`.
-- [ ] Unknown update kinds are ignored and logged.
-- [ ] Tests against the fake agent for each mapping.
+- [x] Maps `agent_message_chunk`, `agent_thought_chunk`, `tool_call`, `tool_call_update`, `plan`, `usage_update` and `stopReason`.
+- [x] Unknown update kinds are ignored and logged.
+- [x] Tests against the fake agent for each mapping.

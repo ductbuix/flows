@@ -10,15 +10,15 @@ import { HomePage } from "@/pages/HomePage"
 import { ConnectionPage } from "@/pages/connections/ConnectionPage"
 import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
 import { ConnectorsPage } from "@/pages/mock/ConnectorsPage"
-import { SkillsPage } from "@/pages/mock/SkillsPage"
+import { SkillsPage } from "@/pages/skills/SkillsPage"
 import { DocketPage } from "@/pages/docket/DocketPage"
 import { FilesPage } from "@/pages/files/FilesPage"
 import { LibraryPage } from "@/pages/mock/LibraryPage"
 import { InboxPage } from "@/pages/mock/InboxPage"
 import { MockBlankPage } from "@/pages/mock/MockBlankPage"
 import { MockShell } from "@/pages/mock/MockShell"
-import { WorkflowEditorMock } from "@/pages/mock/WorkflowEditorMock"
-import { WorkflowsMockPage } from "@/pages/mock/WorkflowsMockPage"
+import { WorkflowEditorPage as MockWorkflowEditorPage } from "@/pages/workflows/WorkflowEditorPage"
+import { WorkflowsPage as MockWorkflowsPage } from "@/pages/workflows/WorkflowsPage"
 import { RunsPage } from "@/pages/RunsPage"
 import { SettingsPage } from "@/pages/SettingsPage"
 import {
@@ -51,13 +51,13 @@ export function App() {
       <Route path="mock" element={<MockShell />}>
         <Route index element={<MockBlankPage />} />
         <Route path="docket" element={<DocketPage />} />
-        <Route path="workflows" element={<WorkflowsMockPage />} />
+        <Route path="workflows" element={<MockWorkflowsPage />} />
         <Route path="inbox" element={<InboxPage />} />
         <Route path="files" element={<FilesPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="skills" element={<SkillsPage />} />
         <Route path="connectors" element={<ConnectorsPage />} />
-        <Route path="workflows/:id" element={<WorkflowEditorMock />} />
+        <Route path="workflows/:id" element={<MockWorkflowEditorPage />} />
       </Route>
       <Route element={<AppShell />}>
         <Route index element={<HomePage />} />

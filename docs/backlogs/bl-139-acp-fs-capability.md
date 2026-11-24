@@ -2,7 +2,7 @@
 id: BL-139
 title: ACP file access through a path policy
 type: backlog
-status: todo
+status: done
 summary: The client advertises fs.readTextFile and fs.writeTextFile and serves them only inside the step work dir.
 tags: [acp, agents, security]
 related: [DES-041, DES-006]
@@ -19,6 +19,6 @@ Agent file I/O goes through us so writes stay inside the allowed folder (permiss
 
 ## Done when
 
-- [ ] `fs/read_text_file` and `fs/write_text_file` resolve paths, reject anything outside allowed roots with a JSON-RPC error.
-- [ ] Writes are atomic.
-- [ ] Fake agent tests: inside allowed, `..` escape rejected, symlink escape rejected.
+- [x] `fs/read_text_file` and `fs/write_text_file` resolve paths, reject anything outside allowed roots with a JSON-RPC error.
+- [x] Writes are atomic.
+- [x] Fake agent tests: inside allowed, `..` escape rejected, symlink escape rejected.

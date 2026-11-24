@@ -14,6 +14,7 @@ import { bindEngine } from "../rpc/bind.ts"
 import { createSubscribeBindings } from "../updates/bind-subscribe.ts"
 import { UpdateBus } from "../updates/update-bus.ts"
 import {
+  createFakeBlobStore,
   createFakeClock,
   createFakeDocumentStore,
   createFakeFileWatcher,
@@ -54,7 +55,8 @@ function stack() {
   })
   index.start()
   const bus = new UpdateBus()
-  return { store, index, bus, dispose: () => index.dispose() }
+  const blobs = createFakeBlobStore()
+  return { store, index, bus, blobs, dispose: () => index.dispose() }
 }
 
 function linkedBindings(bindings: Record<string, unknown>, bus: UpdateBus) {
@@ -80,7 +82,7 @@ describe("docket write FCP", () => {
   it("create, update, delete and save_board emit docket/update notifications", async () => {
     const { store, index, bus, dispose } = stack()
     const read = createDocketReadBindings({ index, store })
-    const write = createDocketWriteBindings({ index, store, bus })
+    const write = createDocketWriteBindings({ index, store, bus, blobs: createFakeBlobStore() })
     const { client: rpc, dispose: rpcDispose } = linkedBindings(
       { ...read, ...write },
       bus
@@ -157,7 +159,7 @@ describe("docket write FCP", () => {
   it("returns conflict with the current card on stale baseHash", async () => {
     const { store, index, bus, dispose } = stack()
     const read = createDocketReadBindings({ index, store })
-    const write = createDocketWriteBindings({ index, store, bus })
+    const write = createDocketWriteBindings({ index, store, bus, blobs: createFakeBlobStore() })
     const { client: rpc, dispose: rpcDispose } = linkedBindings(
       { ...read, ...write },
       bus
@@ -192,7 +194,7 @@ describe("docket write FCP", () => {
   it("save_board lists affected cards when a column is removed", async () => {
     const { store, index, bus, dispose } = stack()
     const read = createDocketReadBindings({ index, store })
-    const write = createDocketWriteBindings({ index, store, bus })
+    const write = createDocketWriteBindings({ index, store, bus, blobs: createFakeBlobStore() })
     const { client: rpc, dispose: rpcDispose } = linkedBindings(
       { ...read, ...write },
       bus
@@ -258,7 +260,7 @@ columns:
     index.start()
     const bus = new UpdateBus()
     const read = createDocketReadBindings({ index, store })
-    const write = createDocketWriteBindings({ index, store, bus })
+    const write = createDocketWriteBindings({ index, store, bus, blobs: createFakeBlobStore() })
     const { client: rpc, dispose: rpcDispose } = linkedBindings(
       { ...read, ...write },
       bus
@@ -312,7 +314,7 @@ columns:
     index.start()
     const bus = new UpdateBus()
     const read = createDocketReadBindings({ index, store })
-    const write = createDocketWriteBindings({ index, store, bus })
+    const write = createDocketWriteBindings({ index, store, bus, blobs: createFakeBlobStore() })
     const { client: rpc, dispose: rpcDispose } = linkedBindings(
       { ...read, ...write },
       bus

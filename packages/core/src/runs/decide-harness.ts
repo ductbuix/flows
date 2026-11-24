@@ -95,6 +95,9 @@ export function runToEnd(
         return { waiting: true, question: fx.question }
       }
       const node = s.graph.nodes.find((n) => n.id === fx.nodeId)
+      if (node?.kind === "approval") {
+        return { waiting: true, question: node.question ?? "Approve?" }
+      }
       const branch = opts.branchOf?.[fx.nodeId]
       if (node?.kind === "judge" && branch) {
         return { ok: true, outputs: [], branch }

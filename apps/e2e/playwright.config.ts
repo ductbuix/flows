@@ -62,6 +62,8 @@ export default defineConfig({
         FLOWAPP_RETRY_BACKOFF_MS: "50",
         FLOWAPP_FAKE_CONNECTOR: "1",
         PORT: API_PORT,
+        // So FCP Origin allowlist includes this Vite port (parallel e2e).
+        PW_WEB_PORT: WEB_PORT,
       },
     },
     {

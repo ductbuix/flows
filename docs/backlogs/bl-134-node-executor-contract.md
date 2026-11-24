@@ -2,7 +2,7 @@
 id: BL-134
 title: Node executor contract; trigger, approval, notify
 type: backlog
-status: todo
+status: done
 summary: NodeKind.execute(ctx) returns AsyncIterable<StepEvent>; trigger, approval and notify are ported to it.
 tags: [core, nodes, registry]
 related: [DES-041, DES-035]
@@ -19,6 +19,6 @@ One executor shape for every kind, with `StepContext` capabilities instead of ra
 
 ## Done when
 
-- [ ] `NodeKind` and `StepContext` (`inputs`, `runDir`, `signal`, `inbox.ask`, `outputs.write`) defined in core.
-- [ ] Trigger, Approval and Output notify run on the actor with today's behaviour.
-- [ ] Tests per kind on fakes.
+- [x] `NodeKind` and `StepContext` (`inputs`, `runDir`, `signal`, `inbox.ask`, `outputs.write`) defined in core.
+- [x] Trigger, Approval and Output notify run on the actor with today's behaviour.
+- [x] Tests per kind on fakes.

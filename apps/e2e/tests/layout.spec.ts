@@ -167,7 +167,7 @@ test.describe("layout check (BL-061)", () => {
       ready: "run-status",
       dynamic: true,
     },
-    { name: "settings", path: () => "/settings", ready: "settings-page" },
+    { name: "settings", path: () => "/settings", ready: "cli-status-list" },
   ]
 
   for (const theme of themes) {
