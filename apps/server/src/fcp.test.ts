@@ -159,6 +159,22 @@ describe("GET /fcp", () => {
     socket.close()
   })
 
+  it("accepts Origin from PW_WEB_PORT (parallel e2e)", async () => {
+    const prev = process.env.PW_WEB_PORT
+    process.env.PW_WEB_PORT = "5279"
+    try {
+      const h = await startFcpServer()
+      const socket = await openFcpWs(h.port, h.token, {
+        Origin: "http://127.0.0.1:5279",
+      })
+      expect(socket.readyState).toBe(WebSocket.OPEN)
+      socket.close()
+    } finally {
+      if (prev === undefined) delete process.env.PW_WEB_PORT
+      else process.env.PW_WEB_PORT = prev
+    }
+  })
+
   it("connects, initializes and answers ping", async () => {
     const h = await startFcpServer()
     const socket = await openFcpWs(h.port, h.token, {
