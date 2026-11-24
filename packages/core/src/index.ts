@@ -45,7 +45,9 @@ export {
 } from "./rpc/index.ts"
 export { rankBetween } from "./docket/rank.ts"
 export {
+  acpAnsweredEvent,
   allowAlwaysSettingsKey,
+  answerParkedAcpAsk,
   askQuestionResult,
   CANCELLED_ASK_QUESTION_RESULT,
   CANCELLED_CREATE_PLAN_RESULT,
@@ -68,6 +70,8 @@ export {
   toolFromPermissionParams,
   validateAskAnswers,
   withAllowAlwaysTool,
+  type AcpInboxAnswerInput,
+  type AcpInboxGates,
   type PermissionAskGateDeps,
   type PermissionAskOpen,
   type PermissionContext,

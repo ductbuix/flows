@@ -13,6 +13,7 @@ export type FcpHarness = {
   home: string
   port: number
   token: string
+  engine: ReturnType<typeof createEngine>
   close: () => Promise<void>
 }
 
@@ -26,7 +27,7 @@ afterEach(async () => {
   for (const home of homes.splice(0)) {
     rmSync(home, { recursive: true, force: true })
   }
-})
+}, 30_000)
 
 function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -64,6 +65,7 @@ export async function startFcpServer(): Promise<FcpHarness> {
     home,
     port,
     token,
+    engine,
     async close() {
       engine.close()
       await new Promise<void>((resolve, reject) => {

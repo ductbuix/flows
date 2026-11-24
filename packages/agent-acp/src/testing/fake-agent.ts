@@ -45,7 +45,11 @@ export type FakeAgentReply = { result: unknown } | { error: JsonRpcErrorObject }
 export type FakeAgentStep = {
   expect: FakeAgentExpect
   reply?: FakeAgentReply
-  /** Match the request but delay the reply until a later `replyHeld`. */
+  /**
+   * Match the request but delay the reply until a later `replyHeld`,
+   * or until this step's `clientRequests` expects resolve when `reply`
+   * is also set (daemon integration / BL-192).
+   */
   hold?: boolean
   /** Sent after the reply unless `notifyBefore` is true. */
   notifications?: readonly FakeAgentNotification[]
@@ -231,7 +235,9 @@ export function runFakeAgent(
     const notes = step.notifications ?? []
     if (step.notifyBefore) emitNotes(step)
 
+    const waitStart = clientExpectWaits.length
     if (step.clientRequests) sendClientRequests(step.clientRequests)
+    const stepWaits = clientExpectWaits.slice(waitStart)
 
     if (step.replyHeld) {
       const heldId = held.get(step.replyHeld.method)
@@ -247,6 +253,23 @@ export function runFakeAgent(
     if (requestId !== undefined) {
       if (step.hold) {
         held.set(step.expect.method, requestId)
+        // hold + reply: release after this step's client expects (BL-192).
+        if (step.reply && stepWaits.length > 0) {
+          const heldMethod = step.expect.method
+          const reply = step.reply
+          void Promise.all(stepWaits).then(
+            () => {
+              if (!held.has(heldMethod)) return
+              held.delete(heldMethod)
+              sendReply(transport, requestId, reply)
+              if (!step.notifyBefore && notes.length > 0) emitNotes(step)
+              tryFinish()
+            },
+            (err: unknown) =>
+              fail(err instanceof Error ? err : new Error(String(err)))
+          )
+          return
+        }
       } else if (step.reply) {
         sendReply(transport, requestId, step.reply)
       } else if (!step.expect.notification) {

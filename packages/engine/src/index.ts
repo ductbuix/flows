@@ -197,4 +197,5 @@ export {
   copyWorkflowExport,
   isWorkflowExportOmitted,
 } from "./workflow-export.ts"
+export { getProcessRunner, setProcessRunner } from "./process-runner.ts"
 export * from "./nodes/index.ts"

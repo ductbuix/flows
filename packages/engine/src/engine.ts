@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { mkdirSync } from "node:fs"
+import type { AcpInboxAnswerInput } from "@workspace/core"
 import type {
   CliTrustValue,
   EngineEvent,
@@ -8,6 +9,7 @@ import type {
   TrustDecision,
   Workflow,
 } from "@workspace/shared"
+import { createEngineAcpAsks, type EngineAcpAsks } from "./acp-asks.ts"
 import {
   materializeNodeRunResources,
   type MaterializeResourcesResult,
@@ -86,6 +88,8 @@ export class Engine {
   readonly home: string
   private readonly log: EventLog
   private readonly summaryCache: RunSummaryCache
+  /** Parked ACP permission / question / plan asks (BL-192). */
+  private readonly acpAsks: EngineAcpAsks
   /** Live node-run drivers by run id (DES-034). */
   private readonly nodeRuns = new Map<string, Promise<StepsState>>()
   /** Wake handles of those drivers, so Approve can tick a waiting run. */
@@ -96,6 +100,7 @@ export class Engine {
     this.home = resolveAppHome(options.home)
     ensureBlobStore(this.home)
     this.log = new EventLog(appDbPath(this.home))
+    this.acpAsks = createEngineAcpAsks(this.log)
     this.summaryCache = new RunSummaryCache((runId) => this.fold(runId))
     this.log.onAppend((stored) => {
       const summary = this.summaryCache.refresh(stored.event.runId)
@@ -281,6 +286,7 @@ export class Engine {
       log: this.log,
       home: this.home,
       runId,
+      acpAsks: this.acpAsks.gates,
       graph,
       ...(partial ? { partial } : {}),
       trigger: input.trigger,
@@ -432,6 +438,14 @@ export class Engine {
     this.wakeNodeRun(runId)
   }
 
+  /**
+   * Route an Inbox answer to a live ACP session ask (BL-192).
+   * Returns false when the session/gate entry is already gone.
+   */
+  answerAcpAsk(input: AcpInboxAnswerInput): boolean {
+    return this.acpAsks.answer(input)
+  }
+
   cancelRun(runId: string): void {
     const state = this.fold(runId)
     if (!state || state.deleted) throw new Error(`unknown run ${runId}`)
@@ -519,11 +533,17 @@ export class Engine {
     for (const host of this.nodeHosts.values()) host.stop()
     this.nodeHosts.clear()
     this.nodeRuns.clear()
+    this.acpAsks.cancelAll()
     this.log.close()
   }
 
   private nodeOpts(runId: string) {
-    return { log: this.log, home: this.home, runId }
+    return {
+      log: this.log,
+      home: this.home,
+      runId,
+      acpAsks: this.acpAsks.gates,
+    }
   }
 
   private activateQueuedForWorkflow(workflowId: string): void {

@@ -115,6 +115,15 @@ export function createAcpRuntime(
           authMethod: profile.authMethod,
           kill: () => procCtl.abort(),
           extensions: profile.extensions,
+          ...(spec.handlePermission
+            ? { handlePermission: spec.handlePermission }
+            : {}),
+          ...(spec.handleAskQuestion
+            ? { handleAskQuestion: spec.handleAskQuestion }
+            : {}),
+          ...(spec.handleCreatePlan
+            ? { handleCreatePlan: spec.handleCreatePlan }
+            : {}),
         })
         return wrapSession(session, async () => {
           peer.close()

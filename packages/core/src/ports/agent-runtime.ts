@@ -50,6 +50,13 @@ export type SessionSpec = {
   mcpServers?: readonly unknown[]
   /** Selected skills for the step; profile places them under the work dir. */
   skills?: readonly Skill[]
+  /**
+   * Park ACP client requests as Inbox items until answered (BL-192).
+   * Without these, requests wait for `session/cancel` → `cancelled`.
+   */
+  handlePermission?: (params: unknown) => Promise<unknown>
+  handleAskQuestion?: (params: unknown) => Promise<unknown>
+  handleCreatePlan?: (params: unknown) => Promise<unknown>
 }
 
 /** Listed by `AgentRuntime.profiles()` / `list()` (FCP `agent/list`). */
