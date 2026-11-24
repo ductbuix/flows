@@ -28,6 +28,8 @@ export type EngineLockSelf = {
 export type AcquireLockResult =
   { owned: true } | { attachTo: { url: string; token: string } }
 
+export type PeekLockResult = { url: string; token: string; pid: number }
+
 function lockPath(home: string): string {
   return join(home, LOCK_NAME)
 }
@@ -86,6 +88,18 @@ function removeStale(path: string): void {
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err
   }
+}
+
+/**
+ * Read a live owner from `$FLOWAPP_HOME/engine.lock`, or null if none/stale.
+ * Does not take or replace the lock (clients attach; hosts use acquireLock).
+ */
+export function peekLock(home: string): PeekLockResult | null {
+  const path = lockPath(home)
+  if (!existsSync(path)) return null
+  const existing = readLock(path)
+  if (!existing || !isPidAlive(existing.pid)) return null
+  return { url: existing.url, token: existing.token, pid: existing.pid }
 }
 
 /**

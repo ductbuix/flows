@@ -29,6 +29,9 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`.
   `/health`; `/` + `/fcp` FCP over ws (loopback Host/Origin + lock token)
   with `GET /fcp/bootstrap`; `/blobs` GET/PUT (BlobStore). No REST `/api`.
+  Shared FCP host stack: `server/fcp-host` (also used by `apps/cli`).
+- `apps/cli`: `flows` command (`engine --stdio`, `inbox`, `run`); attaches
+  via `engine.lock` or hosts in-process; FCP over sdk (ws or linked/ndjson).
 - `packages/engine`: SQLite event log (via EventStore) + settings, connectors,
   MCP trust, connections, library, work items, work copies, CliAdapter,
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).

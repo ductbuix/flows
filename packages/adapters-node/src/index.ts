@@ -28,8 +28,10 @@ export {
 export { createNodeSecretStore } from "./secrets.ts"
 export {
   acquireLock,
+  peekLock,
   releaseLock,
   type AcquireLockResult,
   type EngineLockSelf,
+  type PeekLockResult,
 } from "./engine-lock.ts"
 export { createNodeGatewaySocketServer } from "./gateway-socket.ts"
