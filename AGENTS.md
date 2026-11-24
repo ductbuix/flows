@@ -35,18 +35,12 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   snapshots, `runs_changed`, log chunks, file watches. `/` + `/fcp`: FCP
   over ws (loopback Host/Origin + lock token): ping, workflow/list|get,
   run/list|get, run_changed. `/blobs`: GET/PUT with lock token (BlobStore).
-- `packages/engine`: SQLite event log (via EventStore) + settings, connectors
-  (github draft PR, confluence via MCP, rally, fake), MCP trust, connections,
-  library pull/pins/retention, work items, cookie secrets, work copies +
-  publish gate, CliAdapter, model/effort, trust markers, `agents` limits,
-  queued runs, summary cache; `nodes/` (walk, loops, executors incl.
-  `publish.ts`, `answers.ts`, `tickNodes`, retry, `partial.ts`,
-  `run-state.ts` = the run fold).
-- `packages/core`: UI-free kernel (`EngineError`, ports: Document/Event/
-  Secret stores, FileWatcher, ProcessRunner, AgentRuntime, BlobStore;
-  `bindEngine`, `bindInitialize` gate, `runs/` pure decide+fold, actor,
-  scheduler, `agents/` permission chain, testing fakes + contract suites);
-  `contracts` + `protocol`; no Node I/O.
+- `packages/engine`: SQLite event log (via EventStore) + settings, connectors,
+  MCP trust, connections, library, work items, work copies, CliAdapter,
+  trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
+- `packages/core`: UI-free kernel (ports, `bindEngine`, `runs/` decide+fold +
+  actor + scheduler, `nodes/` NodeKind+StepContext for trigger/approval/notify,
+  agents permission chain, testing fakes); no Node I/O.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox), `engine.lock`.
 - `packages/agent-acp`: ACP runtime (later); `testing/fake-agent` (stdio).

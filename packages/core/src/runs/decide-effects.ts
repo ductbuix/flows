@@ -14,7 +14,11 @@ export function activeInputs(state: RunState, nodeId: string): string[] {
   return out
 }
 
-/** Pick the effect for a newly started (or retrying) step. */
+/**
+ * Pick the effect for a newly started (or retrying) step.
+ * Trigger, approval and notify use `launch_step` so NodeKind.execute
+ * runs on the actor (BL-134); folder output stays `write_output`.
+ */
 export function effectForRun(
   state: RunState,
   nodeId: string,
@@ -25,18 +29,6 @@ export function effectForRun(
   const node = state.graph.nodes.find((n) => n.id === nodeId)
   if (node?.kind === "output" && node.target === "folder") {
     return { kind: "write_output", nodeId, pass, from: inputs }
-  }
-  if (node?.kind === "output" && node.target === "notify") {
-    const title = node.title ?? node.name ?? state.graph.name ?? state.graph.id
-    return { kind: "notify", nodeId, pass, title, from: inputs }
-  }
-  if (node?.kind === "approval") {
-    return {
-      kind: "post_inbox",
-      nodeId,
-      pass,
-      question: node.question ?? "Approve?",
-    }
   }
   return { kind: "launch_step", nodeId, pass, attempt }
 }
