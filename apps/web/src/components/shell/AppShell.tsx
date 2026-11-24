@@ -2,13 +2,13 @@ import { useState } from "react"
 import { Outlet } from "react-router"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { SettingsPanel } from "@/pages/settings/SettingsPanel"
-import { MockSidebar } from "./MockSidebar"
+import { AppSidebar } from "./AppSidebar"
 
-export function MockShell() {
+export function AppShell() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   return (
     <SidebarProvider>
-      <MockSidebar onOpenSettings={() => setSettingsOpen(true)} />
+      <AppSidebar onOpenSettings={() => setSettingsOpen(true)} />
       <SidebarInset className="flex h-svh flex-col overflow-hidden">
         <Outlet />
       </SidebarInset>

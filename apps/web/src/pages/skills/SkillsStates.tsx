@@ -19,7 +19,7 @@ const crumbs = [{ label: "Skills" }] as const
 
 export function SkillsLoading() {
   return (
-    <Page fill crumbs={[...crumbs]} data-testid="mock-skills-page">
+    <Page fill crumbs={[...crumbs]} data-testid="skills-page">
       <PageTitle title="Skills" description="Loading skills…" />
       <div className="flex flex-col gap-3" data-testid="skills-loading">
         <Skeleton className="h-10 w-64" />
@@ -31,7 +31,7 @@ export function SkillsLoading() {
 
 export function SkillsLoadError({ error }: { error: unknown }) {
   return (
-    <Page fill crumbs={[...crumbs]} data-testid="mock-skills-page">
+    <Page fill crumbs={[...crumbs]} data-testid="skills-page">
       <PageTitle title="Skills" description="Could not load skills." />
       <Alert variant="destructive" data-testid="skills-error">
         <AlertTitle>Error</AlertTitle>

@@ -49,7 +49,7 @@ function Editor({ id }: { id: string }) {
       <Page
         fill
         crumbs={[{ label: "Workflows", to: "/workflows" }, { label: id }]}
-        data-testid="mock-workflow-editor"
+        data-testid="workflow-editor"
       >
         <PageTitle title={id} description="Loading workflow…" />
         <div className="space-y-3" data-testid="workflow-editor-loading">
@@ -65,7 +65,7 @@ function Editor({ id }: { id: string }) {
       <Page
         fill
         crumbs={[{ label: "Workflows", to: "/workflows" }, { label: id }]}
-        data-testid="mock-workflow-editor"
+        data-testid="workflow-editor"
       >
         <PageTitle title={id} description="Could not load workflow." />
         <Alert variant="destructive" data-testid="workflow-editor-error">

@@ -19,7 +19,7 @@ const crumbs = [{ label: "Library" }] as const
 
 export function LibraryLoading() {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-library-page">
+    <Page crumbs={[...crumbs]} data-testid="library-page">
       <PageTitle title="Library" description="Loading providers…" />
       <div className="flex flex-col gap-3" data-testid="library-loading">
         <Skeleton className="h-10 w-64" />
@@ -31,7 +31,7 @@ export function LibraryLoading() {
 
 export function LibraryLoadError({ error }: { error: unknown }) {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-library-page">
+    <Page crumbs={[...crumbs]} data-testid="library-page">
       <PageTitle title="Library" description="Could not load providers." />
       <Alert variant="destructive" data-testid="library-error">
         <AlertTitle>Error</AlertTitle>

@@ -11,7 +11,7 @@ const crumbs = [{ label: "Workflows" }] as const
 
 export function WorkflowsLoading() {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-workflows-page">
+    <Page crumbs={[...crumbs]} data-testid="workflows-page">
       <PageTitle title="Workflows" description="Loading workflows…" />
       <div className="space-y-3" data-testid="workflows-loading">
         <Skeleton className="h-8 w-64" />
@@ -23,7 +23,7 @@ export function WorkflowsLoading() {
 
 export function WorkflowsLoadError({ error }: { error: unknown }) {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-workflows-page">
+    <Page crumbs={[...crumbs]} data-testid="workflows-page">
       <PageTitle title="Workflows" description="Could not load workflows." />
       <Alert variant="destructive" data-testid="workflows-error">
         <AlertTitle>Error</AlertTitle>

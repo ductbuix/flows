@@ -172,14 +172,14 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 ## Shell / sidebar
 
-| id    | item                                                              | status  | test id                                | backlog |
-| ----- | ----------------------------------------------------------------- | ------- | -------------------------------------- | ------- |
-| SH-01 | Nav: Docket, Workflows, Inbox, Files, Library, Skills, Connectors | app     | `shell-smoke.spec.ts › nav`            | —       |
-| SH-02 | Runs nav item                                                     | drop    | `shell-smoke.spec.ts › no runs nav`    | BL-209  |
-| SH-03 | Settings entry in sidebar footer → panel                          | app     | `sidebar-settings.spec.ts › panel`     | BL-210  |
-| SH-04 | `MockShell` / `MockSidebar` / mock test ids                       | partial | `shell-smoke.spec.ts › app names`      | BL-212  |
-| SH-05 | `/mock/*` redirects                                               | drop    | `shell-smoke.spec.ts › no mock routes` | BL-212  |
-| SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop    | —                                      | —       |
+| id    | item                                                              | status | test id                                | backlog |
+| ----- | ----------------------------------------------------------------- | ------ | -------------------------------------- | ------- |
+| SH-01 | Nav: Docket, Workflows, Inbox, Files, Library, Skills, Connectors | app    | `shell-smoke.spec.ts › nav`            | —       |
+| SH-02 | Runs nav item                                                     | drop   | `shell-smoke.spec.ts › no runs nav`    | BL-209  |
+| SH-03 | Settings entry in sidebar footer → panel                          | app    | `sidebar-settings.spec.ts › panel`     | BL-210  |
+| SH-04 | `AppShell` / `AppSidebar` / no mock test ids                      | app    | `shell-smoke.spec.ts › app names`      | —       |
+| SH-05 | `/mock/*` redirects                                               | drop   | `shell-smoke.spec.ts › no mock routes` | —       |
+| SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop   | —                                      | —       |
 
 ## Settings
 
@@ -196,8 +196,8 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 74     |
-| partial   | 3      |
+| app       | 75     |
+| partial   | 2      |
 | missing   | 4      |
 | drop      | 5      |
 | **total** | **86** |

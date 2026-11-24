@@ -22,7 +22,7 @@ type Props = {
 }
 
 /** Sidebar 11 layout (shadcn blocks), reworked for Flows. */
-export function MockSidebar({ onOpenSettings }: Props) {
+export function AppSidebar({ onOpenSettings }: Props) {
   const { pathname } = useLocation()
   return (
     <Sidebar data-testid="app-sidebar">

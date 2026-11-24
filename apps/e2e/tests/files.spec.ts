@@ -22,7 +22,7 @@ async function screenshotThemes(
 
 async function openBoardYaml(page: import("@playwright/test").Page) {
   await page.goto("/files")
-  await expect(page.getByTestId("mock-files-page")).toBeVisible()
+  await expect(page.getByTestId("files-page")).toBeVisible()
   await page.getByTestId("files-search").fill("board.yaml")
   await expect(page.getByTestId("out-file-docket/board.yaml")).toBeVisible()
   await page.getByTestId("out-file-docket/board.yaml").click()
@@ -32,7 +32,7 @@ async function openBoardYaml(page: import("@playwright/test").Page) {
 test.describe("files page", () => {
   test("tree", async ({ page }) => {
     await page.goto("/files")
-    await expect(page.getByTestId("mock-files-page")).toBeVisible()
+    await expect(page.getByTestId("files-page")).toBeVisible()
     await expect(page.getByTestId("files-count")).not.toHaveText("0 files")
     await expect(page.getByTestId("files-tree")).toBeVisible()
     await page.getByTestId("files-search").fill("board.yaml")
