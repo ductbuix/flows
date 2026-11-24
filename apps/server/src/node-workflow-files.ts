@@ -14,7 +14,7 @@ import {
   parseNodeWorkflowYaml,
   type WorkflowDetail,
 } from "@workspace/shared"
-import { moveLayoutIds } from "./layout-files.ts"
+import { moveLayoutIds, readLayout } from "./layout-files.ts"
 import { hashContent } from "./hash.ts"
 import {
   orphanNodeFolderIds,
@@ -23,7 +23,11 @@ import {
 } from "./node-trash.ts"
 import { workflowYamlPath } from "./workflow-files.ts"
 
-function detailOf(workflowId: string, yaml: string): WorkflowDetail {
+function detailOf(
+  engine: Engine,
+  workflowId: string,
+  yaml: string
+): WorkflowDetail {
   const parsed = parseNodeWorkflowYaml(yaml)
   return workflowDetailSchema.parse({
     id: workflowId,
@@ -31,6 +35,7 @@ function detailOf(workflowId: string, yaml: string): WorkflowDetail {
     hash: hashContent(yaml),
     workflow: parsed.workflow,
     errors: parsed.errors,
+    layout: readLayout(engine, workflowId),
   })
 }
 
@@ -40,7 +45,7 @@ export function readNodeWorkflowDetail(
 ): WorkflowDetail | null {
   const path = workflowYamlPath(engine, workflowId)
   if (!existsSync(path)) return null
-  return detailOf(workflowId, readFileSync(path, "utf8"))
+  return detailOf(engine, workflowId, readFileSync(path, "utf8"))
 }
 
 export type WriteNodeWorkflowResult =
@@ -77,7 +82,11 @@ export function writeNodeWorkflowYaml(
 
   const parsed = parseNodeWorkflowYaml(yaml)
   if (!parsed.workflow || parsed.errors.length > 0) {
-    return { ok: false, kind: "invalid", detail: detailOf(workflowId, yaml) }
+    return {
+      ok: false,
+      kind: "invalid",
+      detail: detailOf(engine, workflowId, yaml),
+    }
   }
 
   const wfRoot = workflowDir(engine.home, workflowId)
@@ -95,7 +104,7 @@ export function writeNodeWorkflowYaml(
   moveLayoutIds(engine, workflowId, moves)
 
   writeFileSync(path, yaml, "utf8")
-  const written = detailOf(workflowId, yaml)
+  const written = detailOf(engine, workflowId, yaml)
 
   for (const r of moves) {
     const from = join(nodesRoot, r.from)

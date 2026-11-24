@@ -2,7 +2,7 @@
 id: BL-201
 title: "Canvas editor: nodes, edges and layout"
 type: backlog
-status: todo
+status: done
 summary: The workflow editor shows the node canvas with node cards and saves layout and YAML.
 tags: [web, editor, canvas]
 related: [DES-043]
@@ -19,6 +19,6 @@ Replace the YAML textarea with the mock canvas (`FlowNodes`, `NodeShell`, `StepC
 
 ## Done when
 
-- [ ] A saved workflow opens on the canvas with its saved layout.
-- [ ] Moving a node and saving updates the layout file.
-- [ ] Edits keep YAML comments and key order.
+- [x] A saved workflow opens on the canvas with its saved layout.
+- [x] Moving a node and saving updates the layout file.
+- [x] Edits keep YAML comments and key order.

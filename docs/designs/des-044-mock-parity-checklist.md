@@ -87,8 +87,8 @@ Recorded in DES-043; this checklist is the acceptance surface.
 | WF-06 | Sheet: inputs a card supplies             | missing | `workflows.spec.ts › sheet inputs`    | BL-203  |
 | WF-07 | Sheet: runs by card                       | missing | `workflows.spec.ts › sheet runs`      | BL-203  |
 | WF-08 | Sheet: start run for a card               | missing | `workflows.spec.ts › sheet start`     | BL-203  |
-| WF-09 | Editor route (YAML textarea today)        | partial | `workflows.spec.ts › editor yaml`     | BL-201  |
-| WF-10 | Node canvas, cards, edges, save layout    | missing | `workflows.spec.ts › canvas`          | BL-201  |
+| WF-09 | Editor route (YAML textarea today)        | app     | `workflows.spec.ts › editor yaml`     | BL-201  |
+| WF-10 | Node canvas, cards, edges, save layout    | app     | `workflows.spec.ts › canvas`          | BL-201  |
 | WF-11 | Add node menu with search                 | missing | `workflows.spec.ts › add node`        | BL-202  |
 | WF-12 | Node settings (prompt, format, limits, …) | missing | `workflows.spec.ts › node settings`   | BL-202  |
 | WF-13 | Toolbar: undo, redo, fit view             | missing | `workflows.spec.ts › undo redo`       | BL-202  |
