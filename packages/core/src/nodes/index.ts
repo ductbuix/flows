@@ -29,6 +29,7 @@ export {
 } from "./run.ts"
 export { runCommandEffect, type CommandEffectDeps } from "./command-effect.ts"
 export { triggerKind } from "./kinds/trigger.ts"
+export { promptKind } from "./kinds/prompt.ts"
 export { assetKind } from "./kinds/asset.ts"
 export {
   llmKind,

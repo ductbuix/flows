@@ -31,7 +31,7 @@ function writeWorkflow(home: string, yaml: string): void {
 }
 
 describe("isCoreRunEligible", () => {
-  it("accepts trigger+command only", () => {
+  it("accepts trigger+command, prompt and asset; rejects loops and other kinds", () => {
     const ok = parseNodeWorkflowYaml(`
 id: demo
 nodes:
@@ -42,6 +42,26 @@ edges:
 `).workflow!
     expect(isCoreRunEligible(ok)).toBe(true)
 
+    // Prompt/asset have no in-ports; they run as sources beside the trigger.
+    const prompt = parseNodeWorkflowYaml(`
+id: prompt-demo
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: p, kind: prompt }
+`).workflow!
+    expect(isCoreRunEligible(prompt)).toBe(true)
+
+    const asset = parseNodeWorkflowYaml(`
+id: asset-demo
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - id: a
+    kind: asset
+    resources:
+      - { connection: demo, entity: item, id: alpha }
+`).workflow!
+    expect(isCoreRunEligible(asset)).toBe(true)
+
     const approval = parseNodeWorkflowYaml(`
 id: other
 nodes:
@@ -51,6 +71,19 @@ edges:
   - { from: t, to: a }
 `).workflow!
     expect(isCoreRunEligible(approval)).toBe(false)
+
+    const loop = parseNodeWorkflowYaml(`
+id: loop-demo
+nodes:
+  - { id: t, kind: trigger, type: manual }
+  - { id: a, kind: command, run: "true" }
+  - { id: b, kind: command, run: "true" }
+edges:
+  - { from: t, to: a }
+  - { from: a, to: b }
+  - { from: b, to: a }
+`).workflow!
+    expect(isCoreRunEligible(loop)).toBe(false)
   })
 })
 
