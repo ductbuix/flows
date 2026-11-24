@@ -24,6 +24,12 @@ import {
   fileStatMethod,
   fileWriteTextMethod,
 } from "./file.ts"
+import {
+  inboxAnswerMethod,
+  inboxDismissMethod,
+  inboxListMethod,
+  inboxUpdateNotification,
+} from "./inbox.ts"
 import { initializeMethod } from "./initialize.ts"
 import {
   libraryListProvidersMethod,
@@ -109,6 +115,9 @@ export const fcpMethodTable = {
   "file/read_text": fileReadTextMethod,
   "file/write_text": fileWriteTextMethod,
   "file/reveal": fileRevealMethod,
+  "inbox/list": inboxListMethod,
+  "inbox/answer": inboxAnswerMethod,
+  "inbox/dismiss": inboxDismissMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */
@@ -117,4 +126,5 @@ export const fcpNotificationTable = {
   "workflow/update": workflowUpdateNotification,
   "run/update": runUpdateNotification,
   "skill/update": skillUpdateNotification,
+  "inbox/update": inboxUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>

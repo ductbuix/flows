@@ -19,6 +19,10 @@ import {
   fileRevealMethod,
   fileStatMethod,
   fileWriteTextMethod,
+  inboxAnswerMethod,
+  inboxDismissMethod,
+  inboxListMethod,
+  inboxUpdateNotification,
   runCancelMethod,
   runDeleteMethod,
   runGetChangesMethod,
@@ -154,5 +158,21 @@ describe("FCP helpers", () => {
     expect(runStartMethod.result.parse({ runId: "r1" })).toEqual({
       runId: "r1",
     })
+  })
+
+  it("declares inbox list/answer/dismiss and update notification", () => {
+    expect(fcpMethodTable["inbox/list"]).toBe(inboxListMethod)
+    expect(fcpMethodTable["inbox/answer"]).toBe(inboxAnswerMethod)
+    expect(fcpMethodTable["inbox/dismiss"]).toBe(inboxDismissMethod)
+    expect(inboxListMethod.kind).toBe("query")
+    expect(inboxAnswerMethod.kind).toBe("command")
+    expect(inboxDismissMethod.kind).toBe("command")
+    expect(inboxUpdateNotification.name).toBe("inbox/update")
+    expect(
+      inboxAnswerMethod.params.parse({
+        itemId: "approval:r1:ask:1",
+        optionId: "approved",
+      })
+    ).toEqual({ itemId: "approval:r1:ask:1", optionId: "approved" })
   })
 })
