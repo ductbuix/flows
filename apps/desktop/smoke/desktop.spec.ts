@@ -7,6 +7,7 @@ import { startAttachDaemon } from "./attach-daemon.ts"
 const root = dirname(fileURLToPath(import.meta.url))
 const desktopRoot = join(root, "..")
 const repoRoot = join(desktopRoot, "../..")
+const SMOKE_BLOB_ID = "b_smoke_card_image"
 
 async function expectDocket(
   window: Awaited<
@@ -24,6 +25,41 @@ async function expectDocket(
   await expect(window.getByText("Beta card")).toBeVisible()
 }
 
+/** Card image via flows-blob://; unknown ids 404 (BL-188). */
+async function expectCardBlobImage(
+  window: Awaited<
+    ReturnType<Awaited<ReturnType<typeof electron.launch>>["firstWindow"]>
+  >
+) {
+  const missing = await window.evaluate(async () => {
+    const res = await fetch("flows-blob://no-such-blob")
+    return res.status
+  })
+  expect(missing).toBe(404)
+
+  await window.evaluate(async (blobId) => {
+    const img = document.createElement("img")
+    img.dataset.testid = "card-blob-image"
+    img.alt = "card"
+    img.src = `flows-blob://${blobId}`
+    document.body.appendChild(img)
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error("card image failed to load"))
+    })
+  }, SMOKE_BLOB_ID)
+
+  await expect(window.getByTestId("card-blob-image")).toBeVisible()
+  const size = await window
+    .getByTestId("card-blob-image")
+    .evaluate((el: HTMLImageElement) => ({
+      w: el.naturalWidth,
+      h: el.naturalHeight,
+    }))
+  expect(size.w).toBeGreaterThan(0)
+  expect(size.h).toBeGreaterThan(0)
+}
+
 test.describe("Electron desktop smoke", () => {
   test("own path: no lock starts utility host and lists Docket", async () => {
     const home = materializeSmokeHome()
@@ -38,7 +74,9 @@ test.describe("Electron desktop smoke", () => {
     })
 
     try {
-      await expectDocket(await electronApp.firstWindow())
+      const window = await electronApp.firstWindow()
+      await expectDocket(window)
+      await expectCardBlobImage(window)
     } finally {
       await electronApp.close()
       removeSmokeHome(home)

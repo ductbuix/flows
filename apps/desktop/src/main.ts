@@ -8,12 +8,18 @@ import {
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
+import {
+  installFlowsBlobProtocol,
+  registerFlowsBlobScheme,
+} from "./install-flows-blob.ts"
 import { resolveEngineMode, type EngineMode } from "./resolve-engine-mode.ts"
 import type { MessagePortLike } from "@workspace/protocol"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const preloadPath = join(here, "preload.cjs")
 const engineHostPath = join(here, "engine-host.cjs")
+
+registerFlowsBlobScheme()
 
 function webDistDir(): string {
   return process.env.FLOWAPP_WEB_DIST ?? join(here, "../../web/dist")
@@ -63,6 +69,8 @@ app.whenReady().then(() => {
   if (!home) {
     throw new Error("FLOWAPP_HOME is required")
   }
+
+  installFlowsBlobProtocol(home)
 
   engineMode = resolveEngineMode(home)
   if (engineMode.kind === "own") {
