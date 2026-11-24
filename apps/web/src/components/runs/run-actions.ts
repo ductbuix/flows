@@ -19,8 +19,8 @@ export async function startRun(
   params: {
     workflowId: string
     values?: Record<string, string>
-    /** Docket card id (run/start workItemId). */
-    workItemId?: string
+    /** Docket card id (run/start cardId). */
+    cardId?: string
   }
 ): Promise<RunActionResult> {
   try {
@@ -28,7 +28,7 @@ export async function startRun(
       workflowId: params.workflowId,
       requestKey: requestKey(),
       ...(params.values ? { values: params.values } : {}),
-      ...(params.workItemId ? { workItemId: params.workItemId } : {}),
+      ...(params.cardId ? { cardId: params.cardId } : {}),
     })
     return { ok: true, runId: result.runId }
   } catch (err) {

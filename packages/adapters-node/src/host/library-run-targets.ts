@@ -1,12 +1,7 @@
 import { join } from "node:path"
-import type {
-  Connection,
-  EngineEvent,
-  ResourcePin,
-  WorkItemLink,
-  Workflow,
-} from "@workspace/contracts"
-import { readConnection } from "./connections.ts"
+import type { EngineEvent, ResourcePin, Workflow } from "@workspace/contracts"
+import type { Connection, ResourceLink } from "./connection-model.ts"
+import { requireConnection } from "./connection-resolve.ts"
 import { currentRevision, readRevisionMeta } from "./library-paths.ts"
 import { pullEntity } from "./library.ts"
 import { libraryEntityDir } from "./paths.ts"
@@ -23,13 +18,13 @@ function pinKey(connection: string, kind: string, entityId: string): string {
 }
 
 /**
- * Node runs (BL-082): every resource of every Asset node, plus the work
- * item's links. Without an Asset node nothing is pinned.
+ * Node runs (BL-082): every resource of every Asset node, plus optional
+ * card links. Without an Asset node nothing is pinned.
  */
 export function collectNodePullTargets(
   home: string,
   graph: Workflow,
-  links: WorkItemLink[]
+  links: ResourceLink[]
 ): PullTarget[] {
   const assets = graph.nodes.filter((n) => n.kind === "asset")
   if (assets.length === 0) return []
@@ -37,8 +32,7 @@ export function collectNodePullTargets(
   const add = (connection: string, kind: string, entityId: string) => {
     const key = pinKey(connection, kind, entityId)
     if (byKey.has(key)) return
-    const conn = readConnection(home, connection)
-    if (!conn) throw new Error(`unknown connection ${connection}`)
+    const conn = requireConnection(home, connection)
     byKey.set(key, { connection: conn, kind, entityId, title: conn.name })
   }
   for (const node of assets) {

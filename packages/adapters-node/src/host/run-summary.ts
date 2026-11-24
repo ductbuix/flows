@@ -43,7 +43,7 @@ export function summarizeRun(state: RunState): RunSummary | null {
     taskCounts: { done, total: nodes.length },
     ...(firstFailedTaskId !== undefined ? { firstFailedTaskId } : {}),
     ...(state.itemKey !== undefined ? { itemKey: state.itemKey } : {}),
-    ...(state.workItemId !== undefined ? { workItemId: state.workItemId } : {}),
+    ...(state.cardId !== undefined ? { cardId: state.cardId } : {}),
     startedAt: state.startedAt ?? new Date(0).toISOString(),
     ...(live || state.finishedAt === undefined
       ? {}
@@ -54,7 +54,7 @@ export function summarizeRun(state: RunState): RunSummary | null {
 export type ListRunSummariesOptions = {
   status?: RunStatus
   workflowId?: string
-  workItemId?: string
+  cardId?: string
   /** Cap; default 100. */
   limit?: number
 }
@@ -93,8 +93,8 @@ export class RunSummaryCache {
     if (opts.workflowId !== undefined) {
       items = items.filter((s) => s.workflowId === opts.workflowId)
     }
-    if (opts.workItemId !== undefined) {
-      items = items.filter((s) => s.workItemId === opts.workItemId)
+    if (opts.cardId !== undefined) {
+      items = items.filter((s) => s.cardId === opts.cardId)
     }
     items.sort((a, b) => {
       const byTime = b.startedAt.localeCompare(a.startedAt)

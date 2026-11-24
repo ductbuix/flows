@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { acquireLock, releaseLock } from "@workspace/adapters-node"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { createLinkedTransports } from "@workspace/protocol"
 import { createClient, type FlowsClient } from "@workspace/sdk"
 import { bindFcpTransport, createFcpHost } from "server/fcp-host"
@@ -67,7 +67,7 @@ export async function openInProcess(home: string): Promise<CliSession> {
 }
 
 function hostInProcess(home: string): Promise<CliSession> {
-  const engine = createEngine({ home })
+  const engine = createHost({ home })
   const host = createFcpHost(engine)
   const [serverTransport, clientTransport] = createLinkedTransports()
   bindFcpTransport(serverTransport, engine, host)

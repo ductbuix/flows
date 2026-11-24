@@ -45,8 +45,9 @@ engine internals and the ACP agent runtime
    Cursor (`agent acp`); any ACP agent plugs in with a profile. Non-ACP
    CLIs keep a spawn adapter.
 3. **New core, migrated in place.** Keep the proven parts (SQLite event
-   log, files as the model, append-then-act, hash-checked writes) and move
-   today's `packages/engine` behind ports module by module (strangler).
+   log, files as the model, append-then-act, hash-checked writes). The old
+   `packages/engine` is deleted (BL-215); hosts compose `packages/core`
+   with `adapters-node` (`createHost`).
 4. **One JSON-RPC library twice.** The same JSON-RPC peer powers our
    protocol (UI to engine) and ACP (engine to agent). One framing, one
    cancellation model, one test harness.
@@ -109,21 +110,21 @@ flowchart TB
 
 ## Packages (target)
 
-| Package                  | Owns                                                                                          | May import                                  |
-| ------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `packages/contracts`     | zod schemas, branded ids, FCP method table, error codes (was `shared`)                        | nothing in the repo                         |
-| `packages/protocol`      | JSON-RPC peer, `Transport` interface, ndjson/ws/MessagePort framings                          | `contracts`                                 |
-| `packages/core`          | bounded contexts, services, ports, run engine, node registry, `createEngine`, `bindEngine`    | `contracts`, `protocol` (types)             |
-| `packages/adapters-node` | SQLite event store, fs document store, watcher, process runner, sandbox, keychain, blob store | `core`, `contracts`                         |
-| `packages/agent-acp`     | `AgentRuntime` over ACP; `cursor` and `generic` profiles                                      | `core` (ports), `protocol`, `contracts`     |
-| `packages/mcp-gateway`   | local MCP server that exposes allowed connector capabilities to agents                        | `protocol`, `contracts`                     |
-| `packages/sdk`           | `FlowsClient`, typed call/subscribe, reconnect and resync                                     | `protocol`, `contracts`                     |
-| `packages/sdk-react`     | `useQuery`/`useSubscription` hooks over `sdk`                                                 | `sdk`, React                                |
-| `packages/ui`            | unchanged: shadcn and domain-free AI Elements                                                 | nothing in the repo                         |
-| `apps/daemon`            | today's `apps/server`: composition root, ws + blob HTTP, lock file                            | all of the above except UI                  |
-| `apps/web`               | screens from the mockups; talks only through `sdk-react`                                      | `sdk-react`, `sdk`, `ui`, `contracts`       |
-| `apps/desktop`           | Electron main, preload, utility-process host, host capabilities                               | `core`, `adapters-node`, `agent-acp`, `sdk` |
-| `apps/cli`               | `flows` command: run a workflow, list inbox, attach                                           | `sdk`, `protocol`                           |
+| Package                  | Owns                                                                                                          | May import                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `packages/contracts`     | zod schemas, branded ids, FCP method table, error codes (was `shared`)                                        | nothing in the repo                         |
+| `packages/protocol`      | JSON-RPC peer, `Transport` interface, ndjson/ws/MessagePort framings                                          | `contracts`                                 |
+| `packages/core`          | bounded contexts, services, ports, run engine, node registry, `createEngine`, `bindEngine`                    | `contracts`, `protocol` (types)             |
+| `packages/adapters-node` | Node ports (SQLite, fs, watcher, process, sandbox, keychain, blob) plus `src/host` (`createHost` composition) | `core`, `contracts`                         |
+| `packages/agent-acp`     | `AgentRuntime` over ACP; `cursor` and `generic` profiles                                                      | `core` (ports), `protocol`, `contracts`     |
+| `packages/mcp-gateway`   | local MCP server that exposes allowed connector capabilities to agents                                        | `protocol`, `contracts`                     |
+| `packages/sdk`           | `FlowsClient`, typed call/subscribe, reconnect and resync                                                     | `protocol`, `contracts`                     |
+| `packages/sdk-react`     | `useQuery`/`useSubscription` hooks over `sdk`                                                                 | `sdk`, React                                |
+| `packages/ui`            | unchanged: shadcn and domain-free AI Elements                                                                 | nothing in the repo                         |
+| `apps/daemon`            | today's `apps/server`: composition root, ws + blob HTTP, lock file                                            | all of the above except UI                  |
+| `apps/web`               | screens from the mockups; talks only through `sdk-react`                                                      | `sdk-react`, `sdk`, `ui`, `contracts`       |
+| `apps/desktop`           | Electron main, preload, utility-process host, host capabilities                                               | `core`, `adapters-node`, `agent-acp`, `sdk` |
+| `apps/cli`               | `flows` command: run a workflow, list inbox, attach                                                           | `sdk`, `protocol`                           |
 
 `core` must stay free of `node:` imports so it can run in a utility
 process, a worker or tests with in-memory adapters. Enforced by lint
@@ -190,7 +191,7 @@ sequenceDiagram
 | Today                                        | v2                                                               |
 | -------------------------------------------- | ---------------------------------------------------------------- |
 | Hono REST + `hc` typed client, ws snapshots  | FCP JSON-RPC; HTTP only for blob download/upload                 |
-| `packages/engine` imports `node:` everywhere | `core` behind ports; Node code in `adapters-node`                |
+| ~~`packages/engine`~~ deleted (BL-215)          | `core` behind ports; Node + `createHost` in `adapters-node`      |
 | `cli-adapters.ts` builds shell strings       | `AgentRuntime` port; ACP sessions with streamed events           |
 | Agent approvals are not visible mid-step     | ACP permission requests become Inbox items under a policy        |
 | Work items record (DES-026)                  | Docket cards as files (DES-038)                                  |

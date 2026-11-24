@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { connectionIdSchema } from "../connection.ts"
+import { connectionIdSchema } from "../ids.ts"
 import { defineNodeKind } from "./define.ts"
 
 /**

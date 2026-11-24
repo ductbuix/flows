@@ -1,7 +1,7 @@
 import type { Workflow } from "@workspace/contracts"
 import { fold, type PartialRun, type RunActor } from "@workspace/core"
 import type {
-  Engine,
+  Host,
   ManualItem,
   MaterializeResourcesResult,
 } from "@workspace/adapters-node"
@@ -16,12 +16,12 @@ export type StartCoreRunArgs = {
   pins?: MaterializeResourcesResult
   inputText?: string
   inputs?: ManualItem
-  workItemId?: string
+  cardId?: string
   partial?: PartialRun
 }
 
 export async function startCoreRun(
-  engine: Engine,
+  engine: Host,
   session: CoreRunSession,
   makeActor: (runId: string) => RunActor,
   args: StartCoreRunArgs
@@ -37,7 +37,7 @@ export async function startCoreRun(
     runId: args.runId,
     inputText: args.partial ? undefined : args.inputText,
     inputs: args.partial ? undefined : args.inputs,
-    workItemId: args.workItemId,
+    cardId: args.cardId,
   })
   // Asset access:propose → per-connection work copies under work/ (BL-084 / BL-214).
   ensureWorkCopiesFor(runRoot, proposeConnectionIds(args.graph))
@@ -72,7 +72,7 @@ export async function startCoreRun(
       at,
       runId: args.runId,
       graph: args.graph,
-      workItemId: args.workItemId,
+      cardId: args.cardId,
       queued,
       ...(args.partial?.only ? { only: args.partial.only } : {}),
       ...(args.partial?.from ? { from: args.partial.from } : {}),
@@ -84,7 +84,7 @@ export async function startCoreRun(
 }
 
 export async function retryCoreStep(
-  engine: Engine,
+  engine: Host,
   session: CoreRunSession,
   makeActor: (runId: string) => RunActor,
   runId: string,

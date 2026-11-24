@@ -15,7 +15,7 @@ import {
   type LibraryBindings,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 import { randomUUID } from "node:crypto"
 
 const systemClock: Clock = { now: () => Date.now() }
@@ -31,7 +31,7 @@ export type LibraryFcp = {
  * Library providers + pull jobs under FLOWAPP_HOME (BL-171 / BL-172).
  * Pull uses the CLI connector transport through ConnectorRuntime.
  */
-export function createLibraryFcp(engine: Engine, bus: UpdateBus): LibraryFcp {
+export function createLibraryFcp(engine: Host, bus: UpdateBus): LibraryFcp {
   const docs = createNodeDocumentStore({ root: engine.home })
   const providers = createProviderService({ docs })
   const connectors = createConnectorService({ docs })

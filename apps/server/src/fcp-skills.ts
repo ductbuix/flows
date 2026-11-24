@@ -14,7 +14,7 @@ import {
   type SkillSourcesBindings,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 
 export type SkillsFcp = {
   bindings: SkillReadBindings & SkillInstallBindings & SkillSourcesBindings
@@ -29,7 +29,7 @@ export type SkillsFcp = {
  * Skill sources are Library item ids listed in `skills/sources.yaml`;
  * install reads `skills/<slug>/SKILL.md` from a Library version folder.
  */
-export function createSkillsFcp(engine: Engine, bus: UpdateBus): SkillsFcp {
+export function createSkillsFcp(engine: Host, bus: UpdateBus): SkillsFcp {
   const docs = createNodeDocumentStore({ root: engine.home })
   const catalog: SkillCatalog = createSkillCatalog({
     roots: [

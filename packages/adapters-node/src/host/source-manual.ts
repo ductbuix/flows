@@ -28,7 +28,7 @@ export type InputsJson = {
   itemKey: string
   itemKeyVersion: 1
   fields: Record<string, InputsJsonField>
-  workItemId?: string
+  cardId?: string
 }
 
 export type MaterializeResult = {

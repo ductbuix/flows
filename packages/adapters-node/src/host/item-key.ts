@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto"
 import {
   canonicalManualItemPayload,
-  canonicalWorkItemKeyPayload,
+  canonicalCardKeyPayload,
   type ManualItemKeyField,
 } from "@workspace/contracts"
 
@@ -12,9 +12,9 @@ export function manualItemKey(fields: ManualItemKeyField[]): string {
     .digest("hex")
 }
 
-/** Hex SHA-256 of a work-item-derived item key (DES-026 / BL-039). */
-export function workItemItemKey(workItemId: string): string {
+/** Hex SHA-256 of a card-derived item key (DES-038 / BL-039). */
+export function cardItemKey(cardId: string): string {
   return createHash("sha256")
-    .update(canonicalWorkItemKeyPayload(workItemId), "utf8")
+    .update(canonicalCardKeyPayload(cardId), "utf8")
     .digest("hex")
 }

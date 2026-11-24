@@ -15,7 +15,7 @@ function initialFromStart(
     only: event.only,
     from: event.from,
     startedAt: event.at,
-    workItemId: event.workItemId,
+    cardId: event.cardId,
     seq: 1,
   }
 }

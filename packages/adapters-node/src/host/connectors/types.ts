@@ -1,8 +1,8 @@
 import type {
-  Connection,
   ConnectionCheckResult,
   ConnectorDescribe,
 } from "@workspace/contracts"
+import type { Connection } from "../connection-model.ts"
 
 export type ConnectorPullInput = {
   connection: Connection

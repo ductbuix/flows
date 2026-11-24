@@ -8,7 +8,7 @@ import {
   runListMethod,
   type RunSummary,
 } from "@workspace/contracts"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 import { stepsOfRun } from "./run-steps.ts"
 
 const DEFAULT_LIST_LIMIT = 100
@@ -17,14 +17,14 @@ const LIST_SCAN_LIMIT = 50_000
 
 export type RunReadBindings = Pick<MethodBindings, "run/list" | "run/get">
 
-export function createRunReadBindings(engine: Engine): RunReadBindings {
+export function createRunReadBindings(engine: Host): RunReadBindings {
   return {
     "run/list": defineBinding(runListMethod, (params) =>
       pageRunSummaries(
         engine.listRunSummaries({
           limit: LIST_SCAN_LIMIT,
-          ...(params.workItemId !== undefined
-            ? { workItemId: params.workItemId }
+          ...(params.cardId !== undefined
+            ? { cardId: params.cardId }
             : {}),
           ...(params.workflowId !== undefined
             ? { workflowId: params.workflowId }

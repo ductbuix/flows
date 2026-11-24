@@ -1,21 +1,21 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/adapters-node"
+import { workflowDir, type Host } from "@workspace/adapters-node"
 import {
   layoutFileSchema,
   parseNodeWorkflowYaml,
   type LayoutFile,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 import { workflowYamlPath } from "./workflow-files.ts"
 
 const EMPTY: LayoutFile = { version: 1, nodes: {} }
 
-function layoutPath(engine: Engine, workflowId: string): string {
+function layoutPath(engine: Host, workflowId: string): string {
   return join(workflowDir(engine.home, workflowId), "workflow.layout.json")
 }
 
 /** Missing or unreadable file reads as empty. */
-export function readLayout(engine: Engine, workflowId: string): LayoutFile {
+export function readLayout(engine: Host, workflowId: string): LayoutFile {
   const path = layoutPath(engine, workflowId)
   if (!existsSync(path)) return { ...EMPTY, nodes: {} }
   try {
@@ -25,7 +25,7 @@ export function readLayout(engine: Engine, workflowId: string): LayoutFile {
   }
 }
 
-function nodeIds(engine: Engine, workflowId: string): Set<string> {
+function nodeIds(engine: Host, workflowId: string): Set<string> {
   const yamlPath = workflowYamlPath(engine, workflowId)
   if (!existsSync(yamlPath)) return new Set()
   const parsed = parseNodeWorkflowYaml(readFileSync(yamlPath, "utf8"))
@@ -40,7 +40,7 @@ function writeAtomic(path: string, layout: LayoutFile): void {
 
 /** Writes the layout, dropping ids that are not nodes in `workflow.yaml`. */
 export function writeLayout(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   layout: LayoutFile
 ): LayoutFile | null {
@@ -58,7 +58,7 @@ export function writeLayout(
 
 /** Moves entries for renamed node ids; no-op without a layout file. */
 export function moveLayoutIds(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   moves: readonly { from: string; to: string }[]
 ): void {

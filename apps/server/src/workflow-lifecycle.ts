@@ -7,12 +7,12 @@ import {
   writeFileSync,
 } from "node:fs"
 import { join } from "node:path"
-import { workflowDir, type Engine } from "@workspace/adapters-node"
+import { workflowDir, type Host } from "@workspace/adapters-node"
 import {
   setWorkflowField,
   workflowIdSchema,
   type WorkflowSummary,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 export type LifecycleResult =
   | { ok: true }
@@ -34,7 +34,7 @@ edges: []
 }
 
 export function createWorkflow(
-  engine: Engine,
+  engine: Host,
   id: string,
   goal: string,
   name?: string
@@ -55,7 +55,7 @@ export function createWorkflow(
 }
 
 export function renameWorkflow(
-  engine: Engine,
+  engine: Host,
   workflowId: string,
   newId: string
 ): LifecycleResult & { id?: string } {
@@ -81,7 +81,7 @@ export function renameWorkflow(
 }
 
 export function deleteWorkflow(
-  engine: Engine,
+  engine: Host,
   workflowId: string
 ): LifecycleResult {
   const dir = workflowDir(engine.home, workflowId)

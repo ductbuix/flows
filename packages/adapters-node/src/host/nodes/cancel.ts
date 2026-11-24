@@ -1,5 +1,5 @@
 import type { EventLog } from "../event-log.ts"
-import { killProcessGroup } from "../pid.ts"
+import { killProcessGroup } from "../../pid.ts"
 import { foldSteps, isOpenStep } from "./fold-steps.ts"
 
 const now = () => new Date().toISOString()

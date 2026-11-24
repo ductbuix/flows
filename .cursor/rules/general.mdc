@@ -14,7 +14,7 @@ alwaysApply: true
 - Use pnpm only (see `packageManager` in `package.json`). Add deps with
   `pnpm --filter <pkg> add <dep>`; quote version specifiers in zsh.
 - TypeScript strict, ESM. Validate external input with zod. Shared types
-  live in `packages/shared`.
+  live in `packages/contracts`.
 - Local only: bind every server to `127.0.0.1`, never `0.0.0.0`.
 - Before calling work done, run `pnpm lint`, `pnpm typecheck`, `pnpm test`,
   and `pnpm test:e2e` for UI or API changes. Report the results.

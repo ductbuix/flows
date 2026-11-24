@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { parseNodeWorkflowYaml } from "@workspace/contracts"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
@@ -45,7 +45,7 @@ edges:
   - { from: t, to: a }
 `
     )
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(
       `
@@ -102,7 +102,7 @@ edges:
   - { from: build, to: done }
 `
     writeWorkflow(home, yaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
     const runId = "core-diamond"
@@ -132,7 +132,7 @@ edges:
   - { from: t, to: n }
 `
     writeWorkflow(home, yaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
 
@@ -173,7 +173,7 @@ edges:
   - { from: t, to: gate }
 `
     writeWorkflow(home, yaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const graph = parseNodeWorkflowYaml(yaml).workflow!
     const runId = "core-ask"

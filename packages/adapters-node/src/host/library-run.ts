@@ -3,10 +3,10 @@ import type {
   LibraryPullResult,
   ResourcePin,
   ResourcesJson,
-  WorkItemLink,
   Workflow,
 } from "@workspace/contracts"
-import { readConnection } from "./connections.ts"
+import type { ResourceLink } from "./connection-model.ts"
+import { requireConnection } from "./connection-resolve.ts"
 import {
   LIBRARY_EVENT_RUN_ID,
   linkRunResources,
@@ -24,8 +24,8 @@ export type MaterializeResourcesOptions = {
   home: string
   runRoot: string
   runId: string
-  /** Work item context links pulled with the Asset resources (BL-046). */
-  workItemLinks?: WorkItemLink[]
+  /** Card context links pulled with the Asset resources (BL-046). */
+  cardLinks?: ResourceLink[]
   /** Prior run root to copy pins from (rerun without refreshPins). */
   pinFromRunRoot?: string
   refreshPins?: boolean
@@ -36,20 +36,20 @@ export type MaterializeResourcesResult = {
   pulledEvents: EngineEvent[]
 }
 
-/** Pins the Asset resources of a node run, with the work item's links (BL-082). */
+/** Pins the Asset resources of a node run, with the card's links (BL-082). */
 export async function materializeNodeRunResources(options: {
   home: string
   graph: Workflow
   runRoot: string
   runId: string
-  workItemLinks?: WorkItemLink[]
+  cardLinks?: ResourceLink[]
   pinFromRunRoot?: string
   refreshPins?: boolean
 }): Promise<MaterializeResourcesResult> {
   const targets = collectNodePullTargets(
     options.home,
     options.graph,
-    options.workItemLinks ?? []
+    options.cardLinks ?? []
   )
   return pinTargets({ ...options, targets })
 }
@@ -115,8 +115,7 @@ export async function pullNow(options: {
   kind?: string
   entityId?: string
 }): Promise<{ result: LibraryPullResult; event: EngineEvent }> {
-  const conn = readConnection(options.home, options.connectionId)
-  if (!conn) throw new Error(`unknown connection ${options.connectionId}`)
+  const conn = requireConnection(options.home, options.connectionId)
   const scope = resolveScopeEntity(conn)
   const kind = options.kind ?? scope.kind
   const entityId = options.entityId ?? scope.entityId

@@ -59,8 +59,8 @@ export type RunState = {
   finishedAt?: string
   /** Manual item key from run_started (DES-021). */
   itemKey?: string
-  /** Work item from run_started (DES-026 / BL-039). */
-  workItemId?: string
+  /** Docket card from run_started (DES-038 / BL-039). */
+  cardId?: string
   source?: "manual"
   inputHash?: string
   inputFiles?: string[]
@@ -132,7 +132,7 @@ export function foldEvents(events: readonly EngineEvent[]): RunState | null {
           startedAt: event.at,
           source: event.source,
           itemKey: event.itemKey,
-          workItemId: event.workItemId,
+          cardId: event.cardId,
           inputHash: event.inputHash,
           inputFiles: event.files,
         }

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import { parseNodeWorkflowYaml } from "@workspace/contracts"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { createCoreRunHost } from "./core-run-host.ts"
 
 const homes: string[] = []
@@ -56,7 +56,7 @@ describe("core run after prior run (storeSeq)", () => {
     const home = tempHome()
     writeWorkflow(home, slowYaml)
     writeWorkflow(home, fastYaml)
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createCoreRunHost(engine)
     const slow = parseNodeWorkflowYaml(slowYaml).workflow!
     const fast = parseNodeWorkflowYaml(fastYaml).workflow!

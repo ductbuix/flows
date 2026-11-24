@@ -1,4 +1,4 @@
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { bindFcpTransport, createFcpHost } from "server/fcp-host"
 import {
   messagePortTransport,
@@ -18,7 +18,7 @@ export type DesktopEngine = {
  * and CLI (BL-197).
  */
 export function composeDesktopEngine(home: string): DesktopEngine {
-  const engine = createEngine({ home })
+  const engine = createHost({ home })
   const host = createFcpHost(engine)
 
   function bindTransport(transport: Transport): void {

@@ -10,8 +10,12 @@ import {
   writeFileSync,
 } from "node:fs"
 import { basename, dirname, join } from "node:path"
-import type { ChangeSet, EngineEvent, ResourcesJson } from "@workspace/contracts"
-import { readConnection } from "./connections.ts"
+import type {
+  ChangeSet,
+  EngineEvent,
+  ResourcesJson,
+} from "@workspace/contracts"
+import { requireConnection } from "./connection-resolve.ts"
 import { getConnector } from "./connectors/registry.ts"
 import { entityIdSegment } from "./library-paths.ts"
 import { readResourcesJson } from "./library.ts"
@@ -192,8 +196,7 @@ export async function diffWorkCopy(options: {
 }): Promise<{ changeSet: ChangeSet; previewMd: string }> {
   const { home, runRoot, connectionId, publishTaskId } = options
   const runId = options.runId ?? basename(runRoot)
-  const conn = readConnection(home, connectionId)
-  if (!conn) throw new Error(`unknown connection ${connectionId}`)
+  const conn = requireConnection(home, connectionId)
   const connector = getConnector(conn.connector)
   if (!connector) throw new Error(`unknown connector ${conn.connector}`)
 

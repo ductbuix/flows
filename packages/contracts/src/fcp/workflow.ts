@@ -3,8 +3,8 @@ import {
   workflowDetailSchema,
   workflowSummarySchema,
   yamlDiagnosticSchema,
-} from "../api.ts"
-import { workflowIdSchema } from "../api-lifecycle.ts"
+} from "../runs.ts"
+import { workflowIdSchema } from "../lifecycle.ts"
 import { layoutFileSchema } from "../nodes/layout.ts"
 import { workflowSchema } from "../nodes/index.ts"
 import { workflowNameSchema } from "../workflow.ts"

@@ -23,7 +23,7 @@ alwaysApply: false
   the Base UI pattern from
   `https://ui.shadcn.com/docs/ai-elements/base/<pattern>.md` into
   `packages/ui/src/components/` when it stays domain-free. Patterns that
-  bind `@workspace/shared` (e.g. `ModelSelector`) stay in
+  bind `@workspace/contracts` (e.g. `ModelSelector`) stay in
   `apps/web/src/components/ai-elements/`.
 - This project uses Base UI (style `base-nova`), not Radix. Use the Base UI
   variant of docs and examples.

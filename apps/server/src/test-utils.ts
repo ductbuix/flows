@@ -1,8 +1,8 @@
-import type { Engine, RunState } from "@workspace/adapters-node"
+import type { Host, RunState } from "@workspace/adapters-node"
 
 /** Waits until a run started through the API has ended, then returns its fold. */
 export async function settle(
-  engine: Engine,
+  engine: Host,
   runId: string,
   ms = 20_000
 ): Promise<RunState> {

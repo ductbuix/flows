@@ -1,5 +1,5 @@
 import type { EventBus, UpdateBus } from "@workspace/core"
-import type { Engine } from "@workspace/adapters-node"
+import type { Host } from "@workspace/adapters-node"
 import { publishRunFcpUpdates } from "./fcp-run-updates.ts"
 
 /**
@@ -7,7 +7,7 @@ import { publishRunFcpUpdates } from "./fcp-run-updates.ts"
  * and domain `run.finished` for Docket (BL-159).
  */
 export function bindEngineToBus(
-  engine: Engine,
+  engine: Host,
   bus: UpdateBus,
   events: EventBus
 ): () => void {

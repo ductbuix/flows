@@ -61,9 +61,9 @@ export {
 } from "./mcp-trust.ts"
 
 export {
-  createEngine,
-  Engine,
-  type CreateEngineOptions,
+  createHost,
+  Host,
+  type CreateHostOptions,
   ensureBlobStore,
   getBlobStore,
   setBlobStore,
@@ -85,7 +85,8 @@ export {
   diffWorkCopy,
   ensureWorkCopiesFor,
   getConnector,
-  readConnection,
+  findConnection,
+  requireConnection,
   registerBuiltinConnectors,
   registerConnector,
   fakeConnector,

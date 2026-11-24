@@ -9,7 +9,7 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createEngine } from "@workspace/adapters-node"
+import { createHost } from "@workspace/adapters-node"
 import { afterEach, describe, expect, it } from "vitest"
 import {
   readNodeWorkflowDetail,
@@ -39,7 +39,7 @@ afterEach(() => {
 function stack(yaml = nodeYaml) {
   const home = mkdtempSync(join(tmpdir(), "flowapp-nodes-"))
   homes.push(home)
-  const engine = createEngine({ home })
+  const engine = createHost({ home })
   const dir = join(home, "workflows", "nf")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), yaml)

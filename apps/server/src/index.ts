@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto"
 import { serve } from "@hono/node-server"
 import { acquireLock, releaseLock } from "@workspace/adapters-node"
 import {
-  createEngine,
+  createHost,
   fakeConnector,
   registerBuiltinConnectors,
   registerConnector,
@@ -16,7 +16,7 @@ if (process.env.FLOWAPP_FAKE_CONNECTOR === "1") {
   registerConnector(fakeConnector)
 }
 
-const engine = createEngine()
+const engine = createHost()
 engine.startLibraryRetention()
 
 const port = Number(process.env.PORT ?? 8787)

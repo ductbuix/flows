@@ -79,7 +79,7 @@ export function WorkflowSheetBody({
     setPending(true)
     const result = await startRun(client, {
       workflowId: workflow.id,
-      workItemId: cardId,
+      cardId: cardId,
     })
     setPending(false)
     if (result.ok && result.runId) {

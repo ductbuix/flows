@@ -1,8 +1,8 @@
-import { stepTaskStatus, type Engine } from "@workspace/adapters-node"
+import { stepTaskStatus, type Host } from "@workspace/adapters-node"
 import type { RunStep } from "@workspace/contracts"
 
 /** Latest pass of every node in a run, for run/get and canvas status. */
-export function stepsOfRun(engine: Engine, runId: string): RunStep[] {
+export function stepsOfRun(engine: Host, runId: string): RunStep[] {
   const state = engine.fold(runId)
   if (!state || state.deleted) return []
   const out: RunStep[] = []
@@ -30,7 +30,7 @@ export function stepsOfRun(engine: Engine, runId: string): RunStep[] {
 
 /** One node's latest step, or null when the node has not run. */
 export function stepOfNode(
-  engine: Engine,
+  engine: Host,
   runId: string,
   nodeId: string
 ): RunStep | null {

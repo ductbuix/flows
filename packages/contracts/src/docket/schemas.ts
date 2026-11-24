@@ -1,8 +1,10 @@
 import { z } from "zod"
-import { workItemIdSchema } from "../work-item.ts"
 
-/** Card folder slug (same rule as work item ids, DES-038). */
-export const cardIdSchema = workItemIdSchema
+/** Card folder slug (DES-038). */
+export const cardIdSchema = z
+  .string()
+  .min(1)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase letters, digits and dashes")
 
 /** Card-to-card link relation (DES-038). */
 export const cardLinkRelSchema = z.enum([

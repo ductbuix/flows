@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto"
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { Connection } from "@workspace/contracts"
+import type { Connection } from "../../connection-model.ts"
 import { connectionDir } from "../../paths.ts"
 import type {
   ConnectorChangeSet,
