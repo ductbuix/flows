@@ -1,6 +1,8 @@
 import type { Readable, Writable } from "node:stream"
 import {
+  isJsonRpcNotification,
   isJsonRpcRequest,
+  isJsonRpcResponse,
   JSONRPC_VERSION,
   type JsonRpcErrorObject,
   type JsonRpcId,
@@ -9,11 +11,13 @@ import {
 } from "@workspace/protocol"
 import { ndjsonTransport, type NdjsonTransport } from "@workspace/protocol/node"
 
-/** Expected inbound request from the client. */
+/** Expected inbound request or notification from the client. */
 export type FakeAgentExpect = {
   method: string
   /** When set, must deep-equal the request params. */
   params?: unknown
+  /** When true, match a notification (no id) instead of a request. */
+  notification?: boolean
 }
 
 /** Outbound notification the fake sends (usually after the reply). */
@@ -22,15 +26,29 @@ export type FakeAgentNotification = {
   params?: unknown
 }
 
+/** Outbound request the fake sends to the client. */
+export type FakeAgentClientRequest = {
+  method: string
+  params?: unknown
+  /** When set, the client reply result must deep-equal this. */
+  expectResult?: unknown
+}
+
 export type FakeAgentReply = { result: unknown } | { error: JsonRpcErrorObject }
 
-/** One scripted exchange: expect a request, reply, optional notifies. */
+/** One scripted exchange: expect inbound, optional reply / outbound. */
 export type FakeAgentStep = {
   expect: FakeAgentExpect
-  reply: FakeAgentReply
+  reply?: FakeAgentReply
+  /** Match the request but delay the reply until a later `replyHeld`. */
+  hold?: boolean
   /** Sent after the reply unless `notifyBefore` is true. */
   notifications?: readonly FakeAgentNotification[]
   notifyBefore?: boolean
+  /** Requests sent to the client after matching (before hold/reply). */
+  clientRequests?: readonly FakeAgentClientRequest[]
+  /** Reply to a previously held request with this method. */
+  replyHeld?: { method: string; reply: FakeAgentReply }
 }
 
 export type FakeAgentScript = {
@@ -85,30 +103,31 @@ function sendReply(
   transport.send({ jsonrpc: JSONRPC_VERSION, id, result: reply.result })
 }
 
-function matchRequest(
-  msg: JsonRpcRequest,
+function matchInbound(
+  method: string,
+  params: unknown,
   step: FakeAgentStep,
   index: number
 ): void {
-  if (msg.method !== step.expect.method) {
+  if (method !== step.expect.method) {
     throw new Error(
-      `fake-agent step ${index}: expected method ${step.expect.method}, got ${msg.method}`
+      `fake-agent step ${index}: expected method ${step.expect.method}, got ${method}`
     )
   }
   if (
     step.expect.params !== undefined &&
-    !deepEqual(msg.params, step.expect.params)
+    !deepEqual(params, step.expect.params)
   ) {
     throw new Error(
-      `fake-agent step ${index}: params mismatch for ${msg.method}`
+      `fake-agent step ${index}: params mismatch for ${step.expect.method}`
     )
   }
 }
 
 /**
  * Replay a JSON-RPC script as an ACP agent over stdio-shaped streams
- * (DES-042). Each step expects one client request, then replies and
- * optionally emits notifications.
+ * (DES-042). Each step expects one client request or notification, then
+ * optionally replies and emits notifications or client requests.
  */
 export function runFakeAgent(
   script: FakeAgentScript,
@@ -117,8 +136,16 @@ export function runFakeAgent(
 ): FakeAgentHandle {
   const transport = ndjsonTransport(readable, writable)
   let stepIndex = 0
+  let nextClientReqId = 1
   let settle!: (err?: Error) => void
   let settled = false
+  const held = new Map<string, JsonRpcId>()
+  const pendingClientExpects = new Map<
+    JsonRpcId,
+    { expectResult: unknown; resolve: () => void; reject: (e: Error) => void }
+  >()
+  const clientExpectWaits: Promise<void>[] = []
+
   const done = new Promise<void>((resolve, reject) => {
     settle = (err) => {
       if (settled) return
@@ -128,13 +155,78 @@ export function runFakeAgent(
     }
   })
 
-  const finishOk = () => {
-    if (stepIndex >= script.steps.length) settle()
+  const tryFinish = () => {
+    if (stepIndex < script.steps.length) return
+    if (pendingClientExpects.size > 0) return
+    void Promise.all(clientExpectWaits).then(
+      () => settle(),
+      (err: unknown) =>
+        settle(err instanceof Error ? err : new Error(String(err)))
+    )
   }
 
   const fail = (err: Error) => {
     settle(err)
     transport.close()
+  }
+
+  const sendClientRequests = (reqs: readonly FakeAgentClientRequest[]) => {
+    for (const req of reqs) {
+      const id = nextClientReqId++
+      transport.send({
+        jsonrpc: JSONRPC_VERSION,
+        method: req.method,
+        ...(req.params !== undefined ? { params: req.params } : {}),
+        id,
+      })
+      if (req.expectResult !== undefined) {
+        const wait = new Promise<void>((resolve, reject) => {
+          pendingClientExpects.set(id, {
+            expectResult: req.expectResult,
+            resolve,
+            reject,
+          })
+        })
+        clientExpectWaits.push(wait)
+      }
+    }
+  }
+
+  const emitNotes = (step: FakeAgentStep) => {
+    for (const note of step.notifications ?? [])
+      sendNotification(transport, note)
+  }
+
+  const applyStep = (step: FakeAgentStep, requestId?: JsonRpcId) => {
+    const notes = step.notifications ?? []
+    if (step.notifyBefore) emitNotes(step)
+
+    if (step.clientRequests) sendClientRequests(step.clientRequests)
+
+    if (step.replyHeld) {
+      const heldId = held.get(step.replyHeld.method)
+      if (heldId === undefined) {
+        throw new Error(
+          `fake-agent: no held request for ${step.replyHeld.method}`
+        )
+      }
+      held.delete(step.replyHeld.method)
+      sendReply(transport, heldId, step.replyHeld.reply)
+    }
+
+    if (requestId !== undefined) {
+      if (step.hold) {
+        held.set(step.expect.method, requestId)
+      } else if (step.reply) {
+        sendReply(transport, requestId, step.reply)
+      } else if (!step.expect.notification) {
+        throw new Error(
+          `fake-agent step ${stepIndex}: request ${step.expect.method} needs reply or hold`
+        )
+      }
+    }
+
+    if (!step.notifyBefore && notes.length > 0) emitNotes(step)
   }
 
   transport.onError((err) => fail(err))
@@ -151,30 +243,59 @@ export function runFakeAgent(
   })
 
   transport.onMessage((msg) => {
-    if (settled || !isJsonRpcRequest(msg)) return
+    if (settled) return
+
+    if (isJsonRpcResponse(msg)) {
+      if (msg.id === null || msg.id === undefined) return
+      const pending = pendingClientExpects.get(msg.id)
+      if (!pending) return
+      pendingClientExpects.delete(msg.id)
+      if ("error" in msg) {
+        pending.reject(
+          new Error(`fake-agent: client request ${msg.id} returned error`)
+        )
+        return
+      }
+      if (!deepEqual(msg.result, pending.expectResult)) {
+        pending.reject(
+          new Error(`fake-agent: client request ${msg.id} result mismatch`)
+        )
+        return
+      }
+      pending.resolve()
+      tryFinish()
+      return
+    }
+
+    const isNotification = isJsonRpcNotification(msg)
+    const isRequest = isJsonRpcRequest(msg)
+    if (!isNotification && !isRequest) return
 
     const step = script.steps[stepIndex]
     if (!step) {
       fail(
         new Error(
-          `fake-agent: unexpected request ${msg.method} after script ended`
+          `fake-agent: unexpected ${isRequest ? "request" : "notification"} ${msg.method} after script ended`
+        )
+      )
+      return
+    }
+
+    const wantNotification = step.expect.notification === true
+    if (wantNotification !== isNotification) {
+      fail(
+        new Error(
+          `fake-agent step ${stepIndex}: expected ${wantNotification ? "notification" : "request"} ${step.expect.method}, got ${isRequest ? "request" : "notification"} ${msg.method}`
         )
       )
       return
     }
 
     try {
-      matchRequest(msg, step, stepIndex)
-      const notes = step.notifications ?? []
-      if (step.notifyBefore) {
-        for (const note of notes) sendNotification(transport, note)
-      }
-      sendReply(transport, msg.id, step.reply)
-      if (!step.notifyBefore) {
-        for (const note of notes) sendNotification(transport, note)
-      }
+      matchInbound(msg.method, msg.params, step, stepIndex)
+      applyStep(step, isRequest ? (msg as JsonRpcRequest).id : undefined)
       stepIndex += 1
-      finishOk()
+      tryFinish()
     } catch (cause) {
       fail(cause instanceof Error ? cause : new Error(String(cause)))
     }

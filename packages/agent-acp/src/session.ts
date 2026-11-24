@@ -6,6 +6,12 @@ import type {
 } from "@workspace/core"
 import type { RpcPeer } from "@workspace/protocol"
 import { authenticateIfRequired } from "./authenticate.ts"
+import {
+  cancelPendingPermissions,
+  DEFAULT_CANCEL_GRACE_MS,
+  scheduleCancelKill,
+  type PendingPermission,
+} from "./cancel.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
 
 /** Client capabilities advertised on `initialize` (DES-041). */
@@ -23,6 +29,10 @@ export type OpenAcpSessionOptions = {
   protocolVersion?: number
   /** When set and listed in initialize authMethods, call authenticate. */
   authMethod?: string
+  /** Wait after `session/cancel` before `kill` (default 5s). */
+  cancelGraceMs?: number
+  /** End the agent process group if it ignores `session/cancel`. */
+  kill?: () => void
 }
 
 type QueueWaiter = {
@@ -83,17 +93,30 @@ export async function openAcpSession(
     throw new Error("session/new result missing sessionId")
   }
 
-  return new AcpSession(peer, sessionId, options.logger)
+  return new AcpSession(peer, sessionId, options)
 }
 
 class AcpSession implements AgentSession {
   private closed = false
+  private readonly pendingPermissions = new Set<PendingPermission>()
+  private readonly cancelGraceMs: number
+  private readonly kill?: () => void
+  private readonly logger?: Logger
+  private unsubPermission?: () => void
 
   constructor(
     private readonly peer: RpcPeer,
     readonly id: string,
-    private readonly logger?: Logger
-  ) {}
+    options: OpenAcpSessionOptions
+  ) {
+    this.cancelGraceMs = options.cancelGraceMs ?? DEFAULT_CANCEL_GRACE_MS
+    this.kill = options.kill
+    this.logger = options.logger
+    this.unsubPermission = peer.onRequest(
+      "session/request_permission",
+      (params) => this.onPermission(params)
+    )
+  }
 
   prompt(
     blocks: readonly ContentBlock[],
@@ -108,7 +131,27 @@ class AcpSession implements AgentSession {
   async close(): Promise<void> {
     if (this.closed) return
     this.closed = true
+    cancelPendingPermissions(this.pendingPermissions)
+    this.unsubPermission?.()
+    this.unsubPermission = undefined
     this.peer.close()
+  }
+
+  private onPermission(params: unknown): Promise<unknown> {
+    if (
+      params &&
+      typeof params === "object" &&
+      "sessionId" in params &&
+      (params as { sessionId: unknown }).sessionId !== this.id
+    ) {
+      return Promise.reject(
+        new Error("session/request_permission wrong session")
+      )
+    }
+    return new Promise((resolve) => {
+      const entry: PendingPermission = { resolve }
+      this.pendingPermissions.add(entry)
+    })
   }
 
   private async *promptStream(
@@ -120,6 +163,8 @@ class AcpSession implements AgentSession {
     let settled = false
     let settleError: unknown
     let stopReason: AgentEvent & { kind: "stop" }
+    let cancelStarted = false
+    let clearKill: (() => void) | undefined
 
     const wake = () => {
       const w = waiter
@@ -127,13 +172,21 @@ class AcpSession implements AgentSession {
       w?.resolve()
     }
 
-    const onAbort = () => wake()
-    if (signal.aborted) {
-      throw signal.reason instanceof Error
-        ? signal.reason
-        : new Error("prompt aborted")
+    const onAbort = () => {
+      if (cancelStarted) return
+      cancelStarted = true
+      this.peer.notify("session/cancel", { sessionId: this.id })
+      cancelPendingPermissions(this.pendingPermissions)
+      clearKill = scheduleCancelKill(
+        this.cancelGraceMs,
+        () => settled,
+        this.kill
+      )
+      wake()
     }
-    signal.addEventListener("abort", onAbort)
+
+    if (signal.aborted) onAbort()
+    else signal.addEventListener("abort", onAbort)
 
     const unsub = this.peer.onNotification("session/update", (params) => {
       if (
@@ -150,22 +203,21 @@ class AcpSession implements AgentSession {
       wake()
     })
 
+    // Do not pass `signal`: ACP cancel is `session/cancel`, not `$/cancel_request`.
     const promptPromise = this.peer
-      .request(
-        "session/prompt",
-        { sessionId: this.id, prompt: blocks },
-        { signal }
-      )
+      .request("session/prompt", { sessionId: this.id, prompt: blocks })
       .then(
         (result) => {
           const reason = parseStopReason(result)
           stopReason = { kind: "stop", reason }
           settled = true
+          clearKill?.()
           wake()
         },
         (err: unknown) => {
           settleError = err
           settled = true
+          clearKill?.()
           wake()
         }
       )
@@ -187,10 +239,17 @@ class AcpSession implements AgentSession {
       }
 
       await promptPromise
-      if (settleError) throw settleError
+      if (settleError) {
+        if (cancelStarted) {
+          yield { kind: "stop", reason: "cancelled" }
+          return
+        }
+        throw settleError
+      }
       yield stopReason!
     } finally {
       signal.removeEventListener("abort", onAbort)
+      clearKill?.()
       unsub()
     }
   }

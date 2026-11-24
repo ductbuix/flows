@@ -73,6 +73,13 @@ export function createAcpRuntime(
       }
 
       const command = profile.command(spec)
+      // Own controller so a cancel that the agent ignores can end the group (BL-138).
+      const procCtl = new AbortController()
+      if (signal.aborted) procCtl.abort(signal.reason)
+      else
+        signal.addEventListener("abort", () => procCtl.abort(signal.reason), {
+          once: true,
+        })
       const proc = options.processRunner.spawn(
         {
           command: command.cmd,
@@ -80,7 +87,7 @@ export function createAcpRuntime(
           cwd: spec.cwd,
           env: { ...options.env, ...command.env },
         },
-        signal
+        procCtl.signal
       )
 
       const peer = peerFromProcess(proc)
@@ -92,6 +99,7 @@ export function createAcpRuntime(
           signal,
           clientInfo: options.clientInfo,
           authMethod: profile.authMethod,
+          kill: () => procCtl.abort(),
         })
         return wrapSession(session, () => {
           peer.close()
