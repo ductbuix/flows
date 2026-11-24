@@ -209,6 +209,38 @@ edges:
     engine.close()
   })
 
+  it("runs trigger+command+folder output to completion", async () => {
+    const home = tempHome()
+    const yaml = `
+id: diamond
+nodes:
+  - { id: start, kind: trigger, type: manual }
+  - { id: build, kind: command, run: "echo diamond" }
+  - { id: done, kind: output, target: folder }
+edges:
+  - { from: start, to: build }
+  - { from: build, to: done }
+`
+    writeWorkflow(home, yaml)
+    const engine = createEngine({ home })
+    const host = createCoreRunHost(engine)
+    const graph = parseNodeWorkflowYaml(yaml).workflow!
+    const runId = "core-diamond"
+    expect(await host.tryStart({ graph, runId })).toEqual({ runId })
+
+    const deadline = Date.now() + 10_000
+    while (Date.now() < deadline) {
+      if (engine.getRunSummary(runId)?.status === "succeeded") break
+      await new Promise((r) => setTimeout(r, 25))
+    }
+    expect(engine.getRunSummary(runId)).toMatchObject({
+      status: "succeeded",
+      taskCounts: { done: 3, total: 3 },
+    })
+    host.dispose()
+    engine.close()
+  })
+
   it("posts a notify notice via the engine notices table", async () => {
     const home = tempHome()
     const yaml = `
