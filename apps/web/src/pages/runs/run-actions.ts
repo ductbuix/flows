@@ -74,3 +74,20 @@ export async function deleteRun(
     return fail(err)
   }
 }
+
+export async function retryStep(
+  client: FlowsClient,
+  runId: string,
+  stepId: string
+): Promise<RunActionResult> {
+  try {
+    await client.call("run/retry_step", {
+      runId,
+      stepId,
+      requestKey: requestKey(),
+    })
+    return { ok: true }
+  } catch (err) {
+    return fail(err)
+  }
+}
