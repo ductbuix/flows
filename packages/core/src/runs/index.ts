@@ -1,6 +1,12 @@
 export { decide } from "./decide.ts"
 export { RunActor, type RunActorDeps } from "./actor.ts"
 export { effectAttemptKey, pendingEffects } from "./pending-effects.ts"
+export {
+  createScheduler,
+  type Scheduler,
+  type SchedulerGrant,
+  type SchedulerLimits,
+} from "./scheduler.ts"
 export { fold, foldAll, foldAllSteps, foldSteps } from "./fold.ts"
 export {
   emptySteps,
