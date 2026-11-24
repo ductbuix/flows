@@ -75,7 +75,12 @@ function fcpWsUrl(c: Context, port: number): string {
   return `ws://${host}/fcp`
 }
 
-function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
+function bindFcpPeer(
+  raw: WsLike,
+  engine: Engine,
+  bus: UpdateBus,
+  port: number
+): void {
   const transport = wsTransport(raw)
   const peer = new RpcPeer(transport)
   const connection = createFcpConnection()
@@ -91,6 +96,9 @@ function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
   bindInitialize(peer, connection, {
     engineInfo,
     workspace: { home: engine.home, id: engine.home },
+    engineCapabilities: {
+      blobs: { http: `http://127.0.0.1:${port}/blobs` },
+    },
   })
   bindEngine(
     peer,
@@ -127,7 +135,7 @@ function fcpEvents(
         ws.close(1011, "no websocket")
         return
       }
-      bindFcpPeer(raw as WsLike, engine, bus)
+      bindFcpPeer(raw as WsLike, engine, bus, port)
     },
   }
 }

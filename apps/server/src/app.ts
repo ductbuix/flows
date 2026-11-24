@@ -36,6 +36,7 @@ import { mcpTrustRoutes } from "./mcp-trust-routes.ts"
 import { noticeRoutes } from "./notice-routes.ts"
 import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
+import { blobRoutes } from "./blob-routes.ts"
 import { fcpIndexResponse, fcpUpgrade } from "./fcp-routes.ts"
 import { layoutRoutes } from "./layout-routes.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
@@ -177,6 +178,7 @@ export function createApp({
   return new Hono()
     .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
     .get("/fcp", fcpUpgrade(engine, fcpToken, port, bus))
+    .route("/blobs", blobRoutes(fcpToken))
     .route("/api", api)
 }
 

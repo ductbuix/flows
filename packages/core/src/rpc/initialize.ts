@@ -22,6 +22,10 @@ export type FcpConnection = {
 export type BindInitializeOptions = {
   readonly engineInfo: ClientInfo
   readonly workspace: { readonly home: string; readonly id: string }
+  /** Optional extras; blobs.http advertises the daemon blob base URL (DES-040). */
+  readonly engineCapabilities?: {
+    readonly blobs?: { readonly http: string }
+  }
 }
 
 export function createFcpConnection(): FcpConnection {
@@ -62,6 +66,9 @@ export function bindInitialize(
       engineCapabilities: {
         agents: [],
         nodeKinds: [],
+        ...(options.engineCapabilities?.blobs
+          ? { blobs: options.engineCapabilities.blobs }
+          : {}),
       },
       workspace: options.workspace,
     }

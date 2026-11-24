@@ -1,3 +1,4 @@
+export { createNodeBlobStore } from "./blob-store.ts"
 export { createNodeDocumentStore } from "./document-store.ts"
 export {
   createNodeEventStore,

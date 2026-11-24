@@ -2,7 +2,7 @@
 id: BL-130
 title: BlobStore port, fake and adapter
 type: backlog
-status: todo
+status: done
 summary: BlobStore port in core with an in-memory fake, one contract suite, and the Node adapter in adapters-node passing it.
 tags: [core, ports, adapters]
 related: [DES-041, DES-042]
@@ -19,7 +19,7 @@ Move file streaming for assets and run files behind the `BlobStore` port (DES-04
 
 ## Done when
 
-- [ ] `BlobStore` interface: `put(scope, stream) -> BlobRef`, `open(id) -> stream`, scoped opaque ids.
-- [ ] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
-- [ ] file streaming for assets and run files lives in `packages/adapters-node` and passes the suite.
-- [ ] Daemon serves `GET/PUT /blobs` with the lock token (DES-040 Blobs).
+- [x] `BlobStore` interface: `put(scope, stream) -> BlobRef`, `open(id) -> stream`, scoped opaque ids.
+- [x] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
+- [x] file streaming for assets and run files lives in `packages/adapters-node` and passes the suite.
+- [x] Daemon serves `GET/PUT /blobs` with the lock token (DES-040 Blobs).

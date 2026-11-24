@@ -53,6 +53,7 @@ import {
   LIBRARY_RETENTION_INTERVAL_MS,
   sweepLibrary,
 } from "./library-retention.ts"
+import { ensureBlobStore } from "./blob-store.ts"
 
 export type CreateEngineOptions = {
   home?: string
@@ -93,6 +94,7 @@ export class Engine {
 
   constructor(options: CreateEngineOptions = {}) {
     this.home = resolveAppHome(options.home)
+    ensureBlobStore(this.home)
     this.log = new EventLog(appDbPath(this.home))
     this.summaryCache = new RunSummaryCache((runId) => this.fold(runId))
     this.log.onAppend((stored) => {

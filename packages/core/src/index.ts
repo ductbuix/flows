@@ -133,6 +133,9 @@ export {
 } from "./files/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export type {
+  BlobPutMeta,
+  BlobRef,
+  BlobStore,
   Disposable,
   DocumentRead,
   DocumentRemoveResult,

@@ -1,3 +1,4 @@
+export type { BlobPutMeta, BlobRef, BlobStore } from "./blob-store.ts"
 export type {
   DocumentRead,
   DocumentRemoveResult,
