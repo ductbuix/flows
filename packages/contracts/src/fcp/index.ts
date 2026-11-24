@@ -189,3 +189,19 @@ export {
   librarySaveProviderParamsSchema,
   librarySaveProviderResultSchema,
 } from "./library.ts"
+export {
+  inboxAnswerMethod,
+  inboxAnswerParamsSchema,
+  inboxAnswerResultSchema,
+  inboxApprovalOptionIdSchema,
+  inboxDismissMethod,
+  inboxDismissParamsSchema,
+  inboxDismissResultSchema,
+  inboxItemKindSchema,
+  inboxItemSchema,
+  inboxListMethod,
+  inboxListParamsSchema,
+  inboxListResultSchema,
+  inboxUpdateNotification,
+  type WireInboxItem,
+} from "./inbox.ts"

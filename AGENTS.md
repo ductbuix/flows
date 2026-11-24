@@ -40,7 +40,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
 - `packages/core`: UI-free kernel (ports, `bindEngine`, `runs/` decide+fold +
   actor + scheduler, `nodes/` NodeKind+StepContext for trigger/approval/notify,
-  agents permission chain, testing fakes); no Node I/O.
+  `inbox/` projection + FCP list/answer/dismiss, agents permission chain,
+  testing fakes); no Node I/O.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox), `engine.lock`.
 - `packages/agent-acp`: ACP runtime + Cursor profile (`profiles/`); `testing/fake-agent` (stdio).
