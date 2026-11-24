@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { WebSocketServer } from "ws"
 import { runInbox } from "./commands/inbox.ts"
 import { runWorkflow } from "./commands/run.ts"
-import { openSession } from "./session.ts"
+import { engineBusyMessage, openInProcess, openSession } from "./session.ts"
 
 const homes: string[] = []
 const closers: Array<() => Promise<void>> = []
@@ -114,6 +114,31 @@ async function startLockedDaemon(home: string): Promise<{
 }
 
 describe("flows CLI", () => {
+  it("in-process takes and releases engine.lock", async () => {
+    const home = tempHome()
+    expect(peekLock(home)).toBeNull()
+    const session = await openInProcess(home)
+    expect(session.mode).toBe("in-process")
+    expect(peekLock(home)).toMatchObject({
+      url: "inproc://flows-cli",
+      pid: process.pid,
+    })
+    session.close()
+    expect(peekLock(home)).toBeNull()
+  })
+
+  it("second in-process call fails while the first holds the lock", async () => {
+    const home = tempHome()
+    const first = await openInProcess(home)
+    await expect(openInProcess(home)).rejects.toThrow(
+      engineBusyMessage(process.pid)
+    )
+    first.close()
+    const again = await openInProcess(home)
+    expect(again.mode).toBe("in-process")
+    again.close()
+  })
+
   it("runs in-process against a temp home and exits 0 on success", async () => {
     const home = tempHome()
     writeDemoWorkflow(home)
@@ -125,6 +150,7 @@ describe("flows CLI", () => {
       cardId: item.id,
     })
     expect(code).toBe(0)
+    expect(peekLock(home)).toBeNull()
   }, 30_000)
 
   it("lists open inbox items from a live daemon", async () => {

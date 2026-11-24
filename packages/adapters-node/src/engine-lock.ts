@@ -26,7 +26,7 @@ export type EngineLockSelf = {
 }
 
 export type AcquireLockResult =
-  { owned: true } | { attachTo: { url: string; token: string } }
+  { owned: true } | { attachTo: { url: string; token: string; pid: number } }
 
 export type PeekLockResult = { url: string; token: string; pid: number }
 
@@ -121,7 +121,13 @@ export function acquireLock(
 
     const existing = readLock(path)
     if (existing && isPidAlive(existing.pid)) {
-      return { attachTo: { url: existing.url, token: existing.token } }
+      return {
+        attachTo: {
+          url: existing.url,
+          token: existing.token,
+          pid: existing.pid,
+        },
+      }
     }
 
     // Stale or corrupt: remove and retry with O_EXCL.

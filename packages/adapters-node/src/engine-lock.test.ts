@@ -67,7 +67,7 @@ describe("acquireLock", () => {
 
     const second = acquireLock(home, selfB)
     expect(second).toEqual({
-      attachTo: { url: selfA.url, token: selfA.token },
+      attachTo: { url: selfA.url, token: selfA.token, pid: process.pid },
     })
     expect(
       JSON.parse(readFileSync(join(home, "engine.lock"), "utf8"))
@@ -115,7 +115,7 @@ describe("peekLock", () => {
       pid: process.pid,
     })
     expect(acquireLock(home, selfB)).toEqual({
-      attachTo: { url: selfA.url, token: selfA.token },
+      attachTo: { url: selfA.url, token: selfA.token, pid: process.pid },
     })
   })
 
