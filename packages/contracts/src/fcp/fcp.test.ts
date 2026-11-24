@@ -5,6 +5,7 @@ import {
   defineNotification,
   ErrorCode,
   fcpMethodTable,
+  fcpNotificationTable,
   type FcpMethodParams,
   type FcpMethodResult,
   type FcpNotificationParams,
@@ -106,12 +107,16 @@ describe("FCP helpers", () => {
     expect(workflowUpdateNotification.name).toBe("workflow/update")
   })
 
-  it("declares connector list/get as queries and save/remove/set_capability as commands", () => {
+  it("declares connector list/get as queries and save/remove/set_capability/check as commands", () => {
     expect(fcpMethodTable["connector/list"].kind).toBe("query")
     expect(fcpMethodTable["connector/get"].kind).toBe("query")
     expect(fcpMethodTable["connector/save"].kind).toBe("command")
     expect(fcpMethodTable["connector/remove"].kind).toBe("command")
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
+    expect(fcpMethodTable["connector/check"].kind).toBe("command")
+    expect(fcpNotificationTable["connector/update"].name).toBe(
+      "connector/update"
+    )
   })
 
   it("declares library/list_providers as a query and library/save_provider as a command", () => {

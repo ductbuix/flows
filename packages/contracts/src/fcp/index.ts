@@ -175,6 +175,9 @@ export {
   workflowValidateResultSchema,
 } from "./workflow.ts"
 export {
+  connectorCheckMethod,
+  connectorCheckParamsSchema,
+  connectorCheckResultSchema,
   connectorGetMethod,
   connectorGetParamsSchema,
   connectorGetResultSchema,
@@ -190,6 +193,7 @@ export {
   connectorSetCapabilityMethod,
   connectorSetCapabilityParamsSchema,
   connectorSetCapabilityResultSchema,
+  connectorUpdateNotification,
 } from "./connector.ts"
 export {
   libraryListProvidersMethod,
@@ -216,6 +220,7 @@ export {
   inboxListResultSchema,
   inboxPermissionItemSchema,
   inboxPermissionOptionIdSchema,
+  inboxSignInItemSchema,
   inboxUpdateNotification,
   type WireInboxItem,
 } from "./inbox.ts"

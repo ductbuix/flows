@@ -1,5 +1,15 @@
 export { isCapabilityAllowed, setCapabilityAllowed } from "./capabilities.ts"
-export { createConnectorBindings, type ConnectorBindings } from "./bind.ts"
+export {
+  createConnectorBindings,
+  type ConnectorBindings,
+  type CreateConnectorBindingsOptions,
+} from "./bind.ts"
+export {
+  checkConnector,
+  type ConnectorCheckDeps,
+  type ConnectorCheckOutcome,
+  type ConnectorStatusChange,
+} from "./check.ts"
 export { createCliTransport, cliArgv } from "./cli-transport.ts"
 export {
   createConnectorTransportRegistry,
@@ -18,6 +28,7 @@ export {
   ConnectorService,
   type ConnectorRecord,
   type ConnectorServiceDeps,
+  type ConnectorStatusInfo,
 } from "./service.ts"
 export type {
   ConnectorCallResult,
