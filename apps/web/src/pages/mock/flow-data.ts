@@ -1,12 +1,7 @@
 import type { Edge, Node } from "@xyflow/react"
 
 export type NodeKind =
-  | "trigger"
-  | "asset"
-  | "llm"
-  | "condition"
-  | "approval"
-  | "notify"
+  "trigger" | "asset" | "llm" | "condition" | "approval" | "notify"
 
 export type RunState = "running" | "done" | "failed" | "waiting" | "skipped"
 
@@ -77,9 +72,19 @@ export const KIND_GROUPS: { title: string; kinds: NodeKind[] }[] = [
 export function newData(kind: NodeKind): FlowData {
   switch (kind) {
     case "llm":
-      return { prompt: "", provider: "cursor", model: "opus-5-5", effort: "high" }
+      return {
+        prompt: "",
+        provider: "cursor",
+        model: "opus-5-5",
+        effort: "high",
+      }
     case "condition":
-      return { prompt: "", provider: "cursor", model: "haiku-5-5", effort: "medium" }
+      return {
+        prompt: "",
+        provider: "cursor",
+        model: "haiku-5-5",
+        effort: "medium",
+      }
     case "approval":
       return { question: "" }
     case "notify":
@@ -91,51 +96,174 @@ export function newData(kind: NodeKind): FlowData {
   }
 }
 
-function llm(id: string, x: number, y: number, prompt: string, model = "opus-5-5", connectors: string[] = [], skills: string[] = []): FlowNode {
+function llm(
+  id: string,
+  x: number,
+  y: number,
+  prompt: string,
+  model = "opus-5-5",
+  connectors: string[] = [],
+  skills: string[] = []
+): FlowNode {
   return {
-    id, type: "llm", position: { x, y },
-    data: { prompt, provider: "cursor", model, effort: model === "haiku-5-5" ? "medium" : "high", connectors, skills },
+    id,
+    type: "llm",
+    position: { x, y },
+    data: {
+      prompt,
+      provider: "cursor",
+      model,
+      effort: model === "haiku-5-5" ? "medium" : "high",
+      connectors,
+      skills,
+    },
   }
 }
 
-const e = (source: string, target: string, port = "text", sourceHandle = port, label?: string): FlowEdge => ({
-  id: `${source}-${sourceHandle}-${target}`, source, target, sourceHandle, targetHandle: port, label,
+const e = (
+  source: string,
+  target: string,
+  port = "text",
+  sourceHandle = port,
+  label?: string
+): FlowEdge => ({
+  id: `${source}-${sourceHandle}-${target}`,
+  source,
+  target,
+  sourceHandle,
+  targetHandle: port,
+  label,
 })
 
-const trigger: FlowNode = { id: "t", type: "trigger", position: { x: 0, y: 0 }, data: {} }
+const trigger: FlowNode = {
+  id: "t",
+  type: "trigger",
+  position: { x: 0, y: 0 },
+  data: {},
+}
 
 const FIX_FLAKY: Flow = {
   nodes: [
     trigger,
-    { id: "a1", type: "asset", position: { x: 0, y: 170 }, data: { assetKind: "image", name: "US1234 Login flake on CI/attachments/failure.png" } },
-    { id: "a2", type: "asset", position: { x: 0, y: 500 }, data: { assetKind: "markdown", name: "US1234 Login flake on CI/acceptance.md" } },
-    llm("plan", 460, 0, "Analyze the failing test and plan the fix. Respond with a detailed plan.", "haiku-5-5", ["jenkins", "rally"]),
-    llm("fix", 960, 40, "Update source code following the plan", "opus-5-5", [], ["write-tests"]),
+    {
+      id: "a1",
+      type: "asset",
+      position: { x: 0, y: 170 },
+      data: {
+        assetKind: "image",
+        name: "US1234 Login flake on CI/attachments/failure.png",
+      },
+    },
+    {
+      id: "a2",
+      type: "asset",
+      position: { x: 0, y: 500 },
+      data: {
+        assetKind: "markdown",
+        name: "US1234 Login flake on CI/acceptance.md",
+      },
+    },
+    llm(
+      "plan",
+      460,
+      0,
+      "Analyze the failing test and plan the fix. Respond with a detailed plan.",
+      "haiku-5-5",
+      ["jenkins", "rally"]
+    ),
+    llm(
+      "fix",
+      960,
+      40,
+      "Update source code following the plan",
+      "opus-5-5",
+      [],
+      ["write-tests"]
+    ),
     llm("unit", 1460, -120, "Run unit tests", "opus-5-5", [], ["write-tests"]),
     llm("e2e", 1460, 220, "Run playwright tests"),
     llm("sum", 1960, 40, "Consolidate and summarize test results"),
-    { id: "cond", type: "condition", position: { x: 2460, y: 60 }, data: { prompt: "Evaluate: did all tests pass? Count failed tests.", provider: "cursor", model: "haiku-5-5", effort: "medium" } },
-    { id: "ok", type: "approval", position: { x: 2960, y: -100 }, data: { question: "Open a PR with this fix?" } },
-    llm("pr", 3300, -140, "Create a new branch, commit and open a PR", "opus-5-5", ["github-cli"]),
-    { id: "done", type: "notify", position: { x: 3800, y: -60 }, data: { title: "PR opened" } },
-    { id: "rep", type: "asset", position: { x: 2460, y: 520 }, data: { assetKind: "markdown", name: "test-report.md" } },
-    { id: "bad", type: "notify", position: { x: 2960, y: 320 }, data: { title: "Tests still failing" } },
+    {
+      id: "cond",
+      type: "condition",
+      position: { x: 2460, y: 60 },
+      data: {
+        prompt: "Evaluate: did all tests pass? Count failed tests.",
+        provider: "cursor",
+        model: "haiku-5-5",
+        effort: "medium",
+      },
+    },
+    {
+      id: "ok",
+      type: "approval",
+      position: { x: 2960, y: -100 },
+      data: { question: "Open a PR with this fix?" },
+    },
+    llm(
+      "pr",
+      3300,
+      -140,
+      "Create a new branch, commit and open a PR",
+      "opus-5-5",
+      ["github-cli"]
+    ),
+    {
+      id: "done",
+      type: "notify",
+      position: { x: 3800, y: -60 },
+      data: { title: "PR opened" },
+    },
+    {
+      id: "rep",
+      type: "asset",
+      position: { x: 2460, y: 520 },
+      data: { assetKind: "markdown", name: "test-report.md" },
+    },
+    {
+      id: "bad",
+      type: "notify",
+      position: { x: 2960, y: 320 },
+      data: { title: "Tests still failing" },
+    },
   ],
   edges: [
-    e("t", "plan"), e("a1", "plan", "image", "out"), e("a2", "plan", "text", "out"),
-    e("plan", "fix"), e("fix", "unit"), e("fix", "e2e"),
-    e("unit", "sum"), e("e2e", "sum"), e("sum", "cond"),
-    e("cond", "ok", "text", "yes", "Yes"), e("cond", "bad", "text", "no", "No"),
-    e("sum", "rep", "any", "text"), e("ok", "pr"), e("pr", "done"),
+    e("t", "plan"),
+    e("a1", "plan", "image", "out"),
+    e("a2", "plan", "text", "out"),
+    e("plan", "fix"),
+    e("fix", "unit"),
+    e("fix", "e2e"),
+    e("unit", "sum"),
+    e("e2e", "sum"),
+    e("sum", "cond"),
+    e("cond", "ok", "text", "yes", "Yes"),
+    e("cond", "bad", "text", "no", "No"),
+    e("sum", "rep", "any", "text"),
+    e("ok", "pr"),
+    e("pr", "done"),
   ],
 }
 
 const WEEKLY: Flow = {
   nodes: [
     trigger,
-    llm("l", 460, 0, "Summarise merged work for the period.", "opus-5-5", ["github-cli", "confluence"]),
-    { id: "ok", type: "approval", position: { x: 960, y: 40 }, data: { question: "Publish this summary to Confluence?" } },
-    { id: "o", type: "notify", position: { x: 1300, y: 40 }, data: { title: "Report published" } },
+    llm("l", 460, 0, "Summarise merged work for the period.", "opus-5-5", [
+      "github-cli",
+      "confluence",
+    ]),
+    {
+      id: "ok",
+      type: "approval",
+      position: { x: 960, y: 40 },
+      data: { question: "Publish this summary to Confluence?" },
+    },
+    {
+      id: "o",
+      type: "notify",
+      position: { x: 1300, y: 40 },
+      data: { title: "Report published" },
+    },
   ],
   edges: [e("t", "l"), e("l", "ok"), e("ok", "o")],
 }
@@ -145,7 +273,12 @@ function simple(prompt: string, connectors: string[] = []): Flow {
     nodes: [
       trigger,
       llm("l", 460, 0, prompt, "opus-5-5", connectors),
-      { id: "o", type: "notify", position: { x: 960, y: 40 }, data: { title: "Done" } },
+      {
+        id: "o",
+        type: "notify",
+        position: { x: 960, y: 40 },
+        data: { title: "Done" },
+      },
     ],
     edges: [e("t", "l"), e("l", "o")],
   }
@@ -154,6 +287,10 @@ function simple(prompt: string, connectors: string[] = []): Flow {
 export function flowFor(workflowId: string): Flow {
   if (workflowId === "fix-flaky-test") return FIX_FLAKY
   if (workflowId === "weekly-report") return WEEKLY
-  if (workflowId === "triage-inbox") return simple("Label each ticket and name an owner.", ["rally"])
-  return simple("Turn the changelog into release notes.", ["github-cli", "confluence"])
+  if (workflowId === "triage-inbox")
+    return simple("Label each ticket and name an owner.", ["rally"])
+  return simple("Turn the changelog into release notes.", [
+    "github-cli",
+    "confluence",
+  ])
 }

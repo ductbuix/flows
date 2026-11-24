@@ -55,10 +55,7 @@ export async function runPublishAgentReview(options: {
 
   const reviewDir = publishChangesDir(runRoot, task.id)
   mkdirSync(reviewDir, { recursive: true })
-  writeFileSync(
-    join(reviewDir, "goals.md"),
-    options.goals
-  )
+  writeFileSync(join(reviewDir, "goals.md"), options.goals)
   writeFileSync(join(reviewDir, "review-instructions.md"), REVIEW_INSTRUCTIONS)
 
   const connReview = join(connectionDir(home, task.connection), "review.md")

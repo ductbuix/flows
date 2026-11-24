@@ -5,6 +5,7 @@ import {
   DOCKET_CARDS_GLOB,
   cardIdFromPath,
   cardPath,
+  storeRelPath,
   type CardFile,
   type DocketStore,
 } from "./store.ts"
@@ -119,7 +120,7 @@ export class DocketIndex {
   }
 
   private applyChange(path: string): void {
-    const norm = path.replace(/\\/g, "/").replace(/^\//, "")
+    const norm = storeRelPath(path)
     if (norm === DOCKET_BOARD_PATH) {
       const boardFile = this.deps.store.readBoard()
       this.board = boardFile?.data ?? null

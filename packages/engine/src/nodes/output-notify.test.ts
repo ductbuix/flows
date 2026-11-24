@@ -19,7 +19,12 @@ const graph = (title?: string) =>
     name: "Nightly",
     nodes: [
       { id: "t", kind: "trigger", type: "manual" },
-      { id: "n", kind: "output", target: "notify", ...(title ? { title } : {}) },
+      {
+        id: "n",
+        kind: "output",
+        target: "notify",
+        ...(title ? { title } : {}),
+      },
     ],
     edges: [{ from: "t", to: "n" }],
   })
@@ -73,7 +78,9 @@ describe("output notify", () => {
       at: new Date().toISOString(),
     })
     expect(log.listNotices().notices).toHaveLength(1)
-    expect(foldSteps(log.listByRun("r1").map((s) => s.event)).steps.n).toBeDefined()
+    expect(
+      foldSteps(log.listByRun("r1").map((s) => s.event)).steps.n
+    ).toBeDefined()
     log.close()
   })
 

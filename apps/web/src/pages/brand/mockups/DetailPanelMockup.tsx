@@ -91,13 +91,21 @@ export function DetailPanelMockup() {
               <FieldLabel htmlFor="brand-finish" className="font-normal">
                 When it finishes
               </FieldLabel>
-              <Switch id="brand-finish" checked={finish} onCheckedChange={setFinish} />
+              <Switch
+                id="brand-finish"
+                checked={finish}
+                onCheckedChange={setFinish}
+              />
             </Field>
             <Field orientation="horizontal">
               <FieldLabel htmlFor="brand-fails" className="font-normal">
                 Only if it fails
               </FieldLabel>
-              <Switch id="brand-fails" checked={fails} onCheckedChange={setFails} />
+              <Switch
+                id="brand-fails"
+                checked={fails}
+                onCheckedChange={setFails}
+              />
             </Field>
           </FieldGroup>
         </FieldSet>

@@ -1,7 +1,11 @@
 import { useMemo, useState } from "react"
 import { useSearchParams } from "react-router"
 import { Columns3, Inbox, Plus } from "lucide-react"
-import { useFlowsClient, useQuery } from "@workspace/sdk-react"
+import {
+  useFlowsClient,
+  useOptionalFlowsClient,
+  useQuery,
+} from "@workspace/sdk-react"
 import {
   Alert,
   AlertDescription,
@@ -25,6 +29,8 @@ import { DocketDialogs } from "./DocketDialogs"
 import { DocketLoadError, DocketLoading, DocketNoBoard } from "./DocketStates"
 
 export function DocketPage() {
+  const existing = useOptionalFlowsClient()
+  if (existing) return <DocketPageInner />
   return (
     <FlowsClientGate>
       <DocketPageInner />

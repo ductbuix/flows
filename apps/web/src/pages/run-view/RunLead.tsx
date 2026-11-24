@@ -31,7 +31,8 @@ function isPublishWaiting(run: RunDetail, task: TaskView): boolean {
 
 /** The question of a waiting Approval step, if the task is one. */
 function questionOf(run: RunDetail, task: TaskView): string | undefined {
-  return run.steps?.findLast((s) => s.nodeId === task.id && s.question)?.question
+  return run.steps?.findLast((s) => s.nodeId === task.id && s.question)
+    ?.question
 }
 
 /** Waiting Confirmation or failure Alert at the top of the run view (DES-025). */
@@ -72,14 +73,15 @@ export function RunLead({ run }: Props) {
                 data-testid="task-confirmation"
                 icon={<ShieldCheck />}
                 title={
-                  question ?? (publish ? `Publish ${t.id}?` : `Approve ${t.id}?`)
+                  question ??
+                  (publish ? `Publish ${t.id}?` : `Approve ${t.id}?`)
                 }
                 description={
                   question !== undefined
                     ? "Approve continues the run. Reject stops it."
                     : publish
-                    ? "Publish sends these changes out. Discard ends the task as failed."
-                    : "The task runs after approval. Deny ends it as failed."
+                      ? "Publish sends these changes out. Discard ends the task as failed."
+                      : "The task runs after approval. Deny ends it as failed."
                 }
                 approveLabel={publish ? "Publish" : "Approve"}
                 denyLabel={publish ? "Discard" : "Reject"}
@@ -103,12 +105,12 @@ export function RunLead({ run }: Props) {
             rejectIsApproval
               ? "Reject and stop this run?"
               : rejectTaskId &&
-            isPublishWaiting(
-              run,
-              waiting.find((t) => t.id === rejectTaskId) ?? waiting[0]!
-            )
-              ? "Discard this publish?"
-              : "Reject this task?"
+                  isPublishWaiting(
+                    run,
+                    waiting.find((t) => t.id === rejectTaskId) ?? waiting[0]!
+                  )
+                ? "Discard this publish?"
+                : "Reject this task?"
           }
           description={
             rejectIsApproval

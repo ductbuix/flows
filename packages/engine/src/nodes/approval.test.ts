@@ -67,7 +67,9 @@ describe("approval node", () => {
       host = h
     })
     expect(latestStep(foldSteps(eventsOf(log)), "ok")?.status).toBe("waiting")
-    expect(eventsOf(log).filter((e) => e.type === "approval_requested")).toHaveLength(1)
+    expect(
+      eventsOf(log).filter((e) => e.type === "approval_requested")
+    ).toHaveLength(1)
 
     approveNodeStep(log, "r1", "ok")
     host!.wake()
@@ -75,7 +77,9 @@ describe("approval node", () => {
     expect(end.ended).toBe(true)
     const events = eventsOf(log)
     expect(events.at(-1)?.type).toBe("run_succeeded")
-    expect(events.filter((e) => e.type === "approval_requested")).toHaveLength(1)
+    expect(events.filter((e) => e.type === "approval_requested")).toHaveLength(
+      1
+    )
     expect(latestStep(end, "ok")).toMatchObject({
       status: "done",
       decision: "approved",
@@ -83,9 +87,9 @@ describe("approval node", () => {
     expect(latestStep(end, "out")?.status).toBe("done")
     const root = runDir(workflowDir(home, "wf"), "r1")
     // Approve forwards the input.
-    expect(readFileSync(join(root, "nodes/ok/pass-1/text.md"), "utf8")).toContain(
-      "the change"
-    )
+    expect(
+      readFileSync(join(root, "nodes/ok/pass-1/text.md"), "utf8")
+    ).toContain("the change")
     log.close()
   })
 
@@ -106,7 +110,9 @@ describe("approval node", () => {
     ).toThrow(CrashError)
     const end = tickNodes({ log, home, runId: "r1" })
     expect(end.ended).toBe(true)
-    expect(eventsOf(log).filter((e) => e.type === "approval_requested")).toHaveLength(1)
+    expect(
+      eventsOf(log).filter((e) => e.type === "approval_requested")
+    ).toHaveLength(1)
     expect(latestStep(end, "ok")?.status).toBe("done")
     log.close()
   })
@@ -117,7 +123,10 @@ describe("approval node", () => {
     startNodeRun({ log, home, runId: "r1", graph: graph(), inputText: "x" })
     rejectNodeStep(log, "r1", "ok")
     const events = eventsOf(log)
-    expect(events.at(-1)).toMatchObject({ type: "run_cancelled", reason: "rejected" })
+    expect(events.at(-1)).toMatchObject({
+      type: "run_cancelled",
+      reason: "rejected",
+    })
     expect(events.some((e) => e.type === "step_rejected")).toBe(true)
     const steps = foldSteps(events)
     expect(steps.ended).toBe(true)
@@ -127,7 +136,9 @@ describe("approval node", () => {
     })
     expect(latestStep(steps, "out")).toBeUndefined()
     // A decided step cannot be decided again.
-    expect(() => approveNodeStep(log, "r1", "ok")).toThrow(/not awaiting approval/)
+    expect(() => approveNodeStep(log, "r1", "ok")).toThrow(
+      /not awaiting approval/
+    )
     log.close()
   })
 })

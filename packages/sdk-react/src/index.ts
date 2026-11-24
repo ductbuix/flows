@@ -1,4 +1,8 @@
-export { FlowsClientProvider, useFlowsClient } from "./client-context.tsx"
+export {
+  FlowsClientProvider,
+  useFlowsClient,
+  useOptionalFlowsClient,
+} from "./client-context.tsx"
 export {
   useQuery,
   type UseQueryOptions,

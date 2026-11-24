@@ -69,7 +69,8 @@ export function judgeSettingProblems(node: {
 }): { key: string; message: string }[] {
   const out: { key: string; message: string }[] = []
   if ((node.mode ?? "rule") === "rule") {
-    if (node.cli === undefined) out.push({ key: "cli", message: "judge needs cli" })
+    if (node.cli === undefined)
+      out.push({ key: "cli", message: "judge needs cli" })
     if (node.check !== undefined) {
       out.push({ key: "check", message: "check is only for mode: check" })
     }
@@ -85,7 +86,10 @@ export function judgeSettingProblems(node: {
       }
     } else if (value === undefined) {
       out.push({ key: "check", message: `${operator} needs a value` })
-    } else if (NUMBER_OPERATORS.includes(operator) && toNumber(value) === undefined) {
+    } else if (
+      NUMBER_OPERATORS.includes(operator) &&
+      toNumber(value) === undefined
+    ) {
       out.push({ key: "check", message: `${operator} needs a number` })
     }
   }

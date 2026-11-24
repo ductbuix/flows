@@ -124,7 +124,14 @@ describe("tickNodes", () => {
           }
         }
         expect(() =>
-          startNodeRun({ log, home, runId: "r", graph, inputText: "x", crashAt })
+          startNodeRun({
+            log,
+            home,
+            runId: "r",
+            graph,
+            inputText: "x",
+            crashAt,
+          })
         ).toThrow(CrashError)
         expect(types(log, "r")).not.toContain("run_succeeded")
         const state = tickNodes({ log, home, runId: "r" })

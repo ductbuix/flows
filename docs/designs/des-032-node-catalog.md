@@ -111,7 +111,7 @@ OpenBot's `WORKFLOW_PORTS` (`packages/contracts/src/ipc-workflows.ts`).
 - Flags, checked against Claude Code 2.1.319 and Cursor Agent
   2026.11.19 (BL-083):
   - Claude: `claude --print --tools "" --permission-mode dontAsk
-    --no-session-persistence [--model m] [--effort e] < prompt.txt`.
+--no-session-persistence [--model m] [--effort e] < prompt.txt`.
     `--tools ""` turns every tool off.
   - Cursor: `agent -p --mode ask --trust [--model m] < prompt.txt`.
     `--mode ask` is the read-only Q&A mode; there is no `--force`.

@@ -29,7 +29,10 @@ export function RunEffectsTable({ run }: Props) {
   return (
     <PageSection title="Effects">
       {effects.length === 0 ? (
-        <Empty className="ring-1 ring-foreground/10" data-testid="run-effects-empty">
+        <Empty
+          className="ring-1 ring-foreground/10"
+          data-testid="run-effects-empty"
+        >
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Zap />
@@ -62,7 +65,9 @@ export function RunEffectsTable({ run }: Props) {
                 <TableCell>
                   <ImpactBadge impact={effect.impact} />
                 </TableCell>
-                <TableCell className={`${mono} max-w-48 truncate text-muted-foreground`}>
+                <TableCell
+                  className={`${mono} max-w-48 truncate text-muted-foreground`}
+                >
                   {effect.result ?? "—"}
                 </TableCell>
                 <TableCell className="max-w-64 text-muted-foreground">

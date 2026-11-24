@@ -67,7 +67,9 @@ export function InputEditDialog({ row, others, onSave, onClose }: Props) {
               value={draft.type}
               onValueChange={(type) => {
                 if (type === "text" || type === "markdown" || type === "file") {
-                  patch(type === "file" ? { type, default: undefined } : { type })
+                  patch(
+                    type === "file" ? { type, default: undefined } : { type }
+                  )
                 }
               }}
             >
@@ -109,7 +111,9 @@ export function InputEditDialog({ row, others, onSave, onClose }: Props) {
                 id="input-edit-default"
                 data-testid="input-edit-default"
                 value={draft.default ?? ""}
-                onChange={(e) => patch({ default: e.target.value || undefined })}
+                onChange={(e) =>
+                  patch({ default: e.target.value || undefined })
+                }
               />
             </Field>
           ) : null}

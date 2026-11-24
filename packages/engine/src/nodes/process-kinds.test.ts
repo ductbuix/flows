@@ -252,7 +252,9 @@ describe("resume", () => {
       runNodes({ log, home, runId: "r1", graph: graph(), crashAt })
     ).rejects.toThrow(CrashError)
     expect(
-      events(log, "r1").some((e) => e.type === "step_done" && e.nodeId === "work")
+      events(log, "r1").some(
+        (e) => e.type === "step_done" && e.nodeId === "work"
+      )
     ).toBe(false)
 
     const state = await resumeNodes({ log, home, runId: "r1" })
@@ -280,7 +282,14 @@ describe("resume", () => {
     expect(types).toContain("attempt_interrupted")
     expect(types.filter((x) => x === "attempt_started")).toHaveLength(2)
     expect(types.at(-1)).toBe("run_succeeded")
-    expect(existsSync(join(runDir(workflowDir(home, "wf"), "r1"), "nodes/work/pass-1/attempt-2"))).toBe(true)
+    expect(
+      existsSync(
+        join(
+          runDir(workflowDir(home, "wf"), "r1"),
+          "nodes/work/pass-1/attempt-2"
+        )
+      )
+    ).toBe(true)
     log.close()
   }, 15_000)
 

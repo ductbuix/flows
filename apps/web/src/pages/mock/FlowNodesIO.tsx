@@ -1,9 +1,21 @@
-import { Check, X, FileText, Library, Image as ImageIcon, MousePointerClick, Bell, Play } from "lucide-react"
+import {
+  Check,
+  X,
+  FileText,
+  Library,
+  Image as ImageIcon,
+  MousePointerClick,
+  Bell,
+  Play,
+} from "lucide-react"
 import { Link } from "react-router"
 import { useNodeConnections, type NodeProps } from "@xyflow/react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { ToggleGroup, ToggleGroupItem } from "@workspace/ui/components/toggle-group"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@workspace/ui/components/toggle-group"
 import { cn } from "@workspace/ui/lib/utils"
 import { useFlow } from "./flow-context"
 import type { FlowNode } from "./flow-data"
@@ -44,7 +56,9 @@ export function AssetNode({ id, data, selected }: NodeProps<FlowNode>) {
       <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl bg-muted/60 text-muted-foreground">
         <Icon className="size-8" />
         {inputs === 0 && found ? (
-          <span className="max-w-full truncate px-3 text-xs">{found.file.name.split("/").pop()}</span>
+          <span className="max-w-full truncate px-3 text-xs">
+            {found.file.name.split("/").pop()}
+          </span>
         ) : null}
       </div>
       {inputs > 0 ? (
@@ -77,7 +91,9 @@ export function AssetNode({ id, data, selected }: NodeProps<FlowNode>) {
               <span className="shrink-0">· v{found.item.current}</span>
             </Link>
           ) : (
-            <p className="px-1 text-xs text-muted-foreground">Pick a file from the Library</p>
+            <p className="px-1 text-xs text-muted-foreground">
+              Pick a file from the Library
+            </p>
           )}
         </div>
       )}
@@ -85,11 +101,16 @@ export function AssetNode({ id, data, selected }: NodeProps<FlowNode>) {
         className="nodrag w-full"
         value={[image ? "image" : "markdown"]}
         onValueChange={(v) =>
-          v[0] && update(id, { assetKind: v[0] as "image" | "markdown", name: "" })
+          v[0] &&
+          update(id, { assetKind: v[0] as "image" | "markdown", name: "" })
         }
       >
-        <ToggleGroupItem className="flex-1" value="image">Image</ToggleGroupItem>
-        <ToggleGroupItem className="flex-1" value="markdown">Markdown</ToggleGroupItem>
+        <ToggleGroupItem className="flex-1" value="image">
+          Image
+        </ToggleGroupItem>
+        <ToggleGroupItem className="flex-1" value="markdown">
+          Markdown
+        </ToggleGroupItem>
       </ToggleGroup>
       <PortHandle io="out" id="out" port={image ? "image" : "text"} />
     </NodeShell>
@@ -112,12 +133,19 @@ export function ApprovalNode({ id, data, selected }: NodeProps<FlowNode>) {
         />
       </div>
       {data.state === "waiting" && decide ? (
-        <div className="pointer-events-auto flex gap-2" data-testid={`node-decide-${id}`}>
+        <div
+          className="pointer-events-auto flex gap-2"
+          data-testid={`node-decide-${id}`}
+        >
           <Button className="nodrag flex-1" onClick={() => decide("approved")}>
             <Check />
             Approve
           </Button>
-          <Button variant="outline" className="nodrag flex-1" onClick={() => decide("rejected")}>
+          <Button
+            variant="outline"
+            className="nodrag flex-1"
+            onClick={() => decide("rejected")}
+          >
             <X />
             Reject
           </Button>

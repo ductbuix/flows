@@ -1,7 +1,14 @@
 import { Cable, Terminal, Server } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { StatusPill, type Tone } from "@/components/brand/StatusPill"
-import { AUTH, TRANSPORT, type Auth, type ConnStatus, type Connector, type Transport } from "./connectors-data"
+import {
+  AUTH,
+  TRANSPORT,
+  type Auth,
+  type ConnStatus,
+  type Connector,
+  type Transport,
+} from "./connectors-data"
 
 const ICON = { mcp: Server, api: Cable, cli: Terminal }
 
@@ -38,4 +45,6 @@ export const authLabel = (a: Auth) => AUTH[a].label
 
 /** Read only unless an allowed capability writes. */
 export const accessOf = (c: Connector) =>
-  c.capabilities.some((x) => x.write && x.allowed) ? "Read and write" : "Read only"
+  c.capabilities.some((x) => x.write && x.allowed)
+    ? "Read and write"
+    : "Read only"

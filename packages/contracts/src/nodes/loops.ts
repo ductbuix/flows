@@ -22,8 +22,7 @@ export function findLoopEdges(
   })
   for (const list of out.values()) {
     list.sort(
-      (a, b) =>
-        order.get(edges[a]!.to)! - order.get(edges[b]!.to)! || a - b
+      (a, b) => order.get(edges[a]!.to)! - order.get(edges[b]!.to)! || a - b
     )
   }
 

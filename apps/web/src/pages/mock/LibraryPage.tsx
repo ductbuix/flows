@@ -52,11 +52,19 @@ export function LibraryPage() {
   )
   const toggle = (t: string) =>
     setTags((p) => (p.includes(t) ? p.filter((x) => x !== t) : [...p, t]))
-  const count = (k: Filter) => items.filter((i) => k === "all" || i.source === k).length
-  const ids = [...new Set(items.map((i) => i.source))].filter((s) => s !== "local")
+  const count = (k: Filter) =>
+    items.filter((i) => k === "all" || i.source === k).length
+  const ids = [...new Set(items.map((i) => i.source))].filter(
+    (s) => s !== "local"
+  )
   const sources = [
-    ...ids.map((id) => ({ id, label: providers.find((p) => p.id === id)?.label ?? `${id} (removed)` })),
-    ...(items.some((i) => i.source === "local") ? [{ id: "local", label: "Local files" }] : []),
+    ...ids.map((id) => ({
+      id,
+      label: providers.find((p) => p.id === id)?.label ?? `${id} (removed)`,
+    })),
+    ...(items.some((i) => i.source === "local")
+      ? [{ id: "local", label: "Local files" }]
+      : []),
   ]
   const View = gallery ? LibraryGallery : LibraryTable
 
@@ -65,11 +73,18 @@ export function LibraryPage() {
       crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Library" }]}
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setProvidersOpen(true)} data-testid="library-providers-open">
+          <Button
+            variant="outline"
+            onClick={() => setProvidersOpen(true)}
+            data-testid="library-providers-open"
+          >
             <Plug />
             Providers
           </Button>
-          <Button onClick={() => setAdding(true)} data-testid="library-add-open">
+          <Button
+            onClick={() => setAdding(true)}
+            data-testid="library-add-open"
+          >
             <Plus />
             Add to Library
           </Button>
@@ -97,7 +112,11 @@ export function LibraryPage() {
           <TabsList>
             <TabsTrigger value="all">All ({count("all")})</TabsTrigger>
             {sources.map((s) => (
-              <TabsTrigger key={s.id} value={s.id} data-testid={`library-kind-${s.id}`}>
+              <TabsTrigger
+                key={s.id}
+                value={s.id}
+                data-testid={`library-kind-${s.id}`}
+              >
                 {s.label} ({count(s.id)})
               </TabsTrigger>
             ))}
@@ -130,7 +149,10 @@ export function LibraryPage() {
         </aside>
         <div className="flex min-w-0 flex-col gap-4 md:col-span-5">
           {tags.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-1.5" data-testid="library-active-tags">
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              data-testid="library-active-tags"
+            >
               <span className="text-sm text-muted-foreground">Tagged</span>
               {tags.map((t) => (
                 <TagBadge key={t} tag={t} active onClick={() => toggle(t)} />
@@ -148,11 +170,18 @@ export function LibraryPage() {
                   <Search />
                 </EmptyMedia>
                 <EmptyTitle>Nothing matches</EmptyTitle>
-                <EmptyDescription>Change the search, type or tags.</EmptyDescription>
+                <EmptyDescription>
+                  Change the search, type or tags.
+                </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
-            <View items={shown} active={tags} onOpen={setOpenId} onTag={toggle} />
+            <View
+              items={shown}
+              active={tags}
+              onOpen={setOpenId}
+              onTag={toggle}
+            />
           )}
         </div>
       </div>

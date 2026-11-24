@@ -64,8 +64,12 @@ describe("effects union", () => {
       [{ from: "t", to: "o" }]
     )
     let state: RunState | null = null
-    for (const e of decide(null, { kind: "start", at, runId: "r1", graph: folder })
-      .events) {
+    for (const e of decide(null, {
+      kind: "start",
+      at,
+      runId: "r1",
+      graph: folder,
+    }).events) {
       state = fold(state, e)
     }
     let out = decide(state, { kind: "wake", at })

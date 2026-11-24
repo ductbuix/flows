@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { ChevronsDownUp, ChevronsUpDown, Search } from "lucide-react"
-import { useFlowsClient } from "@workspace/sdk-react"
+import { useFlowsClient, useOptionalFlowsClient } from "@workspace/sdk-react"
 import {
   Alert,
   AlertDescription,
@@ -30,6 +30,8 @@ import { listAllFilePaths } from "./list-files"
 const HOME_LABEL = ".flowapp"
 
 export function FilesPage() {
+  const existing = useOptionalFlowsClient()
+  if (existing) return <FilesPageInner />
   return (
     <FlowsClientGate>
       <FilesPageInner />

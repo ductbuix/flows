@@ -27,12 +27,16 @@ export function useDraftRun(
 
   const runAll = useCallback(async () => {
     const order: string[] = []
-    const queue = nodes.current.filter((n) => n.type === "trigger").map((n) => n.id)
+    const queue = nodes.current
+      .filter((n) => n.type === "trigger")
+      .map((n) => n.id)
     while (queue.length) {
       const cur = queue.shift()!
       if (order.includes(cur)) continue
       order.push(cur)
-      queue.push(...edges.current.filter((e) => e.source === cur).map((e) => e.target))
+      queue.push(
+        ...edges.current.filter((e) => e.source === cur).map((e) => e.target)
+      )
     }
     for (const nid of order) await run(nid)
   }, [nodes, edges, run])

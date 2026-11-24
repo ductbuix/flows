@@ -44,7 +44,11 @@ export const NodeRunContext = createContext<NodeRunState>({
 })
 
 /** The React Flow node type: the kind's `Body` inside the shared frame. */
-export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) {
+export function NodeCard({
+  id,
+  data,
+  selected,
+}: NodeProps<Node<NodeCardData>>) {
   const edits = useContext(NodeEditsContext)
   const run = useContext(NodeRunContext)
   const live = run.views[id]
@@ -67,9 +71,7 @@ export function NodeCard({ id, data, selected }: NodeProps<Node<NodeCardData>>) 
       onDecide={
         run.decide ? (decision) => run.decide?.(id, decision) : undefined
       }
-      onRun={
-        run.readOnly || !run.runStep ? undefined : () => run.runStep?.(id)
-      }
+      onRun={run.readOnly || !run.runStep ? undefined : () => run.runStep?.(id)}
       onRetry={run.readOnly ? undefined : () => run.retry(id)}
       onSettings={run.readOnly ? undefined : () => edits.openSettings(id)}
     >

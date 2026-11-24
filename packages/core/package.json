@@ -13,6 +13,7 @@
     "./ports": "./src/ports/index.ts",
     "./kernel/hash": "./src/kernel/hash.ts",
     "./testing": "./src/testing/index.ts",
+    "./testing/blob-store.contract": "./src/testing/blob-store.contract.ts",
     "./testing/document-store.contract": "./src/testing/document-store.contract.ts",
     "./testing/event-store.contract": "./src/testing/event-store.contract.ts",
     "./testing/file-watcher.contract": "./src/testing/file-watcher.contract.ts",

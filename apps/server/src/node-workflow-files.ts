@@ -16,7 +16,11 @@ import {
 } from "@workspace/shared"
 import { moveLayoutIds } from "./layout-files.ts"
 import { hashContent } from "./hash.ts"
-import { orphanNodeFolderIds, trashStamp, uniqueTrashDir } from "./node-trash.ts"
+import {
+  orphanNodeFolderIds,
+  trashStamp,
+  uniqueTrashDir,
+} from "./node-trash.ts"
 import { workflowYamlPath } from "./workflow-files.ts"
 
 function detailOf(workflowId: string, yaml: string): WorkflowDetail {
@@ -46,9 +50,10 @@ export type WriteNodeWorkflowResult =
   | { ok: false; kind: "invalid"; detail: WorkflowDetail }
   | { ok: false; kind: "trash_failed"; path: string; detail: WorkflowDetail }
 
-const filesByKind = new Map<string, readonly { path: string; required: boolean }[]>(
-  NODE_KINDS.map((k) => [k.kind, k.files])
-)
+const filesByKind = new Map<
+  string,
+  readonly { path: string; required: boolean }[]
+>(NODE_KINDS.map((k) => [k.kind, k.files]))
 
 function isDir(path: string): boolean {
   return existsSync(path) && statSync(path).isDirectory()

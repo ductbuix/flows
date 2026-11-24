@@ -10,11 +10,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { basename, dirname, join } from "node:path"
-import type {
-  ChangeSet,
-  EngineEvent,
-  ResourcesJson,
-} from "@workspace/shared"
+import type { ChangeSet, EngineEvent, ResourcesJson } from "@workspace/shared"
 import { readConnection } from "./connections.ts"
 import { getConnector } from "./connectors/registry.ts"
 import { entityIdSegment } from "./library-paths.ts"

@@ -13,7 +13,13 @@ export function WorkflowRowMenu({ name, onRename, onDelete }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant="ghost" size="icon" aria-label={`Actions for ${name}`} />}
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Actions for ${name}`}
+          />
+        }
       >
         <MoreHorizontal />
       </DropdownMenuTrigger>

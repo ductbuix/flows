@@ -59,7 +59,10 @@ function createFakeUpdateEngine(options?: { replayBufferSize?: number }) {
     return topic === ns || topic.startsWith(`${ns}:`)
   }
 
-  function subscribe(params: SubscribeParams): { seq: number; resync: string[] } {
+  function subscribe(params: SubscribeParams): {
+    seq: number
+    resync: string[]
+  } {
     subscribeCalls.push({ ...params, topics: [...params.topics] })
     const resync: string[] = []
     const bufferMin = buffer[0]?.seq ?? seq + 1

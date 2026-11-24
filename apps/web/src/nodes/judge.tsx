@@ -55,7 +55,10 @@ function CheckFields({
             }
           }}
         >
-          <SelectTrigger data-testid="judge-check-operator" aria-label="Operator">
+          <SelectTrigger
+            data-testid="judge-check-operator"
+            aria-label="Operator"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -72,7 +75,9 @@ function CheckFields({
             aria-label="Value"
             placeholder="Value"
             value={String(check.value ?? "")}
-            onChange={(e) => onChange(nextCheck(check, { value: e.target.value }))}
+            onChange={(e) =>
+              onChange(nextCheck(check, { value: e.target.value }))
+            }
             onBlur={onEditEnd}
           />
         )}
@@ -100,7 +105,10 @@ function JudgeBody({
             onSetting("cli", undefined)
             onSetting("model", undefined)
             onSetting("effort", undefined)
-            onSetting("check", node.check ?? { field: "", operator: "=", value: "" })
+            onSetting(
+              "check",
+              node.check ?? { field: "", operator: "=", value: "" }
+            )
           } else {
             onSetting("check", undefined)
             onSetting("cli", node.cli ?? "claude")

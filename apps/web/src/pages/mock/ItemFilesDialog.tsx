@@ -15,7 +15,15 @@ import { FilePreview } from "./FilePreview"
 import { FilesTree, folderPaths } from "./FilesTree"
 
 /** Read-only look at every file of an item, same tree and preview as the Files page. */
-export function ItemFilesDialog({ item, open, onOpenChange }: { item: LibItem; open: boolean; onOpenChange: (o: boolean) => void }) {
+export function ItemFilesDialog({
+  item,
+  open,
+  onOpenChange,
+}: {
+  item: LibItem
+  open: boolean
+  onOpenChange: (o: boolean) => void
+}) {
   const nodes = pathsToFileTree(item.assets.map((a) => a.name))
   const folders = folderPaths(nodes)
   const [openSet, setOpenSet] = useState(() => new Set(folders))

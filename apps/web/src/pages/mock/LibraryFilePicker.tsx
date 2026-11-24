@@ -41,7 +41,12 @@ export function LibraryFilePicker({
       items.flatMap((i) =>
         i.assets
           .filter((a) => a.kind === (kind === "image" ? "image" : "md"))
-          .map((a) => ({ value: valueOf(i.title, a.name), label: a.name, item: i.title, image: kind === "image" }))
+          .map((a) => ({
+            value: valueOf(i.title, a.name),
+            label: a.name,
+            item: i.title,
+            image: kind === "image",
+          }))
       ),
     [items, kind]
   )
@@ -62,14 +67,18 @@ export function LibraryFilePicker({
         data-testid="asset-library-picker"
       />
       <ComboboxContent className="w-72">
-        <ComboboxEmpty>No {kind === "image" ? "images" : "Markdown files"} in the Library</ComboboxEmpty>
+        <ComboboxEmpty>
+          No {kind === "image" ? "images" : "Markdown files"} in the Library
+        </ComboboxEmpty>
         <ComboboxList>
           {(o: Option) => (
             <ComboboxItem key={o.value} value={o}>
               {o.image ? <ImageIcon /> : <File />}
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate">{o.label}</span>
-                <span className="truncate text-xs text-muted-foreground">{o.item}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {o.item}
+                </span>
               </span>
             </ComboboxItem>
           )}

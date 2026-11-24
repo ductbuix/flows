@@ -24,9 +24,13 @@ export function startRun(
   const attempt =
     runs.filter((r) => r.workflowId === workflowId && r.cardId === cardId)
       .length + 1
-  const inputs = given ?? Object.fromEntries(
-    (getWorkflows().find((w) => w.id === workflowId)?.inputs ?? []).map((i) => [i, "—"])
-  )
+  const inputs =
+    given ??
+    Object.fromEntries(
+      (getWorkflows().find((w) => w.id === workflowId)?.inputs ?? []).map(
+        (i) => [i, "—"]
+      )
+    )
   const run: MockRun = {
     id: `r-${200 + runs.length}`,
     workflowId,

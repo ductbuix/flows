@@ -1,7 +1,12 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs"
 import { Page, PageTitle } from "@/components/page"
 import { useLibrary } from "./library-store"
 import { SkillSheet } from "./SkillSheet"
@@ -16,9 +21,18 @@ export function SkillsPage() {
   const [pick, setPick] = useState<Pick | null>(null)
   const [adding, setAdding] = useState(false)
   const available = sources.flatMap((id) =>
-    skillsOf(id).map((s) => ({ ...s, sourceId: id, source: items.find((i) => i.id === id)?.title ?? id }))
+    skillsOf(id).map((s) => ({
+      ...s,
+      sourceId: id,
+      source: items.find((i) => i.id === id)?.title ?? id,
+    }))
   )
-  const updates = skills.filter((s) => s.from && (items.find((i) => i.id === s.from?.sourceId)?.current ?? 0) > s.from.version).length
+  const updates = skills.filter(
+    (s) =>
+      s.from &&
+      (items.find((i) => i.id === s.from?.sourceId)?.current ?? 0) >
+        s.from.version
+  ).length
 
   return (
     <Page
@@ -37,13 +51,29 @@ export function SkillsPage() {
       />
       <Tabs defaultValue="installed">
         <TabsList>
-          <TabsTrigger value="installed">On this machine ({skills.length})</TabsTrigger>
-          <TabsTrigger value="available" data-testid="skills-tab-available">Available ({available.length})</TabsTrigger>
-          <TabsTrigger value="sources" data-testid="skills-tab-sources">Sources ({sources.length})</TabsTrigger>
+          <TabsTrigger value="installed">
+            On this machine ({skills.length})
+          </TabsTrigger>
+          <TabsTrigger value="available" data-testid="skills-tab-available">
+            Available ({available.length})
+          </TabsTrigger>
+          <TabsTrigger value="sources" data-testid="skills-tab-sources">
+            Sources ({sources.length})
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="installed" className="pt-3"><InstalledTable skills={skills} items={items} onPick={setPick} /></TabsContent>
-        <TabsContent value="available" className="pt-3"><AvailableTable rows={available} installed={skills} onPick={setPick} /></TabsContent>
-        <TabsContent value="sources" className="pt-3"><SourcesList /></TabsContent>
+        <TabsContent value="installed" className="pt-3">
+          <InstalledTable skills={skills} items={items} onPick={setPick} />
+        </TabsContent>
+        <TabsContent value="available" className="pt-3">
+          <AvailableTable
+            rows={available}
+            installed={skills}
+            onPick={setPick}
+          />
+        </TabsContent>
+        <TabsContent value="sources" className="pt-3">
+          <SourcesList />
+        </TabsContent>
       </Tabs>
       <SkillSheet pick={pick} onClose={() => setPick(null)} />
       <AddSourceDialog open={adding} onOpenChange={setAdding} />

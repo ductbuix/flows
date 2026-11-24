@@ -54,7 +54,9 @@ export function TrustDialog({
       <DialogContent data-testid="trust-dialog" className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {needsGrant ? `Allow ${who} to run on this Mac?` : "Start this run?"}
+            {needsGrant
+              ? `Allow ${who} to run on this Mac?`
+              : "Start this run?"}
           </DialogTitle>
           <DialogDescription>
             {needsGrant
@@ -83,8 +85,8 @@ export function TrustDialog({
           </ItemGroup>
           {needsGrant && (
             <p className="text-muted-foreground">
-              Allowing covers all of FLOWAPP_HOME. Cursor runs with --force, which
-              auto-approves tool actions.
+              Allowing covers all of FLOWAPP_HOME. Cursor runs with --force,
+              which auto-approves tool actions.
             </p>
           )}
         </TechnicalChecks>
@@ -117,11 +119,7 @@ export function TrustDialog({
               </Button>
             </>
           ) : (
-            <Button
-              data-testid="trust-run"
-              disabled={pending}
-              onClick={onRun}
-            >
+            <Button data-testid="trust-run" disabled={pending} onClick={onRun}>
               Run
             </Button>
           )}

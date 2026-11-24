@@ -39,7 +39,9 @@ export function EntityCombobox({
       <Combobox
         items={options}
         value={selected}
-        onValueChange={(next: ComboOption | null) => onChange(next?.value ?? null)}
+        onValueChange={(next: ComboOption | null) =>
+          onChange(next?.value ?? null)
+        }
         itemToStringLabel={(o: ComboOption) => o.label}
         itemToStringValue={(o: ComboOption) => o.value}
         isItemEqualToValue={(a: ComboOption, b: ComboOption) =>

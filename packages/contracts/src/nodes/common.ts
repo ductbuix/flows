@@ -15,13 +15,20 @@ export const answerDeclSchema = z
   .strictObject({
     name: z
       .string()
-      .regex(ANSWER_NAME_PATTERN, "answer name: letters, digits and _, not starting with a digit"),
+      .regex(
+        ANSWER_NAME_PATTERN,
+        "answer name: letters, digits and _, not starting with a digit"
+      ),
     type: z.enum(["text", "number", "yesno", "list", "choice"]),
     labels: z.array(z.string().min(1)).min(1).optional(),
   })
   .superRefine((d, ctx) => {
     if (d.type === "choice" && d.labels === undefined) {
-      ctx.addIssue({ code: "custom", message: "choice needs labels", path: ["labels"] })
+      ctx.addIssue({
+        code: "custom",
+        message: "choice needs labels",
+        path: ["labels"],
+      })
     }
     if (d.type !== "choice" && d.labels !== undefined) {
       ctx.addIssue({

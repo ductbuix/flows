@@ -38,7 +38,12 @@ import { trustRoutes } from "./trust-routes.ts"
 import { listWorkflowSummaries } from "./workflows-fs.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
 import { createFileFcp } from "./fcp-files.ts"
-import { fcpBootstrapJson, fcpIndexResponse, fcpUpgrade } from "./fcp-routes.ts"
+import { blobRoutes } from "./blob-routes.ts"
+import {
+  fcpBootstrapResponse,
+  fcpIndexResponse,
+  fcpUpgrade,
+} from "./fcp-routes.ts"
 import { layoutRoutes } from "./layout-routes.ts"
 import { workItemRoutes } from "./workitem-routes.ts"
 import { WsHub } from "./ws-hub.ts"
@@ -85,7 +90,7 @@ export function createApp({
     .route("/", libraryRoutes(engine))
     .route("/", layoutRoutes(engine))
     .route("/", workItemRoutes(engine))
-    .get("/fcp", (c) => c.json(fcpBootstrapJson(fcpToken, port), 200))
+    .get("/fcp", (c) => fcpBootstrapResponse(c, fcpToken, port))
     .get("/health", (c) =>
       c.json({ ok: true, version: "0.0.1" } satisfies Health, 200)
     )
@@ -183,11 +188,12 @@ export function createApp({
     .get("/", (c) => fcpIndexResponse(c, fcpToken, port))
     .get(
       "/fcp",
-      fcpUpgrade(engine, fcpToken, port, bus, {
+      fcpUpgrade(engine, fcpToken, port, bus, idempotency, {
         ...docket.bindings,
         ...files,
       })
     )
+    .route("/blobs", blobRoutes(fcpToken))
     .route("/api", api)
 }
 

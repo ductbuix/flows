@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
@@ -50,7 +56,7 @@ function setup() {
       'if [ "$NODE_ID" = l ]; then',
       "  printf '```json\\n%s\\n```\\n' \"$ANSWER_JSON\"",
       "else",
-      "  touch \"$NODE_OUT/model-was-called\"; echo yes",
+      '  touch "$NODE_OUT/model-was-called"; echo yes',
       "fi",
       "",
     ].join("\n"),
@@ -83,7 +89,13 @@ const graph = (check: object) =>
 async function check(c: object, answer: object = reply) {
   const { home, log } = setup()
   process.env.ANSWER_JSON = JSON.stringify(answer)
-  const state = await runNodes({ log, home, runId: "r1", graph: graph(c), inputText: "x" })
+  const state = await runNodes({
+    log,
+    home,
+    runId: "r1",
+    graph: graph(c),
+    inputText: "x",
+  })
   const events: EngineEvent[] = log.listByRun("r1").map((s) => s.event)
   log.close()
   return { home, state, events }
@@ -93,7 +105,11 @@ describe("judge node, check mode", () => {
   // One case per operator, each with the branch it takes and one that flips it.
   it.each([
     ["=", { field: "risk", operator: "=", value: "high" }, "yes"],
-    ["= (text, ignores case)", { field: "risk", operator: "=", value: "HIGH" }, "yes"],
+    [
+      "= (text, ignores case)",
+      { field: "risk", operator: "=", value: "HIGH" },
+      "yes",
+    ],
     ["= (number)", { field: "score", operator: "=", value: 7 }, "yes"],
     ["= (yes or no)", { field: "ready", operator: "=", value: "yes" }, "yes"],
     ["= (differs)", { field: "risk", operator: "=", value: "low" }, "no"],
@@ -107,10 +123,26 @@ describe("judge node, check mode", () => {
     ["< (equal)", { field: "score", operator: "<", value: 7 }, "no"],
     ["<=", { field: "score", operator: "<=", value: 7 }, "yes"],
     ["<= (above)", { field: "score", operator: "<=", value: 6 }, "no"],
-    ["contains (list)", { field: "tags", operator: "contains", value: "ui" }, "yes"],
-    ["contains (list, no match)", { field: "tags", operator: "contains", value: "u" }, "no"],
-    ["contains (text)", { field: "note", operator: "contains", value: "review" }, "yes"],
-    ["contains (text, no match)", { field: "note", operator: "contains", value: "ship" }, "no"],
+    [
+      "contains (list)",
+      { field: "tags", operator: "contains", value: "ui" },
+      "yes",
+    ],
+    [
+      "contains (list, no match)",
+      { field: "tags", operator: "contains", value: "u" },
+      "no",
+    ],
+    [
+      "contains (text)",
+      { field: "note", operator: "contains", value: "review" },
+      "yes",
+    ],
+    [
+      "contains (text, no match)",
+      { field: "note", operator: "contains", value: "ship" },
+      "no",
+    ],
     ["set", { field: "note", operator: "set" }, "yes"],
     ["unset", { field: "note", operator: "unset" }, "no"],
   ] as const)("%s takes the %s branch", async (_name, c, branch) => {
@@ -126,9 +158,9 @@ describe("judge node, check mode", () => {
     ).toEqual([])
     // It forwards what came in on the branch it took.
     const root = runDir(workflowDir(home, "wf"), "r1")
-    expect(readFileSync(join(root, "nodes/j/pass-1/text.md"), "utf8")).toContain(
-      "risk: high"
-    )
+    expect(
+      readFileSync(join(root, "nodes/j/pass-1/text.md"), "utf8")
+    ).toContain("risk: high")
   })
 
   it("treats an empty answer as unset", async () => {
@@ -140,9 +172,15 @@ describe("judge node, check mode", () => {
   })
 
   it("does not call the model", async () => {
-    const { home } = await check({ field: "risk", operator: "=", value: "high" })
+    const { home } = await check({
+      field: "risk",
+      operator: "=",
+      value: "high",
+    })
     const root = runDir(workflowDir(home, "wf"), "r1")
-    expect(() => readFileSync(join(root, "nodes/j/pass-1/attempt-1/out/model-was-called"))).toThrow()
+    expect(() =>
+      readFileSync(join(root, "nodes/j/pass-1/attempt-1/out/model-was-called"))
+    ).toThrow()
   })
 })
 
@@ -154,7 +192,10 @@ describe("judge check settings", () => {
       { id: "l", kind: "llm", cli: "claude", answers: decls },
       { id: "j", ...judge },
     ],
-    edges: [{ from: "t", to: "l" }, { from: "l", to: "j" }],
+    edges: [
+      { from: "t", to: "l" },
+      { from: "l", to: "j" },
+    ],
   })
   const messages = (judge: object) => {
     const r = workflowSchema.safeParse(nodes(judge))
@@ -163,7 +204,11 @@ describe("judge check settings", () => {
 
   it("accepts a check and a rule", () => {
     expect(
-      messages({ kind: "judge", mode: "check", check: { field: "risk", operator: "=", value: "high" } })
+      messages({
+        kind: "judge",
+        mode: "check",
+        check: { field: "risk", operator: "=", value: "high" },
+      })
     ).toEqual([])
     expect(messages({ kind: "judge", cli: "claude" })).toEqual([])
   })
@@ -171,23 +216,34 @@ describe("judge check settings", () => {
   it("refuses settings that do not fit the mode", () => {
     const m = (j: object) => messages({ kind: "judge", ...j }).join("|")
     expect(m({ mode: "check" })).toContain("check mode needs check")
-    expect(m({ mode: "check", cli: "claude", check: { field: "risk", operator: "set" } })).toContain(
-      "cli is only for mode: rule"
-    )
-    expect(m({ cli: "claude", check: { field: "risk", operator: "set" } })).toContain(
-      "check is only for mode: check"
-    )
+    expect(
+      m({
+        mode: "check",
+        cli: "claude",
+        check: { field: "risk", operator: "set" },
+      })
+    ).toContain("cli is only for mode: rule")
+    expect(
+      m({ cli: "claude", check: { field: "risk", operator: "set" } })
+    ).toContain("check is only for mode: check")
     expect(m({})).toContain("judge needs cli")
-    expect(m({ mode: "check", check: { field: "risk", operator: "set", value: 1 } })).toContain(
-      "set takes no value"
-    )
-    expect(m({ mode: "check", check: { field: "risk", operator: "=" } })).toContain("needs a value")
-    expect(m({ mode: "check", check: { field: "score", operator: ">", value: "big" } })).toContain(
-      "needs a number"
-    )
-    expect(m({ mode: "check", check: { field: "risk", operator: "~", value: 1 } })).not.toEqual([])
-    expect(m({ mode: "check", check: { field: "nope", operator: "set" } })).toContain(
-      "no upstream node declares it"
-    )
+    expect(
+      m({ mode: "check", check: { field: "risk", operator: "set", value: 1 } })
+    ).toContain("set takes no value")
+    expect(
+      m({ mode: "check", check: { field: "risk", operator: "=" } })
+    ).toContain("needs a value")
+    expect(
+      m({
+        mode: "check",
+        check: { field: "score", operator: ">", value: "big" },
+      })
+    ).toContain("needs a number")
+    expect(
+      m({ mode: "check", check: { field: "risk", operator: "~", value: 1 } })
+    ).not.toEqual([])
+    expect(
+      m({ mode: "check", check: { field: "nope", operator: "set" } })
+    ).toContain("no upstream node declares it")
   })
 })

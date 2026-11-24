@@ -49,7 +49,8 @@ export function parseNodeWorkflowYaml(text: string): ParsedNodeWorkflowYaml {
   if (parsed.success) return { workflow: parsed.data, errors }
   for (const issue of parsed.error.issues) {
     const path = issue.path.filter(
-      (p): p is string | number => typeof p === "string" || typeof p === "number"
+      (p): p is string | number =>
+        typeof p === "string" || typeof p === "number"
     )
     const [from, to] = range(doc, path, text.length)
     errors.push({ message: issue.message, path, from, to, severity: "error" })

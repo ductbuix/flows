@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine } from "@workspace/engine"
@@ -62,14 +68,18 @@ describe("layout file endpoint", () => {
       nodes: { a: { x: 1, y: 2 } },
       viewport: { x: 0, y: 0, zoom: 1 },
     })
-    expect(hashContent(readFileSync(join(dir, "workflow.yaml"), "utf8"))).toBe(before)
+    expect(hashContent(readFileSync(join(dir, "workflow.yaml"), "utf8"))).toBe(
+      before
+    )
     engine.close()
   })
 
   it("moves the entry on a node rename", async () => {
     const { app, engine } = stack()
     await putLayout(app, { version: 1, nodes: { b: { x: 5, y: 6 } } })
-    const d = (await (await app.request("/api/workflows/nf")).json()) as { hash: string }
+    const d = (await (await app.request("/api/workflows/nf")).json()) as {
+      hash: string
+    }
     const renamed = yaml.replace(/id: b/, "id: c").replace("to: b", "to: c")
     const res = await app.request("/api/workflows/nf", {
       method: "PUT",
@@ -81,7 +91,9 @@ describe("layout file endpoint", () => {
       }),
     })
     expect(res.status).toBe(200)
-    const got = (await (await app.request("/api/workflows/nf/layout")).json()) as { nodes: unknown }
+    const got = (await (
+      await app.request("/api/workflows/nf/layout")
+    ).json()) as { nodes: unknown }
     expect(got.nodes).toEqual({ c: { x: 5, y: 6 } })
     engine.close()
   })

@@ -1,6 +1,11 @@
 import { getFlow, useFlowsVersion, useWorkflows } from "./workflows-store"
 
-export type SkillUse = { workflowId: string; workflow: string; node: string; step: string }
+export type SkillUse = {
+  workflowId: string
+  workflow: string
+  node: string
+  step: string
+}
 
 /** Agent steps that list this skill, read from the canvases as they are now. */
 export function useSkillUses(slug: string): SkillUse[] {

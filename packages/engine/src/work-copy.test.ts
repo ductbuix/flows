@@ -86,7 +86,10 @@ function proposeGraph(id: string, runs: string[]) {
   return workflowSchema.parse({ id, nodes, edges })
 }
 
-async function runPropose(engine: ReturnType<typeof createEngine>, graph: ReturnType<typeof proposeGraph>) {
+async function runPropose(
+  engine: ReturnType<typeof createEngine>,
+  graph: ReturnType<typeof proposeGraph>
+) {
   const pins = await engine.pinNodeRun({ graph, runId: "r1" })
   return engine.startNodeRun({ graph, runId: "r1", pins }).wait()
 }

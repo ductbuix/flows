@@ -48,6 +48,56 @@ describe("GET /", () => {
   })
 })
 
+describe("GET /api/fcp", () => {
+  it("returns token bootstrap for loopback Host and Origin", async () => {
+    const home = trackTempHome(mkdtempSync(join(tmpdir(), "flowapp-api-fcp-")))
+    const token = "api-boot"
+    const engine = createEngine({ home })
+    const app = createApp({ engine, fcpToken: token, port: 8787 })
+    const res = await app.request("http://127.0.0.1:8787/api/fcp", {
+      headers: {
+        Host: "127.0.0.1:8787",
+        Origin: "http://127.0.0.1:5173",
+      },
+    })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({
+      token,
+      url: "ws://127.0.0.1:8787/fcp",
+    })
+    engine.close()
+  })
+
+  it("rejects a rebinding Host with 403", async () => {
+    const home = trackTempHome(
+      mkdtempSync(join(tmpdir(), "flowapp-api-fcp-host-"))
+    )
+    const engine = createEngine({ home })
+    const app = createApp({ engine, fcpToken: "secret", port: 8787 })
+    const res = await app.request("http://127.0.0.1:8787/api/fcp", {
+      headers: { Host: "evil.example:8787" },
+    })
+    expect(res.status).toBe(403)
+    engine.close()
+  })
+
+  it("rejects an evil Origin with 403", async () => {
+    const home = trackTempHome(
+      mkdtempSync(join(tmpdir(), "flowapp-api-fcp-origin-"))
+    )
+    const engine = createEngine({ home })
+    const app = createApp({ engine, fcpToken: "secret", port: 8787 })
+    const res = await app.request("http://127.0.0.1:8787/api/fcp", {
+      headers: {
+        Host: "127.0.0.1:8787",
+        Origin: "http://evil.example",
+      },
+    })
+    expect(res.status).toBe(403)
+    engine.close()
+  })
+})
+
 describe("GET /fcp", () => {
   it("closes with 4401 when the token is wrong", async () => {
     const h = await startFcpServer()
@@ -104,7 +154,11 @@ describe("GET /fcp", () => {
     )
     expect(init.protocolVersion).toBe(FCP_VERSION)
     expect(init.workspace.home).toBe(h.home)
-    expect(init.engineCapabilities).toEqual({ agents: [], nodeKinds: [] })
+    expect(init.engineCapabilities).toEqual({
+      agents: [],
+      nodeKinds: [],
+      blobs: { http: `http://127.0.0.1:${h.port}/blobs` },
+    })
 
     const pong = pingMethod.result.parse(await peer.request("ping", {}))
     expect(pong).toEqual({ ok: true })

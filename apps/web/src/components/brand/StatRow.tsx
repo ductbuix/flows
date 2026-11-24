@@ -13,7 +13,10 @@ export function StatRow({ stats }: { stats: Stat[] }) {
       {stats.map((stat, i) => (
         <div
           key={stat.label}
-          className={cn("flex flex-col gap-0.5 px-4", i > 0 ? "border-l" : "pl-0")}
+          className={cn(
+            "flex flex-col gap-0.5 px-4",
+            i > 0 ? "border-l" : "pl-0"
+          )}
         >
           <dt className="text-xs text-muted-foreground">{stat.label}</dt>
           <dd className={cn(mono, "text-base tabular-nums")}>{stat.value}</dd>
