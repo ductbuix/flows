@@ -198,7 +198,11 @@ function WorkflowsPageInner() {
         onError={setActionError}
         onClearErrors={clearErrors}
       />
-      <WorkflowSheet workflow={open} onClose={() => setOpenId(null)} />
+      <WorkflowSheet
+        workflow={open}
+        onClose={() => setOpenId(null)}
+        onRenamedId={(newId) => setOpenId(newId)}
+      />
     </Page>
   )
 }

@@ -62,7 +62,13 @@ export function StepNode({ id, data, selected }: Props) {
   const kind = data.kind
   const { update, readOnly } = useFlow()
   return (
-    <NodeShell kind={kind} wide selected={selected} state={data.state}>
+    <NodeShell
+      kind={kind}
+      wide
+      selected={selected}
+      state={data.state}
+      result={data.result}
+    >
       <InPorts kind={kind} />
       <Body data={data} />
       {hasModel(kind) && !readOnly ? (
@@ -89,7 +95,15 @@ export function StepNode({ id, data, selected }: Props) {
 export function JudgeNode({ id, data, selected }: Props) {
   const { update, readOnly } = useFlow()
   return (
-    <NodeShell kind="judge" wide selected={selected} state={data.state}>
+    <NodeShell
+      kind="judge"
+      wide
+      selected={selected}
+      state={data.state}
+      result={
+        data.result === "yes" || data.result === "no" ? undefined : data.result
+      }
+    >
       <InPorts kind="judge" />
       <Body data={data} />
       {!readOnly ? (

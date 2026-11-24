@@ -36,6 +36,8 @@ type Props = {
   history: History
   alertKind: "validation" | "conflict" | "error" | null
   alertBody: string
+  runView: string
+  onRunView: (v: string) => void
   onYamlChange: (yaml: string) => void
   onLayoutChange: (layout: LayoutFile) => void
   onSave: () => void
@@ -55,6 +57,8 @@ export function EditorChrome({
   history,
   alertKind,
   alertBody,
+  runView,
+  onRunView,
   onYamlChange,
   onLayoutChange,
   onSave,
@@ -120,6 +124,8 @@ export function EditorChrome({
               onYamlChange={onYamlChange}
               onLayoutChange={onLayoutChange}
               history={history}
+              runView={runView}
+              onRunView={onRunView}
             />
           ) : (
             <Alert data-testid="workflow-canvas-invalid">

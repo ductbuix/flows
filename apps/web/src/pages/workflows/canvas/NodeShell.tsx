@@ -18,6 +18,7 @@ import {
   type NodeKindName,
   type RunState,
 } from "./flow-kinds"
+import { NodeRunFooter } from "./NodeRunFooter"
 
 const STATE_TONE: Record<RunState, Tone> = {
   running: "working",
@@ -95,6 +96,7 @@ type ShellProps = {
   selected?: boolean
   wide?: boolean
   state?: RunState
+  result?: string
   children: ReactNode
 }
 
@@ -104,11 +106,12 @@ export function NodeShell({
   selected,
   wide,
   state,
+  result,
   children,
 }: ShellProps) {
   const Icon = KIND_ICON[kind]
   const nodeId = useNodeId()
-  const { duplicate, remove, openSettings, readOnly } = useFlow()
+  const { duplicate, remove, openSettings, readOnly, retry } = useFlow()
   return (
     <div
       data-selected={selected ? "true" : "false"}
@@ -178,6 +181,12 @@ export function NodeShell({
         )}
       >
         {children}
+        <NodeRunFooter
+          nodeId={nodeId}
+          state={state}
+          result={result}
+          onRetry={retry}
+        />
       </div>
     </div>
   )

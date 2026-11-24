@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
-import { useParams } from "react-router"
+import { useParams, useSearchParams } from "react-router"
 import {
   parseNodeWorkflowYaml,
   type LayoutFile,
@@ -81,14 +81,10 @@ function Editor({ id }: { id: string }) {
   return <EditorReady id={id} detail={detailQ.data} />
 }
 
-function EditorReady({
-  id,
-  detail,
-}: {
-  id: string
-  detail: WorkflowDetail
-}) {
+function EditorReady({ id, detail }: { id: string; detail: WorkflowDetail }) {
   const client = useFlowsClient()
+  const [params, setParams] = useSearchParams()
+  const runView = params.get("run") ?? "draft"
   const [draft, setDraft] = useState<string | null>(null)
   const [hash, setHash] = useState<string | null>(null)
   const [layoutDraft, setLayoutDraft] = useState<LayoutFile | null>(null)
@@ -97,6 +93,13 @@ function EditorReady({
   const [saveError, setSaveError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [pending, setPending] = useState(false)
+
+  function setRunView(next: string) {
+    const p = new URLSearchParams(params)
+    if (next === "draft") p.delete("run")
+    else p.set("run", next)
+    setParams(p, { replace: true })
+  }
 
   const yaml = draft ?? detail.yaml
   const baseHash = hash ?? detail.hash
@@ -181,6 +184,8 @@ function EditorReady({
             ? "The file changed on disk. Reload or copy your edits, then try again."
             : (saveError ?? "")
       }
+      runView={runView}
+      onRunView={setRunView}
       onYamlChange={setDraft}
       onLayoutChange={setLayoutDraft}
       onSave={() => void save()}
