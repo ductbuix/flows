@@ -1,4 +1,8 @@
-import { acquireLock, releaseLock, resolveAppHome } from "@workspace/adapters-node"
+import {
+  acquireLock,
+  releaseLock,
+  resolveAppHome,
+} from "@workspace/adapters-node"
 import type { MessagePortLike } from "@workspace/protocol"
 import { randomBytes } from "node:crypto"
 import { composeDesktopEngine } from "./compose-engine.ts"
