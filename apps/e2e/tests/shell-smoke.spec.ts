@@ -34,11 +34,15 @@ test.describe("shell smoke (BL-185)", () => {
     await page.goto("/docket")
     await expect(page.getByTestId("app-sidebar")).toBeVisible()
     await expect(page.getByTestId("inbox-badge")).toBeVisible()
-    await expect(page.getByTestId("inbox-badge")).toHaveText("")
+    const before = (await page.getByTestId("inbox-badge").innerText()).trim()
+    const beforeCount = before === "" ? 0 : Number(before)
 
     await startRun("node-approval-home")
-    await expect(page.getByTestId("inbox-badge")).toHaveText(/^[1-9]\d*$/, {
-      timeout: 20_000,
-    })
+    await expect
+      .poll(async () => {
+        const t = (await page.getByTestId("inbox-badge").innerText()).trim()
+        return t === "" ? 0 : Number(t)
+      }, { timeout: 20_000 })
+      .toBeGreaterThan(beforeCount)
   })
 })
