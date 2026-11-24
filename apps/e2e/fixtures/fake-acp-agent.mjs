@@ -5,6 +5,17 @@
  */
 import { createInterface } from "node:readline"
 
+// Behave like a CLI for probes (Settings, agent/list): only `acp` speaks ACP.
+const argv = process.argv.slice(2)
+if (argv.includes("--version") || argv.includes("-v")) {
+  process.stdout.write("0.0.0-fake-acp\n")
+  process.exit(0)
+}
+if (!argv.includes("acp")) {
+  process.stderr.write("fake agent: only `acp` is supported\n")
+  process.exit(1)
+}
+
 const rl = createInterface({ input: process.stdin, crlfDelay: Infinity })
 let sessionId = "e2e_sess"
 
