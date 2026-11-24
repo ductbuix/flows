@@ -22,7 +22,11 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   expired sign-ins), `/work-items(/:id)`, `/workflows` (Overview/Editor/
   Runs), `/runs` (by work item; run view Tasks/Changes/Library),
   `/connections(/:id)` (Library tab, sign-in, MCP allow), Settings,
-  `/dev/kit`; one Start run dialog, Allow agent CLI dialog.
+  `/dev/kit`; one Start run dialog, Allow agent CLI dialog. FCP client:
+  MessagePort in Electron, WebSocket when `__FLOWS_FCP__` is set.
+- `apps/desktop`: Electron main + preload (`connect(): MessagePort`) +
+  utilityProcess engine host; loads the web build; Playwright smoke in
+  `apps/desktop/smoke`.
 - `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`. REST
   `/api`: health, workflows (hash/409), memory, files, trust + preflight,
   CLI models, connections + sign-in, `/mcp-trust`, nodes, `/layout`,
@@ -41,7 +45,7 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `packages/core`: UI-free kernel (`EngineError`, ports: Document/Event/
   Secret stores, FileWatcher, ProcessRunner; `bindEngine`, `bindInitialize`
   gate, `runs/` pure decide+fold, `agents/` permission chain, testing fakes
-  + contract suites); `contracts` + `protocol`; no Node I/O.
+  - contract suites); `contracts` + `protocol`; no Node I/O.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox), `engine.lock`.
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer` (+ `$/cancel_request`),

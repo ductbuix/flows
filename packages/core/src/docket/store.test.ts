@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 import { createFakeClock, createFakeDocumentStore } from "../testing/index.ts"
-import { cardPath, createDocketStore, DOCKET_BOARD_PATH } from "./store.ts"
+import {
+  cardIdFromPath,
+  cardPath,
+  createDocketStore,
+  DOCKET_BOARD_PATH,
+} from "./store.ts"
 
 const minimalCardMd = (id: string) => `---
 id: ${id}
@@ -93,5 +98,10 @@ No dates.
     expect(conflict.ok).toBe(false)
     if (!conflict.ok) expect(conflict.kind).toBe("conflict")
     expect(disk.data?.columns).toHaveLength(1)
+  })
+
+  it("cardIdFromPath accepts optional leading slash from node adapters", () => {
+    expect(cardIdFromPath("docket/cards/alpha/card.md")).toBe("alpha")
+    expect(cardIdFromPath("/docket/cards/alpha/card.md")).toBe("alpha")
   })
 })

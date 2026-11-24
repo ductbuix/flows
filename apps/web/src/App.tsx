@@ -11,7 +11,7 @@ import { ConnectionPage } from "@/pages/connections/ConnectionPage"
 import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
 import { ConnectorsPage } from "@/pages/mock/ConnectorsPage"
 import { SkillsPage } from "@/pages/mock/SkillsPage"
-import { DocketPage } from "@/pages/mock/DocketPage"
+import { DocketRoute } from "@/pages/mock/DocketRoute"
 import { FilesPage } from "@/pages/mock/FilesPage"
 import { LibraryPage } from "@/pages/mock/LibraryPage"
 import { InboxPage } from "@/pages/mock/InboxPage"
@@ -50,7 +50,7 @@ export function App() {
     <Routes>
       <Route path="mock" element={<MockShell />}>
         <Route index element={<MockBlankPage />} />
-        <Route path="docket" element={<DocketPage />} />
+        <Route path="docket" element={<DocketRoute />} />
         <Route path="workflows" element={<WorkflowsMockPage />} />
         <Route path="inbox" element={<InboxPage />} />
         <Route path="files" element={<FilesPage />} />
