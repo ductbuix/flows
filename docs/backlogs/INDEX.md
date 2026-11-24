@@ -209,7 +209,7 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-201 | todo | P0 | BL-193 | [Canvas editor: nodes, edges and layout](bl-201-canvas-editor-frame.md) | The workflow editor shows the node canvas with node cards and saves layout and YAML. | web, editor, canvas |
 | BL-202 | todo | P0 | BL-201 | [Canvas: Add node, node settings, undo and redo](bl-202-canvas-add-node-settings.md) | Add node menu with search, node settings, toolbar with undo, redo and fit view. | web, editor, canvas |
 | BL-203 | todo | P1 | BL-201, BL-197 | [Workflow sheet: runs, inputs, rename and run](bl-203-workflow-sheet-runs-inputs.md) | The workflow sheet shows inputs, rename, cards that point to it and its runs; the canvas has a Run button. | web, workflows, runs |
-| BL-204 | todo | P1 | BL-193 | [Library sheet, versions, pin and pull](bl-204-library-sheet-versions.md) | Library items open in a sheet with versions, pin, pull, update and remove. | web, library |
+| BL-204 | done | P1 | BL-193 | [Library sheet, versions, pin and pull](bl-204-library-sheet-versions.md) | Library items open in a sheet with versions, pin, pull, update and remove. | web, library |
 | BL-205 | todo | P1 | BL-204 | [Library: add dialog, tags and views](bl-205-library-add-tags-views.md) | Add from a link or a file, tag items and switch views, as in the mock. | web, library, tags |
 | BL-206 | todo | P2 | BL-193 | [Skill sources](bl-206-skill-sources.md) | Add and remove skill sources and update installed skills, as in the mock. | web, skills |
 | BL-207 | todo | P1 | BL-193 | [Connector sign-in, check and update](bl-207-connector-sign-in-check.md) | Connector sheet can sign in, check status and update settings. | web, connectors, desktop |
