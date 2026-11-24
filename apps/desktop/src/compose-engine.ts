@@ -1,4 +1,5 @@
 import {
+  createNodeBlobStore,
   createNodeDocumentStore,
   createNodeFileWatcher,
 } from "@workspace/adapters-node"
@@ -49,8 +50,9 @@ export function composeDesktopEngine(home: string): DesktopEngine {
   })
   index.start()
   const bus = new UpdateBus()
+  const blobs = createNodeBlobStore({ root: join(home, "blobs") })
 
-  const docketDeps = { index, store, bus }
+  const docketDeps = { index, store, bus, blobs }
   const bindings: MethodBindings = {
     ping: defineBinding(pingMethod, () => ({ ok: true as const })),
     ...createDocketReadBindings(docketDeps),

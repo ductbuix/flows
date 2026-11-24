@@ -1,5 +1,6 @@
 import { splitCardMd } from "@workspace/contracts"
 import { engineError } from "../kernel/engine-error.ts"
+import type { BlobStore } from "../ports/blob-store.ts"
 import type { UpdateBus } from "../updates/update-bus.ts"
 import type { DocketIndex } from "./index.ts"
 import type { DocketStore } from "./store.ts"
@@ -9,6 +10,7 @@ export type DocketWriteDeps = {
   index: DocketIndex
   store: DocketStore
   bus: UpdateBus
+  blobs: BlobStore
 }
 
 export function publishCardChanged(

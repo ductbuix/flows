@@ -46,6 +46,16 @@ export function cardPath(cardId: string): string {
   return `docket/cards/${cardId}/card.md`
 }
 
+/** Card-relative path stored in frontmatter for an owned asset. */
+export function ownedAssetRelPath(name: string): string {
+  return `assets/${name}`
+}
+
+/** Store path of an owned asset file under the card folder. */
+export function ownedAssetStorePath(cardId: string, name: string): string {
+  return `docket/cards/${cardId}/assets/${name}`
+}
+
 /** Store-relative path; leading `/` from Node adapters is optional (DES-040). */
 export function storeRelPath(path: string): string {
   return path.replace(/\\/g, "/").replace(/^\//, "")
@@ -116,6 +126,15 @@ export class DocketStore {
 
   deleteCard(cardId: string) {
     return this.deps.docs.remove(cardPath(cardId))
+  }
+
+  /** Write owned asset bytes as UTF-8 text under `assets/` (DES-038). */
+  writeOwnedAsset(
+    cardId: string,
+    name: string,
+    text: string
+  ): DocumentWriteResult {
+    return this.deps.docs.write(ownedAssetStorePath(cardId, name), text)
   }
 
   saveCard(

@@ -1,5 +1,4 @@
 import { existsSync } from "node:fs"
-import { join } from "node:path"
 import {
   createNodeDocumentStore,
   createNodeFileWatcher,
@@ -15,7 +14,7 @@ import {
   type DocketWriteBindings,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import { getBlobStore, type Engine } from "@workspace/engine"
 
 const systemClock: Clock = { now: () => Date.now() }
 
@@ -32,13 +31,19 @@ export function createDocketFcp(engine: Engine, bus: UpdateBus): DocketFcp {
   const index: DocketIndex = createDocketIndex({
     store,
     watcher,
-    exists: (path) => existsSync(join(engine.home, path.replace(/^\//, ""))),
+    // Linked asset paths are absolute; exists is only called for those (DES-038).
+    exists: (path) => existsSync(path),
   })
   index.start()
   return {
     bindings: {
       ...createDocketReadBindings({ index, store }),
-      ...createDocketWriteBindings({ index, store, bus }),
+      ...createDocketWriteBindings({
+        index,
+        store,
+        bus,
+        blobs: getBlobStore(),
+      }),
     },
     dispose: () => index.dispose(),
   }
