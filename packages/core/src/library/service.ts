@@ -84,7 +84,12 @@ export class LibraryService {
         { users }
       )
     }
+    const itemId = LibItemId.parse(id)
     removeItemTree(this.deps.docs, id)
+    this.deps.bus.publish("library/update", {
+      kind: "item_removed",
+      id: itemId,
+    })
   }
 
   /** Starts a pull job; progress and finish arrive on `library/update`. */

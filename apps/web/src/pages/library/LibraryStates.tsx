@@ -50,8 +50,7 @@ export function LibraryEmpty() {
         </EmptyMedia>
         <EmptyTitle>No library items yet</EmptyTitle>
         <EmptyDescription>
-          Providers are ready. Listing and adding items lands when library item
-          methods are on the sdk.
+          Add a repository, page or ticket so tasks have a local copy to read.
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

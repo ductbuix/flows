@@ -112,15 +112,15 @@ Recorded in DES-043; this checklist is the acceptance surface.
 | ----- | ----------------------------------------- | ------- | ----------------------------- | ------- |
 | LB-01 | Providers dialog (list, presets, custom)  | app     | `library.spec.ts › providers` | —       |
 | LB-02 | Search, kind tabs, list/gallery chrome    | partial | `library.spec.ts › chrome`    | BL-205  |
-| LB-03 | Item list / gallery rows                  | missing | `library.spec.ts › list`      | BL-204  |
+| LB-03 | Item list / gallery rows                  | app     | `library.spec.ts › list`      | BL-204  |
 | LB-04 | Add dialog: from link / from disk         | missing | `library.spec.ts › add`       | BL-205  |
 | LB-05 | ProviderDetect on paste link              | missing | `library.spec.ts › detect`    | BL-205  |
 | LB-06 | DiskPicker (file / folder)                | missing | `library.spec.ts › disk pick` | BL-205  |
-| LB-07 | Library sheet (overview, files, versions) | missing | `library.spec.ts › sheet`     | BL-204  |
-| LB-08 | Versions: pin                             | missing | `library.spec.ts › pin`       | BL-204  |
-| LB-09 | Remote: fetch / pull / push / unlink      | missing | `library.spec.ts › remote`    | BL-204  |
+| LB-07 | Library sheet (overview, files, versions) | app     | `library.spec.ts › sheet`     | BL-204  |
+| LB-08 | Versions: pin                             | app     | `library.spec.ts › pin`       | BL-204  |
+| LB-09 | Remote: fetch / pull / push / unlink      | partial | `library.spec.ts › remote`    | BL-204  |
 | LB-10 | Tags editor + tag rail filter             | missing | `library.spec.ts › tags`      | BL-205  |
-| LB-11 | Remove from library                       | missing | `library.spec.ts › remove`    | BL-204  |
+| LB-11 | Remove from library                       | app     | `library.spec.ts › remove`    | BL-204  |
 
 ## Skills
 

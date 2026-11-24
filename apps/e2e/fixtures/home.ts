@@ -673,15 +673,18 @@ export function createE2eHome(): string {
       "transport: cli",
       "how: gh",
       "auth: cli-login",
+      "providerId: github",
       "capabilities:",
       "  - name: repo clone",
       "    desc: Read repositories",
       "    write: false",
       "    allowed: true",
+      "    cmd: [repo, clone]",
       "  - name: pr merge",
       "    desc: Merge a pull request",
       "    write: true",
       "    allowed: false",
+      "    cmd: [pr, merge]",
       "",
     ].join("\n")
   )
@@ -701,6 +704,94 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  // Stub `gh` for library pull (BL-204): returns JSON files; note bumps.
+  writeFileSync(
+    join(bin, "gh"),
+    [
+      "#!/bin/sh",
+      'if [ "$1" = "--version" ]; then echo "gh stub 0.0.0"; exit 0; fi',
+      'n=$(($(cat "$FLOWAPP_HOME/.gh-pull-n" 2>/dev/null || echo 0) + 1))',
+      'echo "$n" > "$FLOWAPP_HOME/.gh-pull-n"',
+      'printf \'{"files":{"README.md":"pull-%s"},"note":"Stub fetch %s"}\\n\' "$n" "$n"',
+      "exit 0",
+      "",
+    ].join("\n"),
+    { mode: 0o755 }
+  )
+  // Library items for BL-204 e2e (list, sheet, pin, pull, remove).
+  {
+    const id = "github-acme-demo"
+    const dir = join(home, "library", id)
+    mkdirSync(join(dir, "v1"), { recursive: true })
+    mkdirSync(join(dir, "v2"), { recursive: true })
+    writeFileSync(
+      join(dir, "item.yaml"),
+      [
+        `id: ${id}`,
+        "kind: repo",
+        "title: acme/demo",
+        "source: github",
+        "remoteId: acme/demo",
+        "remoteUrl: https://github.com/acme/demo",
+        "tags:",
+        "  - repo:acme/demo",
+        "  - project:e2e",
+        "current: 2",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v1", ".version.yaml"),
+      [
+        "n: 1",
+        "at: 2026-11-20T10:00:00.000Z",
+        "note: First fetch",
+        "contentHash: hash-v1",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "v1", "README.md"), "version one\n")
+    writeFileSync(
+      join(dir, "v2", ".version.yaml"),
+      [
+        "n: 2",
+        "at: 2026-11-22T12:00:00.000Z",
+        "note: Second fetch",
+        "contentHash: hash-v2",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "v2", "README.md"), "version two\n")
+  }
+  {
+    const id = "local-notes"
+    const dir = join(home, "library", id)
+    mkdirSync(join(dir, "v1"), { recursive: true })
+    writeFileSync(
+      join(dir, "item.yaml"),
+      [
+        `id: ${id}`,
+        "kind: other",
+        "title: Scratch notes",
+        "source: local",
+        "tags:",
+        "  - type:notes",
+        "current: 1",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v1", ".version.yaml"),
+      [
+        "n: 1",
+        "at: 2026-11-18T09:00:00.000Z",
+        "note: Imported",
+        "contentHash: hash-notes",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "v1", "notes.md"), "# Notes\n")
+  }
   // Workspace skills for BL-183 e2e.
   for (const dir of [".agents", ".claude"] as const) {
     const skillDir = join(home, dir, "skills", "write-tests")

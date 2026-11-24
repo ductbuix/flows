@@ -141,6 +141,11 @@ export const libraryUpdateNotification = defineNotification({
     }),
     z.object({
       seq: z.number().int().nonnegative(),
+      kind: z.literal("item_removed"),
+      id: LibItemId,
+    }),
+    z.object({
+      seq: z.number().int().nonnegative(),
       kind: z.literal("job_progress"),
       jobId: z.string().min(1),
       itemId: LibItemId,

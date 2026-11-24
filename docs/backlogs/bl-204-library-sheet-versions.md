@@ -2,7 +2,7 @@
 id: BL-204
 title: "Library sheet, versions, pin and pull"
 type: backlog
-status: todo
+status: done
 summary: Library items open in a sheet with versions, pin, pull, update and remove.
 tags: [web, library]
 related: [DES-043]
@@ -19,6 +19,6 @@ Rebuild `LibrarySheet` and `LibraryVersions` on `library/get`, `library/pin_vers
 
 ## Done when
 
-- [ ] Pin a version and pull a new one.
-- [ ] Remove asks for confirmation.
-- [ ] e2e covers pin and pull.
+- [x] Pin a version and pull a new one.
+- [x] Remove asks for confirmation.
+- [x] e2e covers pin and pull.
