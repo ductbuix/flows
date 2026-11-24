@@ -1,6 +1,6 @@
 import { join } from "node:path"
+import { createChromeBrowserSignIn } from "@workspace/adapters-node/chrome-browser-sign-in"
 import {
-  createChromeBrowserSignIn,
   createNodeApiTransport,
   createNodeCliTransport,
   createNodeDocumentStore,

@@ -39,7 +39,6 @@ export {
   type LaunchResult,
 } from "./runner.ts"
 export { createNodeSecretStore } from "./secrets.ts"
-export { createChromeBrowserSignIn } from "./chrome-browser-sign-in.ts"
 export {
   acquireLock,
   liveOwner,

@@ -9,7 +9,8 @@
     "test": "vitest run"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./chrome-browser-sign-in": "./src/chrome-browser-sign-in.ts"
   },
   "dependencies": {
     "@workspace/contracts": "workspace:*",
