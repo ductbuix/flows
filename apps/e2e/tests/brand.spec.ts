@@ -7,6 +7,8 @@ const IDS = [
   "canvas",
   "run-card",
   "detail-panel",
+  "node-ask",
+  "node-logs",
 ]
 
 test.describe("brand", () => {

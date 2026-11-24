@@ -176,6 +176,10 @@ Each has a mockup at `/brand/<id>`; the registry spec there is the detail.
 - **Detail panel** (`detail-panel`). Action row (Switch, Edit, Run now),
   facts as `Item` rows with `Badge` chips, inline problems, `Field` Notify me
   switches, quiet Delete (confirm in a dialog). Switches save at once.
+- **Node ask** (`node-ask`). An open approval or permission sits on its canvas node
+  as `Item variant="outline" size="sm"` with the warning tint: question, `Tool:` line, option buttons answered in place. Other kinds get one "Answer in Inbox" link.
+- **Node logs** (`node-logs`). Logs open only from the node's Logs button in a right `Sheet`: entries as `Terminal` / `Trace`, errors as `StackTrace`,
+  `Skeleton` while loading, one sentence when empty. The canvas shows the result; logs never sit on it.
 
 ## 6. Copy
 
