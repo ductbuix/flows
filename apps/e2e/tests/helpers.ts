@@ -98,6 +98,21 @@ export async function startRun(workflowId: string): Promise<string> {
   return result.runId
 }
 
+/** Cancel live runs for a workflow so a new start is not capped/queued. */
+export async function cancelLiveRuns(workflowId: string): Promise<void> {
+  const listed = (await fcpRequest("run/list", { limit: 100 })) as {
+    items: { id: string; status: string; workflowId: string }[]
+  }
+  for (const run of listed.items) {
+    if (run.workflowId !== workflowId) continue
+    if (run.status !== "running" && run.status !== "queued") continue
+    await fcpRequest("run/cancel", {
+      runId: run.id,
+      requestKey: crypto.randomUUID(),
+    }).catch(() => undefined)
+  }
+}
+
 export function e2eHome(): string {
   const home = process.env.FLOWAPP_HOME
   if (!home) throw new Error("FLOWAPP_HOME is not set")

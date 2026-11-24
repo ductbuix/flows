@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { startRun } from "./helpers"
+import { cancelLiveRuns, startRun } from "./helpers"
 
 async function screenshotThemes(
   page: import("@playwright/test").Page,
@@ -22,6 +22,8 @@ async function screenshotThemes(
 
 test.describe("inbox page (BL-178)", () => {
   test("lists a waiting item and approve clears it", async ({ page }) => {
+    // Prior specs may leave a live approval that caps this workflow at 1.
+    await cancelLiveRuns("node-approval-home")
     const runId = await startRun("node-approval-home")
     await page.goto("/inbox")
     await expect(page.getByTestId("inbox-page")).toBeVisible()

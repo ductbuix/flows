@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import {
   Alert,
@@ -75,6 +75,14 @@ function RunSheetBody({
   const [pending, setPending] = useState<string | null>(null)
   const [cancelOpen, setCancelOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  // Ignore late action results after close / run switch (rerun must not reopen).
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const run = detailQ.data
 
@@ -88,6 +96,7 @@ function RunSheetBody({
   ) {
     setPending(kind)
     const result = await action()
+    if (!mounted.current) return
     setPending(null)
     if (result.ok) {
       onOk(result)

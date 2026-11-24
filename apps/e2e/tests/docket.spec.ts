@@ -246,18 +246,33 @@ test.describe("docket card runs (BL-200)", () => {
       timeout: 15_000,
     })
 
-    // Rerun from the same sheet.
-    await page.getByTestId("runs-rerun").click()
+    // Rerun from the same sheet; wait for the new run id (async start).
     const sheet = page.getByTestId("runs-sheet")
-    await expect(sheet).toBeVisible()
+    const priorId = await sheet.getAttribute("data-run-id")
+    expect(priorId).toBeTruthy()
+    await page.getByTestId("runs-rerun").click()
+    await expect(sheet).not.toHaveAttribute("data-run-id", priorId!, {
+      timeout: 15_000,
+    })
     const rerunId = await sheet.getAttribute("data-run-id")
     expect(rerunId).toBeTruthy()
     await expect(panel.getByTestId(`card-run-row-${rerunId}`)).toBeVisible({
       timeout: 15_000,
     })
 
-    // Start a fast run and wait for Done so the list stays card-scoped.
+    // Cancel the live sleep so later specs are not blocked, then close.
+    await page.getByTestId("runs-cancel").click()
+    await page
+      .getByTestId("confirm-dialog")
+      .getByRole("button", { name: "Cancel run" })
+      .click()
+    await expect(page.getByTestId("runs-rerun")).toBeVisible({
+      timeout: 15_000,
+    })
     await page.keyboard.press("Escape")
+    await expect(page.getByTestId("runs-sheet")).toHaveCount(0)
+
+    // Start a fast run and wait for Done so the list stays card-scoped.
     await panel.getByTestId("card-run-open").click()
     dialog = page.getByTestId("card-run-dialog")
     await dialog.getByTestId("card-run-workflow").click()

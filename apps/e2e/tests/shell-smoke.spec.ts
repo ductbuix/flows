@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { startRun } from "./helpers"
+import { cancelLiveRuns, startRun } from "./helpers"
 
 const routes = [
   { path: "/docket", ready: "docket-page" },
@@ -31,15 +31,21 @@ test.describe("shell smoke (BL-185)", () => {
   }
 
   test("inbox badge", async ({ page }) => {
+    // Free the approval workflow slot before sampling the badge baseline.
+    await cancelLiveRuns("node-approval-home")
     await page.goto("/docket")
     await expect(page.getByTestId("app-sidebar")).toBeVisible()
-    await expect(page.getByTestId("inbox-badge")).toBeVisible()
-    await expect(page.getByTestId("inbox-badge")).toHaveText("")
+    const badge = page.getByTestId("inbox-badge")
+    await expect(badge).toBeVisible()
+    // Other specs may leave connector items; only assert the count rises.
+    const before = Number((await badge.textContent())?.trim() || "0")
 
     await startRun("node-approval-home")
-    await expect(page.getByTestId("inbox-badge")).toHaveText(/^[1-9]\d*$/, {
-      timeout: 20_000,
-    })
+    await expect
+      .poll(async () => Number((await badge.textContent())?.trim() || "0"), {
+        timeout: 20_000,
+      })
+      .toBeGreaterThan(before)
   })
 
   test("app names", async ({ page }) => {

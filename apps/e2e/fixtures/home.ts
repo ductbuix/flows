@@ -349,6 +349,25 @@ export function createE2eHome(): string {
       viewport: { x: 0, y: 0, zoom: 0.75 },
     })
   )
+  // Isolated copy for WF-12 settings edits (other specs mutate diamond).
+  {
+    const id = "node-settings-e2e"
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, "echo settings"))
+    writeFileSync(
+      join(dir, "workflow.layout.json"),
+      JSON.stringify({
+        version: 1,
+        nodes: {
+          start: { x: 40, y: 80 },
+          build: { x: 420, y: 80 },
+          done: { x: 800, y: 80 },
+        },
+        viewport: { x: 0, y: 0, zoom: 0.75 },
+      })
+    )
+  }
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
