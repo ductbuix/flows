@@ -2,7 +2,7 @@
 id: BL-140
 title: Cursor ACP profile
 type: backlog
-status: todo
+status: done
 summary: "AgentProfile for Cursor: agent acp command, cursor_login auth, --model at spawn, version check for agent/list."
 tags: [acp, cursor, agents]
 related: [DES-041]
@@ -19,6 +19,6 @@ First real profile. Capability flags (`mcpParam`, `setModel`) start false until 
 
 ## Done when
 
-- [ ] Spawns `agent [--model m] acp` through ProcessRunner with cwd = step work dir.
-- [ ] Calls `authenticate` with `cursor_login` when required; failure is a typed `needs_trust` error.
-- [ ] `agent/list` reports Cursor found or missing with version; test with a stub binary on PATH.
+- [x] Spawns `agent [--model m] acp` through ProcessRunner with cwd = step work dir.
+- [x] Calls `authenticate` with `cursor_login` when required; failure is a typed `needs_trust` error.
+- [x] `agent/list` reports Cursor found or missing with version; test with a stub binary on PATH.

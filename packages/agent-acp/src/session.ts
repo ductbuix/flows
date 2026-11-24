@@ -5,6 +5,7 @@ import type {
   Logger,
 } from "@workspace/core"
 import type { RpcPeer } from "@workspace/protocol"
+import { authenticateIfRequired } from "./authenticate.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
 
 /** Client capabilities advertised on `initialize` (DES-041). */
@@ -20,6 +21,8 @@ export type OpenAcpSessionOptions = {
   signal?: AbortSignal
   clientInfo?: { name: string; version: string }
   protocolVersion?: number
+  /** When set and listed in initialize authMethods, call authenticate. */
+  authMethod?: string
 }
 
 type QueueWaiter = {
@@ -40,7 +43,7 @@ export async function openAcpSession(
     version: "0.0.0",
   }
 
-  await peer.request(
+  const initResult = await peer.request(
     "initialize",
     {
       protocolVersion,
@@ -49,6 +52,15 @@ export async function openAcpSession(
     },
     { signal: options.signal }
   )
+
+  if (options.authMethod) {
+    await authenticateIfRequired(
+      peer,
+      options.authMethod,
+      initResult,
+      options.signal
+    )
+  }
 
   const created = await peer.request(
     "session/new",

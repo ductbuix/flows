@@ -7,3 +7,8 @@ export {
   type FakeAgentScript,
   type FakeAgentStep,
 } from "./fake-agent.ts"
+export {
+  createScriptedProcessRunner,
+  type ScriptedProcessRunner,
+  type ScriptedSpawn,
+} from "./scripted-runner.ts"
