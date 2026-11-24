@@ -64,6 +64,13 @@ import {
   runUpdateNotification,
 } from "./run.ts"
 import {
+  settingsCliStatusMethod,
+  settingsGetTrustMethod,
+  settingsListMcpTrustMethod,
+  settingsSetMcpTrustMethod,
+  settingsSetTrustMethod,
+} from "./settings.ts"
+import {
   skillGetMethod,
   skillInstallMethod,
   skillListMethod,
@@ -144,6 +151,11 @@ export const fcpMethodTable = {
   "inbox/list": inboxListMethod,
   "inbox/answer": inboxAnswerMethod,
   "inbox/dismiss": inboxDismissMethod,
+  "settings/cli_status": settingsCliStatusMethod,
+  "settings/get_trust": settingsGetTrustMethod,
+  "settings/set_trust": settingsSetTrustMethod,
+  "settings/list_mcp_trust": settingsListMcpTrustMethod,
+  "settings/set_mcp_trust": settingsSetMcpTrustMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */

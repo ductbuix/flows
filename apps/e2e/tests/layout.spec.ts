@@ -103,7 +103,6 @@ const routes: Route[] = [
     dynamic: true,
   },
   { name: "files", path: "/files", ready: "files-tree", dynamic: true },
-  { name: "settings", path: "/settings", ready: "theme-toggle" },
 ]
 
 test.describe("layout check (BL-061 / BL-185)", () => {

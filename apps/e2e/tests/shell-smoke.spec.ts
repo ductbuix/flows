@@ -10,7 +10,6 @@ const routes = [
   { path: "/library", ready: "mock-library-page" },
   { path: "/skills", ready: "mock-skills-page" },
   { path: "/files", ready: "mock-files-page" },
-  { path: "/settings", ready: "settings-page" },
   { path: "/brand", ready: "brand-page" },
 ] as const
 

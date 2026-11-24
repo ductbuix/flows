@@ -2,7 +2,7 @@
 id: BL-210
 title: "Settings panel and trust methods"
 type: backlog
-status: todo
+status: done
 summary: Settings opens from the sidebar footer as a panel; CLI, trust and MCP trust have FCP methods.
 tags: [web, settings, trust, fcp]
 related: [DES-043]
@@ -19,5 +19,5 @@ Add FCP methods for CLI settings, app trust and MCP trust. Remove the `/settings
 
 ## Done when
 
-- [ ] Cursor trust and MCP trust can be set from the panel.
-- [ ] `/settings` is not a route.
+- [x] Cursor trust and MCP trust can be set from the panel.
+- [x] `/settings` is not a route.

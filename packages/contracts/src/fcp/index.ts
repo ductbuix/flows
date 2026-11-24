@@ -264,3 +264,20 @@ export {
   inboxUpdateNotification,
   type WireInboxItem,
 } from "./inbox.ts"
+export {
+  settingsCliStatusMethod,
+  settingsCliStatusParamsSchema,
+  settingsCliStatusResultSchema,
+  settingsGetTrustMethod,
+  settingsGetTrustParamsSchema,
+  settingsGetTrustResultSchema,
+  settingsListMcpTrustMethod,
+  settingsListMcpTrustParamsSchema,
+  settingsListMcpTrustResultSchema,
+  settingsSetMcpTrustMethod,
+  settingsSetMcpTrustParamsSchema,
+  settingsSetMcpTrustResultSchema,
+  settingsSetTrustMethod,
+  settingsSetTrustParamsSchema,
+  settingsSetTrustResultSchema,
+} from "./settings.ts"

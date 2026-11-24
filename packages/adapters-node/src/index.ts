@@ -49,3 +49,13 @@ export {
   type PeekLockResult,
 } from "./engine-lock.ts"
 export { createNodeGatewaySocketServer } from "./gateway-socket.ts"
+export { createNodeCliStatusPort } from "./cli-status.ts"
+export {
+  allowMcpServerAlways,
+  allowMcpServerOnce,
+  clearMcpOnceGrants,
+  createNodeMcpTrustPort,
+  listAllowedMcpServers,
+  normalizeMcpServerKey,
+  revokeMcpServer,
+} from "./mcp-trust.ts"

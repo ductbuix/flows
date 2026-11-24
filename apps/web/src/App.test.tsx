@@ -55,10 +55,18 @@ describe("App", () => {
     await expectDocketShell()
   })
 
-  it("renders settings without FCP", async () => {
-    renderApp("/settings")
-    expect(await screen.findByTestId("settings-page")).toBeTruthy()
+  it("opens settings as a panel from the sidebar footer", async () => {
+    renderApp("/docket")
+    expect(await screen.findByTestId("app-sidebar")).toBeTruthy()
+    screen.getByTestId("settings-open").click()
+    expect(await screen.findByTestId("settings-panel")).toBeTruthy()
     expect(screen.getByTestId("theme-toggle")).toBeTruthy()
+  })
+
+  it("redirects /settings away from a settings page", async () => {
+    renderApp("/settings")
+    await expectDocketShell()
+    expect(screen.queryByTestId("settings-page")).toBeNull()
   })
 
   it("renders the brand index", async () => {
