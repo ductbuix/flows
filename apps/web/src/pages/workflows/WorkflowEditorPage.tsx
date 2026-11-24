@@ -72,8 +72,7 @@ function Editor({ id }: { id: string }) {
       <Page
         fill
         crumbs={[
-          { label: "Mockup", to: "/mock" },
-          { label: "Workflows", to: "/mock/workflows" },
+          { label: "Workflows", to: "/workflows" },
           { label: id },
         ]}
         data-testid="mock-workflow-editor"
@@ -92,8 +91,7 @@ function Editor({ id }: { id: string }) {
       <Page
         fill
         crumbs={[
-          { label: "Mockup", to: "/mock" },
-          { label: "Workflows", to: "/mock/workflows" },
+          { label: "Workflows", to: "/workflows" },
           { label: id },
         ]}
         data-testid="mock-workflow-editor"
@@ -113,8 +111,7 @@ function Editor({ id }: { id: string }) {
     <Page
       fill
       crumbs={[
-        { label: "Mockup", to: "/mock" },
-        { label: "Workflows", to: "/mock/workflows" },
+        { label: "Workflows", to: "/workflows" },
         { label: title },
       ]}
       actions={

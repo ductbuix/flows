@@ -75,7 +75,7 @@ function FilesPageInner() {
     return (
       <Page
         fill
-        crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Files" }]}
+        crumbs={[{ label: "Files" }]}
         data-testid="mock-files-page"
       >
         <PageTitle
@@ -94,7 +94,7 @@ function FilesPageInner() {
     return (
       <Page
         fill
-        crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Files" }]}
+        crumbs={[{ label: "Files" }]}
         data-testid="mock-files-page"
       >
         <PageTitle title="Files" description="Loading workspace files…" />
@@ -109,7 +109,7 @@ function FilesPageInner() {
   return (
     <Page
       fill
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Files" }]}
+      crumbs={[{ label: "Files" }]}
       data-testid="mock-files-page"
     >
       <PageTitle

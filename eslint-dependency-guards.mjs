@@ -91,11 +91,21 @@ export const adaptersRestrictedImports = {
   ],
 }
 
-/** web: never import core, engine or adapters. */
+/** web: never import core, engine or adapters; no hc REST client (BL-185). */
 export const webRestrictedImports = {
   "no-restricted-imports": [
     "error",
     {
+      paths: [
+        {
+          name: "hono/client",
+          message: "web must use FCP via sdk-react, not hono/client",
+        },
+        {
+          name: "server/app",
+          message: "web must not import server/app (no hc AppType)",
+        },
+      ],
       patterns: [
         {
           group: [

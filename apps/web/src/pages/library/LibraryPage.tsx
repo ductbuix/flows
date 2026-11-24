@@ -80,7 +80,7 @@ function LibraryPageInner() {
 
   return (
     <Page
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Library" }]}
+      crumbs={[{ label: "Library" }]}
       actions={
         <Button
           variant="outline"

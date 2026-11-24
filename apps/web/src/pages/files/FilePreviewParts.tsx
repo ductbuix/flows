@@ -5,7 +5,7 @@ import {
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
 import { mono } from "@/components/data/mono"
-import { SummaryMarkdown } from "@/pages/run-view/SummaryMarkdown"
+import { SummaryMarkdown } from "@/components/SummaryMarkdown"
 
 export function FilePreviewHeader({
   path,

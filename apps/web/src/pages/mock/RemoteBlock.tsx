@@ -176,7 +176,7 @@ export function RemoteBar({
             {conn.name} sign-in{" "}
             {conn.status === "expired" ? "expired" : "is off"}.{" "}
             <Link
-              to={`/mock/connectors?connector=${conn.id}`}
+              to={`/connectors?connector=${conn.id}`}
               className="underline"
               data-testid="library-sign-in"
             >

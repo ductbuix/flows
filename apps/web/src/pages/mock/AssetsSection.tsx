@@ -37,7 +37,7 @@ export function AssetsSection({ card }: { card: Card }) {
         mine.map((i) => (
           <ListRow
             key={i.id}
-            onOpen={() => void navigate(`/mock/library?item=${i.id}`)}
+            onOpen={() => void navigate(`/library?item=${i.id}`)}
           >
             <KindIcon
               kind={i.kind}

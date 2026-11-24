@@ -217,9 +217,6 @@ importers:
       '@xyflow/react':
         specifier: ^13.0.2
         version: 13.0.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
-      hono:
-        specifier: ^4.13.19
-        version: 4.13.19
       lucide-react:
         specifier: ^1.76.0
         version: 1.76.0(@types/react@19.3.0)(react@19.3.1)
@@ -287,9 +284,6 @@ importers:
       jsdom:
         specifier: ^31.0.1
         version: 31.0.1
-      server:
-        specifier: workspace:*
-        version: link:../server
       typescript:
         specifier: ~6.0.2
         version: 6.0.3

@@ -17,13 +17,12 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 ## Layout
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
-  on `127.0.0.1:5173`, proxies `/api`; node cards in `src/nodes/`; pages use
-  `components/page`, labels/ids `components/data`. Routes: Home (Needs you,
-  expired sign-ins), `/work-items(/:id)`, `/workflows` (Overview/Editor/
-  Runs), `/runs` (by work item; run view Tasks/Changes/Library),
-  `/connections(/:id)` (Library tab, sign-in, MCP allow), Settings,
-  `/dev/kit`; one Start run dialog, Allow agent CLI dialog. FCP client:
-  MessagePort in Electron, WebSocket when `__FLOWS_FCP__` is set.
+  on `127.0.0.1:5173`, proxies `/api` (FCP bootstrap + blobs). Pages use
+  `components/page`, labels/ids `components/data`. Routes (FCP via
+  sdk-react): `/`→`/docket`, `/inbox`, `/workflows(/:id)`, `/runs`,
+  `/connectors`, `/library`, `/skills`, `/files`, `/settings`, `/brand`,
+  `/dev/kit`; `/mock/*` redirects to the same paths. No `hono/client`.
+  FCP client: MessagePort in Electron, WebSocket when `__FLOWS_FCP__` is set.
 - `apps/desktop`: Electron main + preload (`connect(): MessagePort`) +
   utilityProcess engine host; loads the web build; Playwright smoke in
   `apps/desktop/smoke`.

@@ -99,7 +99,7 @@ function DocketPageInner() {
   return (
     <Page
       fill
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Docket" }]}
+      crumbs={[{ label: "Docket" }]}
       actions={
         <div className="flex gap-2">
           <Button
