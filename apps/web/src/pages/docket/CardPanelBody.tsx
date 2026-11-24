@@ -9,13 +9,12 @@ import {
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { errorMessage, isConflictError } from "@/lib/fcp-error"
+import { AssetsSection } from "./AssetsSection"
 import { CardPanelHeader } from "./CardPanelHeader"
 import { InlineText } from "./InlineText"
 import { LinksSection } from "./LinksSection"
-import {
-  PropertiesSection,
-  type PropertyPatch,
-} from "./PropertiesSection"
+import { PropertiesSection, type PropertyPatch } from "./PropertiesSection"
+import { RefDataSection } from "./RefDataSection"
 import { RefsSection } from "./RefsSection"
 import { Section } from "./SectionParts"
 
@@ -136,6 +135,18 @@ export function CardPanelBody({
               allCards={allCards}
               onChange={(links) => void patch({ links })}
             />
+            <AssetsSection
+              client={client}
+              cardId={cardId}
+              baseHash={data.hash}
+              assets={data.assets}
+              onMutated={() => {
+                /* docket/update invalidates via subscription */
+              }}
+            />
+            <div className="border-t pt-4">
+              <RefDataSection refs={data.refs} />
+            </div>
           </div>
         </div>
       </div>

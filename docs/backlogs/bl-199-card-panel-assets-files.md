@@ -2,7 +2,7 @@
 id: BL-199
 title: "Card panel: assets, item files and ref data"
 type: backlog
-status: todo
+status: done
 summary: The card panel manages owned assets, item files and ref data as in the mock.
 tags: [web, docket, assets]
 related: [DES-043]
@@ -19,6 +19,6 @@ Use `docket/add_asset`, `docket/remove_asset`, `file/stat` and `file/reveal`. In
 
 ## Done when
 
-- [ ] Add and remove an asset from the panel.
-- [ ] Item files open in Files.
-- [ ] e2e covers the flow.
+- [x] Add and remove an asset from the panel.
+- [x] Item files open in Files.
+- [x] e2e covers the flow.

@@ -69,9 +69,9 @@ Recorded in DES-043; this checklist is the acceptance surface.
 | DK-09 | Refs: list, add URL, remove                   | app     | `docket.spec.ts › add ref`         | BL-198  |
 | DK-10 | Properties: status, start/due, custom keys    | app     | `docket.spec.ts › properties`      | BL-198  |
 | DK-11 | Links: relation + target card                 | app     | `docket.spec.ts › add link`        | BL-198  |
-| DK-12 | Assets: link from library or disk             | missing | `docket.spec.ts › add asset`       | BL-199  |
-| DK-13 | Item files menu (view / Finder / Cursor)      | missing | `docket.spec.ts › item files`      | BL-199  |
-| DK-14 | Ref data section                              | missing | `docket.spec.ts › ref data`        | BL-199  |
+| DK-12 | Assets: link from library or disk             | app     | `docket.spec.ts › add asset`       | BL-199  |
+| DK-13 | Item files menu (view / Finder / Cursor)      | app     | `docket.spec.ts › item files`      | BL-199  |
+| DK-14 | Ref data section                              | app     | `docket.spec.ts › ref data`        | BL-199  |
 | DK-15 | Card runs list                                | missing | `docket.spec.ts › card runs`       | BL-200  |
 | DK-16 | Run workflow dialog from card                 | missing | `docket.spec.ts › run dialog`      | BL-200  |
 
@@ -196,9 +196,9 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 28     |
+| app       | 31     |
 | partial   | 7      |
-| missing   | 46     |
+| missing   | 43     |
 | drop      | 5      |
 | **total** | **86** |
 
