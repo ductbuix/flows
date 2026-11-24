@@ -13,13 +13,17 @@ const skill = (
 })
 
 describe("statusOf", () => {
-  it("flags invalid, read-only and installed", () => {
+  it("flags invalid, read-only, installed and stale", () => {
     expect(statusOf(skill({ slug: "a", problem: "x" })).label).toBe("Invalid")
     expect(statusOf(skill({ slug: "b" })).label).toBe("Read-only")
     expect(
       statusOf(skill({ slug: "c", from: { sourceId: "repo", version: 2 } }))
         .label
     ).toBe("Installed v2")
+    expect(
+      statusOf(skill({ slug: "d", from: { sourceId: "repo", version: 1 } }), 3)
+        .label
+    ).toBe("Update available")
   })
 })
 

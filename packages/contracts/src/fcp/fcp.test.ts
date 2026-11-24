@@ -136,11 +136,13 @@ describe("FCP helpers", () => {
     expect(fcpNotificationTable["library/update"].name).toBe("library/update")
   })
 
-  it("declares skill/list and skill/get as queries and install/uninstall as commands", () => {
+  it("declares skill list/get/list_sources as queries and install/uninstall/save as commands", () => {
     expect(fcpMethodTable["skill/list"]).toBe(skillListMethod)
     expect(fcpMethodTable["skill/get"]).toBe(skillGetMethod)
+    expect(fcpMethodTable["skill/list_sources"].kind).toBe("query")
     expect(fcpMethodTable["skill/install"]).toBe(skillInstallMethod)
     expect(fcpMethodTable["skill/uninstall"]).toBe(skillUninstallMethod)
+    expect(fcpMethodTable["skill/save"].kind).toBe("command")
     expect(skillListMethod.kind).toBe("query")
     expect(skillGetMethod.kind).toBe("query")
     expect(skillInstallMethod.kind).toBe("command")

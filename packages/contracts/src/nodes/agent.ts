@@ -16,6 +16,8 @@ export const agentKind = defineNodeKind({
     effort: effortSchema.optional(),
     memory: z.array(z.string().min(1)).optional(),
     answers: answersSchema.optional(),
+    /** Skill slugs this step may use (mock parity / BL-206). */
+    skills: z.array(z.string().min(1)).optional(),
     ...stepSettings,
   },
 })

@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest"
 import { ErrorCode } from "@workspace/contracts"
 import type { FlowsClient } from "@workspace/sdk"
-import { installSkill, uninstallSkill, updateSkill } from "./skill-actions"
+import {
+  installSkill,
+  saveSources,
+  uninstallSkill,
+  updateSkill,
+} from "./skill-actions"
 
 function fakeClient(
   impl: (method: string, params: unknown) => Promise<unknown>
@@ -66,5 +71,15 @@ describe("skill-actions", () => {
       })
     ).resolves.toBe("ok")
     expect(methods).toEqual(["skill/uninstall", "skill/install"])
+  })
+
+  it("saveSources calls skill/save", async () => {
+    const call = vi.fn().mockResolvedValue({ sources: ["repo"] })
+    const client = fakeClient(call)
+    await expect(saveSources(client, ["repo"])).resolves.toBe("ok")
+    expect(call).toHaveBeenCalledWith(
+      "skill/save",
+      expect.objectContaining({ sources: ["repo"] })
+    )
   })
 })

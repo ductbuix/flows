@@ -21,6 +21,8 @@ export const llmKind = defineNodeKind({
     answers: answersSchema.optional(),
     /** Cursor create_plan: auto-accept or Inbox review (DES-041 / BL-148). */
     planReview: z.enum(["auto", "ask"]).optional(),
+    /** Skill slugs this step may use (mock parity / BL-206). */
+    skills: z.array(z.string().min(1)).optional(),
     ...stepSettings,
   },
 })
