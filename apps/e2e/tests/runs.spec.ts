@@ -32,7 +32,9 @@ test.describe("runs page (BL-180)", () => {
     await page.getByTestId("runs-start-open").click()
     await expect(page.getByTestId("runs-start-dialog")).toBeVisible()
     await page.getByTestId("runs-start-workflow").click()
-    await page.getByRole("option", { name: /diamond/i }).click()
+    // Own fixture: diamond shares maxConcurrentRuns=1 with docket card runs
+    // and flaked when a prior diamond run was still live (BL-195).
+    await page.getByRole("option", { name: /runs page demo/i }).click()
     await page.getByTestId("runs-start-submit").click()
 
     await expect(page.getByTestId("runs-sheet")).toBeVisible({
@@ -46,7 +48,7 @@ test.describe("runs page (BL-180)", () => {
       timeout: 15_000,
     })
 
-    // Wait until the echo workflow finishes so delete is allowed.
+    // Wait until the workflow finishes so delete is allowed.
     await expect(page.getByTestId("runs-rerun")).toBeVisible({
       timeout: 20_000,
     })

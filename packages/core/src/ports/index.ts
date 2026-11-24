@@ -34,6 +34,7 @@ export type {
   ProcessSpawnSpec,
   RunningProcess,
 } from "./process-runner.ts"
+export type { PublishPolicy, PublishPort, PublishResult } from "./publish.ts"
 export { assertSecretKey } from "./secret-key.ts"
 export type { SecretStore } from "./secret-store.ts"
 export {

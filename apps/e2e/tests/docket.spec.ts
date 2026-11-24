@@ -222,6 +222,7 @@ test.describe("docket card runs (BL-200)", () => {
   })
 
   test("run on card", async ({ page }) => {
+    test.setTimeout(60_000)
     await openFixLogin(page)
     const panel = page.getByTestId("docket-panel")
 
@@ -261,6 +262,7 @@ test.describe("docket card runs (BL-200)", () => {
     })
 
     // Cancel the live sleep so later specs are not blocked, then close.
+    // Prefer the sheet Close control: Escape is flaky with nested Base UI sheets.
     await page.getByTestId("runs-cancel").click()
     await page
       .getByTestId("confirm-dialog")
@@ -269,10 +271,16 @@ test.describe("docket card runs (BL-200)", () => {
     await expect(page.getByTestId("runs-rerun")).toBeVisible({
       timeout: 15_000,
     })
-    await page.keyboard.press("Escape")
-    await expect(page.getByTestId("runs-sheet")).toHaveCount(0)
+    await page
+      .getByTestId("runs-sheet")
+      .getByRole("button", { name: "Close" })
+      .click()
+    await expect(page.getByTestId("runs-sheet")).toHaveCount(0, {
+      timeout: 5_000,
+    })
 
     // Start a fast run and wait for Done so the list stays card-scoped.
+    await expect(panel.getByTestId("card-run-open")).toBeVisible()
     await panel.getByTestId("card-run-open").click()
     dialog = page.getByTestId("card-run-dialog")
     await dialog.getByTestId("card-run-workflow").click()

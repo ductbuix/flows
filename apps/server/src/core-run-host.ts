@@ -1,24 +1,26 @@
 import { join } from "node:path"
 import { createAcpRuntime } from "@workspace/agent-acp"
-import {
-  createNodeDocumentStore,
-  createNodeProcessRunner,
-} from "@workspace/adapters-node"
+import { createNodeDocumentStore } from "@workspace/adapters-node"
 import type { Workflow } from "@workspace/contracts"
 import {
+  createAcpAsks,
   createNodeEffectRunner,
   createScheduler,
   latestStep,
   RunActor,
+  type AcpAsks,
+  type AcpInboxAnswerInput,
   type Scheduler,
 } from "@workspace/core"
 import {
+  getProcessRunner,
   type Engine,
   type ManualItem,
   type MaterializeResourcesResult,
 } from "@workspace/engine"
 import { isCoreRunEligible } from "./core-run-eligible.ts"
 import { prepareCoreRunDir } from "./core-run-prepare.ts"
+import { createEnginePublishPort } from "./core-run-publish.ts"
 
 export type CoreStartArgs = {
   graph: Workflow
@@ -50,6 +52,11 @@ export type CoreRunHost = {
    * Returns false when this host is not driving the run.
    */
   answerApproval(args: CoreApprovalAnswer): Promise<boolean>
+  /**
+   * Resolve a parked ACP ask for a live core run (BL-195).
+   * Returns false when this host is not driving the run / ask.
+   */
+  answerAcpAsk(input: AcpInboxAnswerInput): boolean
   /** Cancel a live core run; false if this host is not driving it. */
   cancel(runId: string): boolean | Promise<boolean>
   dispose(): void
@@ -66,7 +73,8 @@ type LiveRun = {
  */
 export function createCoreRunHost(engine: Engine): CoreRunHost {
   const docs = createNodeDocumentStore({ root: engine.home })
-  const processRunner = createNodeProcessRunner()
+  // Shared with the engine path so tests can inject a scripted runner.
+  const processRunner = getProcessRunner()
   const agentRuntime = createAcpRuntime({ processRunner })
   const scheduler: Scheduler = createScheduler({
     maxConcurrent: 32,
@@ -83,11 +91,22 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
   const absOf = (storePath: string) =>
     join(engine.home, storePath.replace(/^\//, ""))
 
+  const acpAsks: AcpAsks = createAcpAsks({
+    append: (event) => engine.appendLibraryEvent(event),
+  })
+
+  const publish = createEnginePublishPort({
+    home: engine.home,
+    absoluteRunDir: absOf,
+  })
+
   const runEffect = createNodeEffectRunner({
     docs,
     process: processRunner,
     processEnv: process.env,
     agentRuntime,
+    acpAsks: acpAsks.gates,
+    publish,
     runDirOf: (state) => relRunDir(state.workflowId, state.runId),
     workflowDirOf: (state) => relWorkflowDir(state.workflowId),
     absolutePathOf: absOf,
@@ -190,6 +209,11 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
       return true
     },
 
+    answerAcpAsk(input) {
+      if (!live.has(input.runId)) return false
+      return acpAsks.answer(input)
+    },
+
     async cancel(runId) {
       const entry = live.get(runId)
       if (!entry) return false
@@ -207,6 +231,7 @@ export function createCoreRunHost(engine: Engine): CoreRunHost {
     },
 
     dispose() {
+      acpAsks.cancelAll()
       for (const runId of [...live.keys()]) {
         aborts.get(runId)?.abort()
         void this.cancel(runId)

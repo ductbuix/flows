@@ -51,3 +51,15 @@ export {
 export { judgeCheckKind } from "./kinds/judge-check.ts"
 export { approvalKind } from "./kinds/approval.ts"
 export { notifyKind } from "./kinds/notify.ts"
+export { publishKind } from "./kinds/publish.ts"
+export {
+  agentAnswerPrompt,
+  agentFixPrompt,
+  ANSWER_ERROR_FILE,
+  nodeAnswerDecls,
+  readStepAnswer,
+  settleAnswer,
+  type SettleAnswerResult,
+} from "./agent-answer.ts"
+export { copyAgentMemories } from "./agent-memory.ts"
+export { needsPersonGate } from "./publish-gate.ts"

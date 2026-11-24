@@ -38,10 +38,7 @@ export async function runKindEffect(
           (id) => latestStep(state.steps, id)?.pass ?? 1
         )
 
-  const parsed = kind.settings.safeParse({
-    ...node,
-    ...(node.kind === "output" ? { target: "notify" as const } : {}),
-  })
+  const parsed = kind.settings.safeParse({ ...node })
   if (!parsed.success) return { ok: false, reason: "exit" }
 
   const answers = resolveAnswerValues(
@@ -51,9 +48,18 @@ export async function runKindEffect(
     (id) => latestStep(state.steps, id)?.answer
   )
 
+  const planReview =
+    parsed.data &&
+    typeof parsed.data === "object" &&
+    "planReview" in parsed.data &&
+    (parsed.data.planReview === "auto" || parsed.data.planReview === "ask")
+      ? parsed.data.planReview
+      : undefined
+
   const ctx = createStepContext({
     docs: deps.docs,
     runDir,
+    runId: state.runId,
     nodeId: effect.nodeId,
     pass: effect.pass,
     settings: parsed.data,
@@ -64,6 +70,10 @@ export async function runKindEffect(
     nodeName: node.name,
     agentRuntime: deps.agentRuntime,
     agentCwd: deps.agentCwdOf?.(state, effect.nodeId, effect.pass),
+    acpAsks: deps.acpAsks,
+    publish: deps.publish,
+    ...(planReview !== undefined ? { planReview } : {}),
+    signal: deps.signalOf?.(state),
   })
 
   const result = await collectExecute(kind.execute(ctx))

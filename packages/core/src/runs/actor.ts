@@ -114,7 +114,23 @@ export class RunActor {
     }
   }
 
+  /**
+   * Fold events appended outside the actor (ACP permission/question/
+   * plan_review). `RunState.seq` is an event count; store `seq` is the
+   * global row id — never compare them (BL-195).
+   */
+  private catchUp(): void {
+    const stored = this.deps.events.read(this.runId)
+    const have = this.state?.seq ?? 0
+    for (let i = have; i < stored.length; i++) {
+      const row = stored[i]!
+      this.state = fold(this.state, row.event)
+      this.storeSeq = row.seq
+    }
+  }
+
   private append(events: readonly EngineEvent[]): void {
+    this.catchUp()
     const expectSeq = this.storeSeq
     const result = this.deps.events.append(this.runId, events, { expectSeq })
     if (!result.ok) {

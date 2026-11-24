@@ -1,5 +1,7 @@
+import type { AcpInboxGates } from "../agents/acp-inbox-answer.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { ProcessRunner } from "../ports/process-runner.ts"
+import type { PublishPort } from "../ports/publish.ts"
 import type { RunState } from "../runs/model.ts"
 import type { NodeKindRegistry } from "./registry.ts"
 
@@ -36,4 +38,8 @@ export type NodeEffectRunnerDeps = {
   absolutePathOf?: (storePath: string) => string
   /** Per-run abort signal so host cancel can kill a spawn. */
   signalOf?: (state: RunState) => AbortSignal | undefined
+  /** Live ACP ask gates for llm/agent/judge-rule (BL-195). */
+  acpAsks?: AcpInboxGates
+  /** Connector publish for output target=publish. */
+  publish?: PublishPort
 }

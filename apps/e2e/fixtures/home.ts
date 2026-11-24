@@ -606,6 +606,34 @@ export function createE2eHome(): string {
       "Write one line about the weather.\n"
     )
   }
+  // Core ACP agent with a permission ask (BL-195); fake agent sees ASK_PERMISSION.
+  {
+    const id = "agent-acp-ask"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "work"), { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      `id: ${id}
+goal: e2e agent permission ask on core
+nodes:
+  - { id: start, kind: trigger, type: manual }
+  - { id: work, kind: agent, cli: cursor }
+edges:
+  - { from: start, to: work }
+`
+    )
+    writeFileSync(
+      join(dir, "nodes", "work", "prompt.md"),
+      "ASK_PERMISSION then finish.\n"
+    )
+  }
+  // Dedicated fast workflow for runs page e2e (avoid diamond concurrency with docket).
+  {
+    const id = "runs-page-demo"
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, "echo runs-page"))
+  }
   // Named answers for node-answers.spec.ts (BL-085); each test owns one.
   for (const id of [
     "node-answers-light",

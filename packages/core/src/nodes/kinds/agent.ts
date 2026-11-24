@@ -1,5 +1,14 @@
-import { fillTemplate } from "@workspace/contracts"
+import { answersSchema, fillTemplate } from "@workspace/contracts"
 import { z } from "zod"
+import {
+  agentAnswerPrompt,
+  agentFixPrompt,
+  ANSWER_ERROR_FILE,
+  nodeAnswerDecls,
+  readStepAnswer,
+  settleAnswer,
+} from "../agent-answer.ts"
+import { copyAgentMemories } from "../agent-memory.ts"
 import { defineNodeKind } from "../define.ts"
 import type { StepContext, StepEvent } from "../types.ts"
 import { llmContentBlocks, llmProfileId, llmPromptText } from "./llm.ts"
@@ -9,6 +18,7 @@ const settings = z.object({
   model: z.string().optional(),
   effort: z.string().optional(),
   memory: z.array(z.string().min(1)).optional(),
+  answers: answersSchema.optional(),
   /** Inline prompt for tests; otherwise read frozen prompt.md. */
   prompt: z.string().optional(),
   system: z.string().optional(),
@@ -25,9 +35,8 @@ function readFrozen(
 }
 
 /**
- * Agent over ACP (DES-041 / BL-195). Same session shape as llm; YAML kind
- * remains `agent`. Memory paths and answer settle stay engine-side until
- * a dedicated port lands.
+ * Agent over ACP (DES-041 / BL-195). Memory paths and answer settle use
+ * DocumentStore; CLI shell settle lived in the engine and is mirrored here.
  */
 export const agentKind = defineNodeKind({
   kind: "agent",
@@ -39,12 +48,29 @@ export const agentKind = defineNodeKind({
       yield { kind: "failed", reason: "exit", message: "missing_prompt" }
       return
     }
-    const systemRaw = ctx.settings.system ?? readFrozen(ctx, "system.md")
-    const promptText = llmPromptText({
-      system: systemRaw ? fillTemplate(systemRaw, ctx.answers) : undefined,
-      prompt: fillTemplate(promptRaw, ctx.answers),
+
+    const decls = nodeAnswerDecls({
+      id: ctx.node.id,
+      kind: "agent",
+      answers: ctx.settings.answers,
     })
-    const blocks = llmContentBlocks(promptText, ctx.inputs)
+    const workflowDir = ctx.runDir.replace(/\/runs\/[^/]+$/, "")
+    copyAgentMemories(ctx.docs, workflowDir, ctx.stepDir, ctx.settings.memory)
+
+    const systemRaw = ctx.settings.system ?? readFrozen(ctx, "system.md")
+    const parts = [
+      llmPromptText({
+        system: systemRaw ? fillTemplate(systemRaw, ctx.answers) : undefined,
+        prompt: fillTemplate(promptRaw, ctx.answers),
+      }).trimEnd(),
+    ]
+    if (decls.length > 0) parts.push(agentAnswerPrompt(decls))
+    const priorError = ctx.docs.read(
+      `${ctx.stepDir}/${ANSWER_ERROR_FILE}`
+    )?.text
+    if (priorError) parts.push(agentFixPrompt(priorError))
+
+    const blocks = llmContentBlocks(`${parts.join("\n\n")}\n`, ctx.inputs)
     const session = await ctx.agent.session({
       profileId: llmProfileId(ctx.settings.cli),
       cwd: "",
@@ -73,6 +99,28 @@ export const agentKind = defineNodeKind({
     } finally {
       await session.close()
     }
+
+    if (decls.length > 0) {
+      const found = readStepAnswer(ctx.docs, ctx.stepDir, decls)
+      const settled = settleAnswer(ctx.docs, ctx.stepDir, decls, found)
+      if (!settled.ok && "reason" in settled) {
+        yield { kind: "failed", reason: "answer" }
+        return
+      }
+      if (!settled.ok && settled.fix) {
+        yield { kind: "failed", reason: "answer", message: "fix" }
+        return
+      }
+      if (settled.ok) {
+        yield {
+          kind: "output_written",
+          path: await ctx.outputs.write("text.md", text.trim()),
+        }
+        yield { kind: "done", answer: settled.answer }
+        return
+      }
+    }
+
     yield {
       kind: "output_written",
       path: await ctx.outputs.write("text.md", text.trim()),

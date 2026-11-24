@@ -53,6 +53,8 @@ type Route = {
   ready: string
   /** Content that varies with other specs: masked / clipped in baselines. */
   dynamic?: boolean
+  /** Override dynamic clip height (default 160). Keep above the variable list. */
+  clipHeight?: number
 }
 
 const themes = ["light", "dark"] as const
@@ -121,7 +123,14 @@ const routes: Route[] = [
     ready: "workflow-editor-tab-canvas",
     dynamic: true,
   },
-  { name: "runs", path: "/runs", ready: "runs-start-open", dynamic: true },
+  // Clip above the run list — shared FLOWAPP_HOME accumulates rows across specs.
+  {
+    name: "runs",
+    path: "/runs",
+    ready: "runs-start-open",
+    dynamic: true,
+    clipHeight: 96,
+  },
   {
     name: "connectors",
     path: "/connectors",
@@ -169,7 +178,7 @@ test.describe("layout check (BL-061 / BL-185)", () => {
             x: 256,
             y: 48,
             width: 1184,
-            height: route.dynamic ? 160 : 852,
+            height: route.dynamic ? (route.clipHeight ?? 160) : 852,
           },
         })
       })
