@@ -80,13 +80,25 @@ async function request(
   path: string,
   signal: AbortSignal
 ): Promise<ConnectorCallResult> {
-  const headers = authHeaders(deps.secrets, connector, now())
+  const url = joinUrl(connector.how, path)
+  const headers = authHeaders(deps.secrets, connector, now(), url)
   if (!headers) {
     throw engineError("failed_precondition", "not signed in")
   }
-  const url = joinUrl(connector.how, path)
-  const res = await fetchFn(url, { method, headers, signal })
+  const res = await fetchFn(url, {
+    method,
+    headers,
+    signal,
+    redirect: "manual",
+  })
   const body = await res.text()
+  if (res.status >= 300 && res.status < 400) {
+    return {
+      stdout: body,
+      stderr: `HTTP ${res.status}`,
+      exitCode: res.status,
+    }
+  }
   if (res.status === 401) {
     const detail = "sign-in expired"
     deps.onUnauthorized?.(connector, detail)
@@ -121,17 +133,47 @@ function resolveCmd(
     )
   }
   const basePath = cmd[1] ?? ""
-  const path = [basePath, ...args]
+  const path = [basePath, ...args.map((a) => encodeURIComponent(a))]
     .filter((p) => p.length > 0)
     .join("/")
-    .replace(/\/{2,}/g, "/")
+    // Collapse duplicate slashes but keep the `://` of absolute URLs.
+    .replace(/([^:]\/)\/+/g, "$1")
   return { method, path }
 }
 
+/**
+ * Join capability path onto connector `how`. Absolute http(s) targets whose
+ * origin differs from `how` are refused with `policy_denied` before fetch.
+ */
 function joinUrl(base: string, path: string): string {
+  let baseUrl: URL
+  try {
+    baseUrl = new URL(base)
+  } catch {
+    throw engineError("invalid_params", `Invalid connector base URL: ${base}`)
+  }
   const b = base.replace(/\/$/, "")
   if (path.length === 0) return b
-  if (/^https?:\/\//i.test(path)) return path
+
+  let resolved: URL
+  try {
+    if (/^https?:\/\//i.test(path)) {
+      resolved = new URL(path)
+    } else {
+      const joined = path.startsWith("/") ? `${b}${path}` : `${b}/${path}`
+      resolved = new URL(joined)
+    }
+  } catch {
+    throw engineError("invalid_params", `Invalid request path: ${path}`)
+  }
+
+  if (resolved.origin !== baseUrl.origin) {
+    throw engineError(
+      "policy_denied",
+      `Request origin ${resolved.origin} differs from connector base ${baseUrl.origin}`
+    )
+  }
+  if (/^https?:\/\//i.test(path)) return resolved.href
   return path.startsWith("/") ? `${b}${path}` : `${b}/${path}`
 }
 
