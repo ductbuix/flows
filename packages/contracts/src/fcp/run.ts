@@ -5,6 +5,7 @@ import { runStatusSchema } from "../events.ts"
 import { workItemIdSchema } from "../work-item.ts"
 import { trustGrantSchema } from "../api-trust.ts"
 import { defineMethod, defineNotification } from "./define.ts"
+import { runUpdateAgentKinds } from "./run-update-kinds.ts"
 
 const DEFAULT_LIMIT_MAX = 500
 const fcpRequestKeySchema = z.string().uuid().optional()
@@ -173,6 +174,7 @@ export const runUpdateNotification = defineNotification({
       runId: z.string().min(1),
       step: runStepSchema,
     }),
+    ...runUpdateAgentKinds,
     z.object({
       seq: z.number().int().nonnegative(),
       kind: z.literal("run_finished"),
