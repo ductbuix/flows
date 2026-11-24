@@ -7,6 +7,7 @@ export {
 } from "./event-store.ts"
 export { createNodeFileWatcher } from "./file-watcher.ts"
 export { createNodeProcessRunner } from "./process-runner.ts"
+export { createNodeCliTransport } from "./cli-transport.ts"
 export { isPidAlive, killProcessGroup, waitForPid } from "./pid.ts"
 export {
   SANDBOX_PROFILE,

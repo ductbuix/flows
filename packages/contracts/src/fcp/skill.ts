@@ -61,6 +61,40 @@ export const skillGetMethod = defineMethod({
   kind: "query",
 })
 
+const fcpRequestKeySchema = z.string().uuid().optional()
+
+export const skillInstallParamsSchema = z.object({
+  sourceId: z.string().min(1),
+  slug: SkillSlug,
+  version: z.number().int().positive(),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const skillInstallResultSchema = z.object({
+  skill: skillDetailSchema,
+})
+
+export const skillUninstallParamsSchema = z.object({
+  slug: SkillSlug,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const skillUninstallResultSchema = z.object({})
+
+export const skillInstallMethod = defineMethod({
+  name: "skill/install",
+  params: skillInstallParamsSchema,
+  result: skillInstallResultSchema,
+  kind: "command",
+})
+
+export const skillUninstallMethod = defineMethod({
+  name: "skill/uninstall",
+  params: skillUninstallParamsSchema,
+  result: skillUninstallResultSchema,
+  kind: "command",
+})
+
 export const skillUpdateNotification = defineNotification({
   name: "skill/update",
   params: z.discriminatedUnion("kind", [

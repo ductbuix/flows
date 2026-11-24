@@ -10,7 +10,9 @@ import {
   type FcpNotificationParams,
   jsonRpcCodeFor,
   skillGetMethod,
+  skillInstallMethod,
   skillListMethod,
+  skillUninstallMethod,
   skillUpdateNotification,
   fileListMethod,
   fileReadTextMethod,
@@ -113,11 +115,15 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["library/save_provider"].kind).toBe("command")
   })
 
-  it("declares skill/list and skill/get as queries", () => {
+  it("declares skill/list and skill/get as queries and install/uninstall as commands", () => {
     expect(fcpMethodTable["skill/list"]).toBe(skillListMethod)
     expect(fcpMethodTable["skill/get"]).toBe(skillGetMethod)
+    expect(fcpMethodTable["skill/install"]).toBe(skillInstallMethod)
+    expect(fcpMethodTable["skill/uninstall"]).toBe(skillUninstallMethod)
     expect(skillListMethod.kind).toBe("query")
     expect(skillGetMethod.kind).toBe("query")
+    expect(skillInstallMethod.kind).toBe("command")
+    expect(skillUninstallMethod.kind).toBe("command")
     expect(
       skillGetMethod.params.parse({ slug: "write-tests", scope: "workspace" })
     ).toEqual({ slug: "write-tests", scope: "workspace" })

@@ -44,7 +44,9 @@ import {
 } from "./run.ts"
 import {
   skillGetMethod,
+  skillInstallMethod,
   skillListMethod,
+  skillUninstallMethod,
   skillUpdateNotification,
 } from "./skill.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
@@ -100,6 +102,8 @@ export const fcpMethodTable = {
   "run/get_changes": runGetChangesMethod,
   "skill/list": skillListMethod,
   "skill/get": skillGetMethod,
+  "skill/install": skillInstallMethod,
+  "skill/uninstall": skillUninstallMethod,
   "file/list": fileListMethod,
   "file/stat": fileStatMethod,
   "file/read_text": fileReadTextMethod,

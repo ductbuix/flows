@@ -29,6 +29,8 @@ export const AUTH_FOR = {
 /**
  * One capability switch. Writes default off; when `write` is true and
  * `allowed` is omitted, `allowed` becomes false (mockup / DES-041).
+ * `cmd` is the argv after `how` for cli transport (BL-161); data in the
+ * connector file, not hard-coded per capability name.
  */
 export const capabilitySchema = z
   .object({
@@ -36,12 +38,14 @@ export const capabilitySchema = z
     desc: z.string().default(""),
     write: z.boolean().default(false),
     allowed: z.boolean().optional(),
+    cmd: z.array(z.string().min(1)).optional(),
   })
   .transform((c) => ({
     name: c.name,
     desc: c.desc,
     write: c.write,
     allowed: c.allowed ?? !c.write,
+    ...(c.cmd !== undefined ? { cmd: c.cmd } : {}),
   }))
 
 export type Capability = z.infer<typeof capabilitySchema>
