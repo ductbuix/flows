@@ -1,5 +1,5 @@
 import { FCP_VERSION, initializeMethod, pingMethod } from "@workspace/contracts"
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"

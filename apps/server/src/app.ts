@@ -1,4 +1,4 @@
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { type Health } from "@workspace/shared"
 import { Hono } from "hono"
 import { blobRoutes } from "./blob-routes.ts"

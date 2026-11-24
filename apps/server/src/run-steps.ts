@@ -1,4 +1,4 @@
-import { stepTaskStatus, type Engine } from "@workspace/engine"
+import { stepTaskStatus, type Engine } from "@workspace/adapters-node"
 import type { RunStep } from "@workspace/contracts"
 
 /** Latest pass of every node in a run, for run/get and canvas status. */

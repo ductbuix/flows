@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { createFakeBlobStore } from "@workspace/core/testing"
 import { createApp } from "./app.ts"
-import { createEngine, setBlobStore } from "@workspace/engine"
+import { createEngine, setBlobStore } from "@workspace/adapters-node"
 
 const temps: string[] = []
 const TOKEN = "blob-test-token"

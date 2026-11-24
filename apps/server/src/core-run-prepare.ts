@@ -7,7 +7,7 @@ import {
   runDir,
   workflowDir,
   type ManualItem,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 
 export type PrepareCoreRunInput = {
   home: string

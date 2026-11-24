@@ -5,7 +5,7 @@ import {
   diffWorkCopy,
   getConnector,
   readConnection,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 
 /**
  * PublishPort backed by engine connectors + work-copy (BL-195).

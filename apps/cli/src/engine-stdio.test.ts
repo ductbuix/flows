@@ -1,4 +1,4 @@
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { createClient } from "@workspace/sdk"
 import { ndjsonTransport } from "@workspace/protocol/node"
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"

@@ -16,7 +16,7 @@ import {
   type EventBus,
   type UpdateBus,
 } from "@workspace/core"
-import { getBlobStore, type Engine } from "@workspace/engine"
+import { getBlobStore, type Engine } from "@workspace/adapters-node"
 
 const systemClock: Clock = { now: () => Date.now() }
 

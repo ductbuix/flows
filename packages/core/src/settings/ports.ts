@@ -10,7 +10,7 @@ export type CliStatusPort = {
   listCliStatus(): Promise<readonly CliInfo[]> | readonly CliInfo[]
 }
 
-/** Always-trust for the app home (DES-019). Engine-backed until BL-214. */
+/** Always-trust for the app home (DES-019). Adapters-node host (BL-214). */
 export type AppTrustPort = {
   getTrust(): TrustStatus
   setTrust(grant: "always" | "none"): TrustStatus

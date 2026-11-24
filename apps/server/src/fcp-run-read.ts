@@ -8,7 +8,7 @@ import {
   runListMethod,
   type RunSummary,
 } from "@workspace/contracts"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { stepsOfRun } from "./run-steps.ts"
 
 const DEFAULT_LIST_LIMIT = 100

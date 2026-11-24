@@ -4,7 +4,7 @@ import {
   type FakeAgentStep,
 } from "@workspace/agent-acp"
 import { FCP_VERSION, inboxListMethod } from "@workspace/contracts"
-import { getProcessRunner, setProcessRunner } from "@workspace/engine"
+import { getProcessRunner, setProcessRunner } from "@workspace/adapters-node"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { randomUUID } from "node:crypto"
 import { mkdirSync, writeFileSync } from "node:fs"

@@ -8,9 +8,9 @@ import {
   type AppTrustPort,
   type SettingsBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 
-/** Always-trust via engine settings table until BL-214 moves it. */
+/** Always-trust via engine settings table via adapters-node host (BL-214). */
 function engineTrustPort(engine: Engine): AppTrustPort {
   function status(): TrustStatus {
     const trust = engine.trustDecision()

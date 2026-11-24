@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server"
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { mkdtempSync, rmSync } from "node:fs"
 import { createServer } from "node:net"
 import type { AddressInfo } from "node:net"

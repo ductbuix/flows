@@ -4,7 +4,7 @@ import {
   workflowGetMethod,
   workflowListMethod,
 } from "@workspace/contracts"
-import { createEngine } from "@workspace/engine"
+import { createEngine } from "@workspace/adapters-node"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { createServer } from "node:net"
 import { mkdtempSync, rmSync } from "node:fs"

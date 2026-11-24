@@ -1,5 +1,5 @@
 import type { EventBus, UpdateBus } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 import { publishRunFcpUpdates } from "./fcp-run-updates.ts"
 
 /**

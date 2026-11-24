@@ -19,7 +19,7 @@ import {
   type Engine,
   type ManualItem,
   type MaterializeResourcesResult,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 import { createEnginePublishPort } from "./core-run-publish.ts"
 import { resumeCoreRuns } from "./core-run-resume.ts"
 import { createCoreRunSession } from "./core-run-session.ts"

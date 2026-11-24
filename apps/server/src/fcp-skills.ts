@@ -14,7 +14,7 @@ import {
   type SkillSourcesBindings,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Engine } from "@workspace/adapters-node"
 
 export type SkillsFcp = {
   bindings: SkillReadBindings & SkillInstallBindings & SkillSourcesBindings

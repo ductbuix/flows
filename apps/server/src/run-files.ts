@@ -14,7 +14,7 @@ import {
   stepDir,
   workflowDir,
   type Engine,
-} from "@workspace/engine"
+} from "@workspace/adapters-node"
 import type {
   LogChunk,
   OutList,
