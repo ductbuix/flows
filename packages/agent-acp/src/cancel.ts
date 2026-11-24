@@ -11,6 +11,11 @@ export const CANCELLED_ASK_QUESTION_RESULT = {
   outcome: { outcome: "cancelled" as const },
 }
 
+/** Cursor `cursor/create_plan` cancelled outcome (DES-041 / BL-148). */
+export const CANCELLED_CREATE_PLAN_RESULT = {
+  outcome: { outcome: "cancelled" as const },
+}
+
 export type PendingClientRequest = {
   resolve: (result: unknown) => void
   cancelledResult: unknown

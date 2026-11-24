@@ -37,8 +37,12 @@ export function pendingEffects(state: RunState): RunEffect[] {
 
 function effectForStep(state: RunState, step: StepState): RunEffect | null {
   if (step.status === "waiting") {
-    // Mid-step ACP waits are held by the live session (BL-146 / BL-147).
-    if (step.waitingKind === "permission" || step.waitingKind === "question") {
+    // Mid-step ACP waits are held by the live session (BL-146..BL-148).
+    if (
+      step.waitingKind === "permission" ||
+      step.waitingKind === "question" ||
+      step.waitingKind === "plan_review"
+    ) {
       return null
     }
     return {

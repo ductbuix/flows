@@ -9,12 +9,14 @@ import { CURSOR_ASK_QUESTION_METHOD } from "./ask-question.ts"
 import { authenticateIfRequired } from "./authenticate.ts"
 import {
   CANCELLED_ASK_QUESTION_RESULT,
+  CANCELLED_CREATE_PLAN_RESULT,
   CANCELLED_PERMISSION_RESULT,
   cancelPendingRequests,
   DEFAULT_CANCEL_GRACE_MS,
   scheduleCancelKill,
   type PendingClientRequest,
 } from "./cancel.ts"
+import { CURSOR_CREATE_PLAN_METHOD } from "./create-plan.ts"
 import { attachFsHandlers } from "./fs.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
 
@@ -53,6 +55,11 @@ export type OpenAcpSessionOptions = {
    * park until cancel answers `cancelled`.
    */
   handleAskQuestion?: (params: unknown) => Promise<unknown>
+  /**
+   * Resolve Cursor `cursor/create_plan` (BL-148). Without this, plans
+   * park until cancel answers `cancelled`.
+   */
+  handleCreatePlan?: (params: unknown) => Promise<unknown>
 }
 
 type QueueWaiter = {
@@ -124,8 +131,10 @@ class AcpSession implements AgentSession {
   private readonly logger?: Logger
   private readonly handlePermission?: (params: unknown) => Promise<unknown>
   private readonly handleAskQuestion?: (params: unknown) => Promise<unknown>
+  private readonly handleCreatePlan?: (params: unknown) => Promise<unknown>
   private unsubPermission?: () => void
   private unsubAskQuestion?: () => void
+  private unsubCreatePlan?: () => void
   private unsubFs?: () => void
 
   constructor(
@@ -138,6 +147,7 @@ class AcpSession implements AgentSession {
     this.logger = options.logger
     this.handlePermission = options.handlePermission
     this.handleAskQuestion = options.handleAskQuestion
+    this.handleCreatePlan = options.handleCreatePlan
     this.unsubPermission = peer.onRequest(
       "session/request_permission",
       (params) =>
@@ -157,6 +167,14 @@ class AcpSession implements AgentSession {
           CANCELLED_ASK_QUESTION_RESULT,
           CURSOR_ASK_QUESTION_METHOD
         )
+    )
+    this.unsubCreatePlan = peer.onRequest(CURSOR_CREATE_PLAN_METHOD, (params) =>
+      this.onClientRequest(
+        params,
+        this.handleCreatePlan,
+        CANCELLED_CREATE_PLAN_RESULT,
+        CURSOR_CREATE_PLAN_METHOD
+      )
     )
     this.unsubFs = attachFsHandlers(peer, {
       sessionId: id,
@@ -182,6 +200,8 @@ class AcpSession implements AgentSession {
     this.unsubPermission = undefined
     this.unsubAskQuestion?.()
     this.unsubAskQuestion = undefined
+    this.unsubCreatePlan?.()
+    this.unsubCreatePlan = undefined
     this.unsubFs?.()
     this.unsubFs = undefined
     this.peer.close()

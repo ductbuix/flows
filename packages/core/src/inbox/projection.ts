@@ -6,6 +6,11 @@ import {
   resolvePermission,
 } from "./projection-permission.ts"
 import {
+  addPlanReview,
+  planReviewItemId,
+  resolvePlanReview,
+} from "./projection-plan-review.ts"
+import {
   addQuestion,
   questionItemId,
   resolveQuestion,
@@ -41,7 +46,7 @@ export function approvalItemId(
   return `approval:${runId}:${nodeId}:${pass}`
 }
 
-export { permissionItemId, questionItemId }
+export { permissionItemId, planReviewItemId, questionItemId }
 
 export function foldInboxEvent(
   state: InboxProjectionState,
@@ -59,6 +64,8 @@ export function foldInboxEvent(
       return addPermission(state, event)
     case "question_asked":
       return addQuestion(state, event)
+    case "plan_review_requested":
+      return addPlanReview(state, event)
     case "step_approved":
       return resolveApproval(state, event, "approved")
     case "step_rejected":
@@ -67,6 +74,8 @@ export function foldInboxEvent(
       return resolvePermission(state, event, resolveItem)
     case "question_answered":
       return resolveQuestion(state, event)
+    case "plan_review_answered":
+      return resolvePlanReview(state, event)
     case "step_cancelled":
       return resolveOpenForStep(state, event.runId, event.nodeId, event.pass)
     case "run_deleted":

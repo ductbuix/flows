@@ -172,6 +172,14 @@ export {
   type CursorAskQuestion,
 } from "./cursor-question.ts"
 export {
+  cursorPlanPhaseSchema,
+  cursorPlanTodoSchema,
+  cursorPlanTodoStatusSchema,
+  type CursorPlanPhase,
+  type CursorPlanTodo,
+  type CursorPlanTodoStatus,
+} from "./cursor-plan.ts"
+export {
   taskStatusSchema,
   runStatusSchema,
   engineEventSchema,
@@ -186,6 +194,8 @@ export {
   permissionAnsweredEventSchema,
   questionAskedEventSchema,
   questionAnsweredEventSchema,
+  planReviewRequestedEventSchema,
+  planReviewAnsweredEventSchema,
   cancelRequestedEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,
@@ -660,6 +670,8 @@ export {
   inboxListResultSchema,
   inboxPermissionItemSchema,
   inboxPermissionOptionIdSchema,
+  inboxPlanReviewItemSchema,
+  inboxPlanReviewOptionIdSchema,
   inboxQuestionItemSchema,
   inboxQuestionOptionIdSchema,
   inboxUpdateNotification,

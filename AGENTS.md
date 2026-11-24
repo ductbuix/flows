@@ -35,8 +35,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `packages/core`: UI-free kernel (ports, `bindEngine`, `runs/` decide+fold +
   actor + scheduler, `nodes/` NodeKind+StepContext for trigger/approval/notify,
   `inbox/` projection + FCP list/answer/dismiss (approval, permission,
-  question), agents permission chain + ask gates, MCP gateway bridge +
-  launch spec, testing fakes); no Node I/O.
+  question, plan_review), agents permission chain + ask gates, MCP
+  gateway bridge + launch spec, testing fakes); no Node I/O.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox, gateway unix socket),
   `engine.lock`.

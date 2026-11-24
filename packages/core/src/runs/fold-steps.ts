@@ -120,7 +120,8 @@ export function foldSteps(
       }))
     }
     case "permission_answered":
-    case "question_answered": {
+    case "question_answered":
+    case "plan_review_answered": {
       const cur = stepFor(state, event.nodeId, event.pass)
       if (!cur || cur.status !== "waiting") return state
       return withStep(state, event.nodeId, event.pass, seq, (s) => ({
@@ -141,6 +142,26 @@ export function foldSteps(
         ...s,
         status: "waiting",
         waitingKind: "question",
+        question: display,
+      }))
+    }
+    case "plan_review_requested": {
+      const cur = stepFor(state, event.nodeId, event.pass)
+      if (!cur || (cur.status !== "running" && cur.status !== "waiting")) {
+        return state
+      }
+      const display =
+        event.name ??
+        event.overview ??
+        event.plan
+          .split("\n")
+          .find((line) => line.trim())
+          ?.trim() ??
+        "Review plan"
+      return withStep(state, event.nodeId, event.pass, seq, (s) => ({
+        ...s,
+        status: "waiting",
+        waitingKind: "plan_review",
         question: display,
       }))
     }

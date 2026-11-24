@@ -166,6 +166,34 @@ describe("llm kind", () => {
     ])
   })
 
+  it("accepts planReview auto|ask on llm nodes", () => {
+    const base = {
+      id: "wf",
+      nodes: [
+        {
+          id: "l",
+          kind: "llm",
+          cli: "cursor",
+          planReview: "ask",
+        },
+      ],
+      edges: [],
+    }
+    expect(workflowSchema.safeParse(base).success).toBe(true)
+    expect(
+      workflowSchema.safeParse({
+        ...base,
+        nodes: [{ id: "l", kind: "llm", cli: "cursor", planReview: "auto" }],
+      }).success
+    ).toBe(true)
+    expect(
+      workflowSchema.safeParse({
+        ...base,
+        nodes: [{ id: "l", kind: "llm", cli: "cursor", planReview: "never" }],
+      }).success
+    ).toBe(false)
+  })
+
   it("needs a cli and refuses a file out port", () => {
     const wf = (edge: object) => ({
       id: "wf",

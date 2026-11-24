@@ -3,6 +3,7 @@ import {
   cursorAskAnswerSchema,
   cursorAskQuestionSchema,
 } from "../cursor-question.ts"
+import { cursorPlanTodoSchema } from "../cursor-plan.ts"
 import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
@@ -21,10 +22,14 @@ export const inboxPermissionOptionIdSchema = z.enum([
 /** Cursor ask_question outcomes returned via inbox/answer (BL-147). */
 export const inboxQuestionOptionIdSchema = z.enum(["answered", "skipped"])
 
+/** Cursor create_plan review outcomes via inbox/answer (BL-148). */
+export const inboxPlanReviewOptionIdSchema = z.enum(["accepted", "rejected"])
+
 export const inboxItemOptionIdSchema = z.union([
   inboxApprovalOptionIdSchema,
   inboxPermissionOptionIdSchema,
   inboxQuestionOptionIdSchema,
+  inboxPlanReviewOptionIdSchema,
 ])
 
 const inboxItemBase = {
@@ -62,16 +67,29 @@ export const inboxQuestionItemSchema = z.object({
   answers: z.array(cursorAskAnswerSchema).optional(),
 })
 
+export const inboxPlanReviewItemSchema = z.object({
+  ...inboxItemBase,
+  kind: z.literal("plan_review"),
+  requestId: z.string().min(1),
+  name: z.string().min(1).optional(),
+  overview: z.string().min(1).optional(),
+  plan: z.string().min(1),
+  todos: z.array(cursorPlanTodoSchema),
+  decision: inboxPlanReviewOptionIdSchema.optional(),
+})
+
 export const inboxItemSchema = z.discriminatedUnion("kind", [
   inboxApprovalItemSchema,
   inboxPermissionItemSchema,
   inboxQuestionItemSchema,
+  inboxPlanReviewItemSchema,
 ])
 
 export const inboxItemKindSchema = z.enum([
   "approval",
   "permission",
   "question",
+  "plan_review",
 ])
 
 export type WireInboxItem = z.infer<typeof inboxItemSchema>

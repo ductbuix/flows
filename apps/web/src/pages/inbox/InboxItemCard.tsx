@@ -8,6 +8,7 @@ import { Button } from "@workspace/ui/components/button"
 import { RelativeTime } from "@/components/data/RelativeTime"
 import { mono } from "@/components/data/mono"
 import { answerInboxItem, dismissInboxItem } from "./inbox-actions"
+import { InboxPlanReviewActions } from "./InboxPlanReviewActions"
 import { InboxQuestionActions } from "./InboxQuestionActions"
 
 export function InboxItemCard({
@@ -70,6 +71,11 @@ export function InboxItemCard({
             Question
           </Badge>
         ) : null}
+        {item.kind === "plan_review" ? (
+          <Badge variant="outline" className="w-fit">
+            Plan
+          </Badge>
+        ) : null}
       </div>
       {item.kind === "question" ? (
         <InboxQuestionActions
@@ -77,6 +83,14 @@ export function InboxItemCard({
           busy={busy}
           onAnswer={(answers) => void answer("answered", answers)}
           onSkip={() => void answer("skipped")}
+          onDismiss={() => void dismiss()}
+        />
+      ) : item.kind === "plan_review" ? (
+        <InboxPlanReviewActions
+          item={item}
+          busy={busy}
+          onAccept={() => void answer("accepted")}
+          onReject={() => void answer("rejected")}
           onDismiss={() => void dismiss()}
         />
       ) : (

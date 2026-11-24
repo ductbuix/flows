@@ -4,6 +4,7 @@ import {
   cursorAskAnswerSchema,
   cursorAskQuestionSchema,
 } from "./cursor-question.ts"
+import { cursorPlanTodoSchema } from "./cursor-plan.ts"
 import { effortSchema } from "./model-effort.ts"
 import { workflowSchema } from "./nodes/index.ts"
 
@@ -173,6 +174,31 @@ export const questionAnsweredEventSchema = z.object({
   requestId: z.string().min(1),
   outcome: z.enum(["answered", "skipped"]),
   answers: z.array(cursorAskAnswerSchema).optional(),
+  reason: z.string().min(1).optional(),
+})
+
+/** Cursor `cursor/create_plan` parked for Inbox review (DES-041 / BL-148). */
+export const planReviewRequestedEventSchema = z.object({
+  type: z.literal("plan_review_requested"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  /** ACP `toolCallId`. */
+  requestId: z.string().min(1),
+  name: z.string().min(1).optional(),
+  overview: z.string().min(1).optional(),
+  plan: z.string().min(1),
+  todos: z.array(cursorPlanTodoSchema),
+})
+
+/** Person accepted or rejected a plan review (cancel is ACP-only). */
+export const planReviewAnsweredEventSchema = z.object({
+  type: z.literal("plan_review_answered"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  requestId: z.string().min(1),
+  outcome: z.enum(["accepted", "rejected"]),
   reason: z.string().min(1).optional(),
 })
 
@@ -350,6 +376,8 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   permissionAnsweredEventSchema,
   questionAskedEventSchema,
   questionAnsweredEventSchema,
+  planReviewRequestedEventSchema,
+  planReviewAnsweredEventSchema,
   cancelRequestedEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,

@@ -216,6 +216,8 @@ export {
   inboxListResultSchema,
   inboxPermissionItemSchema,
   inboxPermissionOptionIdSchema,
+  inboxPlanReviewItemSchema,
+  inboxPlanReviewOptionIdSchema,
   inboxQuestionItemSchema,
   inboxQuestionOptionIdSchema,
   inboxUpdateNotification,
