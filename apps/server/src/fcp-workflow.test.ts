@@ -138,6 +138,7 @@ describe("workflow/list and workflow/get over /fcp", () => {
     )
     expect(got.id).toBe("alpha")
     expect(got.workflow?.nodes?.some((n) => n.kind === "trigger")).toBe(true)
+    expect(got.layout).toEqual({ version: 1, nodes: {} })
 
     socket.close()
   })

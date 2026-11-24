@@ -330,6 +330,18 @@ export function createE2eHome(): string {
     join(diamond, "workflow.yaml"),
     nodeRunYaml("diamond", "echo diamond")
   )
+  writeFileSync(
+    join(diamond, "workflow.layout.json"),
+    JSON.stringify({
+      version: 1,
+      nodes: {
+        start: { x: 40, y: 80 },
+        build: { x: 420, y: 80 },
+        done: { x: 800, y: 80 },
+      },
+      viewport: { x: 0, y: 0, zoom: 0.75 },
+    })
+  )
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)

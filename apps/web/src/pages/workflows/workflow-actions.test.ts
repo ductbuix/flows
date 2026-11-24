@@ -3,6 +3,7 @@ import type { FlowsClient } from "@workspace/sdk"
 import {
   createWorkflow,
   deleteWorkflow,
+  saveWorkflowLayout,
   saveWorkflowYaml,
   slugify,
   uniqueWorkflowId,
@@ -131,5 +132,16 @@ describe("deleteWorkflow / saveWorkflowYaml", () => {
     await expect(saveWorkflowYaml(clash, "w", "id: w\n", "h")).resolves.toBe(
       "conflict"
     )
+  })
+
+  it("saves layout via workflow/save_layout", async () => {
+    const layout = { version: 1 as const, nodes: { start: { x: 1, y: 2 } } }
+    const client = fakeClient({
+      "workflow/save_layout": () => layout,
+    })
+    await expect(saveWorkflowLayout(client, "w", layout)).resolves.toEqual({
+      ok: true,
+      layout,
+    })
   })
 })

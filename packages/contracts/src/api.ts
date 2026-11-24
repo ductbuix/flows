@@ -239,6 +239,8 @@ export const workflowDetailSchema = z.object({
   hash: z.string().min(1),
   workflow: workflowSchema.nullable(),
   errors: z.array(yamlDiagnosticSchema),
+  /** Editor positions; empty when `workflow.layout.json` is missing. */
+  layout: layoutFileSchema.default({ version: 1, nodes: {} }),
 })
 
 export type WorkflowDetail = z.infer<typeof workflowDetailSchema>
