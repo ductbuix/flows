@@ -126,7 +126,7 @@ export function InboxItemCard({
             nativeButton={false}
             render={
               <Link
-                to={`/mock/workflows/${item.workflowId}?run=${item.runId}`}
+                to={`/workflows/${item.workflowId}?run=${item.runId}`}
               />
             }
           >

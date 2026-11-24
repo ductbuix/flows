@@ -16,7 +16,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Page, PageTitle } from "@/components/page"
 import { errorMessage } from "@/lib/fcp-error"
 
-const crumbs = [{ label: "Mockup", to: "/mock" }, { label: "Docket" }] as const
+const crumbs = [{ label: "Docket" }] as const
 
 export function DocketLoading() {
   return (

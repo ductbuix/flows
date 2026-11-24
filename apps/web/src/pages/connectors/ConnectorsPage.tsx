@@ -72,7 +72,7 @@ function ConnectorsPageInner({
 
   return (
     <Page
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Connectors" }]}
+      crumbs={[{ label: "Connectors" }]}
       actions={
         <Button
           onClick={() => setAdding(true)}

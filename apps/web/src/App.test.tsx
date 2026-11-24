@@ -19,13 +19,8 @@ beforeEach(() => {
     })),
   })
   vi.stubGlobal(
-    "WebSocket",
-    class {
-      addEventListener = vi.fn()
-      close = vi.fn()
-      send = vi.fn()
-      readyState = 1
-    }
+    "fetch",
+    vi.fn(async () => new Response(null, { status: 404 }))
   )
 })
 
@@ -33,57 +28,6 @@ afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
 })
-
-function mockFetch(handlers: Record<string, unknown>) {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (input: RequestInfo | URL) => {
-      const url =
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.href
-            : input.url
-      if (url.includes("/api/workflows/") && url.endsWith("/runs")) {
-        return Response.json(handlers.workflowRuns ?? handlers.runs ?? [])
-      }
-      if (/\/api\/runs(\?|$)/.test(url) || url.endsWith("/api/runs")) {
-        return Response.json(handlers.allRuns ?? handlers.runs ?? [])
-      }
-      if (url.includes("/api/cli-status")) {
-        return Response.json(
-          handlers.cliStatus ?? {
-            clis: [
-              { id: "claude", installed: false, version: null },
-              { id: "cursor", installed: false, version: null },
-            ],
-          }
-        )
-      }
-      if (url.includes("/api/trust")) {
-        return Response.json(
-          handlers.trust ?? {
-            trust: "none",
-            homeRealpath: "/tmp/flowapp",
-            alwaysTrusted: false,
-          }
-        )
-      }
-      if (url.includes("/api/workitems")) {
-        return Response.json(handlers.workitems ?? [])
-      }
-      if (url.includes("/api/connections")) {
-        return Response.json(handlers.connections ?? { connections: [] })
-      }
-      if (url.includes("/api/workflows") && !url.includes("/runs")) {
-        return Response.json(handlers.workflows ?? [])
-      }
-      throw new Error(`unexpected fetch: ${url}`)
-    })
-  )
-}
-
-const demoWorkflow = { id: "demo", goal: "test goal", taskCount: 1 }
 
 function renderApp(path = "/") {
   return render(
@@ -95,135 +39,30 @@ function renderApp(path = "/") {
   )
 }
 
+async function expectDocketShell() {
+  expect(await screen.findByTestId("app-sidebar")).toBeTruthy()
+  expect(await screen.findByTestId(/^(fcp-loading|fcp-error)$/)).toBeTruthy()
+}
+
 describe("App", () => {
-  it("lists workflows in the sidebar and shows home sections", async () => {
-    mockFetch({
-      workflows: [demoWorkflow],
-      allRuns: [],
-      workitems: [
-        {
-          id: "story-one",
-          title: "Story one",
-          source: { kind: "adhoc" },
-          updatedAt: "2026-01-01T00:00:00.000Z",
-        },
-      ],
-    })
+  it("redirects / to /docket and shows the app sidebar", async () => {
     renderApp("/")
-    expect(await screen.findByTestId("sidebar-workflow-demo")).toBeTruthy()
-    expect(await screen.findByTestId("home-page")).toBeTruthy()
-    expect(await screen.findByTestId("home-running")).toBeTruthy()
-    expect(screen.getByTestId("home-work-items")).toBeTruthy()
-    expect(screen.getByTestId("home-recent")).toBeTruthy()
-    expect(screen.queryByTestId("home-empty")).toBeNull()
-    expect(await screen.findByTestId("sidebar-platform")).toBeTruthy()
+    await expectDocketShell()
   })
 
-  it("shows home empty create action when there are no workflows", async () => {
-    mockFetch({ workflows: [], workitems: [] })
-    renderApp("/")
-    expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
-    expect(await screen.findByTestId("home-empty")).toBeTruthy()
-    expect(screen.getByTestId("home-create-workflow")).toBeTruthy()
-    expect(screen.getByTestId("sidebar-settings")).toBeTruthy()
-    expect(screen.getByTestId("sidebar-home")).toBeTruthy()
+  it("keeps /mock/docket as a redirect into the app", async () => {
+    renderApp("/mock/docket")
+    await expectDocketShell()
   })
 
-  it("shows home New work item when workflows exist but no work items or runs", async () => {
-    mockFetch({ workflows: [demoWorkflow], allRuns: [], workitems: [] })
-    renderApp("/")
-    expect(await screen.findByTestId("home-empty")).toBeTruthy()
-    expect(screen.getByTestId("home-create-work-item")).toBeTruthy()
-    expect(screen.queryByTestId("home-create-workflow")).toBeNull()
+  it("renders settings without FCP", async () => {
+    renderApp("/settings")
+    expect(await screen.findByTestId("settings-page")).toBeTruthy()
+    expect(screen.getByTestId("theme-toggle")).toBeTruthy()
   })
 
-  it("shows home sections for ad hoc runs without work items", async () => {
-    mockFetch({
-      workflows: [demoWorkflow],
-      workitems: [],
-      allRuns: [
-        {
-          id: "run-1",
-          workflowId: "demo",
-          workflowName: "demo",
-          status: "running",
-          needsYou: [],
-          taskCounts: { done: 0, total: 1 },
-          startedAt: "2026-01-01T00:00:00.000Z",
-        },
-      ],
-    })
-    renderApp("/")
-    expect(await screen.findByTestId("home-running")).toBeTruthy()
-    expect(screen.getByTestId("home-work-items")).toBeTruthy()
-    expect(screen.queryByTestId("home-empty")).toBeNull()
-  })
-
-  it("shows sidebar skeletons while workflows load", async () => {
-    let resolveWorkflows!: (value: Response) => void
-    const workflowsPromise = new Promise<Response>((resolve) => {
-      resolveWorkflows = resolve
-    })
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: RequestInfo | URL) => {
-        const url =
-          typeof input === "string"
-            ? input
-            : input instanceof URL
-              ? input.href
-              : input.url
-        if (url.includes("/api/workflows") && !url.includes("/runs")) {
-          return workflowsPromise
-        }
-        if (url.includes("/api/workitems")) {
-          return Response.json([])
-        }
-        if (
-          url.includes("/api/runs") &&
-          !url.includes("/api/runs/") &&
-          !url.includes("/tasks/")
-        ) {
-          return Response.json([])
-        }
-        throw new Error(`unexpected fetch: ${url}`)
-      })
-    )
-    renderApp("/")
-    expect(await screen.findByTestId("sidebar-workflow-loading")).toBeTruthy()
-    resolveWorkflows(Response.json([]))
-    expect(await screen.findByTestId("sidebar-workflows-empty")).toBeTruthy()
-  })
-
-  it("shows the runs list for ?tab=runs", async () => {
-    mockFetch({
-      workflows: [demoWorkflow],
-      workflowRuns: [],
-    })
-    renderApp("/workflows/demo?tab=runs")
-    expect(await screen.findByTestId("run-list")).toBeTruthy()
-  })
-
-  it("shows the workflows page table", async () => {
-    mockFetch({ workflows: [demoWorkflow], allRuns: [] })
-    renderApp("/workflows")
-    expect(await screen.findByTestId("workflows-page")).toBeTruthy()
-    expect(await screen.findByTestId("workflows-table")).toBeTruthy()
-    expect(screen.getByTestId("workflows-row-demo")).toBeTruthy()
-  })
-
-  it("shows the runs page empty state", async () => {
-    mockFetch({ workflows: [demoWorkflow], allRuns: [] })
-    renderApp("/runs")
-    expect(await screen.findByTestId("runs-page")).toBeTruthy()
-    expect(await screen.findByTestId("runs-empty")).toBeTruthy()
-  })
-
-  it("shows the work items page empty state", async () => {
-    mockFetch({ workflows: [demoWorkflow], allRuns: [], workitems: [] })
-    renderApp("/work-items")
-    expect(await screen.findByTestId("work-items-page")).toBeTruthy()
-    expect(await screen.findByTestId("work-items-empty")).toBeTruthy()
-    expect(screen.getByTestId("sidebar-platform-work-items")).toBeTruthy()
+  it("renders the brand index", async () => {
+    renderApp("/brand")
+    expect(await screen.findByTestId("brand-page")).toBeTruthy()
   })
 })

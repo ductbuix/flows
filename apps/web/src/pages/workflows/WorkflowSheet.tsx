@@ -35,7 +35,7 @@ export function WorkflowSheet({ workflow, onClose }: Props) {
                 variant="outline"
                 className="mt-2 w-fit"
                 nativeButton={false}
-                render={<Link to={`/mock/workflows/${workflow.id}`} />}
+                render={<Link to={`/workflows/${workflow.id}`} />}
                 data-testid="workflow-open-editor"
               >
                 <Workflow />

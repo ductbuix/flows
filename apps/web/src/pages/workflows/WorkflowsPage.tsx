@@ -88,7 +88,7 @@ function WorkflowsPageInner() {
 
   return (
     <Page
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Workflows" }]}
+      crumbs={[{ label: "Workflows" }]}
       actions={
         <Button
           onClick={() => setCreating(true)}
@@ -193,7 +193,7 @@ function WorkflowsPageInner() {
         onCreating={setCreating}
         onRenamingId={setRenamingId}
         onDeletingId={setDeletingId}
-        onCreated={(id) => void navigate(`/mock/workflows/${id}`)}
+        onCreated={(id) => void navigate(`/workflows/${id}`)}
         onConflict={() => setConflict(true)}
         onError={setActionError}
         onClearErrors={clearErrors}

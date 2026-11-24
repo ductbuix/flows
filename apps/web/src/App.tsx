@@ -1,90 +1,62 @@
-import { Outlet, Route, Routes } from "react-router"
-import { Toaster } from "@workspace/ui/components/sonner"
-import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
-import { AppSidebar } from "@/components/AppSidebar"
-import { WorkflowsProvider } from "@/lib/workflows-context"
+import { Navigate, Route, Routes, useParams } from "react-router"
 import { BrandMockupPage } from "@/pages/brand/BrandMockupPage"
 import { BrandPage } from "@/pages/brand/BrandPage"
 import { DevKitPage } from "@/pages/DevKitPage"
-import { HomePage } from "@/pages/HomePage"
-import { ConnectionPage } from "@/pages/connections/ConnectionPage"
-import { ConnectionsPage } from "@/pages/connections/ConnectionsPage"
 import { ConnectorsPage } from "@/pages/connectors/ConnectorsPage"
 import { SkillsPage } from "@/pages/skills/SkillsPage"
-import { RunsPage as MockRunsPage } from "@/pages/runs/RunsPage"
+import { RunsPage } from "@/pages/runs/RunsPage"
 import { DocketPage } from "@/pages/docket/DocketPage"
 import { FilesPage } from "@/pages/files/FilesPage"
 import { InboxPage } from "@/pages/inbox/InboxPage"
 import { LibraryPage } from "@/pages/library/LibraryPage"
-import { MockBlankPage } from "@/pages/mock/MockBlankPage"
 import { MockShell } from "@/pages/mock/MockShell"
-import { WorkflowEditorPage as MockWorkflowEditorPage } from "@/pages/workflows/WorkflowEditorPage"
-import { WorkflowsPage as MockWorkflowsPage } from "@/pages/workflows/WorkflowsPage"
-import { RunsPage } from "@/pages/RunsPage"
+import { WorkflowEditorPage } from "@/pages/workflows/WorkflowEditorPage"
+import { WorkflowsPage } from "@/pages/workflows/WorkflowsPage"
 import { SettingsPage } from "@/pages/SettingsPage"
-import {
-  LegacyRunRedirect,
-  LegacyWorkflowRunsRedirect,
-} from "@/pages/LegacyRedirects"
-import { RunViewPage } from "@/pages/run-view/RunViewPage"
-import { WorkItemPage } from "@/pages/WorkItemPage"
-import { WorkItemsPage } from "@/pages/WorkItemsPage"
-import { WorkflowPage } from "@/pages/WorkflowPage"
-import { WorkflowsPage } from "@/pages/WorkflowsPage"
 
-function AppShell() {
-  return (
-    <WorkflowsProvider>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset className="flex h-svh flex-col overflow-hidden">
-          <Outlet />
-        </SidebarInset>
-        <Toaster />
-      </SidebarProvider>
-    </WorkflowsProvider>
-  )
+function MockWorkflowRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/workflows/${id ?? ""}`} replace />
 }
 
 export function App() {
   return (
     <Routes>
-      <Route path="mock" element={<MockShell />}>
-        <Route index element={<MockBlankPage />} />
+      <Route element={<MockShell />}>
+        <Route index element={<Navigate to="/docket" replace />} />
         <Route path="docket" element={<DocketPage />} />
-        <Route path="workflows" element={<MockWorkflowsPage />} />
+        <Route path="workflows" element={<WorkflowsPage />} />
+        <Route path="workflows/:id" element={<WorkflowEditorPage />} />
         <Route path="inbox" element={<InboxPage />} />
         <Route path="files" element={<FilesPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="skills" element={<SkillsPage />} />
-        <Route path="runs" element={<MockRunsPage />} />
+        <Route path="runs" element={<RunsPage />} />
         <Route path="connectors" element={<ConnectorsPage />} />
-        <Route path="workflows/:id" element={<MockWorkflowEditorPage />} />
-      </Route>
-      <Route element={<AppShell />}>
-        <Route index element={<HomePage />} />
         <Route path="settings" element={<SettingsPage />} />
         {import.meta.env.DEV ? (
           <Route path="dev/kit" element={<DevKitPage />} />
         ) : null}
         <Route path="brand" element={<BrandPage />} />
         <Route path="brand/:mockupId" element={<BrandMockupPage />} />
-        <Route path="work-items" element={<WorkItemsPage />} />
-        <Route path="work-items/:workItemId" element={<WorkItemPage />} />
-        <Route path="connections" element={<ConnectionsPage />} />
-        <Route path="connections/:connectionId" element={<ConnectionPage />} />
-        <Route path="workflows" element={<WorkflowsPage />} />
-        <Route path="workflows/:workflowId" element={<WorkflowPage />} />
+      </Route>
+      <Route path="mock">
+        <Route index element={<Navigate to="/docket" replace />} />
+        <Route path="docket" element={<Navigate to="/docket" replace />} />
         <Route
-          path="workflows/:workflowId/runs/:runId"
-          element={<LegacyRunRedirect />}
+          path="workflows"
+          element={<Navigate to="/workflows" replace />}
         />
+        <Route path="workflows/:id" element={<MockWorkflowRedirect />} />
+        <Route path="inbox" element={<Navigate to="/inbox" replace />} />
+        <Route path="files" element={<Navigate to="/files" replace />} />
+        <Route path="library" element={<Navigate to="/library" replace />} />
+        <Route path="skills" element={<Navigate to="/skills" replace />} />
+        <Route path="runs" element={<Navigate to="/runs" replace />} />
         <Route
-          path="workflows/:workflowId/runs"
-          element={<LegacyWorkflowRunsRedirect />}
+          path="connectors"
+          element={<Navigate to="/connectors" replace />}
         />
-        <Route path="runs" element={<RunsPage />} />
-        <Route path="runs/:runId" element={<RunViewPage />} />
       </Route>
     </Routes>
   )

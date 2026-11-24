@@ -97,7 +97,7 @@ describe("createAppClient", () => {
     )
   })
 
-  it("fetches /api/fcp when embed is absent", async () => {
+  it("fetches /fcp/bootstrap when embed is absent", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
@@ -111,7 +111,7 @@ describe("createAppClient", () => {
     const { createAppClient } = await import("./create-app-client.ts")
 
     await createAppClient()
-    expect(fetch).toHaveBeenCalledWith("/api/fcp")
+    expect(fetch).toHaveBeenCalledWith("/fcp/bootstrap")
     expect(createClient).toHaveBeenCalledWith(
       expect.objectContaining({
         url: "ws://127.0.0.1:8787/fcp",

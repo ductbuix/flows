@@ -1,57 +1,10 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs"
+import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createEngine } from "@workspace/engine"
-import { randomUUID } from "node:crypto"
-import {
-  healthSchema,
-  logChunkSchema,
-  okResponseSchema,
-  outListSchema,
-  runDetailSchema,
-  runInputFileDetailSchema,
-  runSummarySchema,
-  startRunResponseSchema,
-  summaryResponseSchema,
-  workflowConflictSchema,
-  workflowDetailSchema,
-  workflowSummarySchema,
-} from "@workspace/shared"
+import { healthSchema } from "@workspace/shared"
 import { afterEach, describe, expect, it } from "vitest"
 import { createApp } from "./app.ts"
-import { settle } from "./test-utils.ts"
-import { existsSync } from "node:fs"
-import { runDir, workflowDir } from "@workspace/engine"
-
-const fixtureYaml = `id: api-diamond
-goal: api test fixture
-nodes:
-  - { id: t, kind: trigger, type: manual }
-  - id: a
-    kind: command
-    run: "printf 'HELLO_STDOUT\\n' && printf '# Title\\n' > \\"$(dirname \\"$NODE_OUT\\")/SUMMARY.md\\""
-  - id: b
-    kind: command
-    run: "printf b > \\"$NODE_OUT/letter.txt\\""
-  - id: c
-    kind: command
-    run: "printf c > \\"$NODE_OUT/letter.txt\\""
-  - id: d
-    kind: command
-    run: "printf done > \\"$NODE_OUT/out.txt\\""
-edges:
-  - { from: t, to: a }
-  - { from: a, to: b }
-  - { from: a, to: c }
-  - { from: b, to: d }
-  - { from: c, to: d }
-`
 
 const homes: string[] = []
 
@@ -66,16 +19,13 @@ function testStack() {
   homes.push(home)
   const engine = createEngine({ home })
   const app = createApp({ engine })
-  const workflowDir = join(home, "workflows", "api-diamond")
-  mkdirSync(workflowDir, { recursive: true })
-  writeFileSync(join(workflowDir, "workflow.yaml"), fixtureYaml)
-  return { home, engine, app, workflowDir }
+  return { engine, app }
 }
 
-describe("GET /api/health", () => {
+describe("GET /health", () => {
   it("returns ok and a version", async () => {
     const { engine, app } = testStack()
-    const res = await app.request("/api/health")
+    const res = await app.request("/health")
     expect(res.status).toBe(200)
     expect(healthSchema.parse(await res.json())).toEqual({
       ok: true,
@@ -88,200 +38,6 @@ describe("GET /api/health", () => {
     const { engine, app } = testStack()
     const res = await app.request("/api/nope")
     expect(res.status).toBe(404)
-    engine.close()
-  })
-})
-
-describe("run API", () => {
-  it("lists workflows, starts a run, and returns run detail", async () => {
-    const { engine, app } = testStack()
-
-    const wfRes = await app.request("/api/workflows")
-    expect(wfRes.status).toBe(200)
-    const workflows = workflowSummarySchema.array().parse(await wfRes.json())
-    expect(workflows).toEqual([
-      { id: "api-diamond", goal: "api test fixture", taskCount: 5 },
-    ])
-
-    const startRes = await app.request("/api/workflows/api-diamond/runs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: randomUUID() }),
-    })
-    expect(startRes.status).toBe(200)
-    const { runId } = startRunResponseSchema.parse(await startRes.json())
-
-    const state = await settle(engine, runId)
-    expect(state.status).toBe("succeeded")
-
-    const listRes = await app.request("/api/workflows/api-diamond/runs")
-    const summaries = runSummarySchema.array().parse(await listRes.json())
-    expect(summaries[0]?.id).toBe(runId)
-    expect(summaries[0]?.status).toBe("succeeded")
-
-    const detailRes = await app.request(`/api/runs/${runId}`)
-    expect(detailRes.status).toBe(200)
-    const detail = runDetailSchema.parse(await detailRes.json())
-    expect(detail.workflowId).toBe("api-diamond")
-    expect(detail.tasks.map((t) => t.id)).toEqual(["t", "a", "b", "c", "d"])
-    engine.close()
-  }, 30_000)
-
-  it("returns log text and SUMMARY.md for task a", async () => {
-    const { engine, app } = testStack()
-
-    const startRes = await app.request("/api/workflows/api-diamond/runs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: randomUUID() }),
-    })
-    const { runId } = startRunResponseSchema.parse(await startRes.json())
-    await settle(engine, runId)
-
-    const logRes = await app.request(
-      `/api/runs/${runId}/tasks/a/attempts/1/log?stream=stdout&offset=0`
-    )
-    expect(logRes.status).toBe(200)
-    const chunk = logChunkSchema.parse(await logRes.json())
-    expect(chunk.text).toContain("HELLO_STDOUT")
-
-    const sumRes = await app.request(
-      `/api/runs/${runId}/tasks/a/attempts/1/summary`
-    )
-    expect(sumRes.status).toBe(200)
-    const summary = summaryResponseSchema.parse(await sumRes.json())
-    expect(summary.missing).toBe(false)
-    expect(summary.text).toContain("# Title")
-    engine.close()
-  }, 30_000)
-
-  it("lists and reads out/ files for a finished attempt", async () => {
-    const { engine, app, home } = testStack()
-
-    const startRes = await app.request("/api/workflows/api-diamond/runs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: randomUUID() }),
-    })
-    const { runId } = startRunResponseSchema.parse(await startRes.json())
-    await settle(engine, runId)
-
-    // Seed out/ on task a (always attempted). Avoid depending on downstream
-    // tasks when the host sandbox blocks nested sandbox-exec.
-    const outDir = join(
-      runDir(workflowDir(home, "api-diamond"), runId),
-      "nodes",
-      "a",
-      "pass-1",
-      "attempt-1",
-      "out"
-    )
-    mkdirSync(outDir, { recursive: true })
-    writeFileSync(join(outDir, "letter.txt"), "hello out\n")
-
-    const listRes = await app.request(
-      `/api/runs/${runId}/tasks/a/attempts/1/out`
-    )
-    expect(listRes.status).toBe(200)
-    const listed = outListSchema.parse(await listRes.json())
-    expect(listed.files.some((f) => f.path === "letter.txt")).toBe(true)
-
-    const fileRes = await app.request(
-      `/api/runs/${runId}/tasks/a/attempts/1/out/letter.txt`
-    )
-    expect(fileRes.status).toBe(200)
-    const file = runInputFileDetailSchema.parse(await fileRes.json())
-    expect(file).toEqual({ path: "letter.txt", content: "hello out\n" })
-
-    const escape = await app.request(
-      `/api/runs/${runId}/tasks/a/attempts/1/out/../SUMMARY.md`
-    )
-    expect(escape.status).toBe(404)
-    engine.close()
-  }, 30_000)
-
-  it("returns 404 for unknown runs", async () => {
-    const { engine, app } = testStack()
-    const res = await app.request("/api/runs/missing-run")
-    expect(res.status).toBe(404)
-    engine.close()
-  })
-
-  it("is idempotent on start and deletes a finished run", async () => {
-    const { engine, app, home } = testStack()
-    const requestId = randomUUID()
-    const startOnce = () =>
-      app.request("/api/workflows/api-diamond/runs", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ requestId }),
-      })
-
-    const first = startRunResponseSchema.parse(await (await startOnce()).json())
-    const second = startRunResponseSchema.parse(
-      await (await startOnce()).json()
-    )
-    expect(second.runId).toBe(first.runId)
-
-    await settle(engine, first.runId)
-
-    const delId = randomUUID()
-    const delRes = await app.request(`/api/runs/${first.runId}`, {
-      method: "DELETE",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: delId }),
-    })
-    expect(delRes.status).toBe(200)
-    expect(okResponseSchema.parse(await delRes.json())).toEqual({ ok: true })
-    expect(
-      existsSync(runDir(workflowDir(home, "api-diamond"), first.runId))
-    ).toBe(false)
-
-    const listRes = await app.request("/api/workflows/api-diamond/runs")
-    const summaries = runSummarySchema.array().parse(await listRes.json())
-    expect(summaries.find((r) => r.id === first.runId)).toBeUndefined()
-    engine.close()
-  }, 30_000)
-})
-
-describe("workflow YAML API", () => {
-  it("gets and puts workflow.yaml with hash conflict", async () => {
-    const { engine, app, workflowDir } = testStack()
-
-    const getRes = await app.request("/api/workflows/api-diamond")
-    expect(getRes.status).toBe(200)
-    const detail = workflowDetailSchema.parse(await getRes.json())
-    expect(detail.workflow?.id).toBe("api-diamond")
-    expect(detail.hash.length).toBe(64)
-
-    const nextYaml = detail.yaml.replace(
-      "goal: api test fixture",
-      "goal: updated goal"
-    )
-    const putOk = await app.request("/api/workflows/api-diamond", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ yaml: nextYaml, baseHash: detail.hash }),
-    })
-    expect(putOk.status).toBe(200)
-    const saved = workflowDetailSchema.parse(await putOk.json())
-    expect(saved.workflow?.goal).toBe("updated goal")
-    expect(readFileSync(join(workflowDir, "workflow.yaml"), "utf8")).toContain(
-      "updated goal"
-    )
-
-    writeFileSync(
-      join(workflowDir, "workflow.yaml"),
-      fixtureYaml.replace("api test fixture", "disk change")
-    )
-    const putConflict = await app.request("/api/workflows/api-diamond", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ yaml: nextYaml, baseHash: saved.hash }),
-    })
-    expect(putConflict.status).toBe(409)
-    const conflict = workflowConflictSchema.parse(await putConflict.json())
-    expect(conflict.diskYaml).toContain("disk change")
     engine.close()
   })
 })

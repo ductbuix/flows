@@ -27,11 +27,15 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     proxy: {
-      // changeOrigin so /api/fcp sees the daemon Host (DES-016 loopback guard).
-      "/api": {
+      // changeOrigin so /fcp/bootstrap sees the daemon Host (DES-016 loopback).
+      "/fcp": {
         target: `http://127.0.0.1:${apiPort}`,
         changeOrigin: true,
         ws: true,
+      },
+      "/blobs": {
+        target: `http://127.0.0.1:${apiPort}`,
+        changeOrigin: true,
       },
     },
   },

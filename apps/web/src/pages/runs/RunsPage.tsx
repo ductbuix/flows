@@ -47,7 +47,7 @@ function RunsPageInner() {
 
   return (
     <Page
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Runs" }]}
+      crumbs={[{ label: "Runs" }]}
       actions={
         <Button
           onClick={() => {

@@ -21,7 +21,7 @@ async function screenshotThemes(
 
 test.describe("library page (BL-182)", () => {
   test("lists providers and saves a custom one", async ({ page }) => {
-    await page.goto("/mock/library")
+    await page.goto("/library")
     await expect(page.getByTestId("mock-library-page")).toBeVisible()
     await expect(page.getByTestId("library-empty")).toBeVisible()
     await screenshotThemes(page, "library-page")

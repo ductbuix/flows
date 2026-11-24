@@ -14,7 +14,7 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { useRuns } from "./runs-store"
-import { MOCK_CHANGES } from "./mock-data"
+import { APP_NAV } from "./mock-data"
 
 /** Sidebar 11 layout (shadcn blocks), reworked for Flows. */
 export function MockSidebar() {
@@ -23,13 +23,12 @@ export function MockSidebar() {
     (r) => r.tone === "attention" && !r.decision
   ).length
   return (
-    <Sidebar data-testid="mock-sidebar">
+    <Sidebar data-testid="app-sidebar">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<Link to="/mock" />}>
+            <SidebarMenuButton render={<Link to="/docket" />}>
               <span className="font-heading font-medium">Flows</span>
-              <span className="text-xs text-muted-foreground">mockup</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -39,7 +38,7 @@ export function MockSidebar() {
           <SidebarGroupLabel>Changes</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {MOCK_CHANGES.map((item) => (
+              {APP_NAV.map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
                     render={<Link to={item.to} />}

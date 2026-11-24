@@ -21,7 +21,7 @@ async function screenshotThemes(
 
 test.describe("workflows page (BL-179)", () => {
   test("lists workflows, opens editor, creates one", async ({ page }) => {
-    await page.goto("/mock/workflows")
+    await page.goto("/workflows")
     await expect(page.getByTestId("mock-workflows-page")).toBeVisible()
     // Loaded state (loading skeleton shares the page test id).
     await expect(page.getByTestId("workflows-new-open")).toBeVisible()
@@ -37,7 +37,7 @@ test.describe("workflows page (BL-179)", () => {
     )
     await screenshotThemes(page, "workflow-editor")
 
-    await page.goto("/mock/workflows")
+    await page.goto("/workflows")
     await page.getByTestId("workflows-new-open").click()
     await expect(page.getByTestId("workflows-new")).toBeVisible()
     await page.getByTestId("workflows-new-name").fill("Ship workflows sdk")

@@ -83,7 +83,7 @@ export function AssetNode({ id, data, selected }: NodeProps<FlowNode>) {
           />
           {found ? (
             <Link
-              to={`/mock/library?item=${found.item.id}`}
+              to={`/library?item=${found.item.id}`}
               className="nodrag flex items-center gap-1 px-1 text-xs text-muted-foreground hover:text-foreground"
             >
               <Library className="size-3" />

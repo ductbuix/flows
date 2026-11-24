@@ -17,24 +17,18 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 ## Layout
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
-  on `127.0.0.1:5173`, proxies `/api`; node cards in `src/nodes/`; pages use
-  `components/page`, labels/ids `components/data`. Routes: Home (Needs you,
-  expired sign-ins), `/work-items(/:id)`, `/workflows` (Overview/Editor/
-  Runs), `/runs` (by work item; run view Tasks/Changes/Library),
-  `/connections(/:id)` (Library tab, sign-in, MCP allow), Settings,
-  `/dev/kit`; one Start run dialog, Allow agent CLI dialog. FCP client:
-  MessagePort in Electron, WebSocket when `__FLOWS_FCP__` is set.
+  on `127.0.0.1:5173`, proxies `/fcp` (bootstrap + WS) and `/blobs`. Pages
+  use `components/page`, labels/ids `components/data`. Routes (FCP via
+  sdk-react): `/`→`/docket`, `/inbox`, `/workflows(/:id)`, `/runs`,
+  `/connectors`, `/library`, `/skills`, `/files`, `/settings`, `/brand`,
+  `/dev/kit`; `/mock/*` redirects to the same paths. No `hono/client`.
+  FCP client: MessagePort in Electron, WebSocket via `/fcp/bootstrap`.
 - `apps/desktop`: Electron main + preload (`connect(): MessagePort`) +
   utilityProcess engine host; loads the web build; Playwright smoke in
   `apps/desktop/smoke`.
-- `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`. REST
-  `/api`: health, workflows (hash/409), memory, files, trust + preflight,
-  CLI models, connections + sign-in, `/mcp-trust`, nodes, `/layout`,
-  connectors, library, work items, runs (start/cancel/rerun/retry/approve/
-  reject/delete, changes, input/files, log/summary/out); websocket
-  snapshots, `runs_changed`, log chunks, file watches. `/` + `/fcp`: FCP
-  over ws (loopback Host/Origin + lock token): ping, workflow/list|get,
-  run/list|get, run_changed. `/blobs`: GET/PUT with lock token (BlobStore).
+- `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`.
+  `/health`; `/` + `/fcp` FCP over ws (loopback Host/Origin + lock token)
+  with `GET /fcp/bootstrap`; `/blobs` GET/PUT (BlobStore). No REST `/api`.
 - `packages/engine`: SQLite event log (via EventStore) + settings, connectors,
   MCP trust, connections, library, work items, work copies, CliAdapter,
   trust markers, queued runs; `nodes/` (walk, loops, executors, tick, fold).
@@ -60,7 +54,7 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
   events, `findLoopEdges`, YAML edits that keep comments and key order.
 - `packages/ui`: shadcn, domain-free AI Element patterns, `globals.css`.
 - `apps/e2e`: Playwright, temp `FLOWAPP_HOME` of node workflows
-  (`layout.spec.ts` baselines, `node-*.spec.ts`).
+  (`layout.spec.ts` baselines, shell smoke, FCP page specs).
 - `packages/docs-tools`: docs index generator and checker.
 - `docs/`: designs (`DES-*`), backlogs (`BL-*`), generated indexes.
 

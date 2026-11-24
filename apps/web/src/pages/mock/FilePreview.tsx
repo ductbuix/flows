@@ -4,7 +4,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
-import { SummaryMarkdown } from "@/pages/run-view/SummaryMarkdown"
+import { SummaryMarkdown } from "@/components/SummaryMarkdown"
 import { Button } from "@workspace/ui/components/button"
 import { CodeBlock } from "@workspace/ui/components/code-block"
 import {

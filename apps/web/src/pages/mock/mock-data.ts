@@ -1,16 +1,16 @@
 import { pathsToFileTree } from "@workspace/ui/components/file-tree"
 
-/** Mock data for the UX mockup app (/mock). Nothing here touches the server. */
+/** Nav + fixture paths for the app shell. */
 
-export const MOCK_CHANGES = [
-  { to: "/mock/docket", label: "Docket", badge: "M" },
-  { to: "/mock/workflows", label: "Workflows", badge: "M" },
-  { to: "/mock/runs", label: "Runs", badge: "A" },
-  { to: "/mock/inbox", label: "Inbox", badge: "A" },
-  { to: "/mock/files", label: "Files", badge: "A" },
-  { to: "/mock/library", label: "Library", badge: "A" },
-  { to: "/mock/skills", label: "Skills", badge: "A" },
-  { to: "/mock/connectors", label: "Connectors", badge: "A" },
+export const APP_NAV = [
+  { to: "/docket", label: "Docket", badge: "M" },
+  { to: "/workflows", label: "Workflows", badge: "M" },
+  { to: "/runs", label: "Runs", badge: "A" },
+  { to: "/inbox", label: "Inbox", badge: "A" },
+  { to: "/files", label: "Files", badge: "A" },
+  { to: "/library", label: "Library", badge: "A" },
+  { to: "/skills", label: "Skills", badge: "A" },
+  { to: "/connectors", label: "Connectors", badge: "A" },
 ] as const
 
 /** Mirrors the real app home (the whole folder, not a subset). */

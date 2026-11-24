@@ -52,7 +52,7 @@ export default defineConfig({
   webServer: [
     {
       command: "pnpm --filter server start",
-      url: `${API}/api/health`,
+      url: `${API}/health`,
       reuseExistingServer: !process.env.CI,
       cwd: "../..",
       env: {

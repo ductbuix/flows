@@ -33,7 +33,7 @@ function InboxPageInner() {
 
   return (
     <Page
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Inbox" }]}
+      crumbs={[{ label: "Inbox" }]}
       data-testid="mock-inbox-page"
     >
       <PageTitle

@@ -48,13 +48,13 @@ describe("GET /", () => {
   })
 })
 
-describe("GET /api/fcp", () => {
+describe("GET /fcp/bootstrap", () => {
   it("returns token bootstrap for loopback Host and Origin", async () => {
     const home = trackTempHome(mkdtempSync(join(tmpdir(), "flowapp-api-fcp-")))
     const token = "api-boot"
     const engine = createEngine({ home })
     const app = createApp({ engine, fcpToken: token, port: 8787 })
-    const res = await app.request("http://127.0.0.1:8787/api/fcp", {
+    const res = await app.request("http://127.0.0.1:8787/fcp/bootstrap", {
       headers: {
         Host: "127.0.0.1:8787",
         Origin: "http://127.0.0.1:5173",
@@ -74,7 +74,7 @@ describe("GET /api/fcp", () => {
     )
     const engine = createEngine({ home })
     const app = createApp({ engine, fcpToken: "secret", port: 8787 })
-    const res = await app.request("http://127.0.0.1:8787/api/fcp", {
+    const res = await app.request("http://127.0.0.1:8787/fcp/bootstrap", {
       headers: { Host: "evil.example:8787" },
     })
     expect(res.status).toBe(403)
@@ -88,7 +88,7 @@ describe("GET /api/fcp", () => {
     const token = "vite-boot"
     const engine = createEngine({ home })
     const app = createApp({ engine, fcpToken: token, port: 8787 })
-    const res = await app.request("http://127.0.0.1:5173/api/fcp", {
+    const res = await app.request("http://127.0.0.1:5173/fcp/bootstrap", {
       headers: {
         Host: "127.0.0.1:5173",
         Origin: "http://127.0.0.1:5173",
@@ -108,7 +108,7 @@ describe("GET /api/fcp", () => {
     )
     const engine = createEngine({ home })
     const app = createApp({ engine, fcpToken: "secret", port: 8787 })
-    const res = await app.request("http://127.0.0.1:8787/api/fcp", {
+    const res = await app.request("http://127.0.0.1:8787/fcp/bootstrap", {
       headers: {
         Host: "127.0.0.1:8787",
         Origin: "http://evil.example",

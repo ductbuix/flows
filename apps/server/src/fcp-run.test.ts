@@ -2,8 +2,8 @@ import {
   FCP_VERSION,
   runGetMethod,
   runListMethod,
+  runStartMethod,
   runUpdateNotification,
-  startRunResponseSchema,
   subscribeMethod,
 } from "@workspace/contracts"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
@@ -11,6 +11,7 @@ import { randomUUID } from "node:crypto"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
+import { WebSocket } from "ws"
 import { openFcpWs, startFcpServer } from "./fcp-harness.ts"
 
 function writeDemoWorkflow(home: string): void {
@@ -31,36 +32,44 @@ edges:
   )
 }
 
-async function startRunViaRest(
+async function fcpPeer(
   port: number,
+  token: string
+): Promise<{ peer: RpcPeer; socket: WebSocket }> {
+  const socket = await openFcpWs(port, token)
+  const peer = new RpcPeer(wsTransport(socket))
+  await peer.request("initialize", {
+    protocolVersion: FCP_VERSION,
+    clientInfo: { name: "fcp-run-test", version: "0.0.0" },
+    clientCapabilities: {},
+  })
+  return { peer, socket }
+}
+
+async function startRunViaFcp(
+  port: number,
+  token: string,
   workflowId: string
 ): Promise<string> {
-  const res = await fetch(
-    `http://127.0.0.1:${port}/api/workflows/${workflowId}/runs`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requestId: randomUUID() }),
-    }
+  const { peer, socket } = await fcpPeer(port, token)
+  const started = runStartMethod.result.parse(
+    await peer.request("run/start", {
+      workflowId,
+      requestKey: randomUUID(),
+    })
   )
-  expect(res.status).toBe(200)
-  return startRunResponseSchema.parse(await res.json()).runId
+  socket.close()
+  return started.runId
 }
 
 describe("FCP run/list, run/get and run_changed", () => {
   it("lists and gets run summaries over FCP", async () => {
     const h = await startFcpServer()
     writeDemoWorkflow(h.home)
-    const firstId = await startRunViaRest(h.port, "demo")
-    const secondId = await startRunViaRest(h.port, "demo")
+    const firstId = await startRunViaFcp(h.port, h.token, "demo")
+    const secondId = await startRunViaFcp(h.port, h.token, "demo")
 
-    const socket = await openFcpWs(h.port, h.token)
-    const peer = new RpcPeer(wsTransport(socket))
-    await peer.request("initialize", {
-      protocolVersion: FCP_VERSION,
-      clientInfo: { name: "fcp-run-test", version: "0.0.0" },
-      clientCapabilities: {},
-    })
+    const { peer, socket } = await fcpPeer(h.port, h.token)
 
     const listed = runListMethod.result.parse(
       await peer.request("run/list", { limit: 10 })
@@ -88,17 +97,11 @@ describe("FCP run/list, run/get and run_changed", () => {
     socket.close()
   })
 
-  it("publishes run/update run_changed when a run starts via REST", async () => {
+  it("publishes run/update run_changed when a run starts via FCP", async () => {
     const h = await startFcpServer()
     writeDemoWorkflow(h.home)
 
-    const socket = await openFcpWs(h.port, h.token)
-    const peer = new RpcPeer(wsTransport(socket))
-    await peer.request("initialize", {
-      protocolVersion: FCP_VERSION,
-      clientInfo: { name: "fcp-run-test", version: "0.0.0" },
-      clientCapabilities: {},
-    })
+    const { peer, socket } = await fcpPeer(h.port, h.token)
 
     const updates: unknown[] = []
     peer.onNotification("run/update", (params) => {
@@ -108,7 +111,12 @@ describe("FCP run/list, run/get and run_changed", () => {
       await peer.request("subscribe", { topics: ["run"] })
     )
 
-    const runId = await startRunViaRest(h.port, "demo")
+    const runId = runStartMethod.result.parse(
+      await peer.request("run/start", {
+        workflowId: "demo",
+        requestKey: randomUUID(),
+      })
+    ).runId
 
     const deadline = Date.now() + 10_000
     while (

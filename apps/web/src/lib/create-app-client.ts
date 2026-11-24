@@ -38,7 +38,7 @@ async function loadWsBootstrap(): Promise<{
     return { url: embedded.url, token: embedded.token ?? "" }
   }
   try {
-    const res = await fetch("/api/fcp")
+    const res = await fetch("/fcp/bootstrap")
     if (!res.ok) return null
     const body = (await res.json()) as { url?: string; token?: string }
     if (!body.url) return null
@@ -50,7 +50,7 @@ async function loadWsBootstrap(): Promise<{
 
 /**
  * Transport switch (DES-039 / BL-186): MessagePort in Electron via preload
- * `connect()`, WebSocket in the browser via `__FLOWS_FCP__` or `/api/fcp`.
+ * `connect()`, WebSocket in the browser via `__FLOWS_FCP__` or `/fcp/bootstrap`.
  */
 export async function createAppClient(): Promise<FlowsClient | null> {
   if (typeof window === "undefined") return null

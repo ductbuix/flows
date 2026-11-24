@@ -42,7 +42,7 @@ function SkillsPageInner() {
   return (
     <Page
       fill
-      crumbs={[{ label: "Mockup", to: "/mock" }, { label: "Skills" }]}
+      crumbs={[{ label: "Skills" }]}
       data-testid="mock-skills-page"
     >
       <PageTitle
