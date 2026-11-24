@@ -1,7 +1,9 @@
 export { parseGatewayArgs, type GatewayArgs } from "./args.ts"
 export {
   connectEngineBridge,
+  gatewayTokenFromEnv,
   GATEWAY_CALL_METHOD,
+  GATEWAY_TOKEN_ENV,
   type EngineCaller,
 } from "./engine-bridge.ts"
 export {

@@ -311,6 +311,9 @@ importers:
       '@workspace/core':
         specifier: workspace:*
         version: link:../core
+      '@workspace/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       minimatch:
         specifier: ^10.2.6
         version: 10.2.6

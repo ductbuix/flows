@@ -2,7 +2,11 @@ import { createServer, type Server, type Socket } from "node:net"
 import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { RpcPeer } from "@workspace/protocol"
+import {
+  JSONRPC_INVALID_PARAMS,
+  JsonRpcResponseError,
+  RpcPeer,
+} from "@workspace/protocol"
 import { ndjsonTransport } from "@workspace/protocol/node"
 import { GATEWAY_CALL_METHOD } from "./engine-bridge.ts"
 import type { CallToolResult } from "./mcp-types.ts"
@@ -23,6 +27,8 @@ export type StubSocketServer = {
  * `gateway/call` with a fixed or custom result.
  */
 export async function startStubSocketServer(opts?: {
+  /** When set, refuse calls whose token does not match. */
+  token?: string
   result?:
     | CallToolResult
     | ((call: StubCall) => CallToolResult | Promise<CallToolResult>)
@@ -52,6 +58,19 @@ export async function startStubSocketServer(opts?: {
         typeof (params as { name: unknown }).name === "string"
           ? (params as { name: string }).name
           : ""
+      const token =
+        params &&
+        typeof params === "object" &&
+        "token" in params &&
+        typeof (params as { token: unknown }).token === "string"
+          ? (params as { token: string }).token
+          : ""
+      if (opts?.token !== undefined && token !== opts.token) {
+        throw new JsonRpcResponseError({
+          code: JSONRPC_INVALID_PARAMS,
+          message: "unknown step token",
+        })
+      }
       const argsRaw =
         params && typeof params === "object"
           ? (params as { arguments?: unknown }).arguments

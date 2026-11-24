@@ -300,6 +300,16 @@ export const stepCancelledEventSchema = z.object({
   ...stepBase,
 })
 
+/** One MCP-gateway connector call through the permission chain (DES-041 / BL-166). */
+export const connectorCalledEventSchema = z.object({
+  type: z.literal("connector_called"),
+  ...stepBase,
+  connectorId: z.string().min(1),
+  capability: z.string().min(1),
+  status: z.enum(["ok", "denied", "error"]),
+  message: z.string().min(1).optional(),
+})
+
 export const engineEventSchema = z.discriminatedUnion("type", [
   runStartedEventSchema,
   runActivatedEventSchema,
@@ -328,6 +338,7 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   stepRejectedEventSchema,
   stepRetryRequestedEventSchema,
   stepCancelledEventSchema,
+  connectorCalledEventSchema,
 ])
 
 export type EngineEvent = z.infer<typeof engineEventSchema>

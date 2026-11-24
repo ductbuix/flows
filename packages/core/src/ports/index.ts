@@ -35,3 +35,12 @@ export type {
 } from "./process-runner.ts"
 export { assertSecretKey } from "./secret-key.ts"
 export type { SecretStore } from "./secret-store.ts"
+export {
+  GATEWAY_CALL_METHOD,
+  GATEWAY_TOKEN_ENV,
+  type GatewaySocketCall,
+  type GatewaySocketCallResult,
+  type GatewaySocketHandle,
+  type GatewaySocketListenOpts,
+  type GatewaySocketServer,
+} from "./gateway-socket.ts"

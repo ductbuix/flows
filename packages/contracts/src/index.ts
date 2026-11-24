@@ -194,6 +194,7 @@ export {
   stepRejectedEventSchema,
   stepRetryRequestedEventSchema,
   stepCancelledEventSchema,
+  connectorCalledEventSchema,
   type TaskStatus,
   type RunStatus,
   type EngineEvent,

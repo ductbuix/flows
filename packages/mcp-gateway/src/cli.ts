@@ -1,14 +1,15 @@
 import { readFileSync } from "node:fs"
 import { ndjsonTransport } from "@workspace/protocol/node"
 import { parseGatewayArgs } from "./args.ts"
-import { connectEngineBridge } from "./engine-bridge.ts"
+import { connectEngineBridge, gatewayTokenFromEnv } from "./engine-bridge.ts"
 import { createMcpGateway } from "./gateway.ts"
 import { parseToolsSpec } from "./tools-spec.ts"
 
 export async function main(argv: string[]): Promise<{ close(): void }> {
   const { toolsPath, socketPath } = parseGatewayArgs(argv)
   const tools = parseToolsSpec(JSON.parse(readFileSync(toolsPath, "utf8")))
-  const engine = await connectEngineBridge(socketPath)
+  const token = gatewayTokenFromEnv()
+  const engine = await connectEngineBridge(socketPath, token)
   const transport = ndjsonTransport(process.stdin, process.stdout)
   return createMcpGateway({ tools: tools.tools, engine, transport })
 }

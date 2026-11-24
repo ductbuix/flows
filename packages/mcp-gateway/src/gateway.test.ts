@@ -151,7 +151,7 @@ describe("MCP gateway over stub socket", () => {
       },
     })
     try {
-      const engine = await connectEngineBridge(stub.path)
+      const engine = await connectEngineBridge(stub.path, "test-token")
       const [clientTransport, serverTransport] = createLinkedTransports()
       const gateway = createMcpGateway({
         tools: sampleTools,
