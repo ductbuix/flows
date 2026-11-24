@@ -330,6 +330,13 @@ export function createE2eHome(): string {
     join(diamond, "workflow.yaml"),
     nodeRunYaml("diamond", "echo diamond")
   )
+  // Long-lived run so card cancel e2e can hit Cancel while live (BL-200).
+  const cardSlow = join(home, "workflows", "card-slow")
+  mkdirSync(cardSlow, { recursive: true })
+  writeFileSync(
+    join(cardSlow, "workflow.yaml"),
+    nodeRunYaml("card-slow", "sleep 60")
+  )
   writeFileSync(
     join(diamond, "workflow.layout.json"),
     JSON.stringify({

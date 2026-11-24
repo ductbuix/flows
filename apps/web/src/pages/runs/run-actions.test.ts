@@ -43,6 +43,21 @@ describe("run-actions", () => {
     )
   })
 
+  it("startRun passes workItemId for a card", async () => {
+    const call = vi.fn().mockResolvedValue({ runId: "r-2" })
+    const client = fakeClient(call)
+    await expect(
+      startRun(client, { workflowId: "diamond", workItemId: "fix-login" })
+    ).resolves.toEqual({ ok: true, runId: "r-2" })
+    expect(call).toHaveBeenCalledWith(
+      "run/start",
+      expect.objectContaining({
+        workflowId: "diamond",
+        workItemId: "fix-login",
+      })
+    )
+  })
+
   it("cancelRun returns conflict on FCP conflict", async () => {
     const client = fakeClient(() =>
       Promise.reject({ data: { code: "conflict" }, code: ErrorCode.conflict })

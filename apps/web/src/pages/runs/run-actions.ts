@@ -16,13 +16,19 @@ function requestKey(): string {
 
 export async function startRun(
   client: FlowsClient,
-  params: { workflowId: string; values?: Record<string, string> }
+  params: {
+    workflowId: string
+    values?: Record<string, string>
+    /** Docket card id (run/start workItemId). */
+    workItemId?: string
+  }
 ): Promise<RunActionResult> {
   try {
     const result = await client.call("run/start", {
       workflowId: params.workflowId,
       requestKey: requestKey(),
       ...(params.values ? { values: params.values } : {}),
+      ...(params.workItemId ? { workItemId: params.workItemId } : {}),
     })
     return { ok: true, runId: result.runId }
   } catch (err) {

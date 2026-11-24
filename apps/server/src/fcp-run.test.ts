@@ -147,3 +147,44 @@ describe("FCP run/list, run/get and run_changed", () => {
     socket.close()
   })
 })
+
+describe("FCP run/start and run/list with a card (BL-200)", () => {
+  it("starts with a docket card id and filters run/list by workItemId", async () => {
+    const h = await startFcpServer()
+    writeDemoWorkflow(h.home)
+    const cardId = "fix-login"
+    mkdirSync(join(h.home, "docket", "cards", cardId), { recursive: true })
+    writeFileSync(
+      join(h.home, "docket", "cards", cardId, "card.md"),
+      [
+        "---",
+        `id: ${cardId}`,
+        "title: Fix flaky login",
+        "status: doing",
+        "created: 2026-11-01",
+        "updated: 2026-11-01",
+        "---",
+        "",
+      ].join("\n")
+    )
+
+    const { peer, socket } = await fcpPeer(h.port, h.token)
+    const started = runStartMethod.result.parse(
+      await peer.request("run/start", {
+        workflowId: "demo",
+        requestKey: randomUUID(),
+        workItemId: cardId,
+      })
+    )
+    const otherId = await startRunViaFcp(h.port, h.token, "demo")
+
+    const listed = runListMethod.result.parse(
+      await peer.request("run/list", { workItemId: cardId, limit: 50 })
+    )
+    expect(listed.items.map((r) => r.id)).toEqual([started.runId])
+    expect(listed.items[0]?.workItemId).toBe(cardId)
+    expect(listed.items.map((r) => r.id)).not.toContain(otherId)
+
+    socket.close()
+  })
+})

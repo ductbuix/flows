@@ -56,24 +56,24 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Docket
 
-| id    | item                                          | status  | test id                            | backlog |
-| ----- | --------------------------------------------- | ------- | ---------------------------------- | ------- |
-| DK-01 | Board page, columns, empty lanes              | app     | `docket.spec.ts › board`           | —       |
-| DK-02 | New card dialog (title, ref, body)            | app     | `docket.spec.ts › new card`        | —       |
-| DK-03 | Add card from column                          | app     | `docket.spec.ts › add to column`   | —       |
-| DK-04 | Drag-move card between columns                | app     | `docket.spec.ts › drag move`       | —       |
-| DK-05 | Columns dialog (reorder, tone, migrate, save) | app     | `docket.spec.ts › columns`         | —       |
-| DK-06 | Open card panel                               | app     | `docket.spec.ts › open panel`      | —       |
-| DK-07 | Edit title and description                    | app     | `docket.spec.ts › edit title body` | —       |
-| DK-08 | Delete card (confirm)                         | app     | `docket.spec.ts › delete card`     | —       |
-| DK-09 | Refs: list, add URL, remove                   | app     | `docket.spec.ts › add ref`         | BL-198  |
-| DK-10 | Properties: status, start/due, custom keys    | app     | `docket.spec.ts › properties`      | BL-198  |
-| DK-11 | Links: relation + target card                 | app     | `docket.spec.ts › add link`        | BL-198  |
-| DK-12 | Assets: link from library or disk             | app     | `docket.spec.ts › add asset`       | BL-199  |
-| DK-13 | Item files menu (view / Finder / Cursor)      | app     | `docket.spec.ts › item files`      | BL-199  |
-| DK-14 | Ref data section                              | app     | `docket.spec.ts › ref data`        | BL-199  |
-| DK-15 | Card runs list                                | missing | `docket.spec.ts › card runs`       | BL-200  |
-| DK-16 | Run workflow dialog from card                 | missing | `docket.spec.ts › run dialog`      | BL-200  |
+| id    | item                                          | status | test id                            | backlog |
+| ----- | --------------------------------------------- | ------ | ---------------------------------- | ------- |
+| DK-01 | Board page, columns, empty lanes              | app    | `docket.spec.ts › board`           | —       |
+| DK-02 | New card dialog (title, ref, body)            | app    | `docket.spec.ts › new card`        | —       |
+| DK-03 | Add card from column                          | app    | `docket.spec.ts › add to column`   | —       |
+| DK-04 | Drag-move card between columns                | app    | `docket.spec.ts › drag move`       | —       |
+| DK-05 | Columns dialog (reorder, tone, migrate, save) | app    | `docket.spec.ts › columns`         | —       |
+| DK-06 | Open card panel                               | app    | `docket.spec.ts › open panel`      | —       |
+| DK-07 | Edit title and description                    | app    | `docket.spec.ts › edit title body` | —       |
+| DK-08 | Delete card (confirm)                         | app    | `docket.spec.ts › delete card`     | —       |
+| DK-09 | Refs: list, add URL, remove                   | app    | `docket.spec.ts › add ref`         | BL-198  |
+| DK-10 | Properties: status, start/due, custom keys    | app    | `docket.spec.ts › properties`      | BL-198  |
+| DK-11 | Links: relation + target card                 | app    | `docket.spec.ts › add link`        | BL-198  |
+| DK-12 | Assets: link from library or disk             | app    | `docket.spec.ts › add asset`       | BL-199  |
+| DK-13 | Item files menu (view / Finder / Cursor)      | app    | `docket.spec.ts › item files`      | BL-199  |
+| DK-14 | Ref data section                              | app    | `docket.spec.ts › ref data`        | BL-199  |
+| DK-15 | Card runs list                                | app    | `docket.spec.ts › card runs`       | BL-200  |
+| DK-16 | Run workflow dialog from card                 | app    | `docket.spec.ts › run dialog`      | BL-200  |
 
 ## Workflows / canvas
 
@@ -101,7 +101,7 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 | id    | item                                  | status  | test id                              | backlog |
 | ----- | ------------------------------------- | ------- | ------------------------------------ | ------- |
-| RN-01 | Run entry on card (dialog + list)     | missing | `docket.spec.ts › run on card`       | BL-200  |
+| RN-01 | Run entry on card (dialog + list)     | app     | `docket.spec.ts › run on card`       | BL-200  |
 | RN-02 | RunBar on canvas (select card, start) | missing | `workflows.spec.ts › canvas run bar` | BL-203  |
 | RN-03 | Run detail sheet (reuse `RunSheet`)   | partial | `runs.spec.ts › sheet in context`    | BL-209  |
 | RN-04 | `/runs` page + start-from-list        | drop    | `runs.spec.ts › page gone`           | BL-209  |

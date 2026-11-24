@@ -20,7 +20,12 @@ export function createRunReadBindings(engine: Engine): RunReadBindings {
   return {
     "run/list": defineBinding(runListMethod, (params) =>
       pageRunSummaries(
-        engine.listRunSummaries({ limit: LIST_SCAN_LIMIT }),
+        engine.listRunSummaries({
+          limit: LIST_SCAN_LIMIT,
+          ...(params.workItemId !== undefined
+            ? { workItemId: params.workItemId }
+            : {}),
+        }),
         params.cursor,
         params.limit ?? DEFAULT_LIST_LIMIT
       )

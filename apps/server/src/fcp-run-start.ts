@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { engineError } from "@workspace/core"
+import { cardPath, engineError } from "@workspace/core"
 import {
   applyInputDefaults,
   buildManualValuesSchema,
@@ -137,7 +137,11 @@ function resolveWorkItem(
   workItemId: string | undefined
 ): string | undefined {
   if (workItemId === undefined) return undefined
-  if (!readWorkItem(engine.home, workItemId)) {
+  // Legacy work items and Docket cards share the same branded id (DES-038).
+  if (
+    !readWorkItem(engine.home, workItemId) &&
+    !existsSync(join(engine.home, cardPath(workItemId)))
+  ) {
     throw engineError("invalid_params", `unknown_work_item: ${workItemId}`)
   }
   void workItemItemKey(workItemId)
