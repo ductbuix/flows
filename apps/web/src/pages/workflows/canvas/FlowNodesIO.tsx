@@ -29,7 +29,12 @@ function InPorts({ kind }: { kind: string }) {
 /** Manual start of a workflow. */
 export function TriggerNode({ data, selected }: Props) {
   return (
-    <NodeShell kind="trigger" selected={selected} state={data.state}>
+    <NodeShell
+      kind="trigger"
+      selected={selected}
+      state={data.state}
+      result={data.result}
+    >
       <div className={cn(FIELD, "flex items-center gap-2 text-sm font-medium")}>
         <MousePointerClick className="size-4 text-warning" />
         Manual
@@ -42,7 +47,12 @@ export function TriggerNode({ data, selected }: Props) {
 /** Library resources pinned into the run. */
 export function AssetNode({ data, selected }: Props) {
   return (
-    <NodeShell kind="asset" selected={selected} state={data.state}>
+    <NodeShell
+      kind="asset"
+      selected={selected}
+      state={data.state}
+      result={data.result}
+    >
       <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl bg-muted/60 text-muted-foreground">
         <FileText className="size-8" />
         {data.summary ? (
@@ -59,7 +69,12 @@ export function AssetNode({ data, selected }: Props) {
 /** Pauses until a person approves or rejects. */
 export function ApprovalNode({ data, selected }: Props) {
   return (
-    <NodeShell kind="approval" selected={selected} state={data.state}>
+    <NodeShell
+      kind="approval"
+      selected={selected}
+      state={data.state}
+      result={data.result}
+    >
       <InPorts kind="approval" />
       <div className={FIELD}>
         <p className="text-sm">
@@ -74,7 +89,12 @@ export function ApprovalNode({ data, selected }: Props) {
 /** Ends a branch (notify / folder / publish). */
 export function OutputNode({ data, selected }: Props) {
   return (
-    <NodeShell kind="output" selected={selected} state={data.state}>
+    <NodeShell
+      kind="output"
+      selected={selected}
+      state={data.state}
+      result={data.result}
+    >
       <InPorts kind="output" />
       <div className={cn(FIELD, "flex flex-col gap-2")}>
         <div className="flex items-center gap-2 text-sm font-medium">
@@ -82,6 +102,7 @@ export function OutputNode({ data, selected }: Props) {
           {data.title || data.summary || "Output"}
         </div>
       </div>
+      <OutPorts kind="output" />
     </NodeShell>
   )
 }

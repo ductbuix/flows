@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
-  Background,
-  BackgroundVariant,
   ReactFlow,
   SelectionMode,
   useEdgesState,
@@ -13,10 +11,11 @@ import "@xyflow/react/dist/style.css"
 import type { LayoutFile, Workflow } from "@workspace/contracts"
 import { FlowContext, type FlowActions } from "./flow-context"
 import { canvasToLayout, workflowToCanvas, type CanvasNode } from "./flow-graph"
-import { CanvasToolbar } from "./CanvasToolbar"
-import { NodeSettings } from "./NodeSettings"
+import { CanvasChrome } from "./CanvasChrome"
 import { nodeTypes } from "./node-types"
+import { useCanvasKeys } from "./use-canvas-keys"
 import { useCanvasOps } from "./use-canvas-ops"
+import { useRunOverlay } from "./use-run-overlay"
 import { useSystemPrompt } from "./use-system-prompt"
 
 type History = {
@@ -34,6 +33,8 @@ type Props = {
   onYamlChange: (yaml: string) => void
   onLayoutChange: (layout: LayoutFile) => void
   history: History
+  runView: string
+  onRunView: (v: string) => void
 }
 
 /** Editable node canvas; YAML edits keep comments via contracts helpers. */
@@ -45,6 +46,8 @@ export function WorkflowCanvas({
   onYamlChange,
   onLayoutChange,
   history,
+  runView,
+  onRunView,
 }: Props) {
   const initial = useMemo(
     () => workflowToCanvas(workflow, layout),
@@ -55,13 +58,7 @@ export function WorkflowCanvas({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges)
   const viewportRef = useRef<Viewport | undefined>(layout.viewport)
   const [settingsId, setSettingsId] = useState<string | null>(null)
-  const {
-    text: systemText,
-    load: loadSystem,
-    clear: clearSystem,
-    save: saveSystem,
-  } = useSystemPrompt(workflowId)
-
+  const system = useSystemPrompt(workflowId)
   const ops = useCanvasOps(
     yaml,
     layout,
@@ -70,6 +67,7 @@ export function WorkflowCanvas({
     onLayoutChange,
     (id) => setSettingsId((cur) => (cur === id ? null : cur))
   )
+  const overlay = useRunOverlay(workflowId, nodes, runView, onRunView)
 
   useEffect(() => {
     const next = workflowToCanvas(workflow, layout)
@@ -102,6 +100,7 @@ export function WorkflowCanvas({
     publishLayout(next)
   }
 
+  const { load: loadSystem, clear: clearSystem } = system
   const openSettings = useCallback(
     (id: string) => {
       setSettingsId(id)
@@ -112,40 +111,24 @@ export function WorkflowCanvas({
     [workflow.nodes, loadSystem, clearSystem]
   )
 
-  const { duplicate, remove } = ops
-  useEffect(() => {
-    const onKey = (ev: KeyboardEvent) => {
-      const el = ev.target as HTMLElement
-      if (el.closest("input, textarea, [contenteditable=true]")) return
-      const selected = nodes.filter((n) => n.selected).map((n) => n.id)
-      if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "d") {
-        ev.preventDefault()
-        selected.forEach((id) => duplicate(id))
-        return
-      }
-      if (ev.key === "Backspace" || ev.key === "Delete") {
-        if (selected.length === 0) return
-        ev.preventDefault()
-        selected.forEach((id) => remove(id))
-      }
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [nodes, duplicate, remove])
+  useCanvasKeys(nodes, ops.duplicate, ops.remove, !overlay.readOnly)
+  const editing = !overlay.readOnly
+    ? workflow.nodes.find((n) => n.id === settingsId)
+    : undefined
 
-  const editing = workflow.nodes.find((n) => n.id === settingsId)
-
+  const { readOnly, onRetry } = overlay
   const actions = useMemo<FlowActions>(
     () => ({
       update: ops.update,
       run: () => {},
       runAll: () => {},
-      readOnly: false,
+      readOnly,
       duplicate: ops.duplicate,
       openSettings,
       remove: ops.remove,
+      retry: onRetry ? (id) => void onRetry(id) : undefined,
     }),
-    [ops.update, ops.duplicate, ops.remove, openSettings]
+    [ops.update, ops.duplicate, ops.remove, openSettings, readOnly, onRetry]
   )
 
   return (
@@ -155,12 +138,12 @@ export function WorkflowCanvas({
     >
       <FlowContext.Provider value={actions}>
         <ReactFlow
-          nodes={nodes}
+          nodes={overlay.shown}
           edges={edges}
           nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeDragStop={onNodeDragStop}
+          onNodesChange={overlay.readOnly ? undefined : onNodesChange}
+          onEdgesChange={overlay.readOnly ? undefined : onEdgesChange}
+          onNodeDragStop={overlay.readOnly ? undefined : onNodeDragStop}
           onBeforeDelete={async ({ nodes: del, edges: ed }) => ({
             nodes: del.filter((n) => n.type !== "trigger"),
             edges: ed,
@@ -174,10 +157,12 @@ export function WorkflowCanvas({
               stroke: "var(--muted-foreground)",
             },
           }}
+          nodesDraggable={!overlay.readOnly}
           nodesConnectable={false}
-          elementsSelectable
-          selectionOnDrag
-          panOnDrag={[1, 2]}
+          elementsSelectable={!overlay.readOnly}
+          selectionOnDrag={!overlay.readOnly}
+          deleteKeyCode={null}
+          panOnDrag={overlay.readOnly ? true : [1, 2]}
           panOnScroll
           zoomOnScroll={false}
           selectionMode={SelectionMode.Partial}
@@ -194,29 +179,25 @@ export function WorkflowCanvas({
           minZoom={0.2}
           proOptions={{ hideAttribution: true }}
         >
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={24}
-            color="var(--muted-foreground)"
-          />
-          {editing ? (
-            <NodeSettings
-              key={editing.id}
-              node={editing}
-              systemPrompt={systemText}
-              onSystemPrompt={
-                editing.kind === "llm"
-                  ? (text) => saveSystem(editing.id, text)
-                  : undefined
-              }
-              onChange={(patch) => ops.update(editing.id, patch)}
-              onClose={() => setSettingsId(null)}
-            />
-          ) : null}
-          <CanvasToolbar
-            hasTrigger={workflow.nodes.some((n) => n.kind === "trigger")}
-            onAdd={ops.add}
+          <CanvasChrome
+            workflow={workflow}
+            editing={editing}
+            systemText={system.text}
+            saveSystem={system.save}
+            onUpdate={ops.update}
+            onCloseSettings={() => setSettingsId(null)}
+            readOnly={overlay.readOnly}
+            runs={overlay.runs}
+            cards={overlay.cards}
+            runView={runView}
+            cardId={overlay.cardId}
+            onRunView={onRunView}
+            onCard={overlay.setCardId}
+            onStart={() => void overlay.start()}
+            viewing={overlay.viewing}
+            starting={overlay.starting}
             history={history}
+            onAdd={ops.add}
           />
         </ReactFlow>
       </FlowContext.Provider>

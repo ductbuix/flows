@@ -77,32 +77,32 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Workflows / canvas
 
-| id    | item                                      | status  | test id                               | backlog |
-| ----- | ----------------------------------------- | ------- | ------------------------------------- | ------- |
-| WF-01 | Workflows list + search                   | app     | `workflows.spec.ts › list`            | —       |
-| WF-02 | New workflow dialog                       | app     | `workflows.spec.ts › new`             | —       |
-| WF-03 | Row menu: rename, delete                  | app     | `workflows.spec.ts › rename delete`   | —       |
-| WF-04 | Workflow sheet (open from row)            | partial | `workflows.spec.ts › sheet`           | BL-203  |
-| WF-05 | Sheet: open editor                        | app     | `workflows.spec.ts › open editor`     | —       |
-| WF-06 | Sheet: inputs a card supplies             | missing | `workflows.spec.ts › sheet inputs`    | BL-203  |
-| WF-07 | Sheet: runs by card                       | missing | `workflows.spec.ts › sheet runs`      | BL-203  |
-| WF-08 | Sheet: start run for a card               | missing | `workflows.spec.ts › sheet start`     | BL-203  |
-| WF-09 | Editor route (YAML textarea today)        | app     | `workflows.spec.ts › editor yaml`     | BL-201  |
-| WF-10 | Node canvas, cards, edges, save layout    | app     | `workflows.spec.ts › canvas`          | BL-201  |
-| WF-11 | Add node menu with search                 | app     | `workflows.spec.ts › add node`        | BL-202  |
-| WF-12 | Node settings (prompt, format, limits, …) | app     | `workflows.spec.ts › node settings`   | BL-202  |
-| WF-13 | Toolbar: undo, redo, fit view             | app     | `workflows.spec.ts › undo redo`       | BL-202  |
-| WF-14 | Trigger inputs editor                     | app     | `workflows.spec.ts › trigger inputs`  | BL-202  |
-| WF-15 | Step connectors / skills multi-pick       | app     | `workflows.spec.ts › step connectors` | BL-202  |
-| WF-16 | Model row on node                         | app     | `workflows.spec.ts › model row`       | BL-202  |
-| WF-17 | Duplicate / delete node                   | app     | `workflows.spec.ts › node actions`    | BL-202  |
+| id    | item                                      | status | test id                               | backlog |
+| ----- | ----------------------------------------- | ------ | ------------------------------------- | ------- |
+| WF-01 | Workflows list + search                   | app    | `workflows.spec.ts › list`            | —       |
+| WF-02 | New workflow dialog                       | app    | `workflows.spec.ts › new`             | —       |
+| WF-03 | Row menu: rename, delete                  | app    | `workflows.spec.ts › rename delete`   | —       |
+| WF-04 | Workflow sheet (open from row)            | app    | `workflows.spec.ts › sheet`           | BL-203  |
+| WF-05 | Sheet: open editor                        | app    | `workflows.spec.ts › open editor`     | —       |
+| WF-06 | Sheet: inputs a card supplies             | app    | `workflows.spec.ts › sheet inputs`    | BL-203  |
+| WF-07 | Sheet: runs by card                       | app    | `workflows.spec.ts › sheet runs`      | BL-203  |
+| WF-08 | Sheet: start run for a card               | app    | `workflows.spec.ts › sheet start`     | BL-203  |
+| WF-09 | Editor route (YAML textarea today)        | app    | `workflows.spec.ts › editor yaml`     | BL-201  |
+| WF-10 | Node canvas, cards, edges, save layout    | app    | `workflows.spec.ts › canvas`          | BL-201  |
+| WF-11 | Add node menu with search                 | app    | `workflows.spec.ts › add node`        | BL-202  |
+| WF-12 | Node settings (prompt, format, limits, …) | app    | `workflows.spec.ts › node settings`   | BL-202  |
+| WF-13 | Toolbar: undo, redo, fit view             | app    | `workflows.spec.ts › undo redo`       | BL-202  |
+| WF-14 | Trigger inputs editor                     | app    | `workflows.spec.ts › trigger inputs`  | BL-202  |
+| WF-15 | Step connectors / skills multi-pick       | app    | `workflows.spec.ts › step connectors` | BL-202  |
+| WF-16 | Model row on node                         | app    | `workflows.spec.ts › model row`       | BL-202  |
+| WF-17 | Duplicate / delete node                   | app    | `workflows.spec.ts › node actions`    | BL-202  |
 
 ## Runs in context
 
 | id    | item                                  | status  | test id                              | backlog |
 | ----- | ------------------------------------- | ------- | ------------------------------------ | ------- |
 | RN-01 | Run entry on card (dialog + list)     | app     | `docket.spec.ts › run on card`       | BL-200  |
-| RN-02 | RunBar on canvas (select card, start) | missing | `workflows.spec.ts › canvas run bar` | BL-203  |
+| RN-02 | RunBar on canvas (select card, start) | app     | `workflows.spec.ts › canvas run bar` | BL-203  |
 | RN-03 | Run detail sheet (reuse `RunSheet`)   | partial | `runs.spec.ts › sheet in context`    | BL-209  |
 | RN-04 | `/runs` page + start-from-list        | drop    | `runs.spec.ts › page gone`           | BL-209  |
 

@@ -9,6 +9,7 @@ import {
   type RunSummary,
 } from "@workspace/contracts"
 import type { Engine } from "@workspace/engine"
+import { stepsOfRun } from "./run-steps.ts"
 
 const DEFAULT_LIST_LIMIT = 100
 /** Cap when walking for cursor pages (local app; REST default is 100). */
@@ -25,6 +26,9 @@ export function createRunReadBindings(engine: Engine): RunReadBindings {
           ...(params.workItemId !== undefined
             ? { workItemId: params.workItemId }
             : {}),
+          ...(params.workflowId !== undefined
+            ? { workflowId: params.workflowId }
+            : {}),
         }),
         params.cursor,
         params.limit ?? DEFAULT_LIST_LIMIT
@@ -35,7 +39,7 @@ export function createRunReadBindings(engine: Engine): RunReadBindings {
       if (!summary) {
         throw engineError("not_found", `Run not found: ${params.id}`)
       }
-      return summary
+      return { ...summary, steps: stepsOfRun(engine, params.id) }
     }),
   }
 }

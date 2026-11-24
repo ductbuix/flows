@@ -15,6 +15,8 @@ export const runListParamsSchema = z.object({
   limit: z.number().int().positive().max(DEFAULT_LIMIT_MAX).optional(),
   /** Docket card / work item id (DES-038, BL-200). */
   workItemId: workItemIdSchema.optional(),
+  /** Filter to one workflow (BL-203). */
+  workflowId: z.string().min(1).optional(),
 })
 
 export const runListResultSchema = z.object({
@@ -26,7 +28,10 @@ export const runGetParamsSchema = z.object({
   id: z.string().min(1),
 })
 
-export const runGetResultSchema = runSummarySchema
+/** Summary plus latest step per node for canvas run view (BL-203). */
+export const runGetResultSchema = runSummarySchema.extend({
+  steps: z.array(runStepSchema).optional(),
+})
 
 export const runStartParamsSchema = z.object({
   workflowId: z.string().min(1),
