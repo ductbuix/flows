@@ -8,13 +8,15 @@ import {
   type NodeKindRegistry,
 } from "./registry.ts"
 import { approvalKind } from "./kinds/approval.ts"
+import { assetKind } from "./kinds/asset.ts"
 import { notifyKind } from "./kinds/notify.ts"
 import { triggerKind } from "./kinds/trigger.ts"
 import { isAskPending, type NodeKind, type StepEvent } from "./types.ts"
 
-/** Built-in kinds ported in BL-134. */
+/** Built-in kinds ported in BL-134 / BL-135. */
 export const CORE_NODE_KINDS: readonly NodeKind[] = [
   triggerKind,
+  assetKind,
   approvalKind,
   notifyKind,
 ]
@@ -61,7 +63,11 @@ export async function collectExecute(
         return { waiting: true, question: ev.question }
       }
       if (ev.kind === "failed") {
-        return { ok: false, reason: ev.reason }
+        return {
+          ok: false,
+          reason: ev.reason,
+          ...(ev.message ? { message: ev.message } : {}),
+        }
       }
       if (ev.kind === "done") {
         if (ev.outputs) outputs.push(...ev.outputs)

@@ -31,6 +31,8 @@ export type StepEvent =
   | {
       kind: "failed"
       reason: "exit" | "timeout" | "unclear" | "answer"
+      /** Human-readable detail (e.g. missing pinned asset). */
+      message?: string
     }
 
 /** Thrown by `inbox.ask` when the step must park for a person. */
@@ -68,6 +70,11 @@ export type StepContext<S> = {
   outputs: {
     /** Write text under the step folder; returns the run-relative output path. */
     write(relPath: string, text: string): Promise<string>
+  }
+  /** Store-relative reads for fixed assets (pinned library / card files). */
+  docs: {
+    read(path: string): { text: string } | null
+    list(glob: string): string[]
   }
 }
 
