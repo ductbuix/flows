@@ -5,7 +5,8 @@ type: design
 status: active
 summary: Audit of the app against the mock blueprint, the gaps (UI, run core, old engine, extra pages) and the phases that close them.
 tags: [v2, plan, mock, cleanup, roadmap, design]
-related: [DES-014, DES-016, DES-017, DES-038, DES-039, DES-041, DES-042]
+related:
+  [DES-014, DES-016, DES-017, DES-038, DES-039, DES-041, DES-042, DES-044]
 updated: 2026-11-24
 ---
 
@@ -72,16 +73,17 @@ calls). The gap is mainly UI. The old mock components are still in
 | Dead mock island             | `pages/mock/` is 61 files and about 6,500 lines. The app imports five of them (`InlineText`, `ref-from-link`, `NewWorkflowDialog`, `WorkflowRowMenu`, `FilesTree`) plus the shell. The rest is reachable only from itself. Stores and `*-data.ts` still hold fake data and feed the sidebar Inbox badge. |
 | Old tests                    | `apps/e2e` specs and `layout.spec.ts` baselines still cover `/runs` and other old behavior.                                                                                                                                                                                                              |
 
-## Decisions (approved 2026-11-24)
+## Decisions (resolved 2026-11-24)
 
-1. **Runs.** Recommended: remove `/runs` as a page. Show runs in context as
-   the mock does: on the card, on the workflow sheet and on the canvas.
-   Reuse `RunSheet` for the detail. Keep `flows run` in the CLI.
-2. **Settings.** Not in the mock. It carries trust, CLI and MCP trust that
-   the app needs. Recommended: keep it as a panel opened from the sidebar
-   footer, not a route, and add the missing FCP methods.
-3. **Mock data and names.** Recommended: rename `pages/mock` to shared
-   components per area, delete every `*-store.ts` and `*-data.ts`.
+Acceptance surface: [DES-044](des-044-mock-parity-checklist.md).
+
+1. **Runs in context.** Remove `/runs` as a page. Show runs on the card, the
+   workflow sheet and the canvas. Reuse `RunSheet` for detail. Keep
+   `flows run` in the CLI.
+2. **Settings as panel.** Keep trust, CLI and MCP trust. Open from the
+   sidebar footer, not a route; add the missing FCP methods.
+3. **Rename mock and delete stores.** Move shared components out of
+   `pages/mock`; delete every `*-store.ts` and `*-data.ts`.
 
 ## Plan
 
@@ -90,7 +92,7 @@ Phases continue the numbering of DES-017. Each phase ends with
 
 | Phase | Name                         | Work                                                                                                                                                                                                           | Done when                                                                              |
 | ----- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| 37    | Parity audit                 | One checklist from the `22ff78c` mock: every screen, action and state, each marked app, partial or missing, with a test id. Resolve the three decisions.                                                       | the checklist is the acceptance list for phases 38 to 41                               |
+| 37    | Parity audit                 | One checklist from the `22ff78c` mock: every screen, action and state, each marked app, partial or missing, with a test id. Resolve the three decisions.                                                       | [DES-044](des-044-mock-parity-checklist.md) is the acceptance list for phases 38 to 41 |
 | 38    | Run core in the loop         | Wire `core/runs` actor and scheduler into the host. Move node executors, judge, publish and asset steps behind core ports. Engine tests pass on core.                                                          | a run executes on core with adapters; `createEngine` runs no run logic                 |
 | 39    | Mock UI on real data         | Rebuild missing UI per area over FCP: card panel sections, canvas editor with node settings and undo, run entry on cards and workflow, library sheet with versions and tags, skill sources, connector sign-in. | every checklist row for Docket, Workflows, Library, Skills, Connectors, Files is `app` |
 | 40    | Remove what the mock has not | Delete the `/runs` page (per decision 1), `/mock/*` redirects, `Mock*` names, all `*-store.ts` and `*-data.ts`. Settings per decision 2.                                                                       | routes equal the mock routes plus dev pages; no fake data in the web                   |
