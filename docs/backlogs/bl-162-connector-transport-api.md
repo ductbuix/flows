@@ -2,7 +2,7 @@
 id: BL-162
 title: Connector API transport
 type: backlog
-status: todo
+status: done
 summary: HTTP transport using cookies or a token from SecretStore.
 tags: [connectors, adapters]
 related: [DES-041]
@@ -19,5 +19,5 @@ Rally, Confluence and Jenkins style connectors.
 
 ## Done when
 
-- [ ] Auth header or cookie jar from SecretStore; 401 marks the connector `expired`.
-- [ ] Tests against a local HTTP stub.
+- [x] Auth header or cookie jar from SecretStore; 401 marks the connector `expired`.
+- [x] Tests against a local HTTP stub.

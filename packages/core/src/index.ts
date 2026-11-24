@@ -124,6 +124,8 @@ export {
   cliArgv,
   connectorIdFromPath,
   connectorPath,
+  cookiesSecretKey,
+  createApiTransport,
   createCliTransport,
   createConnectorBindings,
   createConnectorRuntime,
@@ -133,7 +135,10 @@ export {
   ConnectorService,
   ConnectorTransportRegistry,
   isCapabilityAllowed,
+  parseCookies,
   setCapabilityAllowed,
+  tokenSecretKey,
+  type ApiTransportDeps,
   type ConnectorBindings,
   type ConnectorCallResult,
   type ConnectorCheckDeps,
@@ -146,6 +151,7 @@ export {
   type ConnectorStatusInfo,
   type ConnectorTransportHandler,
   type CreateConnectorBindingsOptions,
+  type StoredCookie,
 } from "./connectors/index.ts"
 export {
   PROVIDERS_GLOB,

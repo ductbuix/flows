@@ -12,6 +12,13 @@ export {
 } from "./check.ts"
 export { createCliTransport, cliArgv } from "./cli-transport.ts"
 export {
+  cookiesSecretKey,
+  parseCookies,
+  tokenSecretKey,
+  type StoredCookie,
+} from "./api-auth.ts"
+export { createApiTransport, type ApiTransportDeps } from "./api-transport.ts"
+export {
   createConnectorTransportRegistry,
   ConnectorTransportRegistry,
 } from "./registry.ts"
