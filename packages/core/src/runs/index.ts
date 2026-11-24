@@ -1,12 +1,7 @@
-export {
-  decide,
-} from "./decide.ts"
-export {
-  fold,
-  foldAll,
-  foldAllSteps,
-  foldSteps,
-} from "./fold.ts"
+export { decide } from "./decide.ts"
+export { RunActor, type RunActorDeps } from "./actor.ts"
+export { effectAttemptKey, pendingEffects } from "./pending-effects.ts"
+export { fold, foldAll, foldAllSteps, foldSteps } from "./fold.ts"
 export {
   emptySteps,
   isOpenStep,
