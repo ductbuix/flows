@@ -12,6 +12,7 @@ import {
 } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
 import { RpcPeer, type Transport } from "@workspace/protocol"
+import { createCoreRunHost, type CoreRunHost } from "./core-run-host.ts"
 import { bindEngineToBus } from "./engine-bus.ts"
 import { createConnectorsFcp, type ConnectorsFcp } from "./fcp-connectors.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
@@ -32,6 +33,7 @@ export type FcpHost = {
   idempotency: IdempotencyStore
   extraBindings: Partial<MethodBindings>
   connectors: ConnectorsFcp
+  coreRuns: CoreRunHost
   dispose: () => void
 }
 
@@ -46,10 +48,12 @@ export function createFcpHost(engine: Engine): FcpHost {
   const skills = createSkillsFcp(engine, bus)
   const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const idempotency = new IdempotencyStore()
+  const coreRuns = createCoreRunHost(engine)
   return {
     bus,
     idempotency,
     connectors,
+    coreRuns,
     extraBindings: {
       ...docket.bindings,
       ...inbox.bindings,
@@ -57,6 +61,7 @@ export function createFcpHost(engine: Engine): FcpHost {
       ...skills.bindings,
     },
     dispose() {
+      coreRuns.dispose()
       unsubBus()
       docket.dispose()
       inbox.dispose()
@@ -106,6 +111,7 @@ export function bindFcpTransport(
       ...createRunCommandBindings({
         engine,
         idempotency: host.idempotency,
+        coreRuns: host.coreRuns,
       }),
       ...createFileFcp(engine, peer, connection),
       ...host.connectors.bindings({ peer, connection }),

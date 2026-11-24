@@ -27,6 +27,7 @@ export {
   type NodeEffectRunnerDeps,
   type NoticePost,
 } from "./run.ts"
+export { runCommandEffect, type CommandEffectDeps } from "./command-effect.ts"
 export { triggerKind } from "./kinds/trigger.ts"
 export { assetKind } from "./kinds/asset.ts"
 export {

@@ -19,6 +19,7 @@ import {
   runRetryStepMethod,
   runStartMethod,
 } from "@workspace/contracts"
+import type { CoreRunHost } from "./core-run-host.ts"
 import type { IdempotencyStore } from "./idempotency.ts"
 import { readLogChunk, resolveAttemptRoot } from "./run-files.ts"
 import { startRunForFcp } from "./fcp-run-start.ts"
@@ -37,12 +38,13 @@ export type RunCommandBindings = Pick<
 export type RunCommandDeps = {
   engine: Engine
   idempotency: IdempotencyStore
+  coreRuns?: CoreRunHost
 }
 
 export function createRunCommandBindings(
   deps: RunCommandDeps
 ): RunCommandBindings {
-  const { engine, idempotency } = deps
+  const { engine, idempotency, coreRuns } = deps
   return {
     "run/start": defineBinding(runStartMethod, async (params) => {
       if (params.requestKey) {
@@ -52,22 +54,27 @@ export function createRunCommandBindings(
           if (typeof runId === "string") return { runId }
         }
       }
-      const result = await startRunForFcp(engine, {
-        workflowId: params.workflowId,
-        values: params.values,
-        workItemId: params.workItemId,
-        refreshPins: params.refreshPins,
-        only: params.only,
-        from: params.from,
-        baseRunId: params.baseRunId,
-      })
+      const result = await startRunForFcp(
+        engine,
+        {
+          workflowId: params.workflowId,
+          values: params.values,
+          workItemId: params.workItemId,
+          refreshPins: params.refreshPins,
+          only: params.only,
+          from: params.from,
+          baseRunId: params.baseRunId,
+        },
+        coreRuns
+      )
       if (params.requestKey) {
         idempotency.set(params.requestKey, 200, result)
       }
       return result
     }),
-    "run/cancel": defineBinding(runCancelMethod, (params) => {
+    "run/cancel": defineBinding(runCancelMethod, async (params) => {
       try {
+        if (coreRuns && (await coreRuns.cancel(params.runId))) return {}
         engine.cancelRun(params.runId)
         return {}
       } catch (err) {

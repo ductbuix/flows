@@ -145,16 +145,22 @@ export class RunActor {
       return
     }
 
-    const result = await this.deps.runEffect(fx, this.state!)
-    await this.handle({
-      kind: "effect_result",
-      at,
-      nodeId: fx.nodeId,
-      pass: fx.pass,
-      result,
-    })
-    if (this.state?.status === "running") {
-      await this.handle({ kind: "wake", at })
+    try {
+      const result = await this.deps.runEffect(fx, this.state!)
+      await this.handle({
+        kind: "effect_result",
+        at,
+        nodeId: fx.nodeId,
+        pass: fx.pass,
+        result,
+      })
+      if (this.state?.status === "running") {
+        await this.handle({ kind: "wake", at })
+      }
+    } catch (err) {
+      // Host abort (cancel): leave the step open; a queued cancel input settles.
+      if (err instanceof DOMException && err.name === "AbortError") return
+      throw err
     }
   }
 }

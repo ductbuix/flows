@@ -49,7 +49,11 @@ export {
   type ScopeEntity,
   type PullEntityResult,
 } from "./library.ts"
-export { materializeNodeRunResources, pullNow } from "./library-run.ts"
+export {
+  materializeNodeRunResources,
+  pullNow,
+  type MaterializeResourcesResult,
+} from "./library-run.ts"
 export { listLibrary } from "./library-list.ts"
 export { isFresh, currentRevision, readRevisionMeta } from "./library-paths.ts"
 export {
@@ -140,7 +144,12 @@ export {
   type AttachmentWriteResult,
   type AttachmentDeleteResult,
 } from "./workitem-files.ts"
-export { runInputDir } from "./run-input.ts"
+export {
+  runInputDir,
+  materializeRunInput,
+  type MaterializeRunInputResult,
+} from "./run-input.ts"
+export { manualSource } from "./source-manual.ts"
 export { decideTrust, isAlwaysTrusted } from "./trust-policy.ts"
 export {
   sanitizeCursorProjectPath,
