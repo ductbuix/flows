@@ -3,6 +3,7 @@ import { pingMethod } from "@workspace/contracts"
 import {
   UpdateBus,
   bindEngine,
+  createEventBus,
   bindInitialize,
   createFcpConnection,
   createSubscribeBindings,
@@ -36,12 +37,13 @@ export type FcpHost = {
 /** Shared FCP method stack for the daemon, CLI stdio host, and in-process CLI. */
 export function createFcpHost(engine: Engine): FcpHost {
   const bus = new UpdateBus()
-  const unsubBus = bindEngineToBus(engine, bus)
-  const docket = createDocketFcp(engine, bus)
+  const events = createEventBus()
+  const unsubBus = bindEngineToBus(engine, bus, events)
+  const docket = createDocketFcp(engine, bus, events)
   const inbox = createInboxFcp(engine, bus)
-  const library = createLibraryFcp(engine)
+  const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
-  const connectors = createConnectorsFcp(engine)
+  const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const files = createFileFcp(engine)
   const idempotency = new IdempotencyStore()
   return {

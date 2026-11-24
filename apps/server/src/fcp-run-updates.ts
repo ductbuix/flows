@@ -1,4 +1,4 @@
-import type { UpdateBus } from "@workspace/core"
+import type { EventBus, UpdateBus } from "@workspace/core"
 import {
   stepTaskStatus,
   type Engine,
@@ -32,6 +32,7 @@ const FINISHED_EVENT_TYPES = new Set([
 export function publishRunFcpUpdates(
   engine: Engine,
   bus: UpdateBus,
+  events: EventBus,
   stored: StoredEvent,
   summary: RunSummary | null
 ): void {
@@ -54,12 +55,27 @@ export function publishRunFcpUpdates(
   }
 
   if (FINISHED_EVENT_TYPES.has(event.type) && summary) {
-    bus.publish("run/update", {
-      kind: "run_finished",
-      runId,
-      status: summary.status,
-      summary,
-    })
+    const status = summary.status
+    if (
+      status === "succeeded" ||
+      status === "failed" ||
+      status === "cancelled"
+    ) {
+      bus.publish("run/update", {
+        kind: "run_finished",
+        runId,
+        status,
+        summary,
+      })
+      events.emit("run.finished", {
+        runId,
+        workflowId: summary.workflowId,
+        status,
+        ...(summary.workItemId !== undefined
+          ? { cardId: summary.workItemId }
+          : {}),
+      })
+    }
   }
 }
 

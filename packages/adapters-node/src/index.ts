@@ -8,6 +8,19 @@ export {
 export { createNodeFileWatcher } from "./file-watcher.ts"
 export { createNodeProcessRunner } from "./process-runner.ts"
 export { createNodeCliTransport } from "./cli-transport.ts"
+export {
+  createNodeApiTransport,
+  type NodeApiTransportOptions,
+} from "./api-transport.ts"
+export {
+  createNodeMcpTransport,
+  type NodeMcpTransportOptions,
+} from "./mcp-transport.ts"
+export {
+  createNodeMcpConnect,
+  MCP_PROTOCOL_VERSION,
+  type NodeMcpConnectOptions,
+} from "./mcp-session.ts"
 export { isPidAlive, killProcessGroup, waitForPid } from "./pid.ts"
 export {
   SANDBOX_PROFILE,

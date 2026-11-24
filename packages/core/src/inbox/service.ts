@@ -15,6 +15,10 @@ import {
   type InboxItem,
   type InboxProjectionState,
 } from "./projection.ts"
+import {
+  applySignInStatus,
+  type SignInStatusInput,
+} from "./projection-sign-in.ts"
 
 export type InboxAnswerPush = (input: {
   runId: string
@@ -25,7 +29,7 @@ export type InboxAnswerPush = (input: {
   optionId: InboxDecision
   /** Set for permission items (DES-041). */
   requestId?: string
-  kind: InboxItem["kind"]
+  kind: Extract<InboxItem, { kind: "approval" | "permission" }>["kind"]
 }) => Promise<void>
 
 export type InboxServiceDeps = {
@@ -113,8 +117,38 @@ export class InboxService {
     return openInboxItems(this.state)
   }
 
+  /**
+   * Connector check → Inbox: `expired` adds a sign-in item, `connected`
+   * resolves it (DES-039 / BL-164).
+   */
+  applyConnectorStatus(input: SignInStatusInput): void {
+    const folded = applySignInStatus(this.state, input)
+    this.state = folded.state
+    if (!this.live) return
+    for (const change of folded.changes) {
+      if (change.kind === "item_added") {
+        this.deps.bus.publish("inbox/update", {
+          kind: "item_added",
+          item: change.item,
+        })
+      } else {
+        this.deps.bus.publish("inbox/update", {
+          kind: "item_resolved",
+          itemId: change.itemId,
+          ...(change.decision ? { decision: change.decision } : {}),
+        })
+      }
+    }
+  }
+
   async answer(itemId: string, optionId: string): Promise<void> {
     const item = this.requireOpen(itemId)
+    if (item.kind === "sign_in") {
+      throw engineError(
+        "failed_precondition",
+        "Sign-in items resolve when the connector is connected"
+      )
+    }
     if (item.kind === "approval") {
       const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
       if (!parsed.success) {
@@ -136,9 +170,18 @@ export class InboxService {
     await this.route(item, parsed.data)
   }
 
-  /** Dismiss rejects so the run does not stay parked. */
+  /** Dismiss rejects so the run does not stay parked. Sign-in resolves here. */
   async dismiss(itemId: string): Promise<void> {
     const item = this.requireOpen(itemId)
+    if (item.kind === "sign_in") {
+      this.applyConnectorStatus({
+        connectorId: item.connectorId,
+        name: item.connectorId,
+        status: "connected",
+        at: new Date(this.deps.clock.now()).toISOString(),
+      })
+      return
+    }
     if (item.kind === "approval") {
       await this.route(item, "rejected")
       return
@@ -154,7 +197,10 @@ export class InboxService {
     return item
   }
 
-  private async route(item: InboxItem, optionId: InboxDecision): Promise<void> {
+  private async route(
+    item: Extract<InboxItem, { kind: "approval" | "permission" }>,
+    optionId: InboxDecision
+  ): Promise<void> {
     const at = new Date(this.deps.clock.now()).toISOString()
     await this.deps.pushAnswer({
       runId: item.runId,

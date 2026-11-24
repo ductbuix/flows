@@ -1,14 +1,72 @@
-import { createNodeDocumentStore } from "@workspace/adapters-node"
+import { join } from "node:path"
+import {
+  createNodeApiTransport,
+  createNodeCliTransport,
+  createNodeDocumentStore,
+  createNodeMcpTransport,
+  createNodeSecretStore,
+} from "@workspace/adapters-node"
+import type { ConnectorFile } from "@workspace/contracts"
 import {
   createConnectorBindings,
+  createConnectorRuntime,
   createConnectorService,
+  createConnectorTransportRegistry,
+  type Clock,
   type ConnectorBindings,
+  type InboxService,
+  type UpdateBus,
 } from "@workspace/core"
 import type { Engine } from "@workspace/engine"
 
-/** Connector CRUD bindings for `connectors/<id>.yaml` under FLOWAPP_HOME. */
-export function createConnectorsFcp(engine: Engine): ConnectorBindings {
+const systemClock: Clock = { now: () => Date.now() }
+
+/** Connector CRUD + check bindings for `connectors/<id>.yaml` (BL-160 / BL-164). */
+export function createConnectorsFcp(
+  engine: Engine,
+  bus: UpdateBus,
+  inbox: InboxService
+): ConnectorBindings {
   const docs = createNodeDocumentStore({ root: engine.home })
   const service = createConnectorService({ docs })
-  return createConnectorBindings(service)
+  const secrets = createNodeSecretStore({
+    root: join(engine.home, "secrets"),
+  })
+
+  const markExpired = (connector: ConnectorFile, detail: string) => {
+    const at = new Date(systemClock.now()).toISOString()
+    service.setStatus(connector.id, {
+      status: "expired",
+      checkedAt: at,
+      detail,
+    })
+    bus.publish("connector/update", {
+      kind: "status_changed",
+      connectorId: connector.id,
+      status: "expired",
+      checkedAt: at,
+      detail,
+    })
+    inbox.applyConnectorStatus({
+      connectorId: connector.id,
+      name: connector.name,
+      status: "expired",
+      at,
+    })
+  }
+
+  const transports = createConnectorTransportRegistry([
+    createNodeCliTransport(),
+    createNodeApiTransport({ home: engine.home, onUnauthorized: markExpired }),
+    createNodeMcpTransport({ secrets }),
+  ])
+  const runtime = createConnectorRuntime({ connectors: service, transports })
+  return createConnectorBindings(service, {
+    check: {
+      runtime,
+      bus,
+      clock: systemClock,
+      onStatusChanged: (change) => inbox.applyConnectorStatus(change),
+    },
+  })
 }

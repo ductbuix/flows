@@ -14,7 +14,7 @@ export type DocketWriteDeps = {
 }
 
 export function publishCardChanged(
-  deps: DocketWriteDeps,
+  deps: Pick<DocketWriteDeps, "index" | "bus">,
   cardId: string
 ): void {
   const entry = deps.index.getCard(cardId)
