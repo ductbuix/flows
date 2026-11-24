@@ -13,7 +13,7 @@ import {
 import type { Engine } from "@workspace/engine"
 import { RpcPeer, type Transport } from "@workspace/protocol"
 import { bindEngineToBus } from "./engine-bus.ts"
-import { createConnectorsFcp } from "./fcp-connectors.ts"
+import { createConnectorsFcp, type ConnectorsFcp } from "./fcp-connectors.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
 import { createFileFcp } from "./fcp-files.ts"
 import { createInboxFcp } from "./fcp-inbox.ts"
@@ -31,6 +31,7 @@ export type FcpHost = {
   bus: UpdateBus
   idempotency: IdempotencyStore
   extraBindings: Partial<MethodBindings>
+  connectors: ConnectorsFcp
   dispose: () => void
 }
 
@@ -48,12 +49,12 @@ export function createFcpHost(engine: Engine): FcpHost {
   return {
     bus,
     idempotency,
+    connectors,
     extraBindings: {
       ...docket.bindings,
       ...inbox.bindings,
       ...library.bindings,
       ...skills.bindings,
-      ...connectors,
     },
     dispose() {
       unsubBus()
@@ -107,6 +108,7 @@ export function bindFcpTransport(
         idempotency: host.idempotency,
       }),
       ...createFileFcp(engine, peer, connection),
+      ...host.connectors.bindings({ peer, connection }),
       ...host.extraBindings,
     },
     { signal: ac.signal },

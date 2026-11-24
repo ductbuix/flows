@@ -6,6 +6,7 @@ import {
   connectorRemoveMethod,
   connectorSaveMethod,
   connectorSetCapabilityMethod,
+  connectorSignInMethod,
   connectorUpdateNotification,
 } from "./connector.ts"
 import {
@@ -109,6 +110,7 @@ export const fcpMethodTable = {
   "library/set_tags": librarySetTagsMethod,
   "library/remove": libraryRemoveMethod,
   "connector/check": connectorCheckMethod,
+  "connector/sign_in": connectorSignInMethod,
   "library/list_providers": libraryListProvidersMethod,
   "library/save_provider": librarySaveProviderMethod,
   "workflow/list": workflowListMethod,

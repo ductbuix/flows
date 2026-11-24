@@ -129,9 +129,14 @@ export {
 export { fcpMethodTable, fcpNotificationTable } from "./table.ts"
 export {
   fcpHostMethodTable,
+  hostBrowserSignInMethod,
+  hostBrowserSignInParamsSchema,
+  hostBrowserSignInResultSchema,
   hostRevealPathMethod,
   hostRevealPathParamsSchema,
   hostRevealPathResultSchema,
+  hostStoredCookieSchema,
+  type HostStoredCookie,
 } from "./host.ts"
 export {
   fileEntrySchema,
@@ -199,6 +204,9 @@ export {
   connectorSetCapabilityMethod,
   connectorSetCapabilityParamsSchema,
   connectorSetCapabilityResultSchema,
+  connectorSignInMethod,
+  connectorSignInParamsSchema,
+  connectorSignInResultSchema,
   connectorUpdateNotification,
 } from "./connector.ts"
 export {

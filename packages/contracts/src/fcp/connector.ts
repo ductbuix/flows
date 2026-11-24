@@ -109,6 +109,24 @@ export const connectorCheckMethod = defineMethod({
   kind: "command",
 })
 
+export const connectorSignInParamsSchema = z.object({
+  id: connectorFileIdSchema,
+  requestKey: fcpRequestKeySchema,
+})
+
+/** Cookies stay in SecretStore; client only learns signed-in or cancelled. */
+export const connectorSignInResultSchema = z.union([
+  z.object({ signedIn: z.literal(true) }),
+  z.object({ cancelled: z.literal(true) }),
+])
+
+export const connectorSignInMethod = defineMethod({
+  name: "connector/sign_in",
+  params: connectorSignInParamsSchema,
+  result: connectorSignInResultSchema,
+  kind: "command",
+})
+
 export const connectorUpdateNotification = defineNotification({
   name: "connector/update",
   params: z.discriminatedUnion("kind", [

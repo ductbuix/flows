@@ -46,6 +46,7 @@ describe("createAppClient", () => {
       },
       revealPath: () => {},
       notifyInboxItem: () => {},
+      browserSignIn: async () => ({ cancelled: true as const }),
     }
     const origAdd = window.addEventListener.bind(window)
     const origRemove = window.removeEventListener.bind(window)
@@ -81,10 +82,16 @@ describe("createAppClient", () => {
     const opts = (createClient as ReturnType<typeof vi.fn>).mock
       .calls[0]![0] as {
       transport: () => Promise<unknown>
-      capabilities: { host: { revealPath: boolean; notifications: boolean } }
+      capabilities: {
+        host: {
+          revealPath: boolean
+          notifications: boolean
+          browserSignIn: boolean
+        }
+      }
     }
     expect(opts.capabilities).toEqual({
-      host: { revealPath: true, notifications: true },
+      host: { revealPath: true, notifications: true, browserSignIn: true },
     })
     await opts.transport()
     expect(messagePortTransport).toHaveBeenCalledWith(port)
