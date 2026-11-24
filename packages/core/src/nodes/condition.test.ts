@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest"
 import { createFakeAgentRuntime } from "../testing/fake-agent-runtime.ts"
 import { createFakeDocumentStore } from "../testing/fake-document-store.ts"
+import { createFakeEventStore } from "../testing/fake-event-store.ts"
+import { RunActor } from "../runs/actor.ts"
+import { at, parse } from "../runs/decide-harness.ts"
+import { latestStep } from "../runs/model.ts"
 import { createStepContext } from "./context.ts"
 import {
   CONDITION_BRANCHES,
   conditionBranch,
   conditionKind,
 } from "./kinds/condition.ts"
-import { collectExecute } from "./run.ts"
+import { kindKeyForNode } from "./registry.ts"
+import { collectExecute, createNodeEffectRunner } from "./run.ts"
 
 const runDir = "workflows/wf/runs/r1"
 
@@ -119,5 +124,76 @@ describe("conditionBranch", () => {
     expect(conditionBranch("yesterday")).toBeUndefined()
     expect(conditionBranch("")).toBeUndefined()
     expect(CONDITION_BRANCHES).toEqual(["yes", "no"])
+  })
+})
+
+describe("judge → condition routing", () => {
+  it("maps rule mode (default) to condition; check stays judge", () => {
+    expect(kindKeyForNode({ kind: "judge" })).toBe("condition")
+    expect(kindKeyForNode({ kind: "judge", mode: "rule" })).toBe("condition")
+    expect(kindKeyForNode({ kind: "judge", mode: "check" })).toBe("judge")
+  })
+
+  it("runs a parsed judge workflow through the core runner with the fake agent", async () => {
+    const docs = createFakeDocumentStore()
+    const runDir = "workflows/wf/runs/r1"
+    docs.write(`${runDir}/input/text.md`, "all green")
+    docs.write(`${runDir}/nodes/j/frozen/rule.md`, "Did tests pass?\n")
+    const runtime = createFakeAgentRuntime().onPrompt(async function* () {
+      yield { kind: "message_chunk", text: "yes, all passed" }
+      yield { kind: "stop", reason: "end_turn" }
+    })
+    const events = createFakeEventStore()
+    const notices: { title: string }[] = []
+    const actor = new RunActor("r1", {
+      events,
+      runEffect: createNodeEffectRunner({
+        docs,
+        runDirOf: () => runDir,
+        agentRuntime: runtime,
+        agentCwdOf: () => "/tmp/step",
+        postNotice: (n) => notices.push(n),
+      }),
+    })
+    const graph = parse(
+      [
+        {
+          id: "j",
+          kind: "judge",
+          cli: "cursor",
+          model: "composer-1",
+          effort: "low",
+        },
+        { id: "ok", kind: "output", target: "notify", title: "passed" },
+      ],
+      [
+        { from: "t", to: "j" },
+        { from: "j", to: "ok", branch: "yes" },
+      ]
+    )
+    await actor.push({ kind: "start", at, runId: "r1", graph })
+    const state = actor.getState()!
+    expect(latestStep(state.steps, "j")).toMatchObject({
+      status: "done",
+      branch: "yes",
+    })
+    expect(latestStep(state.steps, "ok")?.status).toBe("done")
+    expect(state.status).toBe("succeeded")
+    expect(docs.read(`${runDir}/nodes/j/pass-1/answer.md`)?.text).toBe(
+      "yes, all passed"
+    )
+    expect(runtime.opens).toEqual([
+      {
+        profileId: "cursor",
+        cwd: "/tmp/step",
+        mode: "ask",
+        model: "composer-1",
+        effort: "low",
+      },
+    ])
+    expect(notices).toEqual([expect.objectContaining({ title: "passed" })])
+    expect(
+      events.read("r1").some((e) => e.event.type === "run_succeeded")
+    ).toBe(true)
   })
 })

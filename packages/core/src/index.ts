@@ -337,6 +337,7 @@ export {
   CONDITION_BRANCHES,
   conditionBranch,
   conditionKind,
+  judgeCheckKind,
   approvalKind,
   notifyKind,
   type ConditionBranch,

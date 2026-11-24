@@ -1,3 +1,4 @@
+import { resolveAnswerValues } from "@workspace/contracts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
 import { latestStep } from "../runs/model.ts"
@@ -10,6 +11,7 @@ import {
 import { approvalKind } from "./kinds/approval.ts"
 import { assetKind } from "./kinds/asset.ts"
 import { conditionKind } from "./kinds/condition.ts"
+import { judgeCheckKind } from "./kinds/judge-check.ts"
 import { llmKind } from "./kinds/llm.ts"
 import { notifyKind } from "./kinds/notify.ts"
 import { triggerKind } from "./kinds/trigger.ts"
@@ -21,6 +23,7 @@ export const CORE_NODE_KINDS: readonly NodeKind[] = [
   assetKind,
   llmKind,
   conditionKind,
+  judgeCheckKind,
   approvalKind,
   notifyKind,
 ]
@@ -163,6 +166,13 @@ export function createNodeEffectRunner(
     })
     if (!parsed.success) return { ok: false, reason: "exit" }
 
+    const answers = resolveAnswerValues(
+      state.graph.nodes,
+      state.graph.edges,
+      effect.nodeId,
+      (id) => latestStep(state.steps, id)?.answer
+    )
+
     const ctx = createStepContext({
       docs: deps.docs,
       runDir,
@@ -170,6 +180,7 @@ export function createNodeEffectRunner(
       pass: effect.pass,
       settings: parsed.data,
       inputs,
+      answers,
       decision: step?.decision,
       graph: { id: state.graph.id, name: state.graph.name },
       nodeName: node.name,
