@@ -1,8 +1,8 @@
-import { findLoopEdges, type Workflow } from "@workspace/contracts"
+import type { Workflow } from "@workspace/contracts"
 
 /**
- * YAML kinds the core host can execute (BL-194 / BL-195).
- * Loops, partial, retry and resume stay on the engine until BL-196.
+ * YAML kinds the core host can execute (BL-194 / BL-195 / BL-196).
+ * Loops, partial, retry and resume are on core as of BL-196.
  */
 const CORE_HOST_KINDS = new Set([
   "trigger",
@@ -25,8 +25,7 @@ function nodeEligible(node: Workflow["nodes"][number]): boolean {
   return CORE_HOST_KINDS.has(node.kind)
 }
 
-/** True when every node is on the core path and the graph has no loops. */
+/** True when every node kind is on the core path (loops included). */
 export function isCoreRunEligible(graph: Workflow): boolean {
-  if (findLoopEdges(graph.nodes, graph.edges).size > 0) return false
   return graph.nodes.every(nodeEligible)
 }
