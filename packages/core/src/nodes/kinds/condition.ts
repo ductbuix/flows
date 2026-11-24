@@ -6,6 +6,7 @@ import {
   llmContentBlocks,
   llmProfileId,
   llmPromptText,
+  logPrompt,
   logToolEvent,
 } from "./llm.ts"
 
@@ -117,6 +118,7 @@ export const conditionKind = defineNodeKind({
       prompt: fillTemplate(promptRaw, ctx.answers),
     })
     const blocks = llmContentBlocks(promptText, ctx.inputs)
+    logPrompt(ctx, ctx.settings, "ask", promptText)
     const session = await ctx.agent.session({
       profileId: llmProfileId(ctx.settings.cli),
       cwd: "",
@@ -148,9 +150,14 @@ export const conditionKind = defineNodeKind({
       await session.close()
     }
     const answer = text.trim()
-    ctx.log({ kind: "message", title: "Judge reply", text: answer })
     yield* keepAnswer(ctx, answer)
     const branch = conditionBranch(answer)
+    ctx.log({
+      kind: "message",
+      title: branch ? `Judge answered ${branch}` : "Judge answer unclear",
+      status: branch ? "ok" : "failed",
+      text: answer,
+    })
     if (!branch) {
       yield {
         kind: "failed",

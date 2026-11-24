@@ -90,6 +90,8 @@ export type AgentEvent =
       status: string
       content?: unknown
       input?: unknown
+      /** Raw tool result (e.g. shell stdout, stderr and exit code). */
+      output?: unknown
     }
   | { kind: "plan"; entries: PlanEntry[] }
   | { kind: "todos"; entries: TodoEntry[] }

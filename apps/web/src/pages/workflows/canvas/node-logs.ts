@@ -33,6 +33,7 @@ export function parseTrace(text: string): { error: string; frames: string[] } {
 
 export type LogEntry = {
   at: string
+  id?: string
   kind: "command" | "tool_call" | "message" | "error"
   title: string
   /** The command line that ran, when the entry has one. */
@@ -44,10 +45,17 @@ export type LogEntry = {
 /** Parse `events.log` NDJSON; newest first, bad lines dropped. */
 export function parseEntries(ndjson: string): LogEntry[] {
   const out: { entry: LogEntry; i: number }[] = []
-  ndjson.split("\n").forEach((line, i) => {
+  const lastById = new Map<string, number>()
+  const lines = ndjson.split("\n")
+  lines.forEach((line, i) => {
+    const id = /"id":"([^"]+)"/.exec(line)?.[1]
+    if (id) lastById.set(id, i)
+  })
+  lines.forEach((line, i) => {
     if (!line.trim()) return
     try {
       const e = JSON.parse(line) as LogEntry
+      if (e.id && lastById.get(e.id) !== i) return
       if (typeof e.at === "string" && typeof e.title === "string") {
         out.push({ entry: e, i })
       }

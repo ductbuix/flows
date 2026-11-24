@@ -79,7 +79,40 @@ function contentText(content: unknown): string {
   }
 }
 
-type ToolMap = Map<string, { title?: string; input?: unknown }>
+type ToolMap = Map<
+  string,
+  { title?: string; input?: unknown; output?: unknown; content?: unknown }
+>
+
+/** Log what was asked of the agent: the CLI, model and prompt text. */
+export function logPrompt(
+  ctx: { log(entry: Omit<LogEntry, "at">): void },
+  settings: { cli: string; model?: string; effort?: string },
+  mode: string,
+  promptText: string
+): void {
+  const how = [settings.cli, settings.model, settings.effort, `${mode} mode`]
+    .filter(Boolean)
+    .join(" · ")
+  ctx.log({
+    kind: "command",
+    title: `Prompt (${how})`,
+    command: how,
+    text: promptText.trim(),
+  })
+}
+
+/** Shell result text: stdout, stderr and a non-zero exit code. */
+function outputText(output: unknown): string {
+  if (!output || typeof output !== "object") return contentText(output)
+  const o = output as Record<string, unknown>
+  const code = o.exitCode ?? o.exit_code
+  const parts = [o.stdout, o.stderr, o.output]
+    .filter((p): p is string => typeof p === "string" && p.trim() !== "")
+    .map((p) => p.trimEnd())
+  if (typeof code === "number" && code !== 0) parts.push(`exit ${code}`)
+  return parts.length > 0 ? parts.join("\n") : contentText(output)
+}
 
 /** Log a tool call to the attempt when it settles, or on first sight. */
 export function logToolEvent(
@@ -92,19 +125,30 @@ export function logToolEvent(
   const next = {
     title: event.kind === "tool_call" ? event.title : prev?.title,
     input: event.input ?? prev?.input,
+    output:
+      (event.kind === "tool_call_update" ? event.output : undefined) ??
+      prev?.output,
+    content:
+      (event.kind === "tool_call_update" ? event.content : undefined) ??
+      prev?.content,
   }
   tools.set(event.id, next)
   const settled = event.status === "completed" || event.status === "failed"
   if (!settled && !(event.kind === "tool_call" && !prev)) return
   const command = commandOf(next.input)
+  const text =
+    next.output !== undefined
+      ? outputText(next.output)
+      : next.content !== undefined
+        ? contentText(next.content)
+        : undefined
   ctx.log({
+    id: event.id,
     kind: "tool_call",
     title: next.title ?? "Tool call",
     ...(command ? { command } : {}),
     status: event.status,
-    ...(event.kind === "tool_call_update" && event.content !== undefined
-      ? { text: contentText(event.content) }
-      : {}),
+    ...(text?.trim() ? { text } : {}),
   })
 }
 
@@ -136,6 +180,7 @@ export const llmKind = defineNodeKind({
       prompt: fillTemplate(promptRaw, ctx.answers),
     })
     const blocks = llmContentBlocks(promptText, ctx.inputs)
+    logPrompt(ctx, ctx.settings, "agent", promptText)
     const session = await ctx.agent.session({
       profileId: llmProfileId(ctx.settings.cli),
       // Host fills absolute cwd via createStepContext agentCwd (DES-041).

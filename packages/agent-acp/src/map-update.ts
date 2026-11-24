@@ -126,6 +126,9 @@ export function mapSessionUpdate(
         ...(update.rawInput !== undefined && update.rawInput !== null
           ? { input: update.rawInput }
           : {}),
+        ...(update.rawOutput !== undefined && update.rawOutput !== null
+          ? { output: update.rawOutput }
+          : {}),
       }
     }
     case "plan": {

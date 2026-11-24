@@ -56,3 +56,32 @@ describe("parseEntries", () => {
     ])
   })
 })
+
+describe("parseEntries", () => {
+  it("keeps the latest entry of a tool call id", () => {
+    const lines = [
+      {
+        id: "t1",
+        at: "2026-01-01T00:00:01Z",
+        kind: "tool_call",
+        title: "ls",
+        command: "ls",
+        status: "pending",
+      },
+      {
+        id: "t1",
+        at: "2026-01-01T00:00:02Z",
+        kind: "tool_call",
+        title: "ls",
+        command: "ls",
+        status: "completed",
+        text: "a",
+      },
+    ]
+      .map((l) => JSON.stringify(l))
+      .join("\n")
+    const out = parseEntries(lines)
+    expect(out).toHaveLength(1)
+    expect(out[0]).toMatchObject({ status: "completed", text: "a" })
+  })
+})

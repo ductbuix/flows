@@ -3,6 +3,8 @@ import type { DocumentStore } from "../ports/document-store.ts"
 /** One line of `attempt-N/events.log` (NDJSON), shown in the logs popup. */
 export type LogEntry = {
   at: string
+  /** Tool call id; later entries with the same id replace earlier ones. */
+  id?: string
   kind: "command" | "tool_call" | "message" | "error"
   /** Tool name, or the shell line for a command. */
   title: string

@@ -160,6 +160,8 @@ export function loadStepInputs(
       if (!path.startsWith(`${base}/`)) continue
       const name = path.slice(base.length + 1)
       if (!name || name.endsWith("/")) continue
+      // Per-attempt logs and scratch output are not step results.
+      if (/^attempt-\d+\//.test(name)) continue
       const read = docs.read(path)
       out.push({
         from,
