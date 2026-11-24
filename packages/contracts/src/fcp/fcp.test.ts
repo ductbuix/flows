@@ -5,6 +5,7 @@ import {
   defineNotification,
   ErrorCode,
   fcpMethodTable,
+  fcpNotificationTable,
   type FcpMethodParams,
   type FcpMethodResult,
   type FcpNotificationParams,
@@ -106,17 +107,28 @@ describe("FCP helpers", () => {
     expect(workflowUpdateNotification.name).toBe("workflow/update")
   })
 
-  it("declares connector list/get as queries and save/remove/set_capability as commands", () => {
+  it("declares connector list/get as queries and save/remove/set_capability/check as commands", () => {
     expect(fcpMethodTable["connector/list"].kind).toBe("query")
     expect(fcpMethodTable["connector/get"].kind).toBe("query")
     expect(fcpMethodTable["connector/save"].kind).toBe("command")
     expect(fcpMethodTable["connector/remove"].kind).toBe("command")
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
+    expect(fcpMethodTable["connector/check"].kind).toBe("command")
+    expect(fcpNotificationTable["connector/update"].name).toBe(
+      "connector/update"
+    )
   })
 
-  it("declares library/list_providers as a query and library/save_provider as a command", () => {
+  it("declares library list/get as queries and pull/pin/set_tags/remove/save_provider as commands", () => {
+    expect(fcpMethodTable["library/list"].kind).toBe("query")
+    expect(fcpMethodTable["library/get"].kind).toBe("query")
+    expect(fcpMethodTable["library/pull"].kind).toBe("command")
+    expect(fcpMethodTable["library/pin_version"].kind).toBe("command")
+    expect(fcpMethodTable["library/set_tags"].kind).toBe("command")
+    expect(fcpMethodTable["library/remove"].kind).toBe("command")
     expect(fcpMethodTable["library/list_providers"].kind).toBe("query")
     expect(fcpMethodTable["library/save_provider"].kind).toBe("command")
+    expect(fcpNotificationTable["library/update"].name).toBe("library/update")
   })
 
   it("declares skill/list and skill/get as queries and install/uninstall as commands", () => {
