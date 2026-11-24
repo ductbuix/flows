@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@workspace/adapters-node": "workspace:*",
+    "@workspace/agent-acp": "workspace:*",
     "@workspace/core": "workspace:*",
     "@workspace/shared": "workspace:*",
     "playwright-core": "^1.65.1",

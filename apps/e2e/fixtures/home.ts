@@ -1,6 +1,13 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs"
+import {
+  chmodSync,
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 
 const nodeCanvasYaml = `id: node-canvas
 goal: e2e node canvas
@@ -248,7 +255,10 @@ edges:
   - { from: edit, to: ship }
 `
 
-const nodeLlmYaml = (id: string) => `id: ${id}
+const nodeLlmYaml = (
+  id: string,
+  cli: "claude" | "cursor" = "claude"
+) => `id: ${id}
 goal: e2e llm node
 nodes:
   - id: start
@@ -256,7 +266,7 @@ nodes:
     type: manual
   - id: write
     kind: llm
-    cli: claude
+    cli: ${cli}
   - id: show
     kind: command
     run: 'cat $NODE_IN/text.md'
@@ -525,6 +535,13 @@ export function createE2eHome(): string {
     ].join("\n"),
     { mode: 0o755 }
   )
+  // Fake Cursor ACP agent on PATH (BL-142); used when agents.runtime=acp.
+  const agentBin = join(bin, "agent")
+  copyFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "fake-acp-agent.mjs"),
+    agentBin
+  )
+  chmodSync(agentBin, 0o755)
   // LLM workflows for node-llm.spec.ts (BL-083); each test owns one.
   for (const id of [
     "node-llm-light",
@@ -535,6 +552,17 @@ export function createE2eHome(): string {
     const dir = join(home, "workflows", id)
     mkdirSync(join(dir, "nodes", "write"), { recursive: true })
     writeFileSync(join(dir, "workflow.yaml"), nodeLlmYaml(id))
+    writeFileSync(
+      join(dir, "nodes", "write", "prompt.md"),
+      "Write one line about the weather.\n"
+    )
+  }
+  // ACP llm workflow (BL-142); agents.runtime toggled in the spec.
+  {
+    const id = "node-llm-acp"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "write"), { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeLlmYaml(id, "cursor"))
     writeFileSync(
       join(dir, "nodes", "write", "prompt.md"),
       "Write one line about the weather.\n"

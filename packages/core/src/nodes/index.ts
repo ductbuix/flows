@@ -29,5 +29,11 @@ export {
 } from "./run.ts"
 export { triggerKind } from "./kinds/trigger.ts"
 export { assetKind } from "./kinds/asset.ts"
+export {
+  llmKind,
+  llmContentBlocks,
+  llmProfileId,
+  llmPromptText,
+} from "./kinds/llm.ts"
 export { approvalKind } from "./kinds/approval.ts"
 export { notifyKind } from "./kinds/notify.ts"

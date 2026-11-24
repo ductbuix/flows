@@ -64,14 +64,15 @@ export function createNodeProcessRunner(): ProcessRunner {
         stdio: ["pipe", "pipe", "pipe"],
       })
 
+      // Attach before checking pid so ENOENT does not crash the process.
+      const exit = waitChildExit(child, signal).catch(() => 1)
+
       if (child.pid === undefined) {
-        throw new Error("failed to spawn process")
+        throw new Error(`failed to spawn process: ${command}`)
       }
       if (!child.stdin || !child.stdout || !child.stderr) {
         throw new Error("spawn did not provide stdio pipes")
       }
-
-      const exit = waitChildExit(child, signal).catch(() => 1)
 
       return {
         pid: child.pid,

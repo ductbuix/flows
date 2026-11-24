@@ -121,6 +121,7 @@ export {
   timeoutSecondsSchema,
   workflowLimitsSchema,
   workflowInputDeclSchema,
+  agentsConfigSchema,
   appConfigSchema,
   DEFAULT_LIBRARY_MAX_BYTES,
   workflowNameSchema,

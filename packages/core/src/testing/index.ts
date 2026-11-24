@@ -33,6 +33,12 @@ export {
   type ProcessRunnerFactory,
   type ProcessRunnerTestCtx,
 } from "./process-runner.contract.ts"
+export {
+  createFakeAgentRuntime,
+  type FakeAgentHandler,
+  type FakeAgentPrompt,
+  type FakeAgentRuntime,
+} from "./fake-agent-runtime.ts"
 export { createFakeSecretStore } from "./fake-secret-store.ts"
 export {
   describeSecretStoreContract,

@@ -9,14 +9,16 @@ import {
 } from "./registry.ts"
 import { approvalKind } from "./kinds/approval.ts"
 import { assetKind } from "./kinds/asset.ts"
+import { llmKind } from "./kinds/llm.ts"
 import { notifyKind } from "./kinds/notify.ts"
 import { triggerKind } from "./kinds/trigger.ts"
 import { isAskPending, type NodeKind, type StepEvent } from "./types.ts"
 
-/** Built-in kinds ported in BL-134 / BL-135. */
+/** Built-in kinds ported in BL-134 / BL-135 / BL-142. */
 export const CORE_NODE_KINDS: readonly NodeKind[] = [
   triggerKind,
   assetKind,
+  llmKind,
   approvalKind,
   notifyKind,
 ]
@@ -45,6 +47,9 @@ export type NodeEffectRunnerDeps = {
   /** Optional notice sink for the `notify` effect. */
   postNotice?: (n: NoticePost) => void
   now?: () => string
+  /** Absolute cwd resolver for agent sessions (llm). */
+  agentCwdOf?: (state: RunState, nodeId: string, pass: number) => string
+  agentRuntime?: import("../ports/agent-runtime.ts").AgentRuntime
 }
 
 /** Fold StepEvents from one execute() into an EffectResult. */
@@ -166,6 +171,8 @@ export function createNodeEffectRunner(
       decision: step?.decision,
       graph: { id: state.graph.id, name: state.graph.name },
       nodeName: node.name,
+      agentRuntime: deps.agentRuntime,
+      agentCwd: deps.agentCwdOf?.(state, effect.nodeId, effect.pass),
     })
 
     const result = await collectExecute(kind.execute(ctx))
