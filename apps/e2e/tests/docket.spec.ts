@@ -1,52 +1,126 @@
 import { expect, test } from "@playwright/test"
+import {
+  cardIdForTitle,
+  createCard,
+  gotoDocket,
+  openFixLogin,
+  screenshotThemes,
+  uniqueTitle,
+} from "./docket-helpers"
 
-async function screenshotThemes(
-  page: import("@playwright/test").Page,
-  name: string
-) {
-  await page.screenshot({
-    path: `test-results/${name}-light.png`,
-    fullPage: true,
-  })
-  await page.locator("body").click({ position: { x: 0, y: 0 } })
-  await page.keyboard.press("d")
-  await expect(page.locator("html")).toHaveClass(/dark/)
-  await page.screenshot({
-    path: `test-results/${name}-dark.png`,
-    fullPage: true,
-  })
-  await page.keyboard.press("d")
-  await expect(page.locator("html")).toHaveClass(/light/)
-}
-
-async function openFixLogin(page: import("@playwright/test").Page) {
-  await page.goto("/docket")
-  await expect(page.getByTestId("docket-page")).toBeVisible()
-  await page.getByTestId("docket-card-fix-login").click()
-  await expect(page.getByTestId("docket-panel")).toBeVisible()
-}
-
-test.describe("docket page (BL-177)", () => {
-  test("lists cards, opens panel, creates a card", async ({ page }) => {
-    await page.goto("/docket")
-    await expect(page.getByTestId("docket-page")).toBeVisible()
+test.describe("docket (DES-044)", () => {
+  test("board", async ({ page }) => {
+    await gotoDocket(page)
     await expect(page.getByTestId("docket-card-fix-login")).toBeVisible()
     await expect(page.getByTestId("docket-column-doing")).toBeVisible()
+    await expect(page.getByTestId("docket-empty-done")).toBeVisible()
     await screenshotThemes(page, "docket-page")
+  })
 
+  test("new card", async ({ page }) => {
+    const title = uniqueTitle()
+    await gotoDocket(page)
+    await page.getByTestId("docket-new-card-open").click()
+    await expect(page.getByTestId("docket-new-card")).toBeVisible()
+    await page.getByTestId("docket-new-card-title").fill(title)
+    await page
+      .getByTestId("docket-new-card-ref")
+      .fill("https://github.com/costory/flows/issues/216")
+    await page
+      .getByTestId("docket-new-card")
+      .locator("#nc-body")
+      .fill("E2E new card body.")
+    await page.getByTestId("docket-new-card-submit").click()
+    await expect(page.getByTestId("docket-panel")).toBeVisible()
+    await expect(
+      page.getByTestId(`docket-card-${cardIdForTitle(title)}`)
+    ).toBeVisible()
+  })
+
+  test("add to column", async ({ page }) => {
+    const title = uniqueTitle()
+    await gotoDocket(page)
+    await page.getByTestId("docket-add-review").click()
+    const dialog = page.getByTestId("docket-new-card")
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole("combobox").click()
+    await page.getByRole("option", { name: "Review" }).click()
+    await page.getByTestId("docket-new-card-title").fill(title)
+    await page.getByTestId("docket-new-card-submit").click()
+    const id = cardIdForTitle(title)
+    await expect(
+      page.getByTestId("docket-column-review").getByTestId(`docket-card-${id}`)
+    ).toBeVisible()
+  })
+
+  test("drag move", async ({ page }) => {
+    await gotoDocket(page)
+    await expect(page.getByTestId("docket-card-refactor-auth")).toBeVisible()
+    await expect(page.getByTestId("docket-column-todo")).toContainText(
+      "Refactor auth session"
+    )
+    await page
+      .getByTestId("docket-card-refactor-auth")
+      .dragTo(page.getByTestId("docket-column-doing"))
+    await expect(page.getByTestId("docket-column-doing")).toContainText(
+      "Refactor auth session"
+    )
+    await page
+      .getByTestId("docket-card-refactor-auth")
+      .dragTo(page.getByTestId("docket-column-todo"))
+  })
+
+  test("columns", async ({ page }) => {
+    await gotoDocket(page)
+    await page.getByTestId("docket-columns-open").click()
+    await expect(page.getByTestId("docket-columns")).toBeVisible()
+    const row = page.getByTestId("columns-row-todo")
+    await row.getByLabel("Tone").click()
+    await page.getByRole("option", { name: "Working" }).click()
+    await page.getByTestId("docket-columns-save").click()
+    await expect(page.getByTestId("docket-columns")).toBeHidden()
+  })
+
+  test("open panel", async ({ page }) => {
+    await gotoDocket(page)
     await page.getByTestId("docket-card-fix-login").click()
     await expect(page.getByTestId("docket-panel")).toBeVisible()
     await expect(page.getByTestId("docket-panel")).toContainText(
       "Fix flaky login"
     )
     await page.keyboard.press("Escape")
+    await expect(page.getByTestId("docket-panel")).toHaveCount(0)
+  })
 
-    await page.getByTestId("docket-new-card-open").click()
-    await expect(page.getByTestId("docket-new-card")).toBeVisible()
-    await page.getByTestId("docket-new-card-title").fill("Ship docket sdk")
-    await page.getByTestId("docket-new-card-submit").click()
-    await expect(page.getByTestId("docket-panel")).toBeVisible()
-    await expect(page.getByTestId("docket-card-ship-docket-sdk")).toBeVisible()
+  test("edit title body", async ({ page }) => {
+    const title = uniqueTitle()
+    const nextTitle = `${title}-renamed`
+    await gotoDocket(page)
+    await createCard(page, title, { body: "Before edit." })
+    const panel = page.getByTestId("docket-panel")
+    await panel.getByLabel("Edit title").click()
+    await panel.getByLabel("title").fill(nextTitle)
+    await panel.getByLabel("title").press("Enter")
+    await panel.getByLabel("Edit description").click()
+    await panel.getByLabel("description").fill("After edit.")
+    await panel.getByLabel("description").press("ControlOrMeta+Enter")
+    const id = cardIdForTitle(title)
+    await expect(page.getByTestId(`docket-card-${id}`)).toContainText(nextTitle)
+    await expect(panel.getByLabel("Edit description")).toContainText(
+      "After edit."
+    )
+    await page.keyboard.press("Escape")
+  })
+
+  test("delete card", async ({ page }) => {
+    const title = uniqueTitle()
+    await gotoDocket(page)
+    const id = await createCard(page, title)
+    await page.getByRole("button", { name: "Card actions" }).click()
+    await page.getByTestId("docket-delete").click()
+    await page.getByTestId("confirm-ok").click()
+    await expect(page.getByTestId("docket-panel")).toHaveCount(0)
+    await expect(page.getByTestId(`docket-card-${id}`)).toHaveCount(0)
   })
 })
 
@@ -226,7 +300,6 @@ test.describe("docket card runs (BL-200)", () => {
     await openFixLogin(page)
     const panel = page.getByTestId("docket-panel")
 
-    // Cancel a live run started from the card.
     await panel.getByTestId("card-run-open").click()
     let dialog = page.getByTestId("card-run-dialog")
     await dialog.getByTestId("card-run-workflow").click()
@@ -247,7 +320,6 @@ test.describe("docket card runs (BL-200)", () => {
       timeout: 15_000,
     })
 
-    // Rerun from the same sheet; wait for the new run id (async start).
     const sheet = page.getByTestId("runs-sheet")
     const priorId = await sheet.getAttribute("data-run-id")
     expect(priorId).toBeTruthy()
@@ -261,8 +333,6 @@ test.describe("docket card runs (BL-200)", () => {
       timeout: 15_000,
     })
 
-    // Cancel the live sleep so later specs are not blocked, then close.
-    // Prefer the sheet Close control: Escape is flaky with nested Base UI sheets.
     await page.getByTestId("runs-cancel").click()
     await page
       .getByTestId("confirm-dialog")
@@ -279,7 +349,6 @@ test.describe("docket card runs (BL-200)", () => {
       timeout: 5_000,
     })
 
-    // Start a fast run and wait for Done so the list stays card-scoped.
     await expect(panel.getByTestId("card-run-open")).toBeVisible()
     await panel.getByTestId("card-run-open").click()
     dialog = page.getByTestId("card-run-dialog")

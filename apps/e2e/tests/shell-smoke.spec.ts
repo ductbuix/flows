@@ -12,7 +12,7 @@ const routes = [
   { path: "/brand", ready: "brand-page" },
 ] as const
 
-test.describe("shell smoke (BL-185)", () => {
+test.describe("shell smoke (BL-185 / BL-216)", () => {
   for (const route of routes) {
     test(`${route.path} loads without page errors`, async ({ page }) => {
       const errors: string[] = []
@@ -28,6 +28,23 @@ test.describe("shell smoke (BL-185)", () => {
       expect(real, real.join("\n")).toEqual([])
     })
   }
+
+  test("nav", async ({ page }) => {
+    await page.goto("/docket")
+    const sidebar = page.getByTestId("app-sidebar")
+    await expect(sidebar).toBeVisible({ timeout: 30_000 })
+    for (const name of [
+      "Docket",
+      "Workflows",
+      "Inbox",
+      "Files",
+      "Library",
+      "Skills",
+      "Connectors",
+    ]) {
+      await expect(sidebar.getByRole("link", { name })).toBeVisible()
+    }
+  })
 
   test("inbox badge", async ({ page }) => {
     // Free the approval workflow slot before sampling the badge baseline.

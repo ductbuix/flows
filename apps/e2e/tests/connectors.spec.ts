@@ -94,10 +94,10 @@ test.describe("connectors page (BL-207)", () => {
   })
 })
 
-test.describe("connectors page (BL-181)", () => {
-  test("lists connectors, opens sheet, removes one, adds one", async ({
-    page,
-  }) => {
+test.describe("connectors page (BL-181 / BL-216)", () => {
+  test("list add", async ({ page }) => {
+    const stamp = Date.now()
+    const name = `Wiki ${stamp}`
     await page.goto("/connectors")
     await expect(page.getByTestId("connectors-page")).toBeVisible()
     await expect(page.getByTestId("connector-row-github-cli")).toBeVisible()
@@ -106,16 +106,48 @@ test.describe("connectors page (BL-181)", () => {
 
     await page.getByTestId("connector-add-open").click()
     await expect(page.getByTestId("connector-add")).toBeVisible()
-    await page.getByTestId("connector-add-name").fill("Wiki")
+    await page.getByTestId("connector-add-name").fill(name)
     await page.getByTestId("connector-add-how").fill("https://wiki.example/api")
     await page.getByTestId("connector-add-submit").click()
-    await expect(page.getByTestId("connector-row-wiki")).toBeVisible()
+    const row = page.locator(`[data-testid^="connector-row-wiki-"]`).first()
+    await expect(row).toBeVisible()
     await expect(page.getByTestId("connector-sheet")).toBeVisible()
-    await expect(page.getByTestId("capability-read")).toBeVisible()
+  })
+
+  test("capabilities", async ({ page }) => {
+    await page.goto("/connectors")
+    await page.getByTestId("connector-row-github-cli").click()
+    const sheet = page.getByTestId("connector-sheet")
+    await expect(sheet).toBeVisible()
+    await expect(sheet.getByTestId("capability-repo clone")).toBeVisible()
+    const toggle = sheet.getByLabel("Allow repo push")
+    await expect(toggle).toBeVisible()
+    const before = await toggle.isChecked()
+    await toggle.click()
+    await expect(toggle).toBeChecked({ checked: !before })
+    await toggle.click()
+    await expect(toggle).toBeChecked({ checked: before })
+  })
+
+  test("remove", async ({ page }) => {
+    const stamp = Date.now()
+    const name = `Temp ${stamp}`
+    await page.goto("/connectors")
+    await page.getByTestId("connector-add-open").click()
+    await page.getByTestId("connector-add-name").fill(name)
+    await page.getByTestId("connector-add-how").fill("https://temp.example/api")
+    await page.getByTestId("connector-add-submit").click()
+    const row = page.locator(`[data-testid^="connector-row-temp-"]`).first()
+    await expect(row).toBeVisible()
+    const id = (await row.getAttribute("data-testid"))!.replace(
+      /^connector-row-/,
+      ""
+    )
+    await expect(page.getByTestId("connector-sheet")).toBeVisible()
     await page.getByRole("tab", { name: "Setup" }).click()
     await page.getByTestId("connector-remove").click()
     await page.getByTestId("confirm-ok").click()
-    await expect(page.getByTestId("connector-row-wiki")).toHaveCount(0)
+    await expect(page.getByTestId(`connector-row-${id}`)).toHaveCount(0)
     await expect(page.getByTestId("connector-row-github-cli")).toBeVisible()
   })
 })

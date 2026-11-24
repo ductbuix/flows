@@ -2,8 +2,8 @@
 /**
  * Minimal ACP agent for e2e (BL-142 / BL-195). Speaks NDJSON JSON-RPC on
  * stdio; answers session/prompt with one message chunk. When the prompt
- * contains ASK_PERMISSION, requests session/request_permission first and
- * waits for the client reply before finishing the turn.
+ * contains ASK_PERMISSION, ASK_QUESTION, or ASK_PLAN_REVIEW, issues the
+ * matching client extension method, then finishes the turn.
  */
 import { createInterface } from "node:readline"
 
@@ -127,23 +127,9 @@ rl.on("line", (line) => {
         result: { stopReason: "end_turn" },
       })
     }
-    if (promptText(params).includes("ASK_PERMISSION")) {
-      void requestClient("session/request_permission", {
-        sessionId,
-        toolCall: {
-          toolCallId: "e2e_tc1",
-          title: "Write file",
-          kind: "edit",
-          status: "pending",
-        },
-        options: [
-          {
-            optionId: "allow-once",
-            name: "Allow once",
-            kind: "allow_once",
-          },
-        ],
-      })
+    const prompt = promptText(params)
+    const runBranch = (promise) => {
+      void promise
         .then(() => finish())
         .catch((err) => {
           send({
@@ -152,6 +138,60 @@ rl.on("line", (line) => {
             error: { code: -32000, message: String(err?.message ?? err) },
           })
         })
+    }
+    if (prompt.includes("ASK_PERMISSION")) {
+      runBranch(
+        requestClient("session/request_permission", {
+          sessionId,
+          toolCall: {
+            toolCallId: "e2e_tc1",
+            title: "Write file",
+            kind: "edit",
+            status: "pending",
+          },
+          options: [
+            {
+              optionId: "allow-once",
+              name: "Allow once",
+              kind: "allow_once",
+            },
+          ],
+        })
+      )
+      return
+    }
+    if (prompt.includes("ASK_QUESTION")) {
+      runBranch(
+        requestClient("cursor/ask_question", {
+          toolCallId: "e2e_q1",
+          title: "Need input",
+          questions: [
+            {
+              id: "q1",
+              prompt: "Which mode?",
+              options: [
+                { id: "agent", label: "Agent" },
+                { id: "plan", label: "Plan" },
+              ],
+            },
+          ],
+        })
+      )
+      return
+    }
+    if (prompt.includes("ASK_PLAN_REVIEW")) {
+      runBranch(
+        requestClient("cursor/create_plan", {
+          toolCallId: "e2e_p1",
+          name: "E2E plan",
+          overview: "Ship inbox e2e",
+          plan: "1. Add fixtures.\n2. Run tests.",
+          todos: [
+            { id: "todo-1", content: "Fixtures", status: "completed" },
+            { id: "todo-2", content: "Specs", status: "pending" },
+          ],
+        })
+      )
       return
     }
     finish()

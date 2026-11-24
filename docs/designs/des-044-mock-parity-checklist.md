@@ -196,11 +196,11 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 75     |
-| partial   | 2      |
-| missing   | 4      |
+| app       | 81     |
+| partial   | 0      |
+| missing   | 0      |
 | drop      | 5      |
 | **total** | **86** |
 
 Phase 42 (BL-216) refreshes e2e and `layout.spec.ts` baselines so every
-non-`drop` row’s test id passes.
+`app` / `drop` row’s test id exists and passes (except SH-06, no test id).

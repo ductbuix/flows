@@ -221,5 +221,5 @@ Holds chunked work items, one per file. Back to [docs index](../INDEX.md).
 | BL-213 | todo | P2 | BL-197 | [Remove old domain contracts](bl-213-remove-old-domain-contracts.md) | Delete work-item, connection, attempt-kind and api*.ts schemas that no host uses. | contracts, cleanup |
 | BL-214 | todo | P2 | BL-197, BL-210 | [Move remaining engine modules to core and adapters](bl-214-move-engine-leftovers.md) | Settings, MCP trust, secrets, sandbox, library and publish code move out of packages/engine. | engine, core, adapters |
 | BL-215 | todo | P2 | BL-213, BL-214 | [Delete packages/engine](bl-215-delete-engine-package.md) | Remove the package, its docs references and its lint config. | engine, cleanup |
-| BL-216 | todo | P1 | BL-209, BL-212 | [e2e and layout baselines to the mock screens](bl-216-e2e-baselines-mock-screens.md) | Specs and layout baselines cover the mock screens and no old page. | e2e, web |
+| BL-216 | done | P1 | BL-209, BL-212 | [e2e and layout baselines to the mock screens](bl-216-e2e-baselines-mock-screens.md) | Specs and layout baselines cover the mock screens and no old page. | e2e, web |
 | BL-217 | todo | P1 | BL-215, BL-216 | [v2 end-to-end verification and docs refresh](bl-217-v2-end-to-end-verification.md) | Run the checklist in the desktop app and the web server; refresh roadmap and decision log. | verify, docs |
