@@ -38,3 +38,19 @@ export async function updateSkill(
   if (removed !== "ok") return removed
   return installSkill(client, params)
 }
+
+export async function saveSources(
+  client: FlowsClient,
+  sources: string[]
+): Promise<SkillActionResult> {
+  try {
+    await client.call("skill/save", {
+      sources,
+      requestKey: crypto.randomUUID(),
+    })
+    return "ok"
+  } catch (err) {
+    if (isConflictError(err)) return "conflict"
+    return errorMessage(err)
+  }
+}

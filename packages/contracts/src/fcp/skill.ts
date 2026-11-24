@@ -95,6 +95,53 @@ export const skillUninstallMethod = defineMethod({
   kind: "command",
 })
 
+/** One skill offered by a Library source under `skills/` (DES-040). */
+export const skillSourceOfferSchema = z.object({
+  slug: SkillSlug,
+  name: z.string().min(1),
+  description: z.string(),
+  body: z.string(),
+})
+
+export type WireSkillSourceOffer = z.infer<typeof skillSourceOfferSchema>
+
+export const skillSourceSchema = z.object({
+  id: z.string().min(1),
+  skills: z.array(skillSourceOfferSchema),
+})
+
+export type WireSkillSource = z.infer<typeof skillSourceSchema>
+
+export const skillListSourcesParamsSchema = z.object({})
+
+export const skillListSourcesResultSchema = z.object({
+  items: z.array(skillSourceSchema),
+})
+
+export const skillListSourcesMethod = defineMethod({
+  name: "skill/list_sources",
+  params: skillListSourcesParamsSchema,
+  result: skillListSourcesResultSchema,
+  kind: "query",
+})
+
+/** Replace the skill-source id list (Library item ids). */
+export const skillSaveParamsSchema = z.object({
+  sources: z.array(z.string().min(1)),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const skillSaveResultSchema = z.object({
+  sources: z.array(z.string().min(1)),
+})
+
+export const skillSaveMethod = defineMethod({
+  name: "skill/save",
+  params: skillSaveParamsSchema,
+  result: skillSaveResultSchema,
+  kind: "command",
+})
+
 export const skillUpdateNotification = defineNotification({
   name: "skill/update",
   params: z.discriminatedUnion("kind", [

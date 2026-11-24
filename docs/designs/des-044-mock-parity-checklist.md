@@ -89,13 +89,13 @@ Recorded in DES-043; this checklist is the acceptance surface.
 | WF-08 | Sheet: start run for a card               | missing | `workflows.spec.ts › sheet start`     | BL-203  |
 | WF-09 | Editor route (YAML textarea today)        | app     | `workflows.spec.ts › editor yaml`     | BL-201  |
 | WF-10 | Node canvas, cards, edges, save layout    | app     | `workflows.spec.ts › canvas`          | BL-201  |
-| WF-11 | Add node menu with search                 | missing | `workflows.spec.ts › add node`        | BL-202  |
-| WF-12 | Node settings (prompt, format, limits, …) | missing | `workflows.spec.ts › node settings`   | BL-202  |
-| WF-13 | Toolbar: undo, redo, fit view             | missing | `workflows.spec.ts › undo redo`       | BL-202  |
-| WF-14 | Trigger inputs editor                     | missing | `workflows.spec.ts › trigger inputs`  | BL-202  |
-| WF-15 | Step connectors / skills multi-pick       | missing | `workflows.spec.ts › step connectors` | BL-202  |
-| WF-16 | Model row on node                         | missing | `workflows.spec.ts › model row`       | BL-202  |
-| WF-17 | Duplicate / delete node                   | missing | `workflows.spec.ts › node actions`    | BL-202  |
+| WF-11 | Add node menu with search                 | app     | `workflows.spec.ts › add node`        | BL-202  |
+| WF-12 | Node settings (prompt, format, limits, …) | app     | `workflows.spec.ts › node settings`   | BL-202  |
+| WF-13 | Toolbar: undo, redo, fit view             | app     | `workflows.spec.ts › undo redo`       | BL-202  |
+| WF-14 | Trigger inputs editor                     | app     | `workflows.spec.ts › trigger inputs`  | BL-202  |
+| WF-15 | Step connectors / skills multi-pick       | app     | `workflows.spec.ts › step connectors` | BL-202  |
+| WF-16 | Model row on node                         | app     | `workflows.spec.ts › model row`       | BL-202  |
+| WF-17 | Duplicate / delete node                   | app     | `workflows.spec.ts › node actions`    | BL-202  |
 
 ## Runs in context
 
@@ -124,15 +124,15 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Skills
 
-| id    | item                             | status  | test id                      | backlog |
-| ----- | -------------------------------- | ------- | ---------------------------- | ------- |
-| SK-01 | Installed table + sheet body     | app     | `skills.spec.ts › installed` | —       |
-| SK-02 | Uninstall from sheet             | app     | `skills.spec.ts › uninstall` | —       |
-| SK-03 | Tabs: available + sources chrome | partial | `skills.spec.ts › tabs`      | BL-206  |
-| SK-04 | Available list + install         | missing | `skills.spec.ts › install`   | BL-206  |
-| SK-05 | Add / sync / remove skill source | missing | `skills.spec.ts › sources`   | BL-206  |
-| SK-06 | Update stale installed skill     | missing | `skills.spec.ts › update`    | BL-206  |
-| SK-07 | Used-by nodes on sheet           | missing | `skills.spec.ts › used by`   | BL-206  |
+| id    | item                             | status | test id                      | backlog |
+| ----- | -------------------------------- | ------ | ---------------------------- | ------- |
+| SK-01 | Installed table + sheet body     | app    | `skills.spec.ts › installed` | —       |
+| SK-02 | Uninstall from sheet             | app    | `skills.spec.ts › uninstall` | —       |
+| SK-03 | Tabs: available + sources chrome | app    | `skills.spec.ts › tabs`      | BL-206  |
+| SK-04 | Available list + install         | app    | `skills.spec.ts › install`   | BL-206  |
+| SK-05 | Add / sync / remove skill source | app    | `skills.spec.ts › sources`   | BL-206  |
+| SK-06 | Update stale installed skill     | app    | `skills.spec.ts › update`    | BL-206  |
+| SK-07 | Used-by nodes on sheet           | app    | `skills.spec.ts › used by`   | BL-206  |
 
 ## Connectors
 
@@ -150,55 +150,55 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
-| id    | item                                           | status  | test id                             | backlog |
-| ----- | ---------------------------------------------- | ------- | ----------------------------------- | ------- |
-| IB-01 | Empty state                                    | app     | `inbox.spec.ts › empty`             | —       |
-| IB-02 | Approval: approve / reject / note              | app     | `inbox.spec.ts › approval`          | —       |
-| IB-03 | Permission allow / deny                        | app     | `inbox.spec.ts › permission`        | —       |
-| IB-04 | Question answer / skip                         | app     | `inbox.spec.ts › question`          | —       |
-| IB-05 | Plan review accept / reject                    | app     | `inbox.spec.ts › plan review`       | —       |
-| IB-06 | Dismiss                                        | app     | `inbox.spec.ts › dismiss`           | —       |
-| IB-07 | Sidebar badge from live inbox (not mock store) | app     | `shell-smoke.spec.ts › inbox badge` | BL-208  |
+| id    | item                                           | status | test id                             | backlog |
+| ----- | ---------------------------------------------- | ------ | ----------------------------------- | ------- |
+| IB-01 | Empty state                                    | app    | `inbox.spec.ts › empty`             | —       |
+| IB-02 | Approval: approve / reject / note              | app    | `inbox.spec.ts › approval`          | —       |
+| IB-03 | Permission allow / deny                        | app    | `inbox.spec.ts › permission`        | —       |
+| IB-04 | Question answer / skip                         | app    | `inbox.spec.ts › question`          | —       |
+| IB-05 | Plan review accept / reject                    | app    | `inbox.spec.ts › plan review`       | —       |
+| IB-06 | Dismiss                                        | app    | `inbox.spec.ts › dismiss`           | —       |
+| IB-07 | Sidebar badge from live inbox (not mock store) | app    | `shell-smoke.spec.ts › inbox badge` | BL-208  |
 
 ## Files
 
-| id    | item                                        | status  | test id                       | backlog |
-| ----- | ------------------------------------------- | ------- | ----------------------------- | ------- |
-| FL-01 | Tree, search, expand/collapse, count        | app     | `files.spec.ts › tree`        | —       |
-| FL-02 | Preview, markdown, edit, save               | app     | `files.spec.ts › edit save`   | —       |
-| FL-03 | Reveal in Finder (`file/reveal` / host)     | app     | `files.spec.ts › reveal`      | BL-208  |
-| FL-04 | `file/stat` for preview metadata            | app     | `files.spec.ts › stat`        | BL-208  |
-| FL-05 | DiskPicker (shared; used by library/assets) | app     | `library.spec.ts › disk pick` | BL-205  |
+| id    | item                                        | status | test id                       | backlog |
+| ----- | ------------------------------------------- | ------ | ----------------------------- | ------- |
+| FL-01 | Tree, search, expand/collapse, count        | app    | `files.spec.ts › tree`        | —       |
+| FL-02 | Preview, markdown, edit, save               | app    | `files.spec.ts › edit save`   | —       |
+| FL-03 | Reveal in Finder (`file/reveal` / host)     | app    | `files.spec.ts › reveal`      | BL-208  |
+| FL-04 | `file/stat` for preview metadata            | app    | `files.spec.ts › stat`        | BL-208  |
+| FL-05 | DiskPicker (shared; used by library/assets) | app    | `library.spec.ts › disk pick` | BL-205  |
 
 ## Shell / sidebar
 
-| id    | item                                                              | status  | test id                                | backlog |
-| ----- | ----------------------------------------------------------------- | ------- | -------------------------------------- | ------- |
-| SH-01 | Nav: Docket, Workflows, Inbox, Files, Library, Skills, Connectors | app     | `shell-smoke.spec.ts › nav`            | —       |
-| SH-02 | Runs nav item                                                     | drop    | `shell-smoke.spec.ts › no runs nav`    | BL-209  |
-| SH-03 | Settings entry in sidebar footer → panel                          | app     | `sidebar-settings.spec.ts › panel`     | BL-210  |
-| SH-04 | `MockShell` / `MockSidebar` / mock test ids                       | partial | `shell-smoke.spec.ts › app names`      | BL-212  |
-| SH-05 | `/mock/*` redirects                                               | drop    | `shell-smoke.spec.ts › no mock routes` | BL-212  |
-| SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop    | —                                      | BL-211  |
+| id    | item                                                              | status | test id                                | backlog |
+| ----- | ----------------------------------------------------------------- | ------ | -------------------------------------- | ------- |
+| SH-01 | Nav: Docket, Workflows, Inbox, Files, Library, Skills, Connectors | app    | `shell-smoke.spec.ts › nav`            | —       |
+| SH-02 | Runs nav item                                                     | drop   | `shell-smoke.spec.ts › no runs nav`    | BL-209  |
+| SH-03 | Settings entry in sidebar footer → panel                          | app    | `sidebar-settings.spec.ts › panel`     | BL-210  |
+| SH-04 | `AppShell` / `AppSidebar` / no mock test ids                      | app    | `shell-smoke.spec.ts › app names`      | —       |
+| SH-05 | `/mock/*` redirects                                               | drop   | `shell-smoke.spec.ts › no mock routes` | —       |
+| SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop   | —                                      | —       |
 
 ## Settings
 
-| id    | item                                  | status  | test id                                   | backlog |
-| ----- | ------------------------------------- | ------- | ----------------------------------------- | ------- |
-| ST-01 | Theme toggle (light / dark / system)  | app     | `sidebar-settings.spec.ts › theme`        | BL-210  |
-| ST-02 | Open as panel (not `/settings` route) | app     | `sidebar-settings.spec.ts › panel`        | BL-210  |
-| ST-03 | CLI status / trust                    | app     | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
-| ST-04 | Always-trust paths                    | app     | `sidebar-settings.spec.ts › always trust` | BL-210  |
-| ST-05 | MCP trust allow list                  | app     | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
-| ST-06 | `/settings` route                     | drop    | `sidebar-settings.spec.ts › no route`     | BL-210  |
+| id    | item                                  | status | test id                                   | backlog |
+| ----- | ------------------------------------- | ------ | ----------------------------------------- | ------- |
+| ST-01 | Theme toggle (light / dark / system)  | app    | `sidebar-settings.spec.ts › theme`        | BL-210  |
+| ST-02 | Open as panel (not `/settings` route) | app    | `sidebar-settings.spec.ts › panel`        | BL-210  |
+| ST-03 | CLI status / trust                    | app    | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
+| ST-04 | Always-trust paths                    | app    | `sidebar-settings.spec.ts › always trust` | BL-210  |
+| ST-05 | MCP trust allow list                  | app    | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
+| ST-06 | `/settings` route                     | drop   | `sidebar-settings.spec.ts › no route`     | BL-210  |
 
 ## Counts
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 59     |
-| partial   | 4      |
-| missing   | 18     |
+| app       | 75     |
+| partial   | 2      |
+| missing   | 4      |
 | drop      | 5      |
 | **total** | **86** |
 

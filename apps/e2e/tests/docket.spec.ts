@@ -162,7 +162,7 @@ test.describe("docket card panel assets (BL-199)", () => {
     await panel.getByTestId("item-open-menu").click()
     await page.getByTestId("item-view-files").click()
     await expect(page).toHaveURL(/\/files/)
-    await expect(page.getByTestId("mock-files-page")).toBeVisible()
+    await expect(page.getByTestId("files-page")).toBeVisible()
   })
 
   test("ref data", async ({ page }) => {
@@ -247,18 +247,30 @@ test.describe("docket card runs (BL-200)", () => {
       timeout: 15_000,
     })
 
-    // Rerun from the same sheet.
-    await page.getByTestId("runs-rerun").click()
+    // Rerun from the same sheet; wait for the new run id (async start).
     const sheet = page.getByTestId("runs-sheet")
-    await expect(sheet).toBeVisible()
+    const priorId = await sheet.getAttribute("data-run-id")
+    expect(priorId).toBeTruthy()
+    await page.getByTestId("runs-rerun").click()
+    await expect(sheet).not.toHaveAttribute("data-run-id", priorId!, {
+      timeout: 15_000,
+    })
     const rerunId = await sheet.getAttribute("data-run-id")
     expect(rerunId).toBeTruthy()
     await expect(panel.getByTestId(`card-run-row-${rerunId}`)).toBeVisible({
       timeout: 15_000,
     })
 
-    // Start a fast run and wait for Done so the list stays card-scoped.
-    // Prefer the sheet close control: Escape is flaky with nested Base UI sheets.
+    // Cancel the live sleep so later specs are not blocked, then close.
+    // Prefer the sheet Close control: Escape is flaky with nested Base UI sheets.
+    await page.getByTestId("runs-cancel").click()
+    await page
+      .getByTestId("confirm-dialog")
+      .getByRole("button", { name: "Cancel run" })
+      .click()
+    await expect(page.getByTestId("runs-rerun")).toBeVisible({
+      timeout: 15_000,
+    })
     await page
       .getByTestId("runs-sheet")
       .getByRole("button", { name: "Close" })
@@ -266,6 +278,8 @@ test.describe("docket card runs (BL-200)", () => {
     await expect(page.getByTestId("runs-sheet")).toHaveCount(0, {
       timeout: 5_000,
     })
+
+    // Start a fast run and wait for Done so the list stays card-scoped.
     await expect(panel.getByTestId("card-run-open")).toBeVisible()
     await panel.getByTestId("card-run-open").click()
     dialog = page.getByTestId("card-run-dialog")

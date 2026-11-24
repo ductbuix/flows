@@ -19,7 +19,7 @@ const crumbs = [{ label: "Runs" }] as const
 
 export function RunsLoading() {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-runs-page">
+    <Page crumbs={[...crumbs]} data-testid="runs-page">
       <PageTitle title="Runs" description="Loading runs…" />
       <div className="space-y-3" data-testid="runs-loading">
         <Skeleton className="h-8 w-64" />
@@ -31,7 +31,7 @@ export function RunsLoading() {
 
 export function RunsLoadError({ error }: { error: unknown }) {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-runs-page">
+    <Page crumbs={[...crumbs]} data-testid="runs-page">
       <PageTitle title="Runs" description="Could not load runs." />
       <Alert variant="destructive" data-testid="runs-error">
         <AlertTitle>Error</AlertTitle>

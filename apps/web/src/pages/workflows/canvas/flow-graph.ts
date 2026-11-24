@@ -41,12 +41,33 @@ function summaryOf(node: WorkflowNode): string | undefined {
 }
 
 function dataOf(node: WorkflowNode): CanvasNodeData {
+  const cli =
+    node.kind === "agent" || node.kind === "llm" || node.kind === "judge"
+      ? node.cli
+      : undefined
+  const model =
+    node.kind === "agent" || node.kind === "llm" || node.kind === "judge"
+      ? node.model
+      : undefined
+  const effort =
+    node.kind === "agent" || node.kind === "llm" || node.kind === "judge"
+      ? node.effort
+      : undefined
+  const connectors =
+    node.kind === "agent" || node.kind === "llm" ? node.connectors : undefined
+  const skills =
+    node.kind === "agent" || node.kind === "llm" ? node.skills : undefined
   return {
     kind: node.kind,
     name: node.name,
     summary: summaryOf(node),
     question: node.kind === "approval" ? node.question : undefined,
     title: node.kind === "output" ? node.title : undefined,
+    cli,
+    model,
+    effort,
+    connectors: connectors?.map(String),
+    skills: skills?.map(String),
   }
 }
 

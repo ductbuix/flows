@@ -60,7 +60,7 @@ function RunsPageInner() {
           Start run
         </Button>
       }
-      data-testid="mock-runs-page"
+      data-testid="runs-page"
     >
       <PageTitle
         title="Runs"

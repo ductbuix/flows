@@ -1,15 +1,15 @@
 import { expect, test } from "@playwright/test"
-import { startRun } from "./helpers"
+import { cancelLiveRuns, startRun } from "./helpers"
 
 const routes = [
   { path: "/docket", ready: "docket-page" },
-  { path: "/inbox", ready: "mock-inbox-page" },
-  { path: "/workflows", ready: "mock-workflows-page" },
-  { path: "/runs", ready: "mock-runs-page" },
-  { path: "/connectors", ready: "mock-connectors-page" },
-  { path: "/library", ready: "mock-library-page" },
-  { path: "/skills", ready: "mock-skills-page" },
-  { path: "/files", ready: "mock-files-page" },
+  { path: "/inbox", ready: "inbox-page" },
+  { path: "/workflows", ready: "workflows-page" },
+  { path: "/runs", ready: "runs-page" },
+  { path: "/connectors", ready: "connectors-page" },
+  { path: "/library", ready: "library-page" },
+  { path: "/skills", ready: "skills-page" },
+  { path: "/files", ready: "files-page" },
   { path: "/brand", ready: "brand-page" },
 ] as const
 
@@ -31,18 +31,35 @@ test.describe("shell smoke (BL-185)", () => {
   }
 
   test("inbox badge", async ({ page }) => {
+    // Free the approval workflow slot before sampling the badge baseline.
+    await cancelLiveRuns("node-approval-home")
     await page.goto("/docket")
     await expect(page.getByTestId("app-sidebar")).toBeVisible()
-    await expect(page.getByTestId("inbox-badge")).toBeVisible()
-    const before = (await page.getByTestId("inbox-badge").innerText()).trim()
-    const beforeCount = before === "" ? 0 : Number(before)
+    const badge = page.getByTestId("inbox-badge")
+    await expect(badge).toBeVisible()
+    // Other specs may leave connector items; only assert the count rises.
+    const before = Number((await badge.textContent())?.trim() || "0")
 
     await startRun("node-approval-home")
     await expect
-      .poll(async () => {
-        const t = (await page.getByTestId("inbox-badge").innerText()).trim()
-        return t === "" ? 0 : Number(t)
-      }, { timeout: 20_000 })
-      .toBeGreaterThan(beforeCount)
+      .poll(async () => Number((await badge.textContent())?.trim() || "0"), {
+        timeout: 20_000,
+      })
+      .toBeGreaterThan(before)
+  })
+
+  test("app names", async ({ page }) => {
+    await page.goto("/docket")
+    await expect(page.getByTestId("app-sidebar")).toBeVisible({
+      timeout: 30_000,
+    })
+    await expect(page.getByTestId("docket-page")).toBeVisible()
+    await expect(page.locator("[data-testid^='mock-']")).toHaveCount(0)
+  })
+
+  test("no mock routes", async ({ page }) => {
+    await page.goto("/mock/docket")
+    await expect(page.getByTestId("app-sidebar")).toHaveCount(0)
+    await expect(page.getByTestId("docket-page")).toHaveCount(0)
   })
 })

@@ -19,7 +19,7 @@ const crumbs = [{ label: "Inbox" }] as const
 
 export function InboxLoading() {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-inbox-page">
+    <Page crumbs={[...crumbs]} data-testid="inbox-page">
       <PageTitle title="Inbox" description="Loading inbox…" />
       <div
         className="flex max-w-2xl flex-col gap-3"
@@ -35,7 +35,7 @@ export function InboxLoading() {
 
 export function InboxLoadError({ error }: { error: unknown }) {
   return (
-    <Page crumbs={[...crumbs]} data-testid="mock-inbox-page">
+    <Page crumbs={[...crumbs]} data-testid="inbox-page">
       <PageTitle title="Inbox" description="Could not load the inbox." />
       <Alert variant="destructive" data-testid="inbox-error">
         <AlertTitle>Error</AlertTitle>

@@ -82,7 +82,7 @@ function ConnectorsPageInner({
           Add connector
         </Button>
       }
-      data-testid="mock-connectors-page"
+      data-testid="connectors-page"
     >
       <PageTitle
         title="Connectors"

@@ -96,15 +96,19 @@ export function createRunCommandBindings(
       if (state.status === "running" || state.status === "queued") {
         throw engineError("busy", "run is still live")
       }
-      const result = await startRunForFcp(engine, {
-        workflowId: state.workflowId,
-        values: params.values,
-        refreshPins: params.refreshPins,
-        only: params.only,
-        from: params.from,
-        baseRunId: params.baseRunId,
-        rerunOf: { runId: params.runId, workItemId: state.workItemId },
-      })
+      const result = await startRunForFcp(
+        engine,
+        {
+          workflowId: state.workflowId,
+          values: params.values,
+          refreshPins: params.refreshPins,
+          only: params.only,
+          from: params.from,
+          baseRunId: params.baseRunId,
+          rerunOf: { runId: params.runId, workItemId: state.workItemId },
+        },
+        coreRuns
+      )
       if (params.requestKey) {
         idempotency.set(params.requestKey, 200, result)
       }

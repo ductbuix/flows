@@ -349,6 +349,25 @@ export function createE2eHome(): string {
       viewport: { x: 0, y: 0, zoom: 0.75 },
     })
   )
+  // Isolated copy for WF-12 settings edits (other specs mutate diamond).
+  {
+    const id = "node-settings-e2e"
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, "echo settings"))
+    writeFileSync(
+      join(dir, "workflow.layout.json"),
+      JSON.stringify({
+        version: 1,
+        nodes: {
+          start: { x: 40, y: 80 },
+          build: { x: 420, y: 80 },
+          done: { x: 800, y: 80 },
+        },
+        viewport: { x: 0, y: 0, zoom: 0.75 },
+      })
+    )
+  }
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
@@ -853,7 +872,7 @@ edges:
     )
     writeFileSync(join(dir, "v1", "notes.md"), "# Notes\n")
   }
-  // Workspace skills for BL-183 e2e.
+  // Workspace skills for BL-183 / BL-206 e2e (installed at v1; source current is v2).
   for (const dir of [".agents", ".claude"] as const) {
     const skillDir = join(home, dir, "skills", "write-tests")
     mkdirSync(skillDir, { recursive: true })
@@ -892,5 +911,140 @@ edges:
       "",
     ].join("\n")
   )
+  // Skill source Library item (BL-206): v1/v2 with skills under skills/.
+  {
+    const id = "repo-team-skills"
+    const dir = join(home, "library", id)
+    mkdirSync(join(dir, "v1", "skills", "write-tests"), { recursive: true })
+    mkdirSync(join(dir, "v1", "skills", "review-pr"), { recursive: true })
+    mkdirSync(join(dir, "v2", "skills", "write-tests"), { recursive: true })
+    mkdirSync(join(dir, "v2", "skills", "review-pr"), { recursive: true })
+    writeFileSync(
+      join(dir, "item.yaml"),
+      [
+        `id: ${id}`,
+        "kind: repo",
+        "title: team/skills",
+        "source: github",
+        "remoteId: team/skills",
+        "remoteUrl: https://github.com/team/skills",
+        "tags:",
+        "  - repo:team/skills",
+        "current: 2",
+        "",
+      ].join("\n")
+    )
+    const skillMd = (
+      slug: string,
+      desc: string,
+      rules: string[],
+      tag: string
+    ) =>
+      [
+        "---",
+        `name: ${slug}`,
+        `description: ${desc}`,
+        "---",
+        "",
+        `# ${slug}`,
+        "",
+        ...rules.map((r) => `- ${r}`),
+        "",
+        `<!-- ${tag} -->`,
+        "",
+      ].join("\n")
+    writeFileSync(
+      join(dir, "v1", ".version.yaml"),
+      [
+        "n: 1",
+        "at: 2026-11-20T10:00:00.000Z",
+        "note: First fetch",
+        "contentHash: skills-v1",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v1", "skills", "write-tests", "SKILL.md"),
+      skillMd(
+        "write-tests",
+        "Write focused unit tests for a changed file.",
+        ["Read the diff first", "One behaviour per test"],
+        "v1"
+      )
+    )
+    writeFileSync(
+      join(dir, "v1", "skills", "review-pr", "SKILL.md"),
+      skillMd(
+        "review-pr",
+        "Review a pull request for correctness and risk.",
+        ["Start with the riskiest file"],
+        "v1"
+      )
+    )
+    writeFileSync(
+      join(dir, "v2", ".version.yaml"),
+      [
+        "n: 2",
+        "at: 2026-11-22T12:00:00.000Z",
+        "note: Second fetch",
+        "contentHash: skills-v2",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v2", "skills", "write-tests", "SKILL.md"),
+      skillMd(
+        "write-tests",
+        "Write focused unit tests for a changed file.",
+        ["Read the diff first", "One behaviour per test", "Cover the edge"],
+        "v2"
+      )
+    )
+    writeFileSync(
+      join(dir, "v2", "skills", "review-pr", "SKILL.md"),
+      skillMd(
+        "review-pr",
+        "Review a pull request for correctness and risk.",
+        ["Start with the riskiest file", "Separate must-fix from nits"],
+        "v2"
+      )
+    )
+  }
+  mkdirSync(join(home, "skills"), { recursive: true })
+  writeFileSync(
+    join(home, "skills", "sources.json"),
+    `${JSON.stringify({ sources: ["repo-team-skills"] }, null, 2)}\n`
+  )
+  // Workflow that references write-tests (SK-07 used-by).
+  {
+    const id = "skill-uses-write-tests"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "draft"), { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      [
+        `id: ${id}`,
+        "goal: e2e skill used-by",
+        "nodes:",
+        "  - id: start",
+        "    kind: trigger",
+        "    type: manual",
+        "  - id: draft",
+        "    kind: llm",
+        "    cli: claude",
+        "    name: Draft with tests skill",
+        "    skills:",
+        "      - write-tests",
+        "  - id: done",
+        "    kind: output",
+        "    target: folder",
+        "edges:",
+        "  - { from: start, to: draft }",
+        "  - { from: draft, to: done }",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "nodes", "draft", "prompt.md"), "Draft it.\n")
+  }
   return home
 }

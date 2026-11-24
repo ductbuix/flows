@@ -23,7 +23,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { FlowsClientGate } from "@/components/FlowsClientGate"
 import { Page, PageTitle } from "@/components/page"
 import { errorMessage } from "@/lib/fcp-error"
-import { FilesTree, folderPaths } from "@/pages/mock/FilesTree"
+import { FilesTree, folderPaths } from "@/components/FilesTree"
 import { FilePreview } from "./FilePreview"
 import { listAllFilePaths } from "./list-files"
 
@@ -73,11 +73,7 @@ function FilesPageInner() {
 
   if (loadError) {
     return (
-      <Page
-        fill
-        crumbs={[{ label: "Files" }]}
-        data-testid="mock-files-page"
-      >
+      <Page fill crumbs={[{ label: "Files" }]} data-testid="files-page">
         <PageTitle
           title="Files"
           description="Could not list workspace files."
@@ -92,11 +88,7 @@ function FilesPageInner() {
 
   if (allPaths === null) {
     return (
-      <Page
-        fill
-        crumbs={[{ label: "Files" }]}
-        data-testid="mock-files-page"
-      >
+      <Page fill crumbs={[{ label: "Files" }]} data-testid="files-page">
         <PageTitle title="Files" description="Loading workspace files…" />
         <div className="flex flex-col gap-3" data-testid="files-loading">
           <Skeleton className="h-10 w-full" />
@@ -107,11 +99,7 @@ function FilesPageInner() {
   }
 
   return (
-    <Page
-      fill
-      crumbs={[{ label: "Files" }]}
-      data-testid="mock-files-page"
-    >
+    <Page fill crumbs={[{ label: "Files" }]} data-testid="files-page">
       <PageTitle
         title="Files"
         description={`Workspace files under ~/${HOME_LABEL}.`}

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
-import { DiskPicker, type DiskPick } from "@/components/DiskPicker"
+import { DiskPickerBoth, type DiskPick } from "@/components/disk-picker"
 import { errorMessage } from "@/lib/fcp-error"
 import { uploadBlob } from "@/lib/upload-blob"
 
@@ -45,13 +45,13 @@ export function AddAssetDiskDialog({
   }
 
   async function submit() {
-    if (!pick || pick.files.length === 0) return
+    if (!pick || pick.entries.length === 0) return
     setBusy(true)
     setError(null)
     try {
       let hash = baseHash
       const scope = `docket/cards/${cardId}/assets`
-      for (const file of pick.files) {
+      for (const { file } of pick.entries) {
         const ref = await uploadBlob(client, {
           scope,
           name: file.name,
@@ -86,9 +86,9 @@ export function AddAssetDiskDialog({
             where they are.
           </DialogDescription>
         </DialogHeader>
-        <DiskPicker
+        <DiskPickerBoth
           value={pick}
-          onChange={setPick}
+          onPick={setPick}
           chosenNote="copied into the card assets folder"
           emptyHint="Nothing chosen. Files are copied into the card; the originals stay where they are."
         />

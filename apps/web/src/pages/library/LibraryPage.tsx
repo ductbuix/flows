@@ -128,7 +128,7 @@ function LibraryPageInner() {
           </Button>
         </div>
       }
-      data-testid="mock-library-page"
+      data-testid="library-page"
     >
       <PageTitle
         title="Library"

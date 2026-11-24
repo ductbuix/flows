@@ -73,10 +73,8 @@ test.describe("sidebar settings panel (BL-210)", () => {
 
   test("no route", async ({ page }) => {
     await page.goto("/settings")
-    await expect(page.getByTestId("docket-page")).toBeVisible({
-      timeout: 30_000,
-    })
-    await expect(page).toHaveURL(/\/docket/)
+    await expect(page.getByTestId("app-sidebar")).toHaveCount(0)
+    await expect(page.getByTestId("docket-page")).toHaveCount(0)
     await expect(page.getByTestId("settings-page")).toHaveCount(0)
     await expect(page.getByTestId("settings-panel")).toHaveCount(0)
   })

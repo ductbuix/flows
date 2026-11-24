@@ -19,7 +19,7 @@ const crumbs = [{ label: "Connectors" }] as const
 
 export function ConnectorsLoading() {
   return (
-    <Page fill crumbs={[...crumbs]} data-testid="mock-connectors-page">
+    <Page fill crumbs={[...crumbs]} data-testid="connectors-page">
       <PageTitle title="Connectors" description="Loading connectors…" />
       <div className="flex flex-col gap-3" data-testid="connectors-loading">
         <Skeleton className="h-10 w-48" />
@@ -31,7 +31,7 @@ export function ConnectorsLoading() {
 
 export function ConnectorsLoadError({ error }: { error: unknown }) {
   return (
-    <Page fill crumbs={[...crumbs]} data-testid="mock-connectors-page">
+    <Page fill crumbs={[...crumbs]} data-testid="connectors-page">
       <PageTitle title="Connectors" description="Could not load connectors." />
       <Alert variant="destructive" data-testid="connectors-error">
         <AlertTitle>Error</AlertTitle>

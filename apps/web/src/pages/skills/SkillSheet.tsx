@@ -1,12 +1,11 @@
 import { useState } from "react"
-import type { WireSkillSummary } from "@workspace/contracts"
+import type { LibItem, WireSkillSummary } from "@workspace/contracts"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@workspace/ui/components/alert"
-import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import {
   Sheet,
@@ -15,23 +14,27 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet"
-import { StatusPill } from "@/components/brand/StatusPill"
 import { mono } from "@/components/data/mono"
 import { errorMessage } from "@/lib/fcp-error"
 import { readers } from "./readers"
-import { uninstallSkill } from "./skill-actions"
-import type { SkillPick } from "./SkillsTable"
-import { statusOf } from "./status"
+import { installSkill, uninstallSkill, updateSkill } from "./skill-actions"
+import { SkillStatusCard, SkillUsedBy } from "./SkillSheetParts"
+import { useSkillUses } from "./skill-usage"
+import type { AvailableRow, SkillPick } from "./SkillsTable"
 
 export function SkillSheet({
   pick,
   skills,
+  items,
+  available,
   onClose,
   onConflict,
   onError,
 }: {
   pick: SkillPick | null
   skills: WireSkillSummary[]
+  items: LibItem[]
+  available: AvailableRow[]
   onClose: () => void
   onConflict: () => void
   onError: (message: string) => void
@@ -46,6 +49,8 @@ export function SkillSheet({
           <SkillSheetBody
             pick={pick}
             skills={skills}
+            items={items}
+            available={available}
             onClose={onClose}
             onConflict={onConflict}
             onError={onError}
@@ -59,40 +64,59 @@ export function SkillSheet({
 function SkillSheetBody({
   pick,
   skills,
+  items,
+  available,
   onClose,
   onConflict,
   onError,
 }: {
   pick: SkillPick
   skills: WireSkillSummary[]
+  items: LibItem[]
+  available: AvailableRow[]
   onClose: () => void
   onConflict: () => void
   onError: (message: string) => void
 }) {
   const client = useFlowsClient()
+  const uses = useSkillUses(pick.slug)
+  const installed = skills.find(
+    (s) =>
+      s.slug === pick.slug &&
+      (pick.scope ? s.scope === pick.scope : s.scope === "workspace")
+  )
+  const offer = pick.sourceId
+    ? available.find(
+        (a) => a.slug === pick.slug && a.sourceId === pick.sourceId
+      )
+    : available.find((a) => a.slug === pick.slug)
+  const sourceId = pick.sourceId ?? installed?.from?.sourceId
+  const item = items.find((i) => i.id === sourceId)
+  const scope = pick.scope ?? installed?.scope ?? "workspace"
   const detailQ = useQuery(
     "skill/get",
-    { slug: pick.slug, scope: pick.scope },
+    { slug: pick.slug, scope },
     { topics: ["skill"] }
   )
   const [busy, setBusy] = useState(false)
-  const installed = skills.find(
-    (s) => s.slug === pick.slug && s.scope === pick.scope
-  )
-  const detail = detailQ.data
+  const detail = installed ? detailQ.data : undefined
   const r = installed ? readers(installed, skills) : null
-  const st = installed ? statusOf(installed) : null
-  const body = detail?.body ?? ""
-  const description = detail?.description ?? installed?.description
+  const body = detail?.body ?? offer?.body ?? ""
+  const description =
+    detail?.description ?? installed?.description ?? offer?.description
+  const stale =
+    !!installed?.from && !!item && item.current > installed.from.version
 
-  async function onUninstall() {
-    if (!installed?.from) return
+  async function run(
+    action: () => Promise<"ok" | "conflict" | string>,
+    closeOnOk = false
+  ) {
     setBusy(true)
-    const result = await uninstallSkill(client, installed.slug)
+    const result = await action()
     setBusy(false)
     if (result === "conflict") onConflict()
     else if (result !== "ok") onError(result)
-    else onClose()
+    else if (closeOnOk) onClose()
   }
 
   return (
@@ -101,7 +125,38 @@ function SkillSheetBody({
         <SheetTitle>{pick.slug}</SheetTitle>
         <SheetDescription>{description || "No description"}</SheetDescription>
       </SheetHeader>
-      {detailQ.loading && !detail ? (
+      <SkillStatusCard
+        installed={installed}
+        item={item}
+        note={r?.note}
+        stale={stale}
+        busy={busy}
+        sourceLabel={item?.title ?? sourceId ?? ""}
+        version={item?.current}
+        showInstall={!installed}
+        onUpdate={() =>
+          void run(() =>
+            updateSkill(client, {
+              sourceId: installed!.from!.sourceId,
+              slug: installed!.slug,
+              version: item!.current,
+            })
+          )
+        }
+        onUninstall={() =>
+          void run(() => uninstallSkill(client, installed!.slug), true)
+        }
+        onInstall={() =>
+          void run(() =>
+            installSkill(client, {
+              sourceId: sourceId!,
+              slug: pick.slug,
+              version: item!.current,
+            })
+          )
+        }
+      />
+      {installed && detailQ.loading && !detail ? (
         <div
           className="flex flex-col gap-2 px-4"
           data-testid="skill-sheet-loading"
@@ -110,7 +165,7 @@ function SkillSheetBody({
           <Skeleton className="h-40 w-full" />
         </div>
       ) : null}
-      {detailQ.error && !detail ? (
+      {installed && detailQ.error && !detail ? (
         <Alert
           variant="destructive"
           className="mx-4"
@@ -120,35 +175,8 @@ function SkillSheetBody({
           <AlertDescription>{errorMessage(detailQ.error)}</AlertDescription>
         </Alert>
       ) : null}
-      {installed && st ? (
-        <div className="mx-4 flex flex-col gap-2 rounded-2xl bg-muted/50 p-3 ring-1 ring-foreground/10">
-          <div className="flex items-center gap-2">
-            <StatusPill tone={st.tone}>{st.label}</StatusPill>
-            <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
-              {installed.from
-                ? `From ${installed.from.sourceId} v${installed.from.version}`
-                : "Found on disk, never edited by the app"}
-            </span>
-            {installed.from ? (
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={() => void onUninstall()}
-                data-testid="skill-uninstall"
-              >
-                Uninstall
-              </Button>
-            ) : null}
-          </div>
-          <p className="text-xs text-muted-foreground">{r?.note}</p>
-          {installed.from ? (
-            <p className="text-xs text-muted-foreground">
-              This is a copy. Source updates change it only when you update.
-            </p>
-          ) : null}
-        </div>
-      ) : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+        <SkillUsedBy uses={uses} />
         <h3 className="pb-2 text-sm font-medium text-muted-foreground">
           SKILL.md
         </h3>
