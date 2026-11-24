@@ -15,7 +15,7 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { InboxNavBadge } from "@/components/InboxNavBadge"
-import { APP_NAV } from "./mock-data"
+import { APP_NAV } from "./nav"
 
 type Props = {
   onOpenSettings: () => void

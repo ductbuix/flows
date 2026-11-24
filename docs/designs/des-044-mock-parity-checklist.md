@@ -150,25 +150,25 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 
-| id    | item                                           | status  | test id                             | backlog |
-| ----- | ---------------------------------------------- | ------- | ----------------------------------- | ------- |
-| IB-01 | Empty state                                    | app     | `inbox.spec.ts › empty`             | —       |
-| IB-02 | Approval: approve / reject / note              | app     | `inbox.spec.ts › approval`          | —       |
-| IB-03 | Permission allow / deny                        | app     | `inbox.spec.ts › permission`        | —       |
-| IB-04 | Question answer / skip                         | app     | `inbox.spec.ts › question`          | —       |
-| IB-05 | Plan review accept / reject                    | app     | `inbox.spec.ts › plan review`       | —       |
-| IB-06 | Dismiss                                        | app     | `inbox.spec.ts › dismiss`           | —       |
-| IB-07 | Sidebar badge from live inbox (not mock store) | app     | `shell-smoke.spec.ts › inbox badge` | BL-208  |
+| id    | item                                           | status | test id                             | backlog |
+| ----- | ---------------------------------------------- | ------ | ----------------------------------- | ------- |
+| IB-01 | Empty state                                    | app    | `inbox.spec.ts › empty`             | —       |
+| IB-02 | Approval: approve / reject / note              | app    | `inbox.spec.ts › approval`          | —       |
+| IB-03 | Permission allow / deny                        | app    | `inbox.spec.ts › permission`        | —       |
+| IB-04 | Question answer / skip                         | app    | `inbox.spec.ts › question`          | —       |
+| IB-05 | Plan review accept / reject                    | app    | `inbox.spec.ts › plan review`       | —       |
+| IB-06 | Dismiss                                        | app    | `inbox.spec.ts › dismiss`           | —       |
+| IB-07 | Sidebar badge from live inbox (not mock store) | app    | `shell-smoke.spec.ts › inbox badge` | BL-208  |
 
 ## Files
 
-| id    | item                                        | status  | test id                       | backlog |
-| ----- | ------------------------------------------- | ------- | ----------------------------- | ------- |
-| FL-01 | Tree, search, expand/collapse, count        | app     | `files.spec.ts › tree`        | —       |
-| FL-02 | Preview, markdown, edit, save               | app     | `files.spec.ts › edit save`   | —       |
-| FL-03 | Reveal in Finder (`file/reveal` / host)     | app     | `files.spec.ts › reveal`      | BL-208  |
-| FL-04 | `file/stat` for preview metadata            | app     | `files.spec.ts › stat`        | BL-208  |
-| FL-05 | DiskPicker (shared; used by library/assets) | app     | `library.spec.ts › disk pick` | BL-205  |
+| id    | item                                        | status | test id                       | backlog |
+| ----- | ------------------------------------------- | ------ | ----------------------------- | ------- |
+| FL-01 | Tree, search, expand/collapse, count        | app    | `files.spec.ts › tree`        | —       |
+| FL-02 | Preview, markdown, edit, save               | app    | `files.spec.ts › edit save`   | —       |
+| FL-03 | Reveal in Finder (`file/reveal` / host)     | app    | `files.spec.ts › reveal`      | BL-208  |
+| FL-04 | `file/stat` for preview metadata            | app    | `files.spec.ts › stat`        | BL-208  |
+| FL-05 | DiskPicker (shared; used by library/assets) | app    | `library.spec.ts › disk pick` | BL-205  |
 
 ## Shell / sidebar
 
@@ -179,18 +179,18 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 | SH-03 | Settings entry in sidebar footer → panel                          | app     | `sidebar-settings.spec.ts › panel`     | BL-210  |
 | SH-04 | `MockShell` / `MockSidebar` / mock test ids                       | partial | `shell-smoke.spec.ts › app names`      | BL-212  |
 | SH-05 | `/mock/*` redirects                                               | drop    | `shell-smoke.spec.ts › no mock routes` | BL-212  |
-| SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop    | —                                      | BL-211  |
+| SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop    | —                                      | —       |
 
 ## Settings
 
-| id    | item                                  | status  | test id                                   | backlog |
-| ----- | ------------------------------------- | ------- | ----------------------------------------- | ------- |
-| ST-01 | Theme toggle (light / dark / system)  | app     | `sidebar-settings.spec.ts › theme`        | BL-210  |
-| ST-02 | Open as panel (not `/settings` route) | app     | `sidebar-settings.spec.ts › panel`        | BL-210  |
-| ST-03 | CLI status / trust                    | app     | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
-| ST-04 | Always-trust paths                    | app     | `sidebar-settings.spec.ts › always trust` | BL-210  |
-| ST-05 | MCP trust allow list                  | app     | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
-| ST-06 | `/settings` route                     | drop    | `sidebar-settings.spec.ts › no route`     | BL-210  |
+| id    | item                                  | status | test id                                   | backlog |
+| ----- | ------------------------------------- | ------ | ----------------------------------------- | ------- |
+| ST-01 | Theme toggle (light / dark / system)  | app    | `sidebar-settings.spec.ts › theme`        | BL-210  |
+| ST-02 | Open as panel (not `/settings` route) | app    | `sidebar-settings.spec.ts › panel`        | BL-210  |
+| ST-03 | CLI status / trust                    | app    | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
+| ST-04 | Always-trust paths                    | app    | `sidebar-settings.spec.ts › always trust` | BL-210  |
+| ST-05 | MCP trust allow list                  | app    | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
+| ST-06 | `/settings` route                     | drop   | `sidebar-settings.spec.ts › no route`     | BL-210  |
 
 ## Counts
 

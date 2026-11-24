@@ -1,7 +1,7 @@
 import type { FlowsClient } from "@workspace/sdk"
 import type { WorkflowSummary } from "@workspace/contracts"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
-import { NewWorkflowDialog } from "@/pages/mock/NewWorkflowDialog"
+import { NewWorkflowDialog } from "./NewWorkflowDialog"
 import {
   createWorkflow,
   deleteWorkflow,

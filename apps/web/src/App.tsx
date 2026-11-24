@@ -9,7 +9,7 @@ import { DocketPage } from "@/pages/docket/DocketPage"
 import { FilesPage } from "@/pages/files/FilesPage"
 import { InboxPage } from "@/pages/inbox/InboxPage"
 import { LibraryPage } from "@/pages/library/LibraryPage"
-import { MockShell } from "@/pages/mock/MockShell"
+import { MockShell } from "@/components/shell/MockShell"
 import { WorkflowEditorPage } from "@/pages/workflows/WorkflowEditorPage"
 import { WorkflowsPage } from "@/pages/workflows/WorkflowsPage"
 function MockWorkflowRedirect() {

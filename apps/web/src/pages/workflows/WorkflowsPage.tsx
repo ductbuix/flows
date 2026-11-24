@@ -35,7 +35,7 @@ import {
 import { FlowsClientGate } from "@/components/FlowsClientGate"
 import { Page, PageTitle } from "@/components/page"
 import { workflowLabel } from "@/lib/labels"
-import { WorkflowRowMenu } from "@/pages/mock/WorkflowRowMenu"
+import { WorkflowRowMenu } from "./WorkflowRowMenu"
 import { WorkflowDialogs } from "./WorkflowDialogs"
 import { WorkflowSheet } from "./WorkflowSheet"
 import { WorkflowsLoadError, WorkflowsLoading } from "./WorkflowsStates"
