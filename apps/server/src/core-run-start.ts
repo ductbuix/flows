@@ -79,7 +79,10 @@ export async function startCoreRun(
       ...(seed.length > 0 ? { seed } : {}),
     })
     .then(() => session.endIfTerminal(args.runId, actor))
-    .catch(() => session.endLive(args.runId))
+    .catch((err: unknown) => {
+      console.error(`run ${args.runId} failed`, err)
+      session.endLive(args.runId)
+    })
   return { runId: args.runId }
 }
 

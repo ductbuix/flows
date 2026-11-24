@@ -205,7 +205,21 @@ export class RunActor {
     } catch (err) {
       // Host abort (cancel): leave the step open; a queued cancel input settles.
       if (err instanceof DOMException && err.name === "AbortError") return
-      throw err
+      // A thrown node error must settle the step, not leave it running.
+      await this.handle({
+        kind: "effect_result",
+        at,
+        nodeId: fx.nodeId,
+        pass: fx.pass,
+        result: {
+          ok: false,
+          reason: "exit",
+          message: err instanceof Error ? err.message : String(err),
+        },
+      })
+      if (this.state?.status === "running") {
+        await this.drainSchedule(at)
+      }
     }
   }
 }

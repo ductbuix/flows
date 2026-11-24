@@ -59,7 +59,9 @@ export function createFcpHost(engine: Host): FcpHost {
       }),
   })
   // Core owns live runs; engine only keeps removals/trust/summary (BL-196).
-  void coreRuns.resumeAll()
+  void coreRuns.resumeAll().catch((err: unknown) => {
+    console.error("resume runs failed", err)
+  })
   engine.bootHousekeeping()
   const inbox = createInboxFcp(engine, bus, coreRuns)
   const library = createLibraryFcp(engine, bus)

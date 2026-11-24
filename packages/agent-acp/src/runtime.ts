@@ -127,10 +127,12 @@ export function createAcpRuntime(
         })
         return wrapSession(session, async () => {
           peer.close()
+          procCtl.abort()
           await profile.cleanup?.(spec.cwd)
         })
       } catch (err) {
         peer.close()
+        procCtl.abort()
         await profile.cleanup?.(spec.cwd)
         throw err
       }

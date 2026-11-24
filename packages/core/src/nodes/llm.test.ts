@@ -97,6 +97,13 @@ describe("llm kind (ACP)", () => {
 })
 
 describe("llmPromptText / llmContentBlocks", () => {
+  it("skips empty input files", () => {
+    const blocks = llmContentBlocks("P\n", [
+      { from: "t", path: "p", name: "text.md", text: "" },
+    ])
+    expect(blocks).toEqual([{ type: "text", text: "P\n" }])
+  })
+
   it("joins system and prompt", () => {
     expect(llmPromptText({ system: "S", prompt: "P\n" })).toBe("S\n\nP\n")
     expect(llmPromptText({ prompt: "P" })).toBe("P\n")

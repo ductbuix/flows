@@ -340,7 +340,10 @@ class AcpSession implements AgentSession {
 
     // Do not pass `signal`: ACP cancel is `session/cancel`, not `$/cancel_request`.
     const promptPromise = this.peer
-      .request("session/prompt", { sessionId: this.id, prompt: blocks })
+      .request("session/prompt", {
+        sessionId: this.id,
+        prompt: blocks.map(toAcpBlock),
+      })
       .then(
         (result) => {
           const reason = parseStopReason(result)
@@ -388,5 +391,18 @@ class AcpSession implements AgentSession {
       if (this.emitEvent === pushEvent) this.emitEvent = undefined
       unsub()
     }
+  }
+}
+
+/** Port blocks are flat; ACP embeds resources under `resource`. */
+export function toAcpBlock(block: ContentBlock): unknown {
+  if (block.type !== "resource") return block
+  return {
+    type: "resource",
+    resource: {
+      uri: block.uri,
+      text: block.text ?? "",
+      ...(block.mimeType ? { mimeType: block.mimeType } : {}),
+    },
   }
 }

@@ -114,7 +114,10 @@ export function createCoreRunHost(
     session.endIfTerminal(runId, entry.actor)
   }
   session.onActivated = (runId) => {
-    void activate(runId).catch(() => session.endLive(runId))
+    void activate(runId).catch((err: unknown) => {
+      console.error(`run ${runId} activate failed`, err)
+      session.endLive(runId)
+    })
   }
 
   const recordLocal = async (runId: string, workflowId: string) => {

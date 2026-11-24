@@ -13,6 +13,7 @@ import {
 import {
   ACP_CLIENT_CAPABILITIES,
   openAcpSession,
+  toAcpBlock,
   type OpenAcpSessionOptions,
 } from "./session.ts"
 
@@ -335,5 +336,25 @@ describe("openAcpSession", () => {
       peer.close()
       agent.close()
     }
+  })
+})
+
+describe("toAcpBlock", () => {
+  it("nests resource fields under resource", () => {
+    expect(
+      toAcpBlock({
+        type: "resource",
+        uri: "file://a",
+        mimeType: "text/plain",
+        text: "x",
+      })
+    ).toEqual({
+      type: "resource",
+      resource: { uri: "file://a", text: "x", mimeType: "text/plain" },
+    })
+    expect(toAcpBlock({ type: "text", text: "t" })).toEqual({
+      type: "text",
+      text: "t",
+    })
   })
 })
