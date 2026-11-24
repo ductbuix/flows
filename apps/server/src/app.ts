@@ -34,7 +34,7 @@ export function createApp({
   bindEngineToBus(engine, bus)
   const docket = createDocketFcp(engine, bus)
   const inbox = createInboxFcp(engine, bus)
-  const library = createLibraryFcp(engine)
+  const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
   const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const files = createFileFcp(engine)

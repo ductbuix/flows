@@ -38,8 +38,15 @@ import {
 } from "./inbox.ts"
 import { initializeMethod } from "./initialize.ts"
 import {
+  libraryGetMethod,
+  libraryListMethod,
   libraryListProvidersMethod,
+  libraryPinVersionMethod,
+  libraryPullMethod,
+  libraryRemoveMethod,
   librarySaveProviderMethod,
+  librarySetTagsMethod,
+  libraryUpdateNotification,
 } from "./library.ts"
 import { pingMethod } from "./ping.ts"
 import {
@@ -95,6 +102,12 @@ export const fcpMethodTable = {
   "connector/save": connectorSaveMethod,
   "connector/remove": connectorRemoveMethod,
   "connector/set_capability": connectorSetCapabilityMethod,
+  "library/list": libraryListMethod,
+  "library/get": libraryGetMethod,
+  "library/pull": libraryPullMethod,
+  "library/pin_version": libraryPinVersionMethod,
+  "library/set_tags": librarySetTagsMethod,
+  "library/remove": libraryRemoveMethod,
   "connector/check": connectorCheckMethod,
   "library/list_providers": libraryListProvidersMethod,
   "library/save_provider": librarySaveProviderMethod,
@@ -136,5 +149,6 @@ export const fcpNotificationTable = {
   "run/update": runUpdateNotification,
   "skill/update": skillUpdateNotification,
   "inbox/update": inboxUpdateNotification,
+  "library/update": libraryUpdateNotification,
   "connector/update": connectorUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>
