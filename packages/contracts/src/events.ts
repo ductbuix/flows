@@ -126,6 +126,28 @@ export const approvalRequestedEventSchema = z.object({
   question: z.string().optional(),
 })
 
+/** Agent permission ask parked in the Inbox (DES-041 / BL-146). */
+export const permissionRequestedEventSchema = z.object({
+  type: z.literal("permission_requested"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  tool: z.string().min(1),
+  /** Distinguishes multiple asks in one step pass. */
+  requestId: z.string().min(1),
+  question: z.string().optional(),
+})
+
+/** Person (or autoReject) chose an ACP permission option. */
+export const permissionAnsweredEventSchema = z.object({
+  type: z.literal("permission_answered"),
+  ...eventBase,
+  nodeId: z.string().min(1),
+  pass: z.number().int().positive(),
+  requestId: z.string().min(1),
+  optionId: z.enum(["allow-once", "allow-always", "reject-once"]),
+})
+
 export const cancelRequestedEventSchema = z.object({
   type: z.literal("cancel_requested"),
   ...eventBase,
@@ -286,6 +308,8 @@ export const engineEventSchema = z.discriminatedUnion("type", [
   attemptFinishedEventSchema,
   attemptInterruptedEventSchema,
   approvalRequestedEventSchema,
+  permissionRequestedEventSchema,
+  permissionAnsweredEventSchema,
   cancelRequestedEventSchema,
   runCancelledEventSchema,
   runSucceededEventSchema,

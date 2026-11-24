@@ -103,7 +103,30 @@ export function foldSteps(
       return withStep(state, nodeId, pass, seq, (s) => ({
         ...s,
         status: "waiting",
+        waitingKind: "approval",
         ...(event.question !== undefined ? { question: event.question } : {}),
+      }))
+    }
+    case "permission_requested": {
+      const cur = stepFor(state, event.nodeId, event.pass)
+      if (!cur || (cur.status !== "running" && cur.status !== "waiting")) {
+        return state
+      }
+      return withStep(state, event.nodeId, event.pass, seq, (s) => ({
+        ...s,
+        status: "waiting",
+        waitingKind: "permission",
+        ...(event.question !== undefined ? { question: event.question } : {}),
+      }))
+    }
+    case "permission_answered": {
+      const cur = stepFor(state, event.nodeId, event.pass)
+      if (!cur || cur.status !== "waiting") return state
+      return withStep(state, event.nodeId, event.pass, seq, (s) => ({
+        ...s,
+        status: "running",
+        waitingKind: undefined,
+        question: undefined,
       }))
     }
     case "step_approved": {
@@ -112,6 +135,7 @@ export function foldSteps(
       return withStep(state, event.nodeId, event.pass, seq, (s) => ({
         ...s,
         status: "running",
+        waitingKind: undefined,
         decision: "approved",
       }))
     }

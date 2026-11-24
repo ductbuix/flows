@@ -2,7 +2,7 @@
 id: BL-146
 title: Agent permission requests in the Inbox
 type: backlog
-status: todo
+status: done
 summary: When the chain says ask, session/request_permission becomes an Inbox permission item; the answer goes back as the chosen option.
 tags: [acp, inbox, permissions]
 related: [DES-041]
@@ -19,6 +19,6 @@ Rule 5: a person decides, and the step waits visibly.
 
 ## Done when
 
-- [ ] Step state `waiting` while the item is open; options map to `allow-once`, `allow-always`, `reject-once`.
-- [ ] Node `autoReject` timer rejects and resolves the item.
-- [ ] Fake agent test: ask, answer from `inbox/answer`, agent continues.
+- [x] Step state `waiting` while the item is open; options map to `allow-once`, `allow-always`, `reject-once`.
+- [x] Node `autoReject` timer rejects and resolves the item.
+- [x] Fake agent test: ask, answer from `inbox/answer`, agent continues.

@@ -53,6 +53,8 @@ export type StepState = {
   answer?: Record<string, unknown>
   failReason?: StepFailReason
   question?: string
+  /** Why the step is waiting (DES-041); drives recovery effects. */
+  waitingKind?: "approval" | "permission"
   decision?: "approved" | "rejected"
   current?: AttemptInfo
   reused?: boolean
@@ -152,6 +154,14 @@ export type DecideInput =
       nodeId: string
       pass: number
       decision: "approved" | "rejected"
+    }
+  | {
+      kind: "permission_answer"
+      at: string
+      nodeId: string
+      pass: number
+      requestId: string
+      optionId: "allow-once" | "allow-always" | "reject-once"
     }
   | { kind: "cancel"; at: string }
   | {

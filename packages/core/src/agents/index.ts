@@ -11,3 +11,13 @@ export {
   type PermissionRequest,
   type PermissionRule,
 } from "./permission-policy.ts"
+export {
+  createPermissionAskGate,
+  parseAutoRejectMs,
+  PermissionAskGate,
+  selectedPermissionResult,
+  toolFromPermissionParams,
+  type PermissionAskGateDeps,
+  type PermissionAskOpen,
+  type PermissionOptionId,
+} from "./permission-ask.ts"

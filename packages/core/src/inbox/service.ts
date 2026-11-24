@@ -1,5 +1,6 @@
 import {
   inboxApprovalOptionIdSchema,
+  inboxPermissionOptionIdSchema,
   type WireInboxItem,
 } from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
@@ -10,6 +11,7 @@ import {
   emptyInboxProjection,
   foldInboxStored,
   openInboxItems,
+  type InboxDecision,
   type InboxItem,
   type InboxProjectionState,
 } from "./projection.ts"
@@ -19,13 +21,17 @@ export type InboxAnswerPush = (input: {
   at: string
   nodeId: string
   pass: number
-  decision: "approved" | "rejected"
+  /** Approval or permission option id. */
+  optionId: InboxDecision
+  /** Set for permission items (DES-041). */
+  requestId?: string
+  kind: InboxItem["kind"]
 }) => Promise<void>
 
 export type InboxServiceDeps = {
   bus: UpdateBus
   clock: Clock
-  /** Route an approval answer to the owning run actor (DES-041). */
+  /** Route an answer to the owning run actor (DES-041). */
   pushAnswer: InboxAnswerPush
   /**
    * When set, `answer`/`dismiss` re-read the run log after the push and
@@ -108,45 +114,56 @@ export class InboxService {
   }
 
   async answer(itemId: string, optionId: string): Promise<void> {
-    const item = this.requireOpenApproval(itemId)
-    const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
+    const item = this.requireOpen(itemId)
+    if (item.kind === "approval") {
+      const parsed = inboxApprovalOptionIdSchema.safeParse(optionId)
+      if (!parsed.success) {
+        throw engineError(
+          "invalid_params",
+          `Unknown optionId for approval: ${optionId}`
+        )
+      }
+      await this.route(item, parsed.data)
+      return
+    }
+    const parsed = inboxPermissionOptionIdSchema.safeParse(optionId)
     if (!parsed.success) {
       throw engineError(
         "invalid_params",
-        `Unknown optionId for approval: ${optionId}`
+        `Unknown optionId for permission: ${optionId}`
       )
     }
-    await this.routeDecision(item, parsed.data)
+    await this.route(item, parsed.data)
   }
 
-  /** Approval dismiss rejects so the run does not stay parked. */
+  /** Dismiss rejects so the run does not stay parked. */
   async dismiss(itemId: string): Promise<void> {
-    const item = this.requireOpenApproval(itemId)
-    await this.routeDecision(item, "rejected")
+    const item = this.requireOpen(itemId)
+    if (item.kind === "approval") {
+      await this.route(item, "rejected")
+      return
+    }
+    await this.route(item, "reject-once")
   }
 
-  private requireOpenApproval(itemId: string): InboxItem {
+  private requireOpen(itemId: string): InboxItem {
     const item = this.state.items.get(itemId)
     if (!item || item.status !== "open") {
       throw engineError("not_found", `Inbox item not found: ${itemId}`)
     }
-    if (item.kind !== "approval") {
-      throw engineError("unsupported", `Unsupported inbox kind: ${item.kind}`)
-    }
     return item
   }
 
-  private async routeDecision(
-    item: InboxItem,
-    decision: "approved" | "rejected"
-  ): Promise<void> {
+  private async route(item: InboxItem, optionId: InboxDecision): Promise<void> {
     const at = new Date(this.deps.clock.now()).toISOString()
     await this.deps.pushAnswer({
       runId: item.runId,
       at,
       nodeId: item.nodeId,
       pass: item.pass,
-      decision,
+      kind: item.kind,
+      optionId,
+      ...(item.kind === "permission" ? { requestId: item.requestId } : {}),
     })
     this.syncRun(item.runId)
   }
