@@ -17,6 +17,10 @@ export const connectorAuthSchema = z.enum([
 ])
 export type ConnectorAuth = z.infer<typeof connectorAuthSchema>
 
+/** Live sign-in status after `connector/check` (DES-040 / BL-164). */
+export const connectorStatusSchema = z.enum(["connected", "expired", "off"])
+export type ConnectorStatus = z.infer<typeof connectorStatusSchema>
+
 /**
  * Which transports may use which sign-ins (Connectors mockup `AUTH_FOR`).
  */

@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { connectorFileIdSchema } from "../connector.ts"
 import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
@@ -44,12 +45,23 @@ export const inboxPermissionItemSchema = z.object({
   decision: inboxPermissionOptionIdSchema.optional(),
 })
 
+/** Expired connector sign-in (DES-041 / BL-164). No run; resolved by check. */
+export const inboxSignInItemSchema = z.object({
+  id: z.string().min(1),
+  kind: z.literal("sign_in"),
+  connectorId: connectorFileIdSchema,
+  question: z.string(),
+  at: z.string().min(1),
+  status: z.enum(["open", "resolved"]),
+})
+
 export const inboxItemSchema = z.discriminatedUnion("kind", [
   inboxApprovalItemSchema,
   inboxPermissionItemSchema,
+  inboxSignInItemSchema,
 ])
 
-export const inboxItemKindSchema = z.enum(["approval", "permission"])
+export const inboxItemKindSchema = z.enum(["approval", "permission", "sign_in"])
 
 export type WireInboxItem = z.infer<typeof inboxItemSchema>
 

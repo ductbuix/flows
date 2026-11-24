@@ -120,6 +120,7 @@ export {
 } from "./docket/write.ts"
 export {
   CONNECTORS_GLOB,
+  checkConnector,
   cliArgv,
   connectorIdFromPath,
   connectorPath,
@@ -135,11 +136,16 @@ export {
   setCapabilityAllowed,
   type ConnectorBindings,
   type ConnectorCallResult,
+  type ConnectorCheckDeps,
+  type ConnectorCheckOutcome,
   type ConnectorCheckResult,
   type ConnectorRecord,
   type ConnectorRuntimeDeps,
   type ConnectorServiceDeps,
+  type ConnectorStatusChange,
+  type ConnectorStatusInfo,
   type ConnectorTransportHandler,
+  type CreateConnectorBindingsOptions,
 } from "./connectors/index.ts"
 export {
   PROVIDERS_GLOB,
@@ -194,6 +200,7 @@ export {
 } from "./files/index.ts"
 export {
   approvalItemId,
+  applySignInStatus,
   createInboxBindings,
   createInboxService,
   emptyInboxProjection,
@@ -203,6 +210,7 @@ export {
   openInboxItems,
   permissionItemId,
   projectInbox,
+  signInItemId,
   type InboxAnswerPush,
   type InboxBindings,
   type InboxChange,
@@ -210,6 +218,7 @@ export {
   type InboxItem,
   type InboxProjectionState,
   type InboxServiceDeps,
+  type SignInStatusInput,
 } from "./inbox/index.ts"
 export { hashUtf8Text } from "./kernel/hash.ts"
 export { GATEWAY_CALL_METHOD, GATEWAY_TOKEN_ENV } from "./ports/index.ts"

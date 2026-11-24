@@ -2,7 +2,7 @@
 id: BL-164
 title: Connector check and expired sign-ins
 type: backlog
-status: todo
+status: done
 summary: connector/check updates status and posts an Inbox item when a sign-in has expired.
 tags: [connectors, inbox]
 related: [DES-041]
@@ -19,5 +19,5 @@ Expired sign-ins surface where a person acts.
 
 ## Done when
 
-- [ ] `connector/update status_changed`; `expired` adds a sign-in item, `connected` resolves it.
-- [ ] Service test on fakes.
+- [x] `connector/update status_changed`; `expired` adds a sign-in item, `connected` resolves it.
+- [x] Service test on fakes.

@@ -50,10 +50,7 @@ export function InboxItemCard({
           {item.question}
         </span>
         <span className="text-sm text-muted-foreground">
-          {item.workflowId ? `${item.workflowId} · ` : null}
-          <span className={mono}>{item.runId}</span>
-          {` · #${item.pass} · `}
-          <RelativeTime value={item.at} />
+          <InboxItemMeta item={item} />
         </span>
         {item.kind === "permission" ? (
           <Badge variant="outline" className="w-fit">
@@ -62,72 +59,19 @@ export function InboxItemCard({
         ) : null}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        {item.kind === "approval" ? (
-          <>
-            <Button
-              disabled={busy}
-              onClick={() => void answer("approved")}
-              data-testid={`inbox-approve-${item.id}`}
-            >
-              <Check />
-              Approve
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void answer("rejected")}
-              data-testid={`inbox-reject-${item.id}`}
-            >
-              <X />
-              Reject
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              disabled={busy}
-              onClick={() => void answer("allow-once")}
-              data-testid={`inbox-allow-once-${item.id}`}
-            >
-              <Check />
-              Allow once
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void answer("allow-always")}
-              data-testid={`inbox-allow-always-${item.id}`}
-            >
-              Always allow
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => void answer("reject-once")}
-              data-testid={`inbox-reject-${item.id}`}
-            >
-              <X />
-              Reject
-            </Button>
-          </>
-        )}
-        <Button
-          variant="ghost"
-          disabled={busy}
-          onClick={() => void dismiss()}
-          data-testid={`inbox-dismiss-${item.id}`}
-        >
-          Dismiss
-        </Button>
-        {item.workflowId ? (
+        <InboxItemActions
+          item={item}
+          busy={busy}
+          onAnswer={(id) => void answer(id)}
+          onDismiss={() => void dismiss()}
+        />
+        {item.kind !== "sign_in" && item.workflowId ? (
           <Button
             variant="ghost"
             className="ml-auto"
             nativeButton={false}
             render={
-              <Link
-                to={`/workflows/${item.workflowId}?run=${item.runId}`}
-              />
+              <Link to={`/workflows/${item.workflowId}?run=${item.runId}`} />
             }
           >
             Open run
@@ -135,5 +79,120 @@ export function InboxItemCard({
         ) : null}
       </div>
     </div>
+  )
+}
+
+function InboxItemMeta({ item }: { item: WireInboxItem }) {
+  if (item.kind === "sign_in") {
+    return (
+      <>
+        <span className={mono}>{item.connectorId}</span>
+        {" · "}
+        <RelativeTime value={item.at} />
+      </>
+    )
+  }
+  return (
+    <>
+      {item.workflowId ? `${item.workflowId} · ` : null}
+      <span className={mono}>{item.runId}</span>
+      {` · #${item.pass} · `}
+      <RelativeTime value={item.at} />
+    </>
+  )
+}
+
+function InboxItemActions({
+  item,
+  busy,
+  onAnswer,
+  onDismiss,
+}: {
+  item: WireInboxItem
+  busy: boolean
+  onAnswer: (optionId: string) => void
+  onDismiss: () => void
+}) {
+  if (item.kind === "sign_in") {
+    return (
+      <Button
+        variant="ghost"
+        disabled={busy}
+        onClick={onDismiss}
+        data-testid={`inbox-dismiss-${item.id}`}
+      >
+        Dismiss
+      </Button>
+    )
+  }
+
+  if (item.kind === "approval") {
+    return (
+      <>
+        <Button
+          disabled={busy}
+          onClick={() => onAnswer("approved")}
+          data-testid={`inbox-approve-${item.id}`}
+        >
+          <Check />
+          Approve
+        </Button>
+        <Button
+          variant="outline"
+          disabled={busy}
+          onClick={() => onAnswer("rejected")}
+          data-testid={`inbox-reject-${item.id}`}
+        >
+          <X />
+          Reject
+        </Button>
+        <Button
+          variant="ghost"
+          disabled={busy}
+          onClick={onDismiss}
+          data-testid={`inbox-dismiss-${item.id}`}
+        >
+          Dismiss
+        </Button>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Button
+        disabled={busy}
+        onClick={() => onAnswer("allow-once")}
+        data-testid={`inbox-allow-once-${item.id}`}
+      >
+        <Check />
+        Allow once
+      </Button>
+      <Button
+        variant="outline"
+        disabled={busy}
+        onClick={() => onAnswer("allow-always")}
+        data-testid={`inbox-allow-always-${item.id}`}
+      >
+        Always allow
+      </Button>
+      <Button
+        variant="outline"
+        disabled={busy}
+        onClick={() => onAnswer("reject-once")}
+        data-testid={`inbox-reject-${item.id}`}
+      >
+        <X />
+        Reject
+      </Button>
+      <Button
+        variant="ghost"
+        disabled={busy}
+        onClick={onDismiss}
+        data-testid={`inbox-dismiss-${item.id}`}
+      >
+        Dismiss
+      </Button>
+    </>
   )
 }

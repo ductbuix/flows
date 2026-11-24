@@ -2,9 +2,10 @@ import { z } from "zod"
 import {
   connectorFileIdSchema,
   connectorSchema,
+  connectorStatusSchema,
   connectorSummarySchema,
 } from "../connector.ts"
-import { defineMethod } from "./define.ts"
+import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
 
@@ -89,4 +90,35 @@ export const connectorSetCapabilityMethod = defineMethod({
   params: connectorSetCapabilityParamsSchema,
   result: connectorSetCapabilityResultSchema,
   kind: "command",
+})
+
+export const connectorCheckParamsSchema = z.object({
+  id: connectorFileIdSchema,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const connectorCheckResultSchema = z.object({
+  status: connectorStatusSchema,
+  detail: z.string().min(1).optional(),
+})
+
+export const connectorCheckMethod = defineMethod({
+  name: "connector/check",
+  params: connectorCheckParamsSchema,
+  result: connectorCheckResultSchema,
+  kind: "command",
+})
+
+export const connectorUpdateNotification = defineNotification({
+  name: "connector/update",
+  params: z.discriminatedUnion("kind", [
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("status_changed"),
+      connectorId: connectorFileIdSchema,
+      status: connectorStatusSchema,
+      detail: z.string().min(1).optional(),
+      checkedAt: z.string().min(1),
+    }),
+  ]),
 })

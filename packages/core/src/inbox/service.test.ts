@@ -177,7 +177,8 @@ describe("inbox service + run actor", () => {
 
     const rebuilt = projectInbox(events.read("r1"))
     expect(openInboxItems(rebuilt)).toEqual([])
-    expect(rebuilt.items.get(itemId)?.decision).toBe("approved")
+    const resolved = rebuilt.items.get(itemId)
+    expect(resolved?.kind === "approval" && resolved.decision).toBe("approved")
 
     subDispose.dispose()
   })

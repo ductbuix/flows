@@ -1,10 +1,12 @@
 import type { FcpMethodDef, FcpNotificationDef } from "./define.ts"
 import {
+  connectorCheckMethod,
   connectorGetMethod,
   connectorListMethod,
   connectorRemoveMethod,
   connectorSaveMethod,
   connectorSetCapabilityMethod,
+  connectorUpdateNotification,
 } from "./connector.ts"
 import {
   docketCreateCardMethod,
@@ -93,6 +95,7 @@ export const fcpMethodTable = {
   "connector/save": connectorSaveMethod,
   "connector/remove": connectorRemoveMethod,
   "connector/set_capability": connectorSetCapabilityMethod,
+  "connector/check": connectorCheckMethod,
   "library/list_providers": libraryListProvidersMethod,
   "library/save_provider": librarySaveProviderMethod,
   "workflow/list": workflowListMethod,
@@ -133,4 +136,5 @@ export const fcpNotificationTable = {
   "run/update": runUpdateNotification,
   "skill/update": skillUpdateNotification,
   "inbox/update": inboxUpdateNotification,
+  "connector/update": connectorUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>
