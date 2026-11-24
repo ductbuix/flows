@@ -12,6 +12,7 @@ import {
   scheduleCancelKill,
   type PendingPermission,
 } from "./cancel.ts"
+import { attachFsHandlers } from "./fs.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
 
 /** Client capabilities advertised on `initialize` (DES-041). */
@@ -22,6 +23,11 @@ export const ACP_CLIENT_CAPABILITIES = {
 
 export type OpenAcpSessionOptions = {
   cwd: string
+  /**
+   * Absolute roots for `fs/*` (default: `[cwd]`). Paths outside these
+   * roots are rejected (DES-041 path policy).
+   */
+  allowedRoots?: readonly string[]
   mcpServers?: readonly unknown[]
   logger?: Logger
   signal?: AbortSignal
@@ -103,6 +109,7 @@ class AcpSession implements AgentSession {
   private readonly kill?: () => void
   private readonly logger?: Logger
   private unsubPermission?: () => void
+  private unsubFs?: () => void
 
   constructor(
     private readonly peer: RpcPeer,
@@ -116,6 +123,10 @@ class AcpSession implements AgentSession {
       "session/request_permission",
       (params) => this.onPermission(params)
     )
+    this.unsubFs = attachFsHandlers(peer, {
+      sessionId: id,
+      allowedRoots: options.allowedRoots ?? [options.cwd],
+    })
   }
 
   prompt(
@@ -134,6 +145,8 @@ class AcpSession implements AgentSession {
     cancelPendingPermissions(this.pendingPermissions)
     this.unsubPermission?.()
     this.unsubPermission = undefined
+    this.unsubFs?.()
+    this.unsubFs = undefined
     this.peer.close()
   }
 
