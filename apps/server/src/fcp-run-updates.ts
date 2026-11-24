@@ -1,10 +1,7 @@
 import type { EventBus, UpdateBus } from "@workspace/core"
-import {
-  stepTaskStatus,
-  type Engine,
-  type StoredEvent,
-} from "@workspace/engine"
-import type { RunStep, RunSummary } from "@workspace/contracts"
+import type { Host, StoredEvent } from "@workspace/adapters-node"
+import type { RunSummary } from "@workspace/contracts"
+import { stepOfNode } from "./run-steps.ts"
 
 const STEP_EVENT_TYPES = new Set([
   "step_started",
@@ -30,7 +27,7 @@ const FINISHED_EVENT_TYPES = new Set([
 
 /** Publishes FCP run/update kinds besides run_changed (BL-176). */
 export function publishRunFcpUpdates(
-  engine: Engine,
+  engine: Host,
   bus: UpdateBus,
   events: EventBus,
   stored: StoredEvent,
@@ -47,7 +44,7 @@ export function publishRunFcpUpdates(
           ? event.taskId
           : undefined
     if (nodeId) {
-      const step = stepSnapshot(engine, runId, nodeId)
+      const step = stepOfNode(engine, runId, nodeId)
       if (step) {
         bus.publish("run/update", { kind: "step_state", runId, step })
       }
@@ -71,37 +68,10 @@ export function publishRunFcpUpdates(
         runId,
         workflowId: summary.workflowId,
         status,
-        ...(summary.workItemId !== undefined
-          ? { cardId: summary.workItemId }
+        ...(summary.cardId !== undefined
+          ? { cardId: summary.cardId }
           : {}),
       })
     }
-  }
-}
-
-function stepSnapshot(
-  engine: Engine,
-  runId: string,
-  nodeId: string
-): RunStep | null {
-  const state = engine.fold(runId)
-  if (!state || state.deleted) return null
-  const node = state.graph.nodes.find((n) => n.id === nodeId)
-  const step = state.steps.steps[nodeId]?.at(-1)
-  if (!node || !step) return null
-  return {
-    nodeId,
-    kind: node.kind,
-    pass: step.pass,
-    attempts: step.attempts,
-    status: stepTaskStatus(step.status),
-    ...(step.branch ? { branch: step.branch } : {}),
-    ...(step.failReason ? { failReason: step.failReason } : {}),
-    ...(step.question !== undefined ? { question: step.question } : {}),
-    ...(step.decision ? { decision: step.decision } : {}),
-    ...(step.answer ? { answer: step.answer } : {}),
-    ...(step.reused ? { reused: true as const } : {}),
-    ...(step.current?.startedAt ? { startedAt: step.current.startedAt } : {}),
-    ...(step.current?.endedAt ? { endedAt: step.current.endedAt } : {}),
   }
 }

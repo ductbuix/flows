@@ -2,7 +2,7 @@
 id: BL-207
 title: "Connector sign-in, check and update"
 type: backlog
-status: todo
+status: done
 summary: Connector sheet can sign in, check status and update settings.
 tags: [web, connectors, desktop]
 related: [DES-043]
@@ -19,6 +19,6 @@ Call `connector/sign_in`, `connector/check` and `connector/update`. In the deskt
 
 ## Done when
 
-- [ ] Sign in and check from the sheet.
-- [ ] An expired sign-in shows an attention pill.
-- [ ] e2e covers check and update.
+- [x] Sign in and check from the sheet.
+- [x] An expired sign-in shows an attention pill.
+- [x] e2e covers check and update.

@@ -4,7 +4,7 @@ import {
   workflowGetMethod,
   workflowListMethod,
 } from "@workspace/contracts"
-import { createEngine } from "@workspace/engine"
+import { createHost } from "@workspace/adapters-node"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { createServer } from "node:net"
 import { mkdtempSync, rmSync } from "node:fs"
@@ -20,7 +20,7 @@ type Harness = {
   home: string
   port: number
   token: string
-  engine: ReturnType<typeof createEngine>
+  engine: ReturnType<typeof createHost>
   close: () => Promise<void>
 }
 
@@ -53,7 +53,7 @@ async function startHarness(): Promise<Harness> {
   homes.push(home)
   const token = "workflow-fcp-token"
   const port = await freePort()
-  const engine = createEngine({ home })
+  const engine = createHost({ home })
   const app = createApp({ engine, fcpToken: token, port })
 
   const server = serve({
@@ -138,6 +138,7 @@ describe("workflow/list and workflow/get over /fcp", () => {
     )
     expect(got.id).toBe("alpha")
     expect(got.workflow?.nodes?.some((n) => n.kind === "trigger")).toBe(true)
+    expect(got.layout).toEqual({ version: 1, nodes: {} })
 
     socket.close()
   })

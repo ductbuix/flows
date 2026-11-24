@@ -2,7 +2,7 @@
 id: BL-203
 title: "Workflow sheet: runs, inputs, rename and run"
 type: backlog
-status: todo
+status: done
 summary: The workflow sheet shows inputs, rename, cards that point to it and its runs; the canvas has a Run button.
 tags: [web, workflows, runs]
 related: [DES-043]
@@ -19,6 +19,6 @@ Use `workflow/rename`, `workflow/save` for inputs, and `run/list`. Add run histo
 
 ## Done when
 
-- [ ] Rename and edit inputs from the sheet.
-- [ ] Run from the canvas and watch node status live.
-- [ ] A failed node offers Retry.
+- [x] Rename and edit inputs from the sheet.
+- [x] Run from the canvas and watch node status live.
+- [x] A failed node offers Retry.

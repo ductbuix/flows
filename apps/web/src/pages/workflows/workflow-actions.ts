@@ -1,4 +1,8 @@
-import { setWorkflowField, type WorkflowSummary } from "@workspace/contracts"
+import {
+  setWorkflowField,
+  type LayoutFile,
+  type WorkflowSummary,
+} from "@workspace/contracts"
 import type { FlowsClient } from "@workspace/sdk"
 import { errorMessage, isConflictError } from "@/lib/fcp-error"
 
@@ -82,6 +86,19 @@ export async function saveWorkflowYaml(
     return { ok: true, hash: detail.hash }
   } catch (err) {
     if (isConflictError(err)) return "conflict"
+    return errorMessage(err)
+  }
+}
+
+export async function saveWorkflowLayout(
+  client: FlowsClient,
+  id: string,
+  layout: LayoutFile
+): Promise<{ ok: true; layout: LayoutFile } | string> {
+  try {
+    const written = await client.call("workflow/save_layout", { id, layout })
+    return { ok: true, layout: written }
+  } catch (err) {
     return errorMessage(err)
   }
 }

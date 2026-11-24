@@ -1,6 +1,6 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
 import { z } from "zod"
-import { connectionIdSchema } from "./connection.ts"
+import { connectionIdSchema } from "./ids.ts"
 
 /** Connector file id: same slug rule as connections (DES-041 / mockup). */
 export const connectorFileIdSchema = connectionIdSchema
@@ -93,11 +93,17 @@ export const connectorSummarySchema = z.object({
   how: z.string().min(1),
   auth: connectorAuthSchema,
   providerId: z.string().min(1).optional(),
+  /** Live check result; omitted / default `off` until first check. */
+  status: connectorStatusSchema.default("off"),
+  checkedAt: z.string().min(1).optional(),
 })
 
 export type ConnectorSummary = z.infer<typeof connectorSummarySchema>
 
-export function toConnectorSummary(c: ConnectorFile): ConnectorSummary {
+export function toConnectorSummary(
+  c: ConnectorFile,
+  status?: { status: ConnectorStatus; checkedAt: string }
+): ConnectorSummary {
   return {
     id: c.id,
     name: c.name,
@@ -105,6 +111,8 @@ export function toConnectorSummary(c: ConnectorFile): ConnectorSummary {
     how: c.how,
     auth: c.auth,
     ...(c.providerId !== undefined ? { providerId: c.providerId } : {}),
+    status: status?.status ?? "off",
+    ...(status?.checkedAt !== undefined ? { checkedAt: status.checkedAt } : {}),
   }
 }
 

@@ -1,4 +1,4 @@
-import { createEngine } from "@workspace/engine"
+import { createHost } from "@workspace/adapters-node"
 import { createClient } from "@workspace/sdk"
 import { ndjsonTransport } from "@workspace/protocol/node"
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
@@ -32,7 +32,7 @@ edges:
 `
     )
 
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const host = createFcpHost(engine)
     const toHost = new PassThrough()
     const fromHost = new PassThrough()

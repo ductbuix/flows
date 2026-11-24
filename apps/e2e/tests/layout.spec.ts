@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test"
 
-// Layout check (DES-030): every root shell route, light and dark, 1440x900.
+// Layout check (DES-030 / BL-216): mock screens, light and dark, 1440x900.
 test.use({ viewport: { width: 1440, height: 900 } })
 
 const CONTENT = '[class~="@container/main"]'
@@ -13,8 +13,12 @@ type Route = {
   name: string
   path: string
   ready: string
+  /** Open sheet/panel chrome before metrics + screenshot. */
+  prepare?: (page: Page) => Promise<void>
   /** Content that varies with other specs: masked / clipped in baselines. */
   dynamic?: boolean
+  /** Override dynamic clip height (default 160). Keep above the variable list. */
+  clipHeight?: number
 }
 
 const themes = ["light", "dark"] as const
@@ -69,8 +73,18 @@ async function expectLayout(page: Page, route: Route) {
 }
 
 const routes: Route[] = [
-  { name: "docket", path: "/docket", ready: "docket-page", dynamic: true },
-  { name: "inbox", path: "/inbox", ready: "mock-inbox-page", dynamic: true },
+  {
+    name: "docket",
+    path: "/docket",
+    ready: "docket-page",
+    dynamic: true,
+    clipHeight: 220,
+    prepare: async (page) => {
+      await page.getByTestId("docket-card-fix-login").click()
+      await expect(page.getByTestId("docket-panel")).toBeVisible()
+    },
+  },
+  { name: "inbox", path: "/inbox", ready: "inbox-page", dynamic: true },
   {
     name: "workflows",
     path: "/workflows",
@@ -80,43 +94,84 @@ const routes: Route[] = [
   {
     name: "workflow-editor",
     path: "/workflows/diamond",
-    ready: "workflow-editor-yaml",
+    ready: "workflow-editor-tab-canvas",
     dynamic: true,
+    clipHeight: 220,
+    prepare: async (page) => {
+      await expect(page.getByTestId("workflow-canvas")).toBeVisible()
+      await page.getByTestId("workflow-canvas-fit").click()
+    },
   },
-  { name: "runs", path: "/runs", ready: "runs-start-open", dynamic: true },
   {
     name: "connectors",
     path: "/connectors",
     ready: "connector-add-open",
     dynamic: true,
+    clipHeight: 220,
+    prepare: async (page) => {
+      await page.getByTestId("connector-row-github-cli").click()
+      await expect(page.getByTestId("connector-sheet")).toBeVisible()
+    },
   },
   {
     name: "library",
     path: "/library",
     ready: "library-search",
     dynamic: true,
+    clipHeight: 220,
+    prepare: async (page) => {
+      // Name cell only — tag badges in the row steal the click and filter.
+      await page
+        .getByTestId("library-row-github-acme-demo")
+        .locator(".font-medium")
+        .first()
+        .click()
+      await expect(page.getByTestId("library-sheet")).toBeVisible()
+    },
   },
   {
     name: "skills",
     path: "/skills",
     ready: "skills-installed",
     dynamic: true,
+    clipHeight: 220,
+    prepare: async (page) => {
+      await page.getByTestId("skills-tab-available").click()
+      await expect(page.getByTestId("skills-tab-available")).toHaveAttribute(
+        "aria-selected",
+        "true"
+      )
+      await page.getByTestId("skills-tab-installed").click()
+    },
   },
   { name: "files", path: "/files", ready: "files-tree", dynamic: true },
-  { name: "settings", path: "/settings", ready: "theme-toggle" },
+  {
+    name: "settings",
+    path: "/docket",
+    ready: "settings-panel",
+    dynamic: true,
+    clipHeight: 280,
+    prepare: async (page) => {
+      await expect(page.getByTestId("docket-page")).toBeVisible()
+      await page.getByTestId("settings-open").click()
+      await expect(page.getByTestId("settings-panel")).toBeVisible()
+    },
+  },
 ]
 
-test.describe("layout check (BL-061 / BL-185)", () => {
+test.describe("layout check (BL-061 / BL-216)", () => {
   for (const theme of themes) {
     for (const route of routes) {
       test(`${route.name} (${theme})`, async ({ page }) => {
         await setTheme(page, theme)
         await page.goto(route.path)
+        if (route.prepare) await route.prepare(page)
         await expect(page.getByTestId(route.ready).first()).toBeVisible({
           timeout: 30_000,
         })
         await expect(page.locator("html")).toHaveClass(new RegExp(theme))
-        await expectLayout(page, route)
+        // Settings is a side panel over docket; skip main-column edge rules.
+        if (route.name !== "settings") await expectLayout(page, route)
 
         const mask = [
           page.locator("time"),
@@ -130,7 +185,7 @@ test.describe("layout check (BL-061 / BL-185)", () => {
             x: 256,
             y: 48,
             width: 1184,
-            height: route.dynamic ? 160 : 852,
+            height: route.dynamic ? (route.clipHeight ?? 160) : 852,
           },
         })
       })

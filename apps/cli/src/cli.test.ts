@@ -1,8 +1,12 @@
-import { acquireLock, peekLock, releaseLock } from "@workspace/adapters-node"
-import { createEngine, createWorkItem } from "@workspace/engine"
+import {
+  acquireLock,
+  createHost,
+  peekLock,
+  releaseLock,
+} from "@workspace/adapters-node"
 import { serve } from "@hono/node-server"
 import { createApp } from "server/app"
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { createServer } from "node:net"
 import type { AddressInfo } from "node:net"
 import { tmpdir } from "node:os"
@@ -84,8 +88,7 @@ async function startLockedDaemon(home: string): Promise<{
 }> {
   const token = "cli-attach-token"
   const port = await freePort()
-  const engine = createEngine({ home })
-  engine.resumeAll()
+  const engine = createHost({ home })
   const app = createApp({ engine, fcpToken: token, port })
   const lock = acquireLock(home, {
     url: `ws://127.0.0.1:${port}/fcp`,
@@ -143,11 +146,23 @@ describe("flows CLI", () => {
     const home = tempHome()
     writeDemoWorkflow(home)
     expect(peekLock(home)).toBeNull()
-    const { item } = createWorkItem(home, { title: "Card one" })
+    const cardId = "card-one"
+    mkdirSync(join(home, "docket", "cards", cardId), { recursive: true })
+    writeFileSync(
+      join(home, "docket", "cards", cardId, "card.md"),
+      [
+        "---",
+        `id: ${cardId}`,
+        "title: Card one",
+        "column: todo",
+        "---",
+        "",
+      ].join("\n")
+    )
     const code = await runWorkflow({
       home,
       workflowId: "demo",
-      cardId: item.id,
+      cardId,
     })
     expect(code).toBe(0)
     expect(peekLock(home)).toBeNull()

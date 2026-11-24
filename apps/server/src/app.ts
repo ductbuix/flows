@@ -1,5 +1,5 @@
-import type { Engine } from "@workspace/engine"
-import { type Health } from "@workspace/shared"
+import type { Host } from "@workspace/adapters-node"
+import { type Health } from "@workspace/contracts"
 import { Hono } from "hono"
 import { blobRoutes } from "./blob-routes.ts"
 import { createFcpHost } from "./fcp-host.ts"
@@ -10,7 +10,7 @@ import {
 } from "./fcp-routes.ts"
 
 export type CreateAppOptions = {
-  engine: Engine
+  engine: Host
   /** Per-launch lock token; defaults for API-only tests. */
   fcpToken?: string
   /** Daemon listen port; used for FCP Host/Origin allowlists. */

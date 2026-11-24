@@ -2,7 +2,7 @@
 id: BL-205
 title: "Library: add dialog, tags and views"
 type: backlog
-status: todo
+status: done
 summary: Add from a link or a file, tag items and switch views, as in the mock.
 tags: [web, library, tags]
 related: [DES-043]
@@ -19,6 +19,6 @@ Rebuild `AddLibraryDialog`, `ProviderDetect`, `LibraryTags`, `LibraryViews`, `Li
 
 ## Done when
 
-- [ ] Add by link detects the provider.
-- [ ] Tags filter the list.
-- [ ] e2e covers add and tag.
+- [x] Add by link detects the provider.
+- [x] Tags filter the list.
+- [x] e2e covers add and tag.

@@ -330,6 +330,44 @@ export function createE2eHome(): string {
     join(diamond, "workflow.yaml"),
     nodeRunYaml("diamond", "echo diamond")
   )
+  // Long-lived run so card cancel e2e can hit Cancel while live (BL-200).
+  const cardSlow = join(home, "workflows", "card-slow")
+  mkdirSync(cardSlow, { recursive: true })
+  writeFileSync(
+    join(cardSlow, "workflow.yaml"),
+    nodeRunYaml("card-slow", "sleep 60")
+  )
+  writeFileSync(
+    join(diamond, "workflow.layout.json"),
+    JSON.stringify({
+      version: 1,
+      nodes: {
+        start: { x: 40, y: 80 },
+        build: { x: 420, y: 80 },
+        done: { x: 800, y: 80 },
+      },
+      viewport: { x: 0, y: 0, zoom: 0.75 },
+    })
+  )
+  // Isolated copy for WF-12 settings edits (other specs mutate diamond).
+  {
+    const id = "node-settings-e2e"
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, "echo settings"))
+    writeFileSync(
+      join(dir, "workflow.layout.json"),
+      JSON.stringify({
+        version: 1,
+        nodes: {
+          start: { x: 40, y: 80 },
+          build: { x: 420, y: 80 },
+          done: { x: 800, y: 80 },
+        },
+        viewport: { x: 0, y: 0, zoom: 0.75 },
+      })
+    )
+  }
   const dir = join(home, "workflows", "node-canvas")
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, "workflow.yaml"), nodeCanvasYaml)
@@ -359,14 +397,18 @@ export function createE2eHome(): string {
   }
   // Node run workflows for node-run.spec.ts (BL-086); each test owns one.
   for (const theme of ["light", "dark"]) {
-    for (const [id, run] of [
-      [`node-run-ok-${theme}`, "echo built"],
-      [`node-run-fail-${theme}`, "echo broken >&2; exit 1"],
-    ] as const) {
-      const dir = join(home, "workflows", id)
-      mkdirSync(dir, { recursive: true })
-      writeFileSync(join(dir, "workflow.yaml"), nodeRunYaml(id, run))
-    }
+    const okId = `node-run-ok-${theme}`
+    const okDir = join(home, "workflows", okId)
+    mkdirSync(okDir, { recursive: true })
+    writeFileSync(join(okDir, "workflow.yaml"), nodeRunYaml(okId, "echo built"))
+    const id = `node-run-fail-${theme}`
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    // Pure command fail on core (no LLM); Retry on the failed build node.
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      nodeRunYaml(id, "echo broken >&2; exit 1")
+    )
   }
   // Out-file preview for node-out-preview.spec.ts.
   {
@@ -568,6 +610,77 @@ export function createE2eHome(): string {
       "Write one line about the weather.\n"
     )
   }
+  // Core ACP agent with a permission ask (BL-195); fake agent sees ASK_PERMISSION.
+  {
+    const id = "agent-acp-ask"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "work"), { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      `id: ${id}
+goal: e2e agent permission ask on core
+nodes:
+  - { id: start, kind: trigger, type: manual }
+  - { id: work, kind: agent, cli: cursor }
+edges:
+  - { from: start, to: work }
+`
+    )
+    writeFileSync(
+      join(dir, "nodes", "work", "prompt.md"),
+      "ASK_PERMISSION then finish.\n"
+    )
+  }
+  {
+    const id = "agent-acp-question"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "work"), { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      `id: ${id}
+goal: e2e agent question ask on core
+nodes:
+  - { id: start, kind: trigger, type: manual }
+  - { id: work, kind: agent, cli: cursor }
+edges:
+  - { from: start, to: work }
+`
+    )
+    writeFileSync(
+      join(dir, "nodes", "work", "prompt.md"),
+      "ASK_QUESTION then finish.\n"
+    )
+  }
+  {
+    const id = "agent-acp-plan"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "write"), { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      `id: ${id}
+goal: e2e llm plan review ask on core
+nodes:
+  - { id: start, kind: trigger, type: manual }
+  - { id: write, kind: llm, cli: cursor, planReview: ask }
+edges:
+  - { from: start, to: write }
+`
+    )
+    writeFileSync(
+      join(dir, "nodes", "write", "prompt.md"),
+      "ASK_PLAN_REVIEW then finish.\n"
+    )
+  }
+  // Dedicated fast workflow for RunSheet delete e2e (avoid diamond concurrency).
+  {
+    const id = "sheet-delete-demo"
+    const dir = join(home, "workflows", id)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      nodeRunYaml(id, "echo sheet-delete")
+    )
+  }
   // Named answers for node-answers.spec.ts (BL-085); each test owns one.
   for (const id of [
     "node-answers-light",
@@ -616,6 +729,11 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  mkdirSync(join(docket, "cards", "fix-login", "assets"), { recursive: true })
+  writeFileSync(
+    join(docket, "cards", "fix-login", "assets", "acceptance.md"),
+    "# Acceptance\n\nLogin stays green for 20 runs.\n"
+  )
   writeFileSync(
     join(docket, "cards", "fix-login", "card.md"),
     [
@@ -627,9 +745,38 @@ export function createE2eHome(): string {
       "created: 2026-11-20T09:12:00Z",
       "updated: 2026-11-23T10:00:00Z",
       "due: 2026-11-28",
+      "refs:",
+      "  - system: rally",
+      "    id: US1234",
+      "    label: Login flake on CI",
+      "    syncedAt: 2026-11-23T10:00:00Z",
+      "    data:",
+      "      State: In progress",
+      "      Iteration: Sprint 42",
+      "      Owner: flows",
+      "assets:",
+      "  - path: assets/acceptance.md",
+      "    label: Acceptance criteria",
       "---",
       "",
       "Stabilize the login e2e.",
+      "",
+    ].join("\n")
+  )
+  mkdirSync(join(docket, "cards", "refactor-auth"), { recursive: true })
+  writeFileSync(
+    join(docket, "cards", "refactor-auth", "card.md"),
+    [
+      "---",
+      "id: refactor-auth",
+      "title: Refactor auth session",
+      "status: todo",
+      "rank: m",
+      "created: 2026-11-21T09:00:00Z",
+      "updated: 2026-11-23T10:00:00Z",
+      "---",
+      "",
+      "Pull session handling into one module.",
       "",
     ].join("\n")
   )
@@ -644,15 +791,23 @@ export function createE2eHome(): string {
       "transport: cli",
       "how: gh",
       "auth: cli-login",
+      "providerId: github",
       "capabilities:",
       "  - name: repo clone",
       "    desc: Read repositories",
       "    write: false",
       "    allowed: true",
+      "    cmd: [repo, clone]",
+      "  - name: repo push",
+      "    desc: Push local changes",
+      "    write: true",
+      "    allowed: true",
+      "    cmd: [repo, push]",
       "  - name: pr merge",
       "    desc: Merge a pull request",
       "    write: true",
       "    allowed: false",
+      "    cmd: [pr, merge]",
       "",
     ].join("\n")
   )
@@ -672,7 +827,99 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
-  // Workspace skills for BL-183 e2e.
+  // Stub `gh` for library pull/push (BL-204 / BL-205).
+  writeFileSync(
+    join(bin, "gh"),
+    [
+      "#!/bin/sh",
+      'if [ "$1" = "--version" ]; then echo "gh stub 0.0.0"; exit 0; fi',
+      'if [ "$1" = "repo" ] && [ "$2" = "push" ]; then',
+      '  printf \'{"note":"Stub push"}\\n\'',
+      "  exit 0",
+      "fi",
+      'n=$(($(cat "$FLOWAPP_HOME/.gh-pull-n" 2>/dev/null || echo 0) + 1))',
+      'echo "$n" > "$FLOWAPP_HOME/.gh-pull-n"',
+      'printf \'{"files":{"README.md":"pull-%s"},"note":"Stub fetch %s"}\\n\' "$n" "$n"',
+      "exit 0",
+      "",
+    ].join("\n"),
+    { mode: 0o755 }
+  )
+  // Library items for BL-204 e2e (list, sheet, pin, pull, remove).
+  {
+    const id = "github-acme-demo"
+    const dir = join(home, "library", id)
+    mkdirSync(join(dir, "v1"), { recursive: true })
+    mkdirSync(join(dir, "v2"), { recursive: true })
+    writeFileSync(
+      join(dir, "item.yaml"),
+      [
+        `id: ${id}`,
+        "kind: repo",
+        "title: acme/demo",
+        "source: github",
+        "remoteId: acme/demo",
+        "remoteUrl: https://github.com/acme/demo",
+        "tags:",
+        "  - repo:acme/demo",
+        "  - project:e2e",
+        "current: 2",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v1", ".version.yaml"),
+      [
+        "n: 1",
+        "at: 2026-11-20T10:00:00.000Z",
+        "note: First fetch",
+        "contentHash: hash-v1",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "v1", "README.md"), "version one\n")
+    writeFileSync(
+      join(dir, "v2", ".version.yaml"),
+      [
+        "n: 2",
+        "at: 2026-11-22T12:00:00.000Z",
+        "note: Second fetch",
+        "contentHash: hash-v2",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "v2", "README.md"), "version two\n")
+  }
+  {
+    const id = "local-notes"
+    const dir = join(home, "library", id)
+    mkdirSync(join(dir, "v1"), { recursive: true })
+    writeFileSync(
+      join(dir, "item.yaml"),
+      [
+        `id: ${id}`,
+        "kind: other",
+        "title: Scratch notes",
+        "source: local",
+        "tags:",
+        "  - type:notes",
+        "current: 1",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v1", ".version.yaml"),
+      [
+        "n: 1",
+        "at: 2026-11-18T09:00:00.000Z",
+        "note: Imported",
+        "contentHash: hash-notes",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "v1", "notes.md"), "# Notes\n")
+  }
+  // Workspace skills for BL-183 / BL-206 e2e (installed at v1; source current is v2).
   for (const dir of [".agents", ".claude"] as const) {
     const skillDir = join(home, dir, "skills", "write-tests")
     mkdirSync(skillDir, { recursive: true })
@@ -711,5 +958,140 @@ export function createE2eHome(): string {
       "",
     ].join("\n")
   )
+  // Skill source Library item (BL-206): v1/v2 with skills under skills/.
+  {
+    const id = "repo-team-skills"
+    const dir = join(home, "library", id)
+    mkdirSync(join(dir, "v1", "skills", "write-tests"), { recursive: true })
+    mkdirSync(join(dir, "v1", "skills", "review-pr"), { recursive: true })
+    mkdirSync(join(dir, "v2", "skills", "write-tests"), { recursive: true })
+    mkdirSync(join(dir, "v2", "skills", "review-pr"), { recursive: true })
+    writeFileSync(
+      join(dir, "item.yaml"),
+      [
+        `id: ${id}`,
+        "kind: repo",
+        "title: team/skills",
+        "source: github",
+        "remoteId: team/skills",
+        "remoteUrl: https://github.com/team/skills",
+        "tags:",
+        "  - repo:team/skills",
+        "current: 2",
+        "",
+      ].join("\n")
+    )
+    const skillMd = (
+      slug: string,
+      desc: string,
+      rules: string[],
+      tag: string
+    ) =>
+      [
+        "---",
+        `name: ${slug}`,
+        `description: ${desc}`,
+        "---",
+        "",
+        `# ${slug}`,
+        "",
+        ...rules.map((r) => `- ${r}`),
+        "",
+        `<!-- ${tag} -->`,
+        "",
+      ].join("\n")
+    writeFileSync(
+      join(dir, "v1", ".version.yaml"),
+      [
+        "n: 1",
+        "at: 2026-11-20T10:00:00.000Z",
+        "note: First fetch",
+        "contentHash: skills-v1",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v1", "skills", "write-tests", "SKILL.md"),
+      skillMd(
+        "write-tests",
+        "Write focused unit tests for a changed file.",
+        ["Read the diff first", "One behaviour per test"],
+        "v1"
+      )
+    )
+    writeFileSync(
+      join(dir, "v1", "skills", "review-pr", "SKILL.md"),
+      skillMd(
+        "review-pr",
+        "Review a pull request for correctness and risk.",
+        ["Start with the riskiest file"],
+        "v1"
+      )
+    )
+    writeFileSync(
+      join(dir, "v2", ".version.yaml"),
+      [
+        "n: 2",
+        "at: 2026-11-22T12:00:00.000Z",
+        "note: Second fetch",
+        "contentHash: skills-v2",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(
+      join(dir, "v2", "skills", "write-tests", "SKILL.md"),
+      skillMd(
+        "write-tests",
+        "Write focused unit tests for a changed file.",
+        ["Read the diff first", "One behaviour per test", "Cover the edge"],
+        "v2"
+      )
+    )
+    writeFileSync(
+      join(dir, "v2", "skills", "review-pr", "SKILL.md"),
+      skillMd(
+        "review-pr",
+        "Review a pull request for correctness and risk.",
+        ["Start with the riskiest file", "Separate must-fix from nits"],
+        "v2"
+      )
+    )
+  }
+  mkdirSync(join(home, "skills"), { recursive: true })
+  writeFileSync(
+    join(home, "skills", "sources.json"),
+    `${JSON.stringify({ sources: ["repo-team-skills"] }, null, 2)}\n`
+  )
+  // Workflow that references write-tests (SK-07 used-by).
+  {
+    const id = "skill-uses-write-tests"
+    const dir = join(home, "workflows", id)
+    mkdirSync(join(dir, "nodes", "draft"), { recursive: true })
+    writeFileSync(
+      join(dir, "workflow.yaml"),
+      [
+        `id: ${id}`,
+        "goal: e2e skill used-by",
+        "nodes:",
+        "  - id: start",
+        "    kind: trigger",
+        "    type: manual",
+        "  - id: draft",
+        "    kind: llm",
+        "    cli: claude",
+        "    name: Draft with tests skill",
+        "    skills:",
+        "      - write-tests",
+        "  - id: done",
+        "    kind: output",
+        "    target: folder",
+        "edges:",
+        "  - { from: start, to: draft }",
+        "  - { from: draft, to: done }",
+        "",
+      ].join("\n")
+    )
+    writeFileSync(join(dir, "nodes", "draft", "prompt.md"), "Draft it.\n")
+  }
   return home
 }

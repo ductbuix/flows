@@ -5,13 +5,13 @@ import {
   type FcpConnection,
   type FileBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Host } from "@workspace/adapters-node"
 import type { RpcPeer } from "@workspace/protocol"
 import { join } from "node:path"
 
 /** Workspace file/* bindings; reveal asks the client when capable (BL-189). */
 export function createFileFcp(
-  engine: Engine,
+  engine: Host,
   peer?: RpcPeer,
   connection?: FcpConnection
 ): FileBindings {

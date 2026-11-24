@@ -81,7 +81,7 @@ export type RunState = {
   finishedAt?: string
   cancelRequested?: boolean
   deleted?: boolean
-  workItemId?: string
+  cardId?: string
   /** 1-based position after the last folded event. */
   seq: number
 }
@@ -137,7 +137,7 @@ export type DecideInput =
       only?: string
       from?: string
       queued?: boolean
-      workItemId?: string
+      cardId?: string
       seed?: readonly EngineEvent[]
     }
   | {
@@ -186,6 +186,12 @@ export type DecideInput =
       reason?: string
     }
   | { kind: "cancel"; at: string }
+  | { kind: "activate"; at: string }
+  | {
+      kind: "retry_step"
+      at: string
+      nodeId: string
+    }
   | {
       kind: "agent_event"
       at: string

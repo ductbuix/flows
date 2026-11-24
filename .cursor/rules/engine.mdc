@@ -1,15 +1,17 @@
 ---
-description: Workflow engine, read the design docs first
-globs: packages/engine/**
+description: Run engine and host composition; read the design docs first
+globs: packages/core/**,packages/adapters-node/src/host/**
 alwaysApply: false
 ---
 
-- Before creating or changing `packages/engine`, read the engine designs
-  listed in `docs/designs/INDEX.md` (tag `engine`): DES-003 lifecycle and
-  engine, DES-004 conditions and loops, DES-005 agents and spawn,
-  DES-006 sandboxing. Follow them.
+- Before changing run semantics or host composition, read the engine
+  designs listed in `docs/designs/INDEX.md` (tag `engine`): DES-003
+  lifecycle, DES-004 conditions and loops, DES-005 agents, DES-006
+  sandboxing, DES-039 v2 architecture. Follow them.
 - Append, then act. State is only a fold over the SQLite event log.
-  Shared workflow and event schemas live in `packages/shared`.
+  Schemas live in `packages/contracts`. Domain rules live in
+  `packages/core`; Node I/O and `createHost` live in
+  `packages/adapters-node`.
 - Pick work from `docs/backlogs/INDEX.md` and update the item's status.
 - If the code needs to differ from a design, update that design doc and
   its `updated` date in the same change.

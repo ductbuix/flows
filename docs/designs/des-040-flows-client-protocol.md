@@ -127,7 +127,7 @@ ACP uses `session/update` with `sessionUpdate`.
 | `workflow/update`  | `workflow_changed`, `workflow_removed`, `layout_changed`                                                                                                                                |
 | `run/update`       | `run_changed` (summary), `step_state`, `agent_message_chunk`, `agent_thought_chunk`, `tool_call`, `tool_call_update`, `plan`, `todos`, `subagent`, `usage`, `log_chunk`, `run_finished` |
 | `inbox/update`     | `item_added`, `item_resolved`                                                                                                                                                           |
-| `library/update`   | `item_changed`, `job_progress`, `job_finished`                                                                                                                                          |
+| `library/update`   | `item_changed`, `item_removed`, `job_progress`, `job_finished`                                                                                                                          |
 | `connector/update` | `status_changed`                                                                                                                                                                        |
 | `skill/update`     | `skills_changed`                                                                                                                                                                        |
 | `file/update`      | `changed` (watched paths only)                                                                                                                                                          |
@@ -222,6 +222,10 @@ the engine resolves them, so the UI never builds a filesystem path.
   `answers` on `inbox/answer` for Cursor `cursor/ask_question` (BL-147).
 - v1 additive (2026-11-24): `library/pin_version`, `library/set_tags`,
   `library/remove`, and `library/list` optional `tag` filter (BL-173).
+- v1 additive (2026-11-24): `library/update` `item_removed` on remove
+  (BL-204).
+- v1 additive (2026-11-24): `library/add`, `library/push`, `library/unlink`
+  (BL-205).
 
 ## Example
 

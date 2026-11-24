@@ -19,6 +19,7 @@
     "@workspace/core": "workspace:*",
     "@workspace/protocol": "workspace:*",
     "@workspace/sdk": "workspace:*",
+    "server": "workspace:*",
     "ws": "^8.23.0"
   },
   "devDependencies": {

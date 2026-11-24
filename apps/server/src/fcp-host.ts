@@ -10,8 +10,9 @@ import {
   defineBinding,
   type MethodBindings,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Host } from "@workspace/adapters-node"
 import { RpcPeer, type Transport } from "@workspace/protocol"
+import { createCoreRunHost, type CoreRunHost } from "./core-run-host.ts"
 import { bindEngineToBus } from "./engine-bus.ts"
 import { createConnectorsFcp, type ConnectorsFcp } from "./fcp-connectors.ts"
 import { createDocketFcp } from "./fcp-docket.ts"
@@ -20,6 +21,7 @@ import { createInboxFcp } from "./fcp-inbox.ts"
 import { createLibraryFcp } from "./fcp-library.ts"
 import { createRunCommandBindings } from "./fcp-run-commands.ts"
 import { createRunReadBindings } from "./fcp-run-read.ts"
+import { createSettingsFcp } from "./fcp-settings.ts"
 import { createSkillsFcp } from "./fcp-skills.ts"
 import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
 import { createWorkflowWriteBindings } from "./fcp-workflow-write.ts"
@@ -32,31 +34,40 @@ export type FcpHost = {
   idempotency: IdempotencyStore
   extraBindings: Partial<MethodBindings>
   connectors: ConnectorsFcp
+  coreRuns: CoreRunHost
   dispose: () => void
 }
 
 /** Shared FCP method stack for the daemon, CLI stdio host, and in-process CLI. */
-export function createFcpHost(engine: Engine): FcpHost {
+export function createFcpHost(engine: Host): FcpHost {
   const bus = new UpdateBus()
   const events = createEventBus()
   const unsubBus = bindEngineToBus(engine, bus, events)
   const docket = createDocketFcp(engine, bus, events)
-  const inbox = createInboxFcp(engine, bus)
+  const coreRuns = createCoreRunHost(engine)
+  // Core owns live runs; engine only keeps removals/trust/summary (BL-196).
+  void coreRuns.resumeAll()
+  engine.bootHousekeeping()
+  const inbox = createInboxFcp(engine, bus, coreRuns)
   const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
+  const settings = createSettingsFcp(engine)
   const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const idempotency = new IdempotencyStore()
   return {
     bus,
     idempotency,
     connectors,
+    coreRuns,
     extraBindings: {
       ...docket.bindings,
       ...inbox.bindings,
       ...library.bindings,
       ...skills.bindings,
+      ...settings,
     },
     dispose() {
+      coreRuns.dispose()
       unsubBus()
       docket.dispose()
       inbox.dispose()
@@ -73,7 +84,7 @@ export type BindFcpTransportOptions = {
 /** Bind one FCP peer on any transport (ws, ndjson, linked). */
 export function bindFcpTransport(
   transport: Transport,
-  engine: Engine,
+  engine: Host,
   host: FcpHost,
   options: BindFcpTransportOptions = {}
 ): void {
@@ -106,6 +117,7 @@ export function bindFcpTransport(
       ...createRunCommandBindings({
         engine,
         idempotency: host.idempotency,
+        coreRuns: host.coreRuns,
       }),
       ...createFileFcp(engine, peer, connection),
       ...host.connectors.bindings({ peer, connection }),

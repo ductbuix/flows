@@ -8,7 +8,8 @@ import {
   type InboxService,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Host } from "@workspace/adapters-node"
+import type { CoreRunHost } from "./core-run-host.ts"
 
 const systemClock: Clock = { now: () => Date.now() }
 
@@ -19,7 +20,11 @@ export type InboxFcp = {
 }
 
 /** Live inbox projection over the engine event log (BL-145 / BL-178 / BL-192). */
-export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
+export function createInboxFcp(
+  engine: Host,
+  bus: UpdateBus,
+  coreRuns: CoreRunHost
+): InboxFcp {
   const events: EventStore = {
     append() {
       return { ok: false, kind: "conflict", lastSeq: 0 }
@@ -46,12 +51,20 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
     events,
     pushAnswer: async (input) => {
       if (input.kind === "approval") {
-        if (input.optionId === "approved") {
-          engine.approveTask(input.runId, input.nodeId)
+        const decision = input.optionId === "approved" ? "approved" : "rejected"
+        if (
+          await coreRuns.answerApproval({
+            runId: input.runId,
+            nodeId: input.nodeId,
+            decision,
+          })
+        ) {
           return
         }
-        engine.rejectTask(input.runId, input.nodeId)
-        return
+        throw engineError(
+          "failed_precondition",
+          "No live approval for this inbox item"
+        )
       }
       if (!input.requestId) {
         throw engineError(
@@ -59,7 +72,7 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
           "ACP inbox answer is missing requestId"
         )
       }
-      const ok = engine.answerAcpAsk({
+      const ask = {
         kind: input.kind,
         runId: input.runId,
         at: input.at,
@@ -68,13 +81,12 @@ export function createInboxFcp(engine: Engine, bus: UpdateBus): InboxFcp {
         requestId: input.requestId,
         optionId: input.optionId,
         ...(input.answers ? { answers: input.answers } : {}),
-      })
-      if (!ok) {
-        throw engineError(
-          "failed_precondition",
-          "No live ACP session for this inbox item"
-        )
       }
+      if (coreRuns.answerAcpAsk(ask)) return
+      throw engineError(
+        "failed_precondition",
+        "No live ACP session for this inbox item"
+      )
     },
   })
 

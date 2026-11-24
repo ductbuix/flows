@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server"
-import { createEngine } from "@workspace/engine"
+import { createHost } from "@workspace/adapters-node"
 import { mkdtempSync, rmSync } from "node:fs"
 import { createServer } from "node:net"
 import type { AddressInfo } from "node:net"
@@ -13,7 +13,7 @@ export type FcpHarness = {
   home: string
   port: number
   token: string
-  engine: ReturnType<typeof createEngine>
+  engine: ReturnType<typeof createHost>
   close: () => Promise<void>
 }
 
@@ -46,7 +46,7 @@ export async function startFcpServer(): Promise<FcpHarness> {
   homes.push(home)
   const token = "integration-fcp-token"
   const port = await freePort()
-  const engine = createEngine({ home })
+  const engine = createHost({ home })
   const app = createApp({ engine, fcpToken: token, port })
 
   const server = serve({

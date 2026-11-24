@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { serve } from "@hono/node-server"
 import { FCP_VERSION } from "@workspace/contracts"
-import { createEngine } from "@workspace/engine"
+import { createHost } from "@workspace/adapters-node"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { createServer, type AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
@@ -62,7 +62,7 @@ describe("skill/* over /fcp", () => {
 
     const token = "skills-fcp-token"
     const port = await freePort()
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: token, port })
     const server = serve({
       fetch: app.fetch,

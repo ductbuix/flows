@@ -13,8 +13,8 @@ export function workflowLabel(summary: { id: string; name?: string }): string {
 }
 
 /** Work item title when the run has one, else "Ad hoc run". */
-export function runLabel(run: { workItemTitle?: string | null }): string {
-  const title = run.workItemTitle?.trim()
+export function runLabel(run: { cardTitle?: string | null }): string {
+  const title = run.cardTitle?.trim()
   return title ? title : "Ad hoc run"
 }
 

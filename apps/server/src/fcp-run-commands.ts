@@ -7,8 +7,8 @@ import {
   diffWorkCopy,
   runDir,
   workflowDir,
-  type Engine,
-} from "@workspace/engine"
+  type Host,
+} from "@workspace/adapters-node"
 import {
   runCancelMethod,
   runChangesResponseSchema,
@@ -19,6 +19,7 @@ import {
   runRetryStepMethod,
   runStartMethod,
 } from "@workspace/contracts"
+import type { CoreRunHost } from "./core-run-host.ts"
 import type { IdempotencyStore } from "./idempotency.ts"
 import { readLogChunk, resolveAttemptRoot } from "./run-files.ts"
 import { startRunForFcp } from "./fcp-run-start.ts"
@@ -35,14 +36,15 @@ export type RunCommandBindings = Pick<
 >
 
 export type RunCommandDeps = {
-  engine: Engine
+  engine: Host
   idempotency: IdempotencyStore
+  coreRuns: CoreRunHost
 }
 
 export function createRunCommandBindings(
   deps: RunCommandDeps
 ): RunCommandBindings {
-  const { engine, idempotency } = deps
+  const { engine, idempotency, coreRuns } = deps
   return {
     "run/start": defineBinding(runStartMethod, async (params) => {
       if (params.requestKey) {
@@ -52,22 +54,27 @@ export function createRunCommandBindings(
           if (typeof runId === "string") return { runId }
         }
       }
-      const result = await startRunForFcp(engine, {
-        workflowId: params.workflowId,
-        values: params.values,
-        workItemId: params.workItemId,
-        refreshPins: params.refreshPins,
-        only: params.only,
-        from: params.from,
-        baseRunId: params.baseRunId,
-      })
+      const result = await startRunForFcp(
+        engine,
+        {
+          workflowId: params.workflowId,
+          values: params.values,
+          cardId: params.cardId,
+          refreshPins: params.refreshPins,
+          only: params.only,
+          from: params.from,
+          baseRunId: params.baseRunId,
+        },
+        coreRuns
+      )
       if (params.requestKey) {
         idempotency.set(params.requestKey, 200, result)
       }
       return result
     }),
-    "run/cancel": defineBinding(runCancelMethod, (params) => {
+    "run/cancel": defineBinding(runCancelMethod, async (params) => {
       try {
+        if (await coreRuns.cancel(params.runId)) return {}
         engine.cancelRun(params.runId)
         return {}
       } catch (err) {
@@ -89,23 +96,27 @@ export function createRunCommandBindings(
       if (state.status === "running" || state.status === "queued") {
         throw engineError("busy", "run is still live")
       }
-      const result = await startRunForFcp(engine, {
-        workflowId: state.workflowId,
-        values: params.values,
-        refreshPins: params.refreshPins,
-        only: params.only,
-        from: params.from,
-        baseRunId: params.baseRunId,
-        rerunOf: { runId: params.runId, workItemId: state.workItemId },
-      })
+      const result = await startRunForFcp(
+        engine,
+        {
+          workflowId: state.workflowId,
+          values: params.values,
+          refreshPins: params.refreshPins,
+          only: params.only,
+          from: params.from,
+          baseRunId: params.baseRunId,
+          rerunOf: { runId: params.runId, cardId: state.cardId },
+        },
+        coreRuns
+      )
       if (params.requestKey) {
         idempotency.set(params.requestKey, 200, result)
       }
       return result
     }),
-    "run/retry_step": defineBinding(runRetryStepMethod, (params) => {
+    "run/retry_step": defineBinding(runRetryStepMethod, async (params) => {
       try {
-        engine.retryTask(params.runId, params.stepId)
+        await coreRuns.retryStep(params.runId, params.stepId)
         return {}
       } catch (err) {
         throw mapControlError(err)

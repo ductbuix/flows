@@ -1,4 +1,4 @@
-import type { RunStatus } from "@workspace/shared"
+import type { RunStatus } from "@workspace/contracts"
 import { Badge } from "@workspace/ui/components/badge"
 import {
   Ban,

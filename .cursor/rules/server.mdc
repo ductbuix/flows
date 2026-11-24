@@ -13,7 +13,7 @@ alwaysApply: false
   `app.request()`. Process setup (listen, signals) stays in `src/index.ts`.
 - Validate params, query and JSON bodies with zod via
   `@hono/zod-validator` (add it when the first route needs it). Put
-  request and response schemas in `packages/shared`.
+  request and response schemas in `packages/contracts`.
 - Return JSON with an explicit status: `c.json(body, 200)`.
 - Websockets use `upgradeWebSocket` from `@hono/node-server` with the
   `ws` server passed to `serve`. Do not use `@hono/node-ws`.

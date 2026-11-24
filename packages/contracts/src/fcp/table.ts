@@ -7,6 +7,7 @@ import {
   connectorSaveMethod,
   connectorSetCapabilityMethod,
   connectorSignInMethod,
+  connectorSignOutMethod,
   connectorUpdateNotification,
 } from "./connector.ts"
 import {
@@ -39,14 +40,17 @@ import {
 } from "./inbox.ts"
 import { initializeMethod } from "./initialize.ts"
 import {
+  libraryAddMethod,
   libraryGetMethod,
   libraryListMethod,
   libraryListProvidersMethod,
   libraryPinVersionMethod,
   libraryPullMethod,
+  libraryPushMethod,
   libraryRemoveMethod,
   librarySaveProviderMethod,
   librarySetTagsMethod,
+  libraryUnlinkMethod,
   libraryUpdateNotification,
 } from "./library.ts"
 import { pingMethod } from "./ping.ts"
@@ -63,9 +67,18 @@ import {
   runUpdateNotification,
 } from "./run.ts"
 import {
+  settingsCliStatusMethod,
+  settingsGetTrustMethod,
+  settingsListMcpTrustMethod,
+  settingsSetMcpTrustMethod,
+  settingsSetTrustMethod,
+} from "./settings.ts"
+import {
   skillGetMethod,
   skillInstallMethod,
   skillListMethod,
+  skillListSourcesMethod,
+  skillSaveMethod,
   skillUninstallMethod,
   skillUpdateNotification,
 } from "./skill.ts"
@@ -106,11 +119,15 @@ export const fcpMethodTable = {
   "library/list": libraryListMethod,
   "library/get": libraryGetMethod,
   "library/pull": libraryPullMethod,
+  "library/push": libraryPushMethod,
+  "library/add": libraryAddMethod,
+  "library/unlink": libraryUnlinkMethod,
   "library/pin_version": libraryPinVersionMethod,
   "library/set_tags": librarySetTagsMethod,
   "library/remove": libraryRemoveMethod,
   "connector/check": connectorCheckMethod,
   "connector/sign_in": connectorSignInMethod,
+  "connector/sign_out": connectorSignOutMethod,
   "library/list_providers": libraryListProvidersMethod,
   "library/save_provider": librarySaveProviderMethod,
   "workflow/list": workflowListMethod,
@@ -132,8 +149,10 @@ export const fcpMethodTable = {
   "run/get_changes": runGetChangesMethod,
   "skill/list": skillListMethod,
   "skill/get": skillGetMethod,
+  "skill/list_sources": skillListSourcesMethod,
   "skill/install": skillInstallMethod,
   "skill/uninstall": skillUninstallMethod,
+  "skill/save": skillSaveMethod,
   "file/list": fileListMethod,
   "file/stat": fileStatMethod,
   "file/read_text": fileReadTextMethod,
@@ -142,6 +161,11 @@ export const fcpMethodTable = {
   "inbox/list": inboxListMethod,
   "inbox/answer": inboxAnswerMethod,
   "inbox/dismiss": inboxDismissMethod,
+  "settings/cli_status": settingsCliStatusMethod,
+  "settings/get_trust": settingsGetTrustMethod,
+  "settings/set_trust": settingsSetTrustMethod,
+  "settings/list_mcp_trust": settingsListMcpTrustMethod,
+  "settings/set_mcp_trust": settingsSetMcpTrustMethod,
 } as const satisfies Record<string, FcpMethodDef>
 
 /** Engine-to-client update notifications (`namespace/update`). */

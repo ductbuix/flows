@@ -1,5 +1,6 @@
 import type { z } from "zod"
 import type { AgentSession, SessionSpec } from "../ports/agent-runtime.ts"
+import type { PublishPort } from "../ports/publish.ts"
 
 /** Port types on a kind (DES-041). */
 export type PortSpec = "text" | "image" | "any" | "file"
@@ -63,6 +64,8 @@ export type StepContext<S> = {
   answers: Record<string, unknown>
   /** Set after `step_approved` / `step_rejected` for a waiting kind. */
   decision?: "approved" | "rejected"
+  /** Engine run id when the host provided one (publish / ACP). */
+  runId?: string
   graph: { id: string; name?: string }
   node: { id: string; name?: string; pass: number }
   inbox: {
@@ -76,11 +79,18 @@ export type StepContext<S> = {
     /** Write text under the step folder; returns the run-relative output path. */
     write(relPath: string, text: string): Promise<string>
   }
-  /** Store-relative reads for fixed assets (pinned library / card files). */
+  /**
+   * Store-relative file access for frozen assets, memory copies and
+   * answer.json settle (BL-195).
+   */
   docs: {
     read(path: string): { text: string } | null
     list(glob: string): string[]
+    write(path: string, text: string): void
+    remove(path: string): void
   }
+  /** Present when the host wired a publish port (output publish). */
+  publish?: PublishPort
 }
 
 /** One executor shape for every kind (DES-041, BL-134). */

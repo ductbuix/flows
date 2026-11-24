@@ -66,10 +66,14 @@ export function createDocketWriteBindings(
         throw engineError("not_found", `Card not found: ${params.id}`)
       }
       const { body, ...frontmatter } = params.patch
-      const written = deps.store.saveCard(params.id, frontmatter, {
-        body: body ?? undefined,
-        baseHash: params.baseHash,
-      })
+      const written = deps.store.saveCard(
+        params.id,
+        clearOptionalDates(frontmatter as Record<string, unknown>),
+        {
+          body: body ?? undefined,
+          baseHash: params.baseHash,
+        }
+      )
       if (!written.ok) {
         if (written.kind === "conflict") {
           throw engineError("conflict", "Stale baseHash", {
@@ -146,6 +150,16 @@ export function createDocketWriteBindings(
       }
     }),
   }
+}
+
+/** `null` clears start/due on disk (JSON cannot send `undefined`). */
+function clearOptionalDates(
+  frontmatter: Record<string, unknown>
+): Record<string, unknown> {
+  const next = { ...frontmatter }
+  if (next.start === null) next.start = undefined
+  if (next.due === null) next.due = undefined
+  return next
 }
 
 function defaultStatus(board: Board | null): string {

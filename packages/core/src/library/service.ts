@@ -1,23 +1,21 @@
-import { LibItemId, type LibItem, type LibVersion } from "@workspace/contracts"
+import { LibItemId, type LibItem, type ProviderIcon } from "@workspace/contracts"
 import type { Clock } from "../kernel/clock.ts"
 import { engineError } from "../kernel/engine-error.ts"
 import type { Ids } from "../kernel/ids.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { UpdateBus } from "../updates/update-bus.ts"
 import type { LibraryFetcher } from "./fetch.ts"
+import { runPullJob, runPushJob } from "./jobs.ts"
+import { addLocalItem, addRemoteItem, unlinkItem } from "./mutations.ts"
 import { cardUsersOfItem } from "./users.ts"
 import {
-  contentHashOf,
   listItemIds,
   listVersionMetas,
-  newestVersionN,
-  nextCurrent,
   readItemDisk,
   removeItemTree,
   toDisk,
   toLibItem,
   writeItemDisk,
-  writeVersion,
 } from "./versions.ts"
 
 export type LibraryServiceDeps = {
@@ -48,11 +46,12 @@ export class LibraryService {
   get(id: string): LibItem | null {
     const disk = readItemDisk(this.deps.docs, id)
     if (!disk) return null
-    const versions = listVersionMetas(this.deps.docs, id).map(metaToVersion)
-    return toLibItem(disk, versions)
+    return toLibItem(
+      disk,
+      listVersionMetas(this.deps.docs, id).map(metaToVersion)
+    )
   }
 
-  /** Pin `current` to an existing version. */
   pinVersion(id: string, n: number): LibItem {
     const item = this.require(id)
     if (!item.versions.some((v) => v.n === n)) {
@@ -62,7 +61,6 @@ export class LibraryService {
     return this.publishChanged(id)
   }
 
-  /** Replace tags (`namespace:value` each). */
   setTags(id: string, tags: string[]): LibItem {
     this.require(id)
     const disk = readItemDisk(this.deps.docs, id)!
@@ -70,10 +68,32 @@ export class LibraryService {
     return this.publishChanged(id)
   }
 
-  /**
-   * Delete the item tree. Fails with `busy` and `data.users` when a card
-   * refs it (`system: library`).
-   */
+  addRemote(input: {
+    id: string
+    kind: ProviderIcon
+    title: string
+    source: string
+    remoteId: string
+    remoteUrl: string
+    tags: string[]
+  }): LibItem {
+    return addRemoteItem(this.mutationDeps(), input)
+  }
+
+  addLocal(input: {
+    id: string
+    kind: ProviderIcon
+    title: string
+    tags: string[]
+    files: Readonly<Record<string, string>>
+  }): LibItem {
+    return addLocalItem(this.mutationDeps(), input)
+  }
+
+  unlink(id: string): LibItem {
+    return unlinkItem(this.mutationDeps(), id)
+  }
+
   remove(id: string): void {
     this.require(id)
     const users = cardUsersOfItem(this.deps.docs, id)
@@ -84,25 +104,60 @@ export class LibraryService {
         { users }
       )
     }
-    removeItemTree(this.deps.docs, id)
-  }
-
-  /** Starts a pull job; progress and finish arrive on `library/update`. */
-  pull(id: string, signal: AbortSignal): { jobId: string } {
-    this.require(id)
-    const jobId = this.deps.ids.id("job")
     const itemId = LibItemId.parse(id)
-    const run = this.runPull(jobId, itemId, signal)
-    this.pending.add(run)
-    void run.finally(() => this.pending.delete(run))
-    return { jobId }
+    removeItemTree(this.deps.docs, id)
+    this.deps.bus.publish("library/update", {
+      kind: "item_removed",
+      id: itemId,
+    })
   }
 
-  /** Wait for in-flight pull jobs (tests). */
+  pull(id: string, signal: AbortSignal): { jobId: string } {
+    return this.startJob(id, signal, runPullJob)
+  }
+
+  push(id: string, signal: AbortSignal): { jobId: string } {
+    return this.startJob(id, signal, runPushJob)
+  }
+
   async flush(): Promise<void> {
     while (this.pending.size > 0) {
       await Promise.all([...this.pending])
     }
+  }
+
+  private mutationDeps() {
+    return {
+      docs: this.deps.docs,
+      clock: this.deps.clock,
+      get: (id: string) => this.get(id),
+      publishChanged: (id: string) => this.publishChanged(id),
+    }
+  }
+
+  private startJob(
+    id: string,
+    signal: AbortSignal,
+    run: typeof runPullJob
+  ): { jobId: string } {
+    this.require(id)
+    const jobId = this.deps.ids.id("job")
+    const itemId = LibItemId.parse(id)
+    const pending = run(
+      {
+        docs: this.deps.docs,
+        bus: this.deps.bus,
+        clock: this.deps.clock,
+        fetcher: this.deps.fetcher,
+        get: (itemId: string) => this.get(itemId),
+      },
+      jobId,
+      itemId,
+      signal
+    )
+    this.pending.add(pending)
+    void pending.finally(() => this.pending.delete(pending))
+    return { jobId }
   }
 
   private publishChanged(id: string): LibItem {
@@ -119,78 +174,6 @@ export class LibraryService {
     if (!item) throw engineError("not_found", `Library item not found: ${id}`)
     return item
   }
-
-  private async runPull(
-    jobId: string,
-    itemId: ReturnType<typeof LibItemId.parse>,
-    signal: AbortSignal
-  ): Promise<void> {
-    this.deps.bus.publish("library/update", {
-      kind: "job_progress",
-      jobId,
-      itemId,
-      message: "Fetching",
-      fraction: 0.1,
-    })
-    try {
-      const disk = readItemDisk(this.deps.docs, itemId)
-      if (!disk)
-        throw engineError("not_found", `Library item not found: ${itemId}`)
-      const fetched = await this.deps.fetcher.fetch(disk, signal)
-      const hash = contentHashOf(fetched.files)
-      const metas = listVersionMetas(this.deps.docs, itemId)
-      const previousNewest = newestVersionN(metas)
-      const latest = metas.find((m) => m.n === previousNewest)
-      if (latest && latest.contentHash === hash) {
-        this.deps.bus.publish("library/update", {
-          kind: "job_finished",
-          jobId,
-          itemId,
-          ok: true,
-          unchanged: true,
-          version: metaToVersion(latest),
-        })
-        return
-      }
-      const n = previousNewest + 1
-      const at = new Date(this.deps.clock.now()).toISOString()
-      const meta = {
-        n,
-        at,
-        note:
-          fetched.note ?? (previousNewest === 0 ? "First fetch" : "Updated"),
-        contentHash: hash,
-      }
-      writeVersion(this.deps.docs, itemId, meta, fetched.files)
-      const current = nextCurrent(disk.current, previousNewest, n)
-      writeItemDisk(this.deps.docs, { ...disk, current })
-      const item = this.require(itemId)
-      this.deps.bus.publish("library/update", {
-        kind: "item_changed",
-        item,
-      })
-      this.deps.bus.publish("library/update", {
-        kind: "job_finished",
-        jobId,
-        itemId,
-        ok: true,
-        unchanged: false,
-        version: metaToVersion(meta),
-      })
-    } catch (err) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: unknown }).message)
-          : "Pull failed"
-      this.deps.bus.publish("library/update", {
-        kind: "job_finished",
-        jobId,
-        itemId,
-        ok: false,
-        error: message,
-      })
-    }
-  }
 }
 
 function metaToVersion(meta: {
@@ -198,7 +181,7 @@ function metaToVersion(meta: {
   at: string
   note: string
   contentHash: string
-}): LibVersion {
+}): LibItem["versions"][number] {
   return {
     n: meta.n,
     at: meta.at,

@@ -49,3 +49,46 @@ export {
   type PeekLockResult,
 } from "./engine-lock.ts"
 export { createNodeGatewaySocketServer } from "./gateway-socket.ts"
+export { createNodeCliStatusPort } from "./cli-status.ts"
+export {
+  allowMcpServerAlways,
+  allowMcpServerOnce,
+  clearMcpOnceGrants,
+  createNodeMcpTrustPort,
+  listAllowedMcpServers,
+  normalizeMcpServerKey,
+  revokeMcpServer,
+} from "./mcp-trust.ts"
+
+export {
+  createHost,
+  Host,
+  type CreateHostOptions,
+  ensureBlobStore,
+  getBlobStore,
+  setBlobStore,
+  getProcessRunner,
+  setProcessRunner,
+  workflowDir,
+  runDir,
+  frozenDir,
+  attemptRootOf,
+  stepDir,
+  stepTaskStatus,
+  type RunState,
+  type ManualItem,
+  type MaterializeResourcesResult,
+  type StoredEvent,
+  materializeRunInput,
+  recordUnpublishedLocalEffects,
+  advanceWorkCopyBase,
+  diffWorkCopy,
+  ensureWorkCopiesFor,
+  getConnector,
+  findConnection,
+  requireConnection,
+  registerBuiltinConnectors,
+  registerConnector,
+  fakeConnector,
+  type Connector,
+} from "./host/index.ts"

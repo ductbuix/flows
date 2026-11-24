@@ -16,18 +16,18 @@ export const inputsJsonSchema = z.object({
   itemKey: z.string().min(1),
   itemKeyVersion: z.literal(1),
   fields: z.record(z.string(), inputsJsonFieldSchema),
-  /** Present when the run was started for a work item (DES-026). */
-  workItemId: z.string().min(1).optional(),
+  /** Present when the run was started for a docket card (DES-038). */
+  cardId: z.string().min(1).optional(),
 })
 
 export type InputsJson = z.infer<typeof inputsJsonSchema>
 
 /**
- * Canonical JSON for a work-item-derived item key (DES-026 / BL-039).
+ * Canonical JSON for a card-derived item key (DES-038 / BL-039).
  * Hash with SHA-256 in Node; shared stays browser-safe.
  */
-export function canonicalWorkItemKeyPayload(workItemId: string): string {
-  return JSON.stringify({ v: 1, source: "workItem", workItemId })
+export function canonicalCardKeyPayload(cardId: string): string {
+  return JSON.stringify({ v: 1, source: "card", cardId })
 }
 
 /** Text content of one file under runs/<id>/input/ (DES-021). */

@@ -27,6 +27,11 @@ import {
   inboxDismissMethod,
   inboxListMethod,
   inboxUpdateNotification,
+  settingsCliStatusMethod,
+  settingsGetTrustMethod,
+  settingsListMcpTrustMethod,
+  settingsSetMcpTrustMethod,
+  settingsSetTrustMethod,
   runCancelMethod,
   runDeleteMethod,
   runGetChangesMethod,
@@ -118,15 +123,19 @@ describe("FCP helpers", () => {
     expect(fcpMethodTable["connector/set_capability"].kind).toBe("command")
     expect(fcpMethodTable["connector/check"].kind).toBe("command")
     expect(fcpMethodTable["connector/sign_in"].kind).toBe("command")
+    expect(fcpMethodTable["connector/sign_out"].kind).toBe("command")
     expect(fcpNotificationTable["connector/update"].name).toBe(
       "connector/update"
     )
   })
 
-  it("declares library list/get as queries and pull/pin/set_tags/remove/save_provider as commands", () => {
+  it("declares library list/get as queries and pull/push/add/unlink/pin/set_tags/remove/save_provider as commands", () => {
     expect(fcpMethodTable["library/list"].kind).toBe("query")
     expect(fcpMethodTable["library/get"].kind).toBe("query")
     expect(fcpMethodTable["library/pull"].kind).toBe("command")
+    expect(fcpMethodTable["library/push"].kind).toBe("command")
+    expect(fcpMethodTable["library/add"].kind).toBe("command")
+    expect(fcpMethodTable["library/unlink"].kind).toBe("command")
     expect(fcpMethodTable["library/pin_version"].kind).toBe("command")
     expect(fcpMethodTable["library/set_tags"].kind).toBe("command")
     expect(fcpMethodTable["library/remove"].kind).toBe("command")
@@ -135,11 +144,13 @@ describe("FCP helpers", () => {
     expect(fcpNotificationTable["library/update"].name).toBe("library/update")
   })
 
-  it("declares skill/list and skill/get as queries and install/uninstall as commands", () => {
+  it("declares skill list/get/list_sources as queries and install/uninstall/save as commands", () => {
     expect(fcpMethodTable["skill/list"]).toBe(skillListMethod)
     expect(fcpMethodTable["skill/get"]).toBe(skillGetMethod)
+    expect(fcpMethodTable["skill/list_sources"].kind).toBe("query")
     expect(fcpMethodTable["skill/install"]).toBe(skillInstallMethod)
     expect(fcpMethodTable["skill/uninstall"]).toBe(skillUninstallMethod)
+    expect(fcpMethodTable["skill/save"].kind).toBe("command")
     expect(skillListMethod.kind).toBe("query")
     expect(skillGetMethod.kind).toBe("query")
     expect(skillInstallMethod.kind).toBe("command")
@@ -211,5 +222,22 @@ describe("FCP helpers", () => {
         optionId: "approved",
       })
     ).toEqual({ itemId: "approval:r1:ask:1", optionId: "approved" })
+  })
+
+  it("declares settings cli/trust/mcp methods", () => {
+    expect(fcpMethodTable["settings/cli_status"]).toBe(settingsCliStatusMethod)
+    expect(fcpMethodTable["settings/get_trust"]).toBe(settingsGetTrustMethod)
+    expect(fcpMethodTable["settings/set_trust"]).toBe(settingsSetTrustMethod)
+    expect(fcpMethodTable["settings/list_mcp_trust"]).toBe(
+      settingsListMcpTrustMethod
+    )
+    expect(fcpMethodTable["settings/set_mcp_trust"]).toBe(
+      settingsSetMcpTrustMethod
+    )
+    expect(settingsCliStatusMethod.kind).toBe("query")
+    expect(settingsGetTrustMethod.kind).toBe("query")
+    expect(settingsSetTrustMethod.kind).toBe("command")
+    expect(settingsListMcpTrustMethod.kind).toBe("query")
+    expect(settingsSetMcpTrustMethod.kind).toBe("command")
   })
 })

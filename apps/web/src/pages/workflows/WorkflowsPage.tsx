@@ -35,7 +35,7 @@ import {
 import { FlowsClientGate } from "@/components/FlowsClientGate"
 import { Page, PageTitle } from "@/components/page"
 import { workflowLabel } from "@/lib/labels"
-import { WorkflowRowMenu } from "@/pages/mock/WorkflowRowMenu"
+import { WorkflowRowMenu } from "./WorkflowRowMenu"
 import { WorkflowDialogs } from "./WorkflowDialogs"
 import { WorkflowSheet } from "./WorkflowSheet"
 import { WorkflowsLoadError, WorkflowsLoading } from "./WorkflowsStates"
@@ -98,7 +98,7 @@ function WorkflowsPageInner() {
           New workflow
         </Button>
       }
-      data-testid="mock-workflows-page"
+      data-testid="workflows-page"
     >
       <PageTitle
         title="Workflows"
@@ -122,7 +122,7 @@ function WorkflowsPageInner() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search workflows"
-          data-testid="mock-workflows-search"
+          data-testid="workflows-search"
         />
       </InputGroup>
       {shown.length === 0 ? (
@@ -161,7 +161,7 @@ function WorkflowsPageInner() {
                 key={w.id}
                 className="cursor-pointer"
                 onClick={() => setOpenId(w.id)}
-                data-testid={`mock-workflow-${w.id}`}
+                data-testid={`workflow-${w.id}`}
               >
                 <TableCell>
                   <div className="flex flex-col">
@@ -198,7 +198,11 @@ function WorkflowsPageInner() {
         onError={setActionError}
         onClearErrors={clearErrors}
       />
-      <WorkflowSheet workflow={open} onClose={() => setOpenId(null)} />
+      <WorkflowSheet
+        workflow={open}
+        onClose={() => setOpenId(null)}
+        onRenamedId={(newId) => setOpenId(newId)}
+      />
     </Page>
   )
 }

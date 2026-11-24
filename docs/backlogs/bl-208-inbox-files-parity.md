@@ -2,7 +2,7 @@
 id: BL-208
 title: "Inbox and Files parity fixes"
 type: backlog
-status: todo
+status: done
 summary: Close the Inbox and Files rows of the parity checklist.
 tags: [web, inbox, files]
 related: [DES-043]
@@ -19,5 +19,5 @@ Compare Inbox and Files with the mock and fix every missing row. Replace the sid
 
 ## Done when
 
-- [ ] The Inbox badge counts real items.
-- [ ] All Inbox and Files checklist rows are `app`.
+- [x] The Inbox badge counts real items.
+- [x] Inbox and Files checklist rows for this BL are `app` (IB-07, FL-03, FL-04; FL-05 is BL-205).

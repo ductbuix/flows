@@ -17,13 +17,13 @@ related:
     DES-019,
     DES-031,
   ]
-updated: 2026-11-23
+updated: 2026-11-24
 ---
 
 # Architecture
 
 > Superseded in part by [DES-031](des-031-node-workflows.md) (node workflows, 2026-11-22): spawn in the data flow and failure modes is removed; the engine walks nodes ([DES-034](des-034-node-engine.md)).
-> Target v2 shape (engine library + protocol, ACP agents, Electron host): [DES-039](des-039-system-architecture-v2.md).
+> Target v2 shape (core + adapters-node host, protocol, ACP agents, Electron): [DES-039](des-039-system-architecture-v2.md). `packages/engine` and `packages/shared` are gone (BL-213, BL-215).
 
 High-level map. Details live in the linked designs; entities are in
 [DES-001](des-001-overview.md).
@@ -32,23 +32,25 @@ High-level map. Details live in the linked designs; entities are in
 
 ```mermaid
 flowchart LR
-  B[Browser] --> W[web] --> S[server] --> E[engine]
-  E --> D[(SQLite log)]
-  E --> F[files]
-  E --> P[task processes]
+  B[Browser] --> W[web] --> S[server host]
+  S --> C[core]
+  S --> A[adapters-node]
+  C --> D[(SQLite log)]
+  A --> F[files]
+  A --> P[task processes]
 ```
 
-Everything runs on one Mac. The browser talks only to the local server;
-the server hosts the engine; the engine owns the log, the files and the
-task processes.
+Everything runs on one Mac. The browser talks only to the local server
+(or desktop utility host); the host composes core behind ports; adapters
+own Node I/O (log, files, processes).
 
 ## Containers
 
 | Container      | What it is                                                       | Detail       |
 | -------------- | ---------------------------------------------------------------- | ------------ |
 | `apps/web`     | Vite and React UI, shadcn, React Flow, CodeMirror                | DES-008, 012 |
-| `apps/server`  | Hono on `@hono/node-server`, `127.0.0.1:8787`, REST plus ws      | DES-001      |
-| engine         | `packages/engine`: scheduler, event log, runner                  | DES-003      |
+| `apps/server`  | Hono on `@hono/node-server`, `127.0.0.1:8787`, FCP over ws       | DES-001, 040 |
+| Host           | `createHost` in `adapters-node/host` + core runs / FCP binding   | DES-039      |
 | Event log      | SQLite `app.db`: append-only `events`, plus `settings` (DES-019) | DES-003, 019 |
 | Files          | `FLOWAPP_HOME` (default `~/.flowapp`): workflows, runs, logs     | DES-002      |
 | Task processes | commands, scripts, agent CLIs, each in its own process group     | DES-003, 005 |
@@ -58,25 +60,29 @@ task processes.
 
 ```mermaid
 flowchart LR
-  web --> shared
+  web --> contracts
   web --> ui
-  server --> engine --> shared
-  server --> shared
+  web --> sdk-react --> sdk --> protocol
+  server --> core
+  server --> adapters-node
+  core --> contracts
+  adapters-node --> core
+  adapters-node --> contracts
 ```
 
-| Package               | Owns                                                       | May import            |
-| --------------------- | ---------------------------------------------------------- | --------------------- |
-| `packages/shared`     | zod schemas and types for API, workflow file and events    | nothing in the repo   |
-| `packages/engine`     | event log, state fold, scheduler, process runner, spawn    | `shared`              |
-| `apps/server`         | HTTP and websocket routes, request validation, file access | `engine`, `shared`    |
-| `apps/web`            | screens and client state; talks to the server only         | `shared`, `ui`, types |
-| `packages/ui`         | shadcn components, styles, domain-free AI Element patterns | nothing in the repo   |
-| `packages/docs-tools` | docs index generator and checker                           | nothing in the repo   |
-| `apps/e2e`            | Playwright tests against server and web                    | nothing (HTTP only)   |
+| Package                  | Owns                                                       | May import                           |
+| ------------------------ | ---------------------------------------------------------- | ------------------------------------ |
+| `packages/contracts`     | zod schemas, branded ids, FCP, workflow, events            | nothing in the repo                  |
+| `packages/core`          | domain, ports, run engine, node kinds, FCP binding         | `contracts`, `protocol` (types)      |
+| `packages/adapters-node` | Node ports + `src/host` composition (`createHost`)         | `core`, `contracts`                  |
+| `apps/server`            | HTTP, FCP ws, blob routes, host composition                | `core`, `adapters-node`, `contracts` |
+| `apps/web`               | screens and client state; talks through sdk-react          | `contracts`, `ui`, `sdk-react`       |
+| `packages/ui`            | shadcn components, styles, domain-free AI Element patterns | nothing in the repo                  |
+| `packages/docs-tools`    | docs index generator and checker                           | nothing in the repo                  |
+| `apps/e2e`               | Playwright tests against server and web                    | nothing (HTTP only)                  |
 
-`web` imports only the `AppType` type from `server` for the typed `hc`
-client; no server code reaches the bundle. The engine knows nothing about
-HTTP, and the web never reads files or the database directly.
+The web talks only through FCP (sdk-react); it never reads files or the
+database directly. Core stays free of `node:` imports.
 
 ## Data flow
 

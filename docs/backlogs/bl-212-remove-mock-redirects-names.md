@@ -2,7 +2,7 @@
 id: BL-212
 title: "Remove /mock redirects and Mock names"
 type: backlog
-status: todo
+status: done
 summary: Delete /mock/* routes, MockShell, MockSidebar and test ids that say mock.
 tags: [web, cleanup, mock]
 related: [DES-043]
@@ -19,5 +19,5 @@ Rename to `AppShell` and `AppSidebar`. Update test ids and e2e.
 
 ## Done when
 
-- [ ] No `Mock` name or `mock-` test id remains in `apps/web`.
-- [ ] `pnpm test:e2e` passes.
+- [x] No `Mock` name or `mock-` test id remains in `apps/web`.
+- [x] `pnpm test:e2e` passes.

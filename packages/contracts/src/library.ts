@@ -1,5 +1,6 @@
 import { z } from "zod"
-import { connectionIdSchema, refreshRuleSchema } from "./connection.ts"
+import { connectionIdSchema } from "./ids.ts"
+import { refreshRuleSchema } from "./publish.ts"
 
 /** One pinned library entity revision on a run (DES-026). */
 export const resourcePinSchema = z.object({

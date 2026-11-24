@@ -14,7 +14,21 @@ interface FlowsDesktopApi {
     connectorId: string
     url: string
     cookieDomains: string[]
-  }): Promise<{ cookies: unknown[] } | { cancelled: true }>
+  }): Promise<
+    | {
+        cookies: {
+          name: string
+          value: string
+          path: string
+          domain?: string
+          expires?: number
+          httpOnly?: boolean
+          secure?: boolean
+          sameSite?: "Strict" | "Lax" | "None"
+        }[]
+      }
+    | { cancelled: true }
+  >
 }
 
 interface FlowsFcpBootstrap {
@@ -25,4 +39,6 @@ interface FlowsFcpBootstrap {
 interface Window {
   flowsDesktop?: FlowsDesktopApi
   __FLOWS_FCP__?: FlowsFcpBootstrap
+  /** Last absolute path from browser `host/reveal_path` (e2e). */
+  __FLOWS_LAST_REVEAL__?: string
 }

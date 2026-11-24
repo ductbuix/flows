@@ -1,10 +1,21 @@
 import { z } from "zod"
+import { connectorFileIdSchema } from "../connector.ts"
+import { SkillSlug } from "../ids.ts"
 import { retrySchema, timeoutSecondsSchema } from "../workflow.ts"
 
 /** Settings shared by step kinds (DES-032). */
 export const stepSettings = {
   timeout: timeoutSecondsSchema.optional(),
   retry: retrySchema.optional(),
+}
+
+/**
+ * Optional allow-lists for ACP steps (DES-041): connector ids and skill
+ * slugs the step may use. Empty / omitted means none selected in the UI.
+ */
+export const stepAllowLists = {
+  connectors: z.array(connectorFileIdSchema).optional(),
+  skills: z.array(SkillSlug).optional(),
 }
 
 /** A name that `{{name}}` can reach (DES-032). */

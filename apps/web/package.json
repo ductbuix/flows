@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -24,7 +24,6 @@
     "@workspace/protocol": "workspace:*",
     "@workspace/sdk": "workspace:*",
     "@workspace/sdk-react": "workspace:*",
-    "@workspace/shared": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@xyflow/react": "^13.0.2",
     "lucide-react": "^1.76.0",

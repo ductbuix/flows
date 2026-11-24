@@ -35,3 +35,15 @@ export {
   type SkillReadBindings,
   type SkillReadDeps,
 } from "./read.ts"
+export {
+  createLibrarySkillSourceReader,
+  createSkillSourcesBindings,
+  listOffers,
+  listOffersAt,
+  listSources,
+  readSourceIds,
+  saveSources,
+  SOURCES_PATH,
+  type SkillSourcesBindings,
+  type SkillSourcesDeps,
+} from "./sources.ts"

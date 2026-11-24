@@ -1,7 +1,11 @@
 import { z } from "zod"
 import { LibItemId } from "../ids.ts"
 import { libItemSchema, libTagSchema, libVersionSchema } from "../lib-item.ts"
-import { providerDescriptorSchema, providerIdSchema } from "../provider.ts"
+import {
+  providerDescriptorSchema,
+  providerIconSchema,
+  providerIdSchema,
+} from "../provider.ts"
 import { defineMethod, defineNotification } from "./define.ts"
 
 const fcpRequestKeySchema = z.string().uuid().optional()
@@ -89,6 +93,43 @@ export const libraryRemoveParamsSchema = z.object({
 
 export const libraryRemoveResultSchema = z.object({})
 
+export const libraryAddRemoteParamsSchema = z.object({
+  kind: z.literal("remote"),
+  url: z.string().min(1),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const libraryAddLocalParamsSchema = z.object({
+  kind: z.literal("local"),
+  title: z.string().min(1),
+  itemKind: providerIconSchema.default("other"),
+  tags: z.array(libTagSchema).default([]),
+  /** Relative path → UTF-8 text for version 1. */
+  files: z.record(z.string(), z.string()).default({}),
+  requestKey: fcpRequestKeySchema,
+})
+
+export const libraryAddParamsSchema = z.discriminatedUnion("kind", [
+  libraryAddRemoteParamsSchema,
+  libraryAddLocalParamsSchema,
+])
+
+export const libraryAddResultSchema = libItemSchema
+
+export const libraryPushParamsSchema = z.object({
+  id: LibItemId,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const libraryPushResultSchema = libraryPullJobResultSchema
+
+export const libraryUnlinkParamsSchema = z.object({
+  id: LibItemId,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const libraryUnlinkResultSchema = libItemSchema
+
 export const libraryListMethod = defineMethod({
   name: "library/list",
   params: libraryListParamsSchema,
@@ -107,6 +148,27 @@ export const libraryPullMethod = defineMethod({
   name: "library/pull",
   params: libraryPullParamsSchema,
   result: libraryPullJobResultSchema,
+  kind: "command",
+})
+
+export const libraryPushMethod = defineMethod({
+  name: "library/push",
+  params: libraryPushParamsSchema,
+  result: libraryPushResultSchema,
+  kind: "command",
+})
+
+export const libraryAddMethod = defineMethod({
+  name: "library/add",
+  params: libraryAddParamsSchema,
+  result: libraryAddResultSchema,
+  kind: "command",
+})
+
+export const libraryUnlinkMethod = defineMethod({
+  name: "library/unlink",
+  params: libraryUnlinkParamsSchema,
+  result: libraryUnlinkResultSchema,
   kind: "command",
 })
 
@@ -138,6 +200,11 @@ export const libraryUpdateNotification = defineNotification({
       seq: z.number().int().nonnegative(),
       kind: z.literal("item_changed"),
       item: libItemSchema,
+    }),
+    z.object({
+      seq: z.number().int().nonnegative(),
+      kind: z.literal("item_removed"),
+      id: LibItemId,
     }),
     z.object({
       seq: z.number().int().nonnegative(),

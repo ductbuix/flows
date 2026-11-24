@@ -20,6 +20,11 @@ export {
   type ConnectorSignInResult,
 } from "./sign-in.ts"
 export {
+  clearConnectorSecrets,
+  signOutConnector,
+  type ConnectorSignOutDeps,
+} from "./sign-out.ts"
+export {
   checkConnector,
   type ConnectorCheckDeps,
   type ConnectorCheckOutcome,

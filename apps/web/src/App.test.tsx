@@ -50,15 +50,23 @@ describe("App", () => {
     await expectDocketShell()
   })
 
-  it("keeps /mock/docket as a redirect into the app", async () => {
+  it("does not keep /mock routes", async () => {
     renderApp("/mock/docket")
-    await expectDocketShell()
+    expect(screen.queryByTestId("app-sidebar")).toBeNull()
   })
 
-  it("renders settings without FCP", async () => {
-    renderApp("/settings")
-    expect(await screen.findByTestId("settings-page")).toBeTruthy()
+  it("opens settings as a panel from the sidebar footer", async () => {
+    renderApp("/docket")
+    expect(await screen.findByTestId("app-sidebar")).toBeTruthy()
+    screen.getByTestId("settings-open").click()
+    expect(await screen.findByTestId("settings-panel")).toBeTruthy()
     expect(screen.getByTestId("theme-toggle")).toBeTruthy()
+  })
+
+  it("has no /settings page route", async () => {
+    renderApp("/settings")
+    expect(screen.queryByTestId("app-sidebar")).toBeNull()
+    expect(screen.queryByTestId("settings-page")).toBeNull()
   })
 
   it("renders the brand index", async () => {

@@ -1,5 +1,8 @@
+import type { AcpInboxGates } from "../agents/acp-inbox-answer.ts"
+import { acpSessionHandlers } from "../agents/acp-session-handlers.ts"
 import type { AgentRuntime } from "../ports/agent-runtime.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
+import type { PublishPort } from "../ports/publish.ts"
 import { AskPending, type StepContext, type StepInput } from "./types.ts"
 
 export type StepContextDeps = {
@@ -20,6 +23,14 @@ export type StepContextDeps = {
   agentCwd?: string
   /** Required for llm / condition kinds (DES-041). */
   agentRuntime?: AgentRuntime
+  /** Run id for ACP inbox events (BL-195). */
+  runId?: string
+  /** Live ACP ask gates; wires permission/question/plan handlers. */
+  acpAsks?: AcpInboxGates
+  /** Cursor create_plan review mode from the llm node. */
+  planReview?: "auto" | "ask"
+  /** Connector publish for output target=publish (BL-195). */
+  publish?: PublishPort
 }
 
 /** Build a StepContext over a DocumentStore (tests use the fake). */
@@ -28,6 +39,8 @@ export function createStepContext<S>(
 ): StepContext<S> {
   const stepDir = `${deps.runDir}/nodes/${deps.nodeId}/pass-${deps.pass}`
   const signal = deps.signal ?? new AbortController().signal
+  // Ensure the step folder exists before ACP opens with it as cwd (BL-195).
+  deps.docs.write(`${stepDir}/.keep`, "")
 
   const ctx: StepContext<S> = {
     settings: deps.settings,
@@ -37,6 +50,7 @@ export function createStepContext<S>(
     signal,
     answers: deps.answers ?? {},
     decision: deps.decision,
+    ...(deps.runId !== undefined ? { runId: deps.runId } : {}),
     graph: deps.graph,
     node: { id: deps.nodeId, name: deps.nodeName, pass: deps.pass },
     inbox: {
@@ -51,10 +65,25 @@ export function createStepContext<S>(
         if (!deps.agentRuntime) {
           throw new Error("agent runtime is not configured")
         }
+        const cwd = deps.agentCwd || spec.cwd || stepDir
+        const handlers =
+          deps.acpAsks && deps.runId
+            ? acpSessionHandlers({
+                runId: deps.runId,
+                nodeId: deps.nodeId,
+                pass: deps.pass,
+                attemptRoot: cwd,
+                gates: deps.acpAsks,
+                ...(deps.planReview !== undefined
+                  ? { planReview: deps.planReview }
+                  : {}),
+              })
+            : {}
         return deps.agentRuntime.open(
           {
             ...spec,
-            cwd: deps.agentCwd || spec.cwd || stepDir,
+            ...handlers,
+            cwd,
           },
           signal
         )
@@ -75,7 +104,14 @@ export function createStepContext<S>(
       list(glob: string) {
         return deps.docs.list(glob)
       },
+      write(path: string, text: string) {
+        deps.docs.write(path, text)
+      },
+      remove(path: string) {
+        deps.docs.remove(path)
+      },
     },
+    ...(deps.publish ? { publish: deps.publish } : {}),
   }
   return ctx
 }

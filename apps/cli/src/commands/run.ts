@@ -50,7 +50,7 @@ async function waitForRun(
     const { runId } = await client.call("run/start", {
       workflowId: opts.workflowId,
       requestKey: randomUUID(),
-      ...(opts.cardId ? { workItemId: opts.cardId } : {}),
+      ...(opts.cardId ? { cardId: opts.cardId } : {}),
     })
     await client.call("subscribe", {
       topics: [`run:${runId}`],

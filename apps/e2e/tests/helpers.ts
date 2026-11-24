@@ -10,9 +10,9 @@ type JsonRpcResult = {
 }
 
 /** Minimal FCP JSON-RPC over WebSocket (no sdk dep in e2e). */
-async function fcpRequest(
+export async function fcpRequest(
   method: string,
-  params: Record<string, unknown>
+  params: Record<string, unknown> = {}
 ): Promise<unknown> {
   const bootRes = await fetch(`${API}/fcp/bootstrap`, {
     headers: { Origin: WEB_ORIGIN },
@@ -96,6 +96,21 @@ export async function startRun(workflowId: string): Promise<string> {
     requestKey: crypto.randomUUID(),
   })) as { runId: string }
   return result.runId
+}
+
+/** Cancel live runs for a workflow so a new start is not capped/queued. */
+export async function cancelLiveRuns(workflowId: string): Promise<void> {
+  const listed = (await fcpRequest("run/list", { limit: 100 })) as {
+    items: { id: string; status: string; workflowId: string }[]
+  }
+  for (const run of listed.items) {
+    if (run.workflowId !== workflowId) continue
+    if (run.status !== "running" && run.status !== "queued") continue
+    await fcpRequest("run/cancel", {
+      runId: run.id,
+      requestKey: crypto.randomUUID(),
+    }).catch(() => undefined)
+  }
 }
 
 export function e2eHome(): string {

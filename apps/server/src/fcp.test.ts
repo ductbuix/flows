@@ -1,5 +1,5 @@
 import { FCP_VERSION, initializeMethod, pingMethod } from "@workspace/contracts"
-import { createEngine } from "@workspace/engine"
+import { createHost } from "@workspace/adapters-node"
 import { RpcPeer, wsTransport } from "@workspace/protocol"
 import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -19,7 +19,7 @@ describe("GET /", () => {
   it("exposes the FCP token for same-origin scripts", async () => {
     const home = trackTempHome(mkdtempSync(join(tmpdir(), "flowapp-fcp-idx-")))
     const token = "page-token"
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: token, port: 8787 })
     const res = await app.request("http://127.0.0.1:8787/", {
       headers: { Host: "127.0.0.1:8787" },
@@ -37,7 +37,7 @@ describe("GET /", () => {
     const home = trackTempHome(
       mkdtempSync(join(tmpdir(), "flowapp-fcp-rebind-"))
     )
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: "secret", port: 8787 })
     const res = await app.request("http://127.0.0.1:8787/", {
       headers: { Host: "evil.example:8787" },
@@ -52,7 +52,7 @@ describe("GET /fcp/bootstrap", () => {
   it("returns token bootstrap for loopback Host and Origin", async () => {
     const home = trackTempHome(mkdtempSync(join(tmpdir(), "flowapp-api-fcp-")))
     const token = "api-boot"
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: token, port: 8787 })
     const res = await app.request("http://127.0.0.1:8787/fcp/bootstrap", {
       headers: {
@@ -72,7 +72,7 @@ describe("GET /fcp/bootstrap", () => {
     const home = trackTempHome(
       mkdtempSync(join(tmpdir(), "flowapp-api-fcp-host-"))
     )
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: "secret", port: 8787 })
     const res = await app.request("http://127.0.0.1:8787/fcp/bootstrap", {
       headers: { Host: "evil.example:8787" },
@@ -86,7 +86,7 @@ describe("GET /fcp/bootstrap", () => {
       mkdtempSync(join(tmpdir(), "flowapp-api-fcp-vite-"))
     )
     const token = "vite-boot"
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: token, port: 8787 })
     const res = await app.request("http://127.0.0.1:5173/fcp/bootstrap", {
       headers: {
@@ -106,7 +106,7 @@ describe("GET /fcp/bootstrap", () => {
     const home = trackTempHome(
       mkdtempSync(join(tmpdir(), "flowapp-api-fcp-origin-"))
     )
-    const engine = createEngine({ home })
+    const engine = createHost({ home })
     const app = createApp({ engine, fcpToken: "secret", port: 8787 })
     const res = await app.request("http://127.0.0.1:8787/fcp/bootstrap", {
       headers: {

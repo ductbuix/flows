@@ -1,5 +1,5 @@
 import { upgradeWebSocket } from "@hono/node-server"
-import type { Engine } from "@workspace/engine"
+import type { Host } from "@workspace/adapters-node"
 import { wsTransport, type WsLike } from "@workspace/protocol"
 import { timingSafeEqual } from "node:crypto"
 import type { Context } from "hono"
@@ -90,7 +90,7 @@ function fcpWsUrl(c: Context, port: number): string {
 
 function fcpEvents(
   c: Context,
-  engine: Engine,
+  engine: Host,
   token: string,
   port: number,
   host: FcpHost
@@ -129,7 +129,7 @@ export function fcpIndexResponse(
 }
 
 export function fcpUpgrade(
-  engine: Engine,
+  engine: Host,
   token: string,
   port: number,
   host: FcpHost

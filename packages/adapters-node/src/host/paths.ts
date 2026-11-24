@@ -1,0 +1,69 @@
+import { mkdirSync, realpathSync } from "node:fs"
+import { homedir } from "node:os"
+import { join } from "node:path"
+
+/** Resolve the app home: FLOWAPP_HOME, else ~/.flowapp (DES-002). */
+export function resolveAppHome(override?: string): string {
+  if (override) return override
+  if (process.env.FLOWAPP_HOME) return process.env.FLOWAPP_HOME
+  return join(homedir(), ".flowapp")
+}
+
+/**
+ * Realpath of the app home. Creates the dir when missing so trust
+ * binding has a stable path (DES-019).
+ */
+export function resolveAppHomeRealpath(home: string): string {
+  mkdirSync(home, { recursive: true })
+  return realpathSync(home)
+}
+
+export function appDbPath(home: string): string {
+  return join(home, "app.db")
+}
+
+export function workflowDir(home: string, workflowId: string): string {
+  return join(home, "workflows", workflowId)
+}
+
+export function runDir(workflowRoot: string, runId: string): string {
+  return join(workflowRoot, "runs", runId)
+}
+
+export function connectionsDir(home: string): string {
+  return join(home, "connections")
+}
+
+export function connectionDir(home: string, connectionId: string): string {
+  return join(connectionsDir(home), connectionId)
+}
+
+export function secretsRoot(home: string): string {
+  return join(home, "secrets")
+}
+
+export function secretsDir(home: string, connectionId: string): string {
+  return join(secretsRoot(home), connectionId)
+}
+
+export function libraryDir(home: string): string {
+  return join(home, "library")
+}
+
+export function libraryEntityDir(
+  home: string,
+  connectionId: string,
+  kind: string,
+  entityId: string
+): string {
+  return join(libraryDir(home), connectionId, kind, encodeEntityId(entityId))
+}
+
+/** One path segment; `/` in entity ids becomes `%2F` (DES-026). */
+export function encodeEntityId(entityId: string): string {
+  return entityId.replaceAll("/", "%2F")
+}
+
+export function decodeEntityId(segment: string): string {
+  return segment.replaceAll("%2F", "/")
+}

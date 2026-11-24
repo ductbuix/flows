@@ -26,6 +26,12 @@ export class RunActor {
   private readonly mailbox: MailboxEntry[] = []
   private draining = false
   private readonly issued = new Set<string>()
+  /**
+   * Last EventStore seq for this run (global high-water of our events).
+   * Fold's `state.seq` is a local 1..n counter and must not be used as
+   * expectSeq once other runs have advanced the store (BL-195 e2e).
+   */
+  private storeSeq = 0
 
   constructor(
     readonly runId: string,
@@ -61,9 +67,11 @@ export class RunActor {
   async recover(): Promise<void> {
     const stored = this.deps.events.read(this.runId)
     this.state = null
+    this.storeSeq = 0
     this.issued.clear()
     for (const s of stored) {
       this.state = fold(this.state, s.event)
+      this.storeSeq = s.seq
       if (s.event.type === "attempt_started" && s.event.nodeId) {
         this.issued.add(
           `${s.event.nodeId}:${s.event.pass ?? 1}:${s.event.attempt}`
@@ -102,12 +110,48 @@ export class RunActor {
       await this.runOneEffect(fx)
     }
     if (input.kind === "start" && this.state?.status === "running") {
-      await this.handle({ kind: "wake", at: input.at })
+      await this.drainSchedule(input.at)
+    }
+  }
+
+  /**
+   * Keep waking while decide only emits schedule events (skips / run
+   * end) with no effects. One skip per wake used to leave the run
+   * parked after a failed upstream (BL-196 / BL-209).
+   */
+  private async drainSchedule(at: string): Promise<void> {
+    for (let i = 0; i < 1000; i++) {
+      if (!this.state || this.state.status !== "running") return
+      const out = decide(this.state, { kind: "wake", at })
+      if (out.events.length === 0 && out.effects.length === 0) return
+      if (out.events.length > 0) this.append(out.events)
+      if (out.effects.length > 0) {
+        for (const fx of out.effects) {
+          await this.runOneEffect(fx)
+        }
+        return
+      }
+    }
+  }
+
+  /**
+   * Fold events appended outside the actor (ACP permission/question/
+   * plan_review). `RunState.seq` is an event count; store `seq` is the
+   * global row id — never compare them (BL-195).
+   */
+  private catchUp(): void {
+    const stored = this.deps.events.read(this.runId)
+    const have = this.state?.seq ?? 0
+    for (let i = have; i < stored.length; i++) {
+      const row = stored[i]!
+      this.state = fold(this.state, row.event)
+      this.storeSeq = row.seq
     }
   }
 
   private append(events: readonly EngineEvent[]): void {
-    const expectSeq = this.state?.seq ?? 0
+    this.catchUp()
+    const expectSeq = this.storeSeq
     const result = this.deps.events.append(this.runId, events, { expectSeq })
     if (!result.ok) {
       throw new Error(
@@ -117,6 +161,7 @@ export class RunActor {
     for (const s of result.appended) {
       this.state = fold(this.state, s.event)
     }
+    if (result.appended.length > 0) this.storeSeq = result.lastSeq
   }
 
   private async runOneEffect(fx: RunEffect): Promise<void> {
@@ -145,16 +190,22 @@ export class RunActor {
       return
     }
 
-    const result = await this.deps.runEffect(fx, this.state!)
-    await this.handle({
-      kind: "effect_result",
-      at,
-      nodeId: fx.nodeId,
-      pass: fx.pass,
-      result,
-    })
-    if (this.state?.status === "running") {
-      await this.handle({ kind: "wake", at })
+    try {
+      const result = await this.deps.runEffect(fx, this.state!)
+      await this.handle({
+        kind: "effect_result",
+        at,
+        nodeId: fx.nodeId,
+        pass: fx.pass,
+        result,
+      })
+      if (this.state?.status === "running") {
+        await this.drainSchedule(at)
+      }
+    } catch (err) {
+      // Host abort (cancel): leave the step open; a queued cancel input settles.
+      if (err instanceof DOMException && err.name === "AbortError") return
+      throw err
     }
   }
 }

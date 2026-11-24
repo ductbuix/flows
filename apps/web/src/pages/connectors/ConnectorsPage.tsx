@@ -29,7 +29,7 @@ export function ConnectorsPage() {
   )
 }
 
-/** Remount inner after mutations so list refetches (no connector/update yet). */
+/** Remount inner after add/remove so list refetches (status uses connector/update). */
 function ConnectorsPageGate() {
   const [epoch, setEpoch] = useState(0)
   const [params] = useSearchParams()
@@ -82,7 +82,7 @@ function ConnectorsPageInner({
           Add connector
         </Button>
       }
-      data-testid="mock-connectors-page"
+      data-testid="connectors-page"
     >
       <PageTitle
         title="Connectors"

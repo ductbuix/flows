@@ -16,7 +16,7 @@ import {
   type EventBus,
   type UpdateBus,
 } from "@workspace/core"
-import { getBlobStore, type Engine } from "@workspace/engine"
+import { getBlobStore, type Host } from "@workspace/adapters-node"
 
 const systemClock: Clock = { now: () => Date.now() }
 
@@ -27,7 +27,7 @@ export type DocketFcp = {
 
 /** One docket index per daemon; shared by every FCP peer. */
 export function createDocketFcp(
-  engine: Engine,
+  engine: Host,
   bus: UpdateBus,
   events: EventBus
 ): DocketFcp {

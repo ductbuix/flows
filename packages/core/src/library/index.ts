@@ -10,6 +10,7 @@ export {
   createConnectorLibraryFetcher,
   type LibraryFetchResult,
   type LibraryFetcher,
+  type LibraryPushResult,
 } from "./fetch.ts"
 export {
   PROVIDERS_GLOB,
@@ -36,6 +37,7 @@ export {
   newestVersionN,
   nextCurrent,
   readItemDisk,
+  readVersionFiles,
   removeItemTree,
   toDisk,
   toLibItem,

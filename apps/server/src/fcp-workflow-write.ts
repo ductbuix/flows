@@ -15,7 +15,7 @@ import {
   workflowValidateMethod,
   type WorkflowSummary,
 } from "@workspace/contracts"
-import type { Engine } from "@workspace/engine"
+import type { Host } from "@workspace/adapters-node"
 import { writeLayout } from "./layout-files.ts"
 import {
   readNodeWorkflowDetail,
@@ -39,7 +39,7 @@ export type WorkflowWriteBindings = Pick<
 >
 
 export type WorkflowWriteDeps = {
-  engine: Engine
+  engine: Host
   bus: UpdateBus
 }
 
@@ -174,7 +174,7 @@ function publishWorkflowChanged(
   })
 }
 
-function summaryOf(engine: Engine, workflowId: string): WorkflowSummary | null {
+function summaryOf(engine: Host, workflowId: string): WorkflowSummary | null {
   const fromList = listWorkflowSummaries(engine).find(
     (w) => w.id === workflowId
   )

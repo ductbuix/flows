@@ -19,7 +19,7 @@ import {
   type InboxService,
   type UpdateBus,
 } from "@workspace/core"
-import type { Engine } from "@workspace/engine"
+import type { Host } from "@workspace/adapters-node"
 import type { RpcPeer } from "@workspace/protocol"
 
 const systemClock: Clock = { now: () => Date.now() }
@@ -34,7 +34,7 @@ export type ConnectorsFcp = {
 
 /** Connector CRUD + check + cookie sign-in (BL-160 / BL-164 / BL-190). */
 export function createConnectorsFcp(
-  engine: Engine,
+  engine: Host,
   bus: UpdateBus,
   inbox: InboxService
 ): ConnectorsFcp {

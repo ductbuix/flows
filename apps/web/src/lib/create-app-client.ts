@@ -1,6 +1,10 @@
 import { createClient, type FlowsClient } from "@workspace/sdk"
 import { messagePortTransport, type Transport } from "@workspace/protocol"
 import {
+  browserClientCapabilities,
+  installBrowserHost,
+} from "./browser-host.ts"
+import {
   desktopClientCapabilities,
   installDesktopHost,
 } from "./desktop-host.ts"
@@ -72,11 +76,14 @@ export async function createAppClient(): Promise<FlowsClient | null> {
 
   const fcp = await loadWsBootstrap()
   if (fcp) {
-    return createClient({
+    const client = createClient({
       url: fcp.url,
       token: fcp.token,
       clientInfo: CLIENT_INFO,
+      capabilities: browserClientCapabilities,
     })
+    installBrowserHost(client)
+    return client
   }
 
   return null

@@ -3,7 +3,7 @@ import {
   applyInputDefaults,
   buildManualValuesSchema,
   canonicalManualItemPayload,
-  canonicalWorkItemKeyPayload,
+  canonicalCardKeyPayload,
   normalizeInputText,
 } from "./run-inputs.ts"
 import type { WorkflowInputDecl } from "./workflow.ts"
@@ -23,13 +23,13 @@ describe("canonicalManualItemPayload", () => {
   })
 })
 
-describe("canonicalWorkItemKeyPayload", () => {
-  it("is stable for a work item id", () => {
-    const payload = canonicalWorkItemKeyPayload("story-one")
+describe("canonicalCardKeyPayload", () => {
+  it("is stable for a card id", () => {
+    const payload = canonicalCardKeyPayload("story-one")
     expect(JSON.parse(payload)).toEqual({
       v: 1,
-      source: "workItem",
-      workItemId: "story-one",
+      source: "card",
+      cardId: "story-one",
     })
   })
 })

@@ -1,8 +1,8 @@
-import type { Engine, RunState } from "@workspace/engine"
+import type { Host, RunState } from "@workspace/adapters-node"
 
 /** Waits until a run started through the API has ended, then returns its fold. */
 export async function settle(
-  engine: Engine,
+  engine: Host,
   runId: string,
   ms = 20_000
 ): Promise<RunState> {
@@ -10,9 +10,7 @@ export async function settle(
   for (;;) {
     const state = engine.fold(runId)
     if (state && state.status !== "running" && state.status !== "queued") {
-      // The driver may still be recording its last effects.
-      await engine.resumeRun(runId)?.wait()
-      return engine.fold(runId)!
+      return state
     }
     if (Date.now() > end) throw new Error(`run ${runId} did not end`)
     await new Promise((r) => setTimeout(r, 20))

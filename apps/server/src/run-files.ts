@@ -13,19 +13,19 @@ import {
   runDir,
   stepDir,
   workflowDir,
-  type Engine,
-} from "@workspace/engine"
+  type Host,
+} from "@workspace/adapters-node"
 import type {
   LogChunk,
   OutList,
   RunInputFileDetail,
   SummaryResponse,
-} from "@workspace/shared"
+} from "@workspace/contracts"
 
 const CHUNK_BYTES = 64 * 1024
 
 export function resolveAttemptRoot(
-  engine: Engine,
+  engine: Host,
   runId: string,
   taskId: string,
   attempt: number

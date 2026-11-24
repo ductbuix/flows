@@ -2,6 +2,19 @@ export { decide } from "./decide.ts"
 export { RunActor, type RunActorDeps } from "./actor.ts"
 export { effectAttemptKey, pendingEffects } from "./pending-effects.ts"
 export {
+  assertPartialReady,
+  canon,
+  downstreamOf,
+  onlySeeds,
+  partialRefusal,
+  planPartialSeed,
+  shell,
+  type PartialBase,
+  type PartialRun,
+  type PartialSeedPlan,
+  type SeedCopy,
+} from "./partial.ts"
+export {
   COALESCE_CHUNK_KINDS,
   mapAgentEventToRunUpdate,
   type AgentRunUpdate,
