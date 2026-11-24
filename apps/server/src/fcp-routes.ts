@@ -15,6 +15,7 @@ import type { Context } from "hono"
 import type { WSEvents } from "hono/ws"
 import { fcpIndexHtml } from "./fcp-index.ts"
 import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
+import { createWorkflowWriteBindings } from "./fcp-workflow-write.ts"
 import { createRunReadBindings } from "./fcp-run-read.ts"
 
 export const FCP_AUTH_CLOSE = 4401
@@ -97,6 +98,7 @@ function bindFcpPeer(raw: WsLike, engine: Engine, bus: UpdateBus): void {
     {
       ping: defineBinding(pingMethod, () => ({ ok: true as const })),
       ...createWorkflowReadBindings(engine),
+      ...createWorkflowWriteBindings({ engine, bus }),
       ...subBindings,
       ...createRunReadBindings(engine),
     },

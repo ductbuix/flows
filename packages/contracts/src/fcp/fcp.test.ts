@@ -17,8 +17,15 @@ import {
   fileRevealMethod,
   fileStatMethod,
   fileWriteTextMethod,
+  workflowCreateMethod,
+  workflowDeleteMethod,
   workflowGetMethod,
   workflowListMethod,
+  workflowRenameMethod,
+  workflowSaveLayoutMethod,
+  workflowSaveMethod,
+  workflowUpdateNotification,
+  workflowValidateMethod,
 } from "./index.ts"
 
 describe("FCP helpers", () => {
@@ -69,6 +76,21 @@ describe("FCP helpers", () => {
     expect(workflowGetMethod.params.parse({ id: "demo" })).toEqual({
       id: "demo",
     })
+  })
+
+  it("declares workflow write methods and update notification", () => {
+    expect(fcpMethodTable["workflow/create"]).toBe(workflowCreateMethod)
+    expect(fcpMethodTable["workflow/save"]).toBe(workflowSaveMethod)
+    expect(fcpMethodTable["workflow/rename"]).toBe(workflowRenameMethod)
+    expect(fcpMethodTable["workflow/delete"]).toBe(workflowDeleteMethod)
+    expect(fcpMethodTable["workflow/save_layout"]).toBe(
+      workflowSaveLayoutMethod
+    )
+    expect(fcpMethodTable["workflow/validate"]).toBe(workflowValidateMethod)
+    expect(workflowCreateMethod.kind).toBe("command")
+    expect(workflowSaveMethod.kind).toBe("command")
+    expect(workflowValidateMethod.kind).toBe("query")
+    expect(workflowUpdateNotification.name).toBe("workflow/update")
   })
 
   it("declares connector list/get as queries and save/remove/set_capability as commands", () => {

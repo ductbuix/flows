@@ -37,7 +37,17 @@ import {
   skillUpdateNotification,
 } from "./skill.ts"
 import { subscribeMethod, unsubscribeMethod } from "./subscribe.ts"
-import { workflowGetMethod, workflowListMethod } from "./workflow.ts"
+import {
+  workflowCreateMethod,
+  workflowDeleteMethod,
+  workflowGetMethod,
+  workflowListMethod,
+  workflowRenameMethod,
+  workflowSaveLayoutMethod,
+  workflowSaveMethod,
+  workflowUpdateNotification,
+  workflowValidateMethod,
+} from "./workflow.ts"
 
 /** All FCP request methods; populated as namespaces land (BL-111+). */
 export const fcpMethodTable = {
@@ -62,6 +72,12 @@ export const fcpMethodTable = {
   "library/save_provider": librarySaveProviderMethod,
   "workflow/list": workflowListMethod,
   "workflow/get": workflowGetMethod,
+  "workflow/create": workflowCreateMethod,
+  "workflow/save": workflowSaveMethod,
+  "workflow/rename": workflowRenameMethod,
+  "workflow/delete": workflowDeleteMethod,
+  "workflow/save_layout": workflowSaveLayoutMethod,
+  "workflow/validate": workflowValidateMethod,
   "run/list": runListMethod,
   "run/get": runGetMethod,
   "skill/list": skillListMethod,
@@ -76,6 +92,7 @@ export const fcpMethodTable = {
 /** Engine-to-client update notifications (`namespace/update`). */
 export const fcpNotificationTable = {
   "docket/update": docketUpdateNotification,
+  "workflow/update": workflowUpdateNotification,
   "run/update": runUpdateNotification,
   "skill/update": skillUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>
