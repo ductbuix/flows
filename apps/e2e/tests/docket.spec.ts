@@ -207,6 +207,9 @@ test.describe("docket card panel assets (BL-199)", () => {
     await openFixLogin(page)
     const panel = page.getByTestId("docket-panel")
     await expect(panel.getByText("Acceptance criteria")).toBeVisible()
+    // The fixture card already owns one asset; notes.md is added after it.
+    const menus = panel.getByTestId("asset-open-menu")
+    await expect(menus).toHaveCount(1)
 
     await panel.getByRole("button", { name: "Add asset" }).click()
     await page.getByTestId("asset-add-from-disk").click()
@@ -220,11 +223,14 @@ test.describe("docket card panel assets (BL-199)", () => {
     await expect(dialog.getByTestId("disk-picker")).toContainText("notes.md")
     await dialog.getByTestId("asset-disk-submit").click()
     await expect(dialog).toBeHidden()
-    await expect(panel.getByTestId("asset-open-menu")).toBeVisible()
+    await expect(panel.getByText("notes.md")).toBeVisible()
+    await expect(menus).toHaveCount(2)
 
-    await panel.getByTestId("asset-open-menu").click()
+    await menus.nth(1).click()
     await page.getByTestId("asset-remove").click()
-    await expect(panel.getByTestId("asset-open-menu")).toHaveCount(0)
+    await expect(panel.getByText("notes.md")).toHaveCount(0)
+    await expect(menus).toHaveCount(1)
+    await expect(panel.getByText("Acceptance criteria")).toBeVisible()
   })
 
   test("item files", async ({ page }) => {
