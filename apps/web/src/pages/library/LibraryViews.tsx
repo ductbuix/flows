@@ -47,10 +47,18 @@ function SyncCell({ item, date }: { item: LibItem; date?: boolean }) {
 type Props = {
   items: LibItem[]
   providers: readonly ProviderDescriptor[]
+  active: readonly string[]
   onOpen: (id: string) => void
+  onTag: (tag: string) => void
 }
 
-export function LibraryTable({ items, providers, onOpen }: Props) {
+export function LibraryTable({
+  items,
+  providers,
+  active,
+  onOpen,
+  onTag,
+}: Props) {
   return (
     <Table data-testid="library-table">
       <TableHeader>
@@ -85,10 +93,15 @@ export function LibraryTable({ items, providers, onOpen }: Props) {
                 </div>
               </div>
             </TableCell>
-            <TableCell>
+            <TableCell onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-1">
                 {i.tags.slice(0, 1).map((t) => (
-                  <TagBadge key={t} tag={t} />
+                  <TagBadge
+                    key={t}
+                    tag={t}
+                    active={active.includes(t)}
+                    onClick={() => onTag(t)}
+                  />
                 ))}
                 {i.tags.length > 1 ? (
                   <span className="shrink-0 text-xs text-muted-foreground">
@@ -107,7 +120,13 @@ export function LibraryTable({ items, providers, onOpen }: Props) {
   )
 }
 
-export function LibraryGallery({ items, providers, onOpen }: Props) {
+export function LibraryGallery({
+  items,
+  providers,
+  active,
+  onOpen,
+  onTag,
+}: Props) {
   return (
     <div
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
@@ -138,9 +157,18 @@ export function LibraryGallery({ items, providers, onOpen }: Props) {
               {i.versions.length === 1 ? "version" : "versions"}
             </span>
           </div>
-          <div className="flex flex-wrap gap-1 px-1">
+          <div
+            className="flex flex-wrap gap-1 px-1"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             {i.tags.slice(0, 3).map((t) => (
-              <TagBadge key={t} tag={t} />
+              <TagBadge
+                key={t}
+                tag={t}
+                active={active.includes(t)}
+                onClick={() => onTag(t)}
+              />
             ))}
             {i.tags.length > 3 ? (
               <span className="self-center text-xs text-muted-foreground">

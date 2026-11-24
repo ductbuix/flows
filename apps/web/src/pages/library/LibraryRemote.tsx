@@ -7,6 +7,8 @@ import {
   MoreHorizontal,
   RefreshCw,
   Trash2,
+  Unlink,
+  Upload,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -17,7 +19,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu"
 import { Spinner } from "@workspace/ui/components/spinner"
 import { mono } from "@/components/data/mono"
-import { pullItem } from "./library-actions"
+import { pullItem, pushItem, unlinkItem } from "./library-actions"
 
 type Props = {
   item: LibItem
@@ -26,12 +28,13 @@ type Props = {
   onError: (message: string) => void
 }
 
-/** Status line plus Fetch and a menu (open remote, remove). */
+/** Status line plus Fetch and a menu (push, unlink, open remote, remove). */
 export function LibraryRemote({ item, providers, onDelete, onError }: Props) {
   const client = useFlowsClient()
   const [busy, setBusy] = useState(false)
   const [jobId, setJobId] = useState<string | null>(null)
   const provider = providers.find((p) => p.id === item.source)
+  const writable = provider?.access === "readwrite"
   const linked = item.source !== "local"
   const newest = item.versions[0]
 
@@ -45,15 +48,29 @@ export function LibraryRemote({ item, providers, onDelete, onError }: Props) {
     })
   }, [client, jobId, onError])
 
-  async function onFetch() {
+  async function runJob(
+    start: (
+      client: Parameters<typeof pullItem>[0],
+      id: string
+    ) => Promise<{ ok: true; jobId: string } | { ok: false; error: string }>
+  ) {
     setBusy(true)
-    const result = await pullItem(client, item.id)
+    const result = await start(client, item.id)
     if (!result.ok) {
       setBusy(false)
       onError(result.error)
       return
     }
     setJobId(result.jobId)
+  }
+
+  async function onUnlink() {
+    setBusy(true)
+    const result = await unlinkItem(client, item.id)
+    setBusy(false)
+    if (typeof result === "string" && result !== "ok") {
+      onError(result === "conflict" ? "Conflict unlinking item" : result)
+    }
   }
 
   const menu = (
@@ -79,6 +96,26 @@ export function LibraryRemote({ item, providers, onDelete, onError }: Props) {
           >
             <ExternalLink />
             Open remote
+          </DropdownMenuItem>
+        ) : null}
+        {linked && writable ? (
+          <DropdownMenuItem
+            disabled={busy || !provider}
+            onClick={() => void runJob(pushItem)}
+            data-testid="library-push"
+          >
+            <Upload />
+            Push local changes
+          </DropdownMenuItem>
+        ) : null}
+        {linked ? (
+          <DropdownMenuItem
+            disabled={busy}
+            onClick={() => void onUnlink()}
+            data-testid="library-unlink"
+          >
+            <Unlink />
+            Unlink from remote
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem
@@ -114,7 +151,7 @@ export function LibraryRemote({ item, providers, onDelete, onError }: Props) {
         </p>
         <Button
           disabled={busy || !provider}
-          onClick={() => void onFetch()}
+          onClick={() => void runJob(pullItem)}
           data-testid="library-fetch"
         >
           {busy ? <Spinner /> : <RefreshCw />}
@@ -125,9 +162,13 @@ export function LibraryRemote({ item, providers, onDelete, onError }: Props) {
       <p className="text-xs text-muted-foreground">
         {!provider
           ? "Its provider was removed. Add it back under Providers to fetch."
-          : newest
-            ? `Last fetched ${newest.at.slice(0, 10)}. Fetch pulls a new version.`
-            : "Not fetched yet. Fetch pulls the first version."}
+          : writable
+            ? newest
+              ? `Last fetched ${newest.at.slice(0, 10)}. Fetch pulls down; Push (menu) sends local edits back.`
+              : "Not fetched yet. Fetch pulls the first version."
+            : newest
+              ? `Last fetched ${newest.at.slice(0, 10)}. Read-only: nothing is written back.`
+              : "Not fetched yet. Fetch pulls the first version."}
       </p>
     </div>
   )

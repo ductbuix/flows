@@ -5,11 +5,13 @@ export type KindFilter = "all" | string
 export function filterItems(
   items: readonly LibItem[],
   kind: KindFilter,
-  search: string
+  search: string,
+  tags: readonly string[] = []
 ): LibItem[] {
   const q = search.trim().toLowerCase()
   return items.filter((i) => {
     if (kind !== "all" && i.source !== kind) return false
+    if (tags.length > 0 && !tags.every((t) => i.tags.includes(t))) return false
     if (!q) return true
     return (
       i.title.toLowerCase().includes(q) ||

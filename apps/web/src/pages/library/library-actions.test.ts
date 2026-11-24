@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from "vitest"
-import { pinVersion, pullItem, removeItem } from "./library-actions"
+import {
+  addFromDisk,
+  addFromLink,
+  pinVersion,
+  pullItem,
+  pushItem,
+  removeItem,
+  setTags,
+  unlinkItem,
+} from "./library-actions"
 
 function clientWith(
   impl: (method: string, params: unknown) => Promise<unknown>
@@ -19,10 +28,48 @@ describe("library-actions", () => {
     )
   })
 
-  it("starts a pull job", async () => {
+  it("starts pull and push jobs", async () => {
     const client = clientWith(async () => ({ jobId: "job_1" }))
-    const result = await pullItem(client, "github-acme-demo")
-    expect(result).toEqual({ ok: true, jobId: "job_1" })
+    expect(await pullItem(client, "github-acme-demo")).toEqual({
+      ok: true,
+      jobId: "job_1",
+    })
+    expect(await pushItem(client, "github-acme-demo")).toEqual({
+      ok: true,
+      jobId: "job_1",
+    })
+  })
+
+  it("sets tags and unlinks", async () => {
+    const item = { id: "github-acme-demo", tags: ["a:b"], source: "local" }
+    const client = clientWith(async () => item)
+    expect(await setTags(client, "github-acme-demo", ["a:b"])).toEqual(item)
+    expect(await unlinkItem(client, "github-acme-demo")).toEqual(item)
+  })
+
+  it("adds from link then pulls", async () => {
+    const client = clientWith(async (method) => {
+      if (method === "library/add") return { id: "github-acme-new" }
+      if (method === "library/pull") return { jobId: "job_9" }
+      return {}
+    })
+    expect(await addFromLink(client, "https://github.com/acme/new")).toEqual({
+      ok: true,
+      id: "github-acme-new",
+      jobId: "job_9",
+    })
+  })
+
+  it("adds from disk", async () => {
+    const client = clientWith(async () => ({ id: "brand-guidelines" }))
+    expect(
+      await addFromDisk(client, {
+        title: "Brand guidelines",
+        itemKind: "other",
+        tags: ["type:design"],
+        files: { "a.md": "hi" },
+      })
+    ).toEqual({ ok: true, id: "brand-guidelines" })
   })
 
   it("removes an item", async () => {

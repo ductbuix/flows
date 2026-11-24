@@ -15,12 +15,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import { pinVersion } from "./library-actions"
+import { pinVersion, setTags } from "./library-actions"
 import { LibraryFiles } from "./LibraryFiles"
 import { LibraryRemote } from "./LibraryRemote"
 import { LibraryVersions } from "./LibraryVersions"
 import { KindIcon } from "./LibraryKind"
-import { TagBadge } from "./LibraryTags"
+import { TagEditor } from "./LibraryTags"
 import { typeLabel } from "./LibraryViews"
 
 type Props = {
@@ -88,6 +88,17 @@ function LibrarySheetBody({
     }
   }
 
+  async function onTags(next: string[]) {
+    if (!item) return
+    setBusy(true)
+    const result = await setTags(client, item.id, next)
+    setBusy(false)
+    if (typeof result === "string") {
+      if (result !== "ok" && result !== "conflict") onError(result)
+      if (result === "conflict") onError("Conflict updating tags")
+    }
+  }
+
   if (detailQ.loading && !item) {
     return (
       <div
@@ -127,7 +138,9 @@ function LibrarySheetBody({
       <Tabs defaultValue="files" className="min-h-0 flex-1 px-4 pt-1">
         <TabsList>
           <TabsTrigger value="files">Files</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="details" data-testid="library-tab-details">
+            Details
+          </TabsTrigger>
           <TabsTrigger value="versions" data-testid="library-tab-versions">
             Versions ({item.versions.length})
           </TabsTrigger>
@@ -141,15 +154,17 @@ function LibrarySheetBody({
         >
           <section className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-muted-foreground">Tags</h3>
-            {item.tags.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No tags</p>
-            ) : (
-              <div className="flex flex-wrap gap-1">
-                {item.tags.map((t) => (
-                  <TagBadge key={t} tag={t} />
-                ))}
-              </div>
-            )}
+            <TagEditor
+              tags={item.tags}
+              onAdd={(tag) => {
+                if (item.tags.includes(tag) || busy) return
+                void onTags([...item.tags, tag])
+              }}
+              onRemove={(tag) => {
+                if (busy) return
+                void onTags(item.tags.filter((t) => t !== tag))
+              }}
+            />
           </section>
         </TabsContent>
         <TabsContent value="versions" className="overflow-y-auto py-3">

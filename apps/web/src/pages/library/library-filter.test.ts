@@ -30,7 +30,7 @@ const items = [
 ] as unknown as LibItem[]
 
 describe("library-filter", () => {
-  it("filters by kind and search", () => {
+  it("filters by kind, search and tags", () => {
     expect(filterItems(items, "all", "").map((i) => i.id)).toEqual([
       "github-acme",
       "local-notes",
@@ -44,6 +44,9 @@ describe("library-filter", () => {
     expect(filterItems(items, "all", "acme/demo").map((i) => i.id)).toEqual([
       "github-acme",
     ])
+    expect(
+      filterItems(items, "all", "", ["type:notes"]).map((i) => i.id)
+    ).toEqual(["local-notes"])
   })
 
   it("counts and builds source tabs", () => {
