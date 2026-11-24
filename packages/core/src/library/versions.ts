@@ -141,6 +141,30 @@ export function writeVersion(
   }
 }
 
+/** Files under `library/<id>/v<n>/` excluding `.version.yaml`. */
+export function readVersionFiles(
+  docs: DocumentStore,
+  id: string,
+  n: number
+): Record<string, string> {
+  const prefix = `${versionDir(id, n)}/`
+  const files: Record<string, string> = {}
+  for (const path of docs.list(`${prefix}**`)) {
+    const normalized = path.replace(/\\/g, "/").replace(/^\//, "")
+    if (!normalized.startsWith(prefix)) continue
+    if (
+      normalized.endsWith(`/${VERSION_META}`) ||
+      normalized.endsWith(VERSION_META)
+    )
+      continue
+    const rel = normalized.slice(prefix.length)
+    if (!rel || rel.includes("..")) continue
+    const file = docs.read(normalized)
+    if (file) files[rel] = file.text
+  }
+  return files
+}
+
 export function listItemIds(docs: DocumentStore): string[] {
   const ids = new Set<string>()
   for (const path of docs.list("library/*/item.yaml")) {

@@ -1,12 +1,18 @@
 import {
+  detect,
+  libraryAddMethod,
   libraryGetMethod,
   libraryListMethod,
   libraryListProvidersMethod,
   libraryPinVersionMethod,
   libraryPullMethod,
+  libraryPushMethod,
   libraryRemoveMethod,
   librarySaveProviderMethod,
   librarySetTagsMethod,
+  libraryUnlinkMethod,
+  LibItemId,
+  tagsOf,
   type LibItem,
   type ProviderDescriptor,
 } from "@workspace/contracts"
@@ -25,6 +31,9 @@ export type LibraryItemBindings = Pick<
   | "library/list"
   | "library/get"
   | "library/pull"
+  | "library/push"
+  | "library/add"
+  | "library/unlink"
   | "library/pin_version"
   | "library/set_tags"
   | "library/remove"
@@ -51,7 +60,8 @@ export function createLibraryProviderBindings(
 }
 
 export function createLibraryItemBindings(
-  service: LibraryService
+  service: LibraryService,
+  providers: ProviderService
 ): LibraryItemBindings {
   return {
     "library/list": defineBinding(libraryListMethod, (params) =>
@@ -65,6 +75,41 @@ export function createLibraryItemBindings(
     }),
     "library/pull": defineBinding(libraryPullMethod, (params, ctx) =>
       service.pull(params.id, ctx.signal)
+    ),
+    "library/push": defineBinding(libraryPushMethod, (params, ctx) =>
+      service.push(params.id, ctx.signal)
+    ),
+    "library/add": defineBinding(libraryAddMethod, (params) => {
+      if (params.kind === "remote") {
+        const match = detect(params.url, providers.list())
+        if (!match) {
+          throw engineError(
+            "invalid_params",
+            "No provider matches this link. Add its provider under Providers."
+          )
+        }
+        const id = uniqueId(service, slugId(`${match.provider.id}-${match.id}`))
+        return service.addRemote({
+          id,
+          kind: match.provider.icon,
+          title: match.title,
+          source: match.provider.id,
+          remoteId: match.id,
+          remoteUrl: match.url,
+          tags: tagsOf(match),
+        })
+      }
+      const id = uniqueId(service, slugId(params.title))
+      return service.addLocal({
+        id,
+        kind: params.itemKind,
+        title: params.title,
+        tags: params.tags,
+        files: params.files,
+      })
+    }),
+    "library/unlink": defineBinding(libraryUnlinkMethod, (params) =>
+      service.unlink(params.id)
     ),
     "library/pin_version": defineBinding(libraryPinVersionMethod, (params) =>
       service.pinVersion(params.id, params.n)
@@ -85,8 +130,26 @@ export function createLibraryBindings(
 ): LibraryBindings {
   return {
     ...createLibraryProviderBindings(providers),
-    ...createLibraryItemBindings(library),
+    ...createLibraryItemBindings(library, providers),
   }
+}
+
+function slugId(raw: string): string {
+  const slug = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+  const candidate = slug.length > 0 ? slug : "item"
+  return LibItemId.parse(candidate)
+}
+
+function uniqueId(service: LibraryService, base: string): string {
+  if (!service.get(base)) return base
+  for (let n = 2; n < 1000; n++) {
+    const next = LibItemId.parse(`${base}-${n}`)
+    if (!service.get(next)) return next
+  }
+  throw engineError("conflict", `Library item id exhausted: ${base}`)
 }
 
 function pageProviders(
