@@ -168,13 +168,26 @@ Body
   })
 
   it("removes an unused item over FCP", async () => {
-    const { docs, library } = stack()
+    const { docs, library, bus } = stack()
     seedItem(docs, { tags: ["repo:acme/demo"] })
     seedVersion(docs, ITEM_ID, 1)
+    const updates: Array<{ kind: string; id?: string }> = []
+    bus.subscribe(
+      "t",
+      {
+        notify(_method: string, params: unknown) {
+          updates.push(params as { kind: string; id?: string })
+        },
+      },
+      { topics: ["library"] }
+    )
     const client = await rpcOf(docs, library)
 
     await client.request("library/remove", { id: ITEM_ID })
     expect(library.get(ITEM_ID)).toBeNull()
+    expect(updates).toEqual([
+      expect.objectContaining({ kind: "item_removed", id: ITEM_ID }),
+    ])
   })
 
   it("rejects tags that are not namespace:value at the FCP boundary", async () => {
