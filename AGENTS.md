@@ -41,7 +41,8 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 - `packages/adapters-node`: Node adapters for the core ports (SQLite events,
   fs docs, secrets, watcher, process runner + sandbox, gateway unix socket),
   `engine.lock`.
-- `packages/agent-acp`: ACP runtime + Cursor profile (`profiles/`); `testing/fake-agent` (stdio).
+- `packages/agent-acp`: ACP runtime + Cursor and generic profiles (`profiles/`);
+  `testing/fake-agent` (stdio).
 - `packages/protocol`: JSON-RPC 2.0 `RpcPeer` (+ `$/cancel_request`),
   transports: linked, `wsTransport`, `messagePortTransport`, ndjson (`/node`).
 - `packages/sdk` (`createClient`: queue, backoff, resync) and

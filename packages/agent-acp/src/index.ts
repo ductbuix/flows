@@ -50,12 +50,14 @@ export {
   asMcpLaunchSpecs,
   cleanupPlacedMcp,
   cleanupPlacedSkills,
+  createGenericProfile,
   CURSOR_AUTH_METHOD,
   CURSOR_MODES,
   CURSOR_SKILLS_DIR,
   cursorCommand,
   cursorProfile,
   FLOWS_MCP_KEY,
+  GENERIC_MODES,
   placeMcp,
   placeSkills,
   probeBinaryVersion,
@@ -64,6 +66,7 @@ export {
   type AgentCommand,
   type AgentProbeResult,
   type AgentProfile,
+  type GenericProfileSettings,
   type McpLaunchSpec,
 } from "./profiles/index.ts"
 export {

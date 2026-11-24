@@ -10,6 +10,11 @@ export {
   probeCursor,
 } from "./cursor.ts"
 export {
+  createGenericProfile,
+  GENERIC_MODES,
+  type GenericProfileSettings,
+} from "./generic.ts"
+export {
   asMcpLaunchSpecs,
   cleanupPlacedMcp,
   FLOWS_MCP_KEY,

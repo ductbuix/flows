@@ -21,6 +21,17 @@ import { CURSOR_CREATE_PLAN_METHOD } from "./create-plan.ts"
 import { attachCursorStreamExtensions } from "./cursor-stream-extensions.ts"
 import { attachFsHandlers } from "./fs.ts"
 import { mapSessionUpdate, parseStopReason } from "./map-update.ts"
+import { CURSOR_TASK_METHOD } from "./task.ts"
+import { CURSOR_UPDATE_TODOS_METHOD } from "./update-todos.ts"
+
+/** `undefined` keeps Cursor handlers; empty/false skips (generic, BL-150). */
+function extensionEnabled(
+  extensions: Readonly<Record<string, unknown>> | undefined,
+  method: string
+): boolean {
+  if (extensions === undefined) return true
+  return Boolean(extensions[method])
+}
 
 /** Client capabilities advertised on `initialize` (DES-041). */
 export const ACP_CLIENT_CAPABILITIES = {
@@ -62,6 +73,11 @@ export type OpenAcpSessionOptions = {
    * park until cancel answers `cancelled`.
    */
   handleCreatePlan?: (params: unknown) => Promise<unknown>
+  /**
+   * Profile extension flags (DES-041). `undefined` keeps Cursor
+   * handlers (direct session tests); `{}` attaches none (generic).
+   */
+  extensions?: Readonly<Record<string, unknown>>
 }
 
 type QueueWaiter = {
@@ -163,31 +179,42 @@ class AcpSession implements AgentSession {
           "session/request_permission"
         )
     )
-    this.unsubAskQuestion = peer.onRequest(
-      CURSOR_ASK_QUESTION_METHOD,
-      (params) =>
-        this.onClientRequest(
-          params,
-          this.handleAskQuestion,
-          CANCELLED_ASK_QUESTION_RESULT,
-          CURSOR_ASK_QUESTION_METHOD
-        )
-    )
-    this.unsubCreatePlan = peer.onRequest(CURSOR_CREATE_PLAN_METHOD, (params) =>
-      this.onClientRequest(
-        params,
-        this.handleCreatePlan,
-        CANCELLED_CREATE_PLAN_RESULT,
-        CURSOR_CREATE_PLAN_METHOD
+    if (extensionEnabled(options.extensions, CURSOR_ASK_QUESTION_METHOD)) {
+      this.unsubAskQuestion = peer.onRequest(
+        CURSOR_ASK_QUESTION_METHOD,
+        (params) =>
+          this.onClientRequest(
+            params,
+            this.handleAskQuestion,
+            CANCELLED_ASK_QUESTION_RESULT,
+            CURSOR_ASK_QUESTION_METHOD
+          )
       )
-    )
-    this.unsubStreamExt = attachCursorStreamExtensions(peer, {
-      getTodos: () => this.todos,
-      setTodos: (todos) => {
-        this.todos = todos
-      },
-      emit: (event) => this.emitEvent?.(event),
-    })
+    }
+    if (extensionEnabled(options.extensions, CURSOR_CREATE_PLAN_METHOD)) {
+      this.unsubCreatePlan = peer.onRequest(
+        CURSOR_CREATE_PLAN_METHOD,
+        (params) =>
+          this.onClientRequest(
+            params,
+            this.handleCreatePlan,
+            CANCELLED_CREATE_PLAN_RESULT,
+            CURSOR_CREATE_PLAN_METHOD
+          )
+      )
+    }
+    if (
+      extensionEnabled(options.extensions, CURSOR_UPDATE_TODOS_METHOD) ||
+      extensionEnabled(options.extensions, CURSOR_TASK_METHOD)
+    ) {
+      this.unsubStreamExt = attachCursorStreamExtensions(peer, {
+        getTodos: () => this.todos,
+        setTodos: (todos) => {
+          this.todos = todos
+        },
+        emit: (event) => this.emitEvent?.(event),
+      })
+    }
     this.unsubFs = attachFsHandlers(peer, {
       sessionId: id,
       allowedRoots: options.allowedRoots ?? [options.cwd],

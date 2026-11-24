@@ -114,6 +114,7 @@ export function createAcpRuntime(
           clientInfo: options.clientInfo,
           authMethod: profile.authMethod,
           kill: () => procCtl.abort(),
+          extensions: profile.extensions,
         })
         return wrapSession(session, async () => {
           peer.close()

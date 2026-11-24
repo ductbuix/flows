@@ -193,13 +193,16 @@ export function runFakeAgent(
     req: FakeAgentClientRequest
   ): Promise<void> | undefined => {
     const id = nextClientReqId++
-    transport.send({
+    const msg: JsonRpcMessage = {
       jsonrpc: JSONRPC_VERSION,
       method: req.method,
       ...(req.params !== undefined ? { params: req.params } : {}),
       id,
-    })
+    }
+    // Register expect before send: Method not found replies sync on
+    // PassThrough and would otherwise arrive before the map entry exists.
     if (req.expectResult === undefined && req.expectError === undefined) {
+      transport.send(msg)
       return undefined
     }
     const wait = new Promise<void>((resolve, reject) => {
@@ -211,6 +214,7 @@ export function runFakeAgent(
       })
     })
     clientExpectWaits.push(wait)
+    transport.send(msg)
     return wait
   }
 
