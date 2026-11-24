@@ -136,15 +136,15 @@ Recorded in DES-043; this checklist is the acceptance surface.
 
 ## Connectors
 
-| id    | item                                      | status  | test id                              | backlog |
-| ----- | ----------------------------------------- | ------- | ------------------------------------ | ------- |
-| CN-01 | Table + add dialog (transport, name, how) | app     | `connectors.spec.ts › list add`      | —       |
-| CN-02 | Sheet: access capabilities toggles        | app     | `connectors.spec.ts › capabilities`  | —       |
-| CN-03 | Sheet: setup + remove                     | app     | `connectors.spec.ts › remove`        | —       |
-| CN-04 | Sign-in / check status action             | missing | `connectors.spec.ts › sign in check` | BL-207  |
-| CN-05 | Disconnect                                | missing | `connectors.spec.ts › disconnect`    | BL-207  |
-| CN-06 | Used-by tab                               | missing | `connectors.spec.ts › used by`       | BL-207  |
-| CN-07 | Update connector settings                 | missing | `connectors.spec.ts › update`        | BL-207  |
+| id    | item                                      | status | test id                              | backlog |
+| ----- | ----------------------------------------- | ------ | ------------------------------------ | ------- |
+| CN-01 | Table + add dialog (transport, name, how) | app    | `connectors.spec.ts › list add`      | —       |
+| CN-02 | Sheet: access capabilities toggles        | app    | `connectors.spec.ts › capabilities`  | —       |
+| CN-03 | Sheet: setup + remove                     | app    | `connectors.spec.ts › remove`        | —       |
+| CN-04 | Sign-in / check status action             | app    | `connectors.spec.ts › sign in check` | BL-207  |
+| CN-05 | Disconnect                                | app    | `connectors.spec.ts › disconnect`    | BL-207  |
+| CN-06 | Used-by tab                               | app    | `connectors.spec.ts › used by`       | BL-207  |
+| CN-07 | Update connector settings                 | app    | `connectors.spec.ts › update`        | BL-207  |
 
 ## Inbox
 

@@ -9,7 +9,7 @@ import {
 } from "@workspace/ui/components/table"
 import { mono } from "@/components/data/mono"
 import { authLabel } from "./connector-labels"
-import { TransportBadge } from "./connector-parts"
+import { StatusBadge, TransportBadge } from "./connector-parts"
 
 export function ConnectorsTable({
   items,
@@ -25,6 +25,7 @@ export function ConnectorsTable({
           <TableHead>Name</TableHead>
           <TableHead>Connects via</TableHead>
           <TableHead>Sign-in</TableHead>
+          <TableHead>Status</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -50,6 +51,9 @@ export function ConnectorsTable({
             </TableCell>
             <TableCell className="text-muted-foreground">
               {authLabel(c.auth)}
+            </TableCell>
+            <TableCell>
+              <StatusBadge status={c.status} />
             </TableCell>
           </TableRow>
         ))}

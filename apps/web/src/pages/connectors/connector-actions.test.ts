@@ -2,9 +2,12 @@ import { describe, expect, it, vi } from "vitest"
 import { ErrorCode } from "@workspace/contracts"
 import type { FlowsClient } from "@workspace/sdk"
 import {
+  checkConnector,
   removeConnector,
   saveConnector,
   setCapability,
+  signInConnector,
+  signOutConnector,
   slugFromName,
 } from "./connector-actions"
 
@@ -83,5 +86,34 @@ describe("connector-actions", () => {
   it("slugFromName lowercases and dashes", () => {
     expect(slugFromName("Open Search", "x")).toBe("open-search")
     expect(slugFromName("!!!", "fallback")).toBe("fallback")
+  })
+
+  it("checkConnector returns status", async () => {
+    const call = vi.fn().mockResolvedValue({ status: "expired", detail: "x" })
+    const client = fakeClient(call)
+    await expect(checkConnector(client, "rally")).resolves.toEqual({
+      ok: true,
+      status: "expired",
+      detail: "x",
+    })
+    expect(call).toHaveBeenCalledWith("connector/check", { id: "rally" })
+  })
+
+  it("signInConnector maps cancelled", async () => {
+    const call = vi.fn().mockResolvedValue({ cancelled: true })
+    const client = fakeClient(call)
+    await expect(signInConnector(client, "rally")).resolves.toEqual({
+      ok: true,
+      cancelled: true,
+    })
+  })
+
+  it("signOutConnector returns ok", async () => {
+    const call = vi.fn().mockResolvedValue({ status: "off" })
+    const client = fakeClient(call)
+    await expect(signOutConnector(client, "rally")).resolves.toEqual({
+      ok: true,
+    })
+    expect(call).toHaveBeenCalledWith("connector/sign_out", { id: "rally" })
   })
 })

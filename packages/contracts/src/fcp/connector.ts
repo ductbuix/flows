@@ -26,6 +26,9 @@ export const connectorGetParamsSchema = z.object({
 export const connectorGetResultSchema = z.object({
   connector: connectorSchema,
   hash: z.string(),
+  status: connectorStatusSchema.default("off"),
+  checkedAt: z.string().min(1).optional(),
+  detail: z.string().min(1).optional(),
 })
 
 export const connectorSaveParamsSchema = z.object({
@@ -124,6 +127,22 @@ export const connectorSignInMethod = defineMethod({
   name: "connector/sign_in",
   params: connectorSignInParamsSchema,
   result: connectorSignInResultSchema,
+  kind: "command",
+})
+
+export const connectorSignOutParamsSchema = z.object({
+  id: connectorFileIdSchema,
+  requestKey: fcpRequestKeySchema,
+})
+
+export const connectorSignOutResultSchema = z.object({
+  status: z.literal("off"),
+})
+
+export const connectorSignOutMethod = defineMethod({
+  name: "connector/sign_out",
+  params: connectorSignOutParamsSchema,
+  result: connectorSignOutResultSchema,
   kind: "command",
 })
 

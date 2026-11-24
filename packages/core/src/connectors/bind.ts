@@ -6,6 +6,7 @@ import {
   connectorSaveMethod,
   connectorSetCapabilityMethod,
   connectorSignInMethod,
+  connectorSignOutMethod,
   type ConnectorSummary,
 } from "@workspace/contracts"
 import { engineError } from "../kernel/engine-error.ts"
@@ -15,6 +16,7 @@ import type { FcpConnection } from "../rpc/initialize.ts"
 import type { ChromeBrowserSignIn } from "./browser-sign-in.ts"
 import { checkConnector, type ConnectorCheckDeps } from "./check.ts"
 import { signInConnector } from "./sign-in.ts"
+import { clearConnectorSecrets, signOutConnector } from "./sign-out.ts"
 import type { ConnectorService } from "./service.ts"
 
 export type ConnectorBindings = Pick<
@@ -26,6 +28,7 @@ export type ConnectorBindings = Pick<
   | "connector/set_capability"
   | "connector/check"
   | "connector/sign_in"
+  | "connector/sign_out"
 >
 
 type HostPeer = {
@@ -58,7 +61,14 @@ export function createConnectorBindings(
       if (!record) {
         throw engineError("not_found", `Connector not found: ${params.id}`)
       }
-      return { connector: record.connector, hash: record.hash }
+      const live = service.getStatus(params.id)
+      return {
+        connector: record.connector,
+        hash: record.hash,
+        status: live?.status ?? "off",
+        ...(live?.checkedAt !== undefined ? { checkedAt: live.checkedAt } : {}),
+        ...(live?.detail !== undefined ? { detail: live.detail } : {}),
+      }
     }),
     "connector/save": defineBinding(connectorSaveMethod, (params) => {
       const result = service.save(params.connector, params.baseHash)
@@ -75,6 +85,8 @@ export function createConnectorBindings(
     "connector/remove": defineBinding(connectorRemoveMethod, (params) => {
       const record = service.get(params.id)
       service.remove(params.id)
+      const secrets = options?.signIn?.secrets
+      if (secrets) clearConnectorSecrets(secrets, params.id)
       const check = options?.check
       if (check && record) {
         check.onStatusChanged?.({
@@ -143,6 +155,26 @@ export function createConnectorBindings(
         )
       }
     ),
+    "connector/sign_out": defineBinding(connectorSignOutMethod, (params) => {
+      const signIn = options?.signIn
+      const check = options?.check
+      if (!signIn || !check) {
+        throw engineError(
+          "failed_precondition",
+          "Connector sign-out is not configured"
+        )
+      }
+      return signOutConnector(
+        {
+          service,
+          secrets: signIn.secrets,
+          bus: check.bus,
+          clock: check.clock,
+          onStatusChanged: check.onStatusChanged,
+        },
+        params.id
+      )
+    }),
   }
 }
 

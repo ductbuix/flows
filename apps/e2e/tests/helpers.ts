@@ -10,9 +10,9 @@ type JsonRpcResult = {
 }
 
 /** Minimal FCP JSON-RPC over WebSocket (no sdk dep in e2e). */
-async function fcpRequest(
+export async function fcpRequest(
   method: string,
-  params: Record<string, unknown>
+  params: Record<string, unknown> = {}
 ): Promise<unknown> {
   const bootRes = await fetch(`${API}/fcp/bootstrap`, {
     headers: { Origin: WEB_ORIGIN },
