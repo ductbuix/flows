@@ -2,12 +2,9 @@ import { describe, expect, it } from "vitest"
 import { createFakeAgentRuntime } from "../testing/fake-agent-runtime.ts"
 import { createFakeDocumentStore } from "../testing/fake-document-store.ts"
 import { createStepContext } from "./context.ts"
-import {
-  createReply,
-  llmContentBlocks,
-  llmKind,
-  llmPromptText,
-} from "./kinds/llm.ts"
+import { llmKind } from "./kinds/llm.ts"
+import { llmContentBlocks, llmPromptText } from "./agent-prompt.ts"
+import { createReply } from "./agent-reply.ts"
 import { collectExecute } from "./run.ts"
 
 const runDir = "workflows/wf/runs/r1"

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { LogEntry } from "../attempt-log.ts"
-import { logToolEvent } from "./llm.ts"
+import type { LogEntry } from "./attempt-log.ts"
+import { logToolEvent } from "./tool-log.ts"
 
 describe("logToolEvent", () => {
   it("logs the command with its result when the call settles", () => {

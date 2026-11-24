@@ -36,12 +36,12 @@ export { triggerKind } from "./kinds/trigger.ts"
 export { promptKind } from "./kinds/prompt.ts"
 export { assetKind } from "./kinds/asset.ts"
 export { agentKind } from "./kinds/agent.ts"
+export { llmKind } from "./kinds/llm.ts"
 export {
-  llmKind,
   llmContentBlocks,
   llmProfileId,
   llmPromptText,
-} from "./kinds/llm.ts"
+} from "./agent-prompt.ts"
 export {
   CONDITION_BRANCHES,
   conditionBranch,
