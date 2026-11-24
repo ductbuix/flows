@@ -286,6 +286,14 @@ export {
   type FileServiceDeps,
 } from "./files/index.ts"
 export {
+  createSettingsBindings,
+  type AppTrustPort,
+  type CliStatusPort,
+  type McpTrustPort,
+  type SettingsBindings,
+  type SettingsPorts,
+} from "./settings/index.ts"
+export {
   approvalItemId,
   applySignInStatus,
   createInboxBindings,

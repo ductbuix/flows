@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router"
-import { File } from "lucide-react"
+import { File, Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -16,8 +17,12 @@ import {
 import { useRuns } from "./runs-store"
 import { APP_NAV } from "./mock-data"
 
+type Props = {
+  onOpenSettings: () => void
+}
+
 /** Sidebar 11 layout (shadcn blocks), reworked for Flows. */
-export function MockSidebar() {
+export function MockSidebar({ onOpenSettings }: Props) {
   const { pathname } = useLocation()
   const waiting = useRuns().filter(
     (r) => r.tone === "attention" && !r.decision
@@ -58,6 +63,19 @@ export function MockSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              data-testid="settings-open"
+              onClick={onOpenSettings}
+            >
+              <Settings />
+              Settings
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

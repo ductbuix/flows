@@ -27,6 +27,11 @@ import {
   inboxDismissMethod,
   inboxListMethod,
   inboxUpdateNotification,
+  settingsCliStatusMethod,
+  settingsGetTrustMethod,
+  settingsListMcpTrustMethod,
+  settingsSetMcpTrustMethod,
+  settingsSetTrustMethod,
   runCancelMethod,
   runDeleteMethod,
   runGetChangesMethod,
@@ -212,5 +217,22 @@ describe("FCP helpers", () => {
         optionId: "approved",
       })
     ).toEqual({ itemId: "approval:r1:ask:1", optionId: "approved" })
+  })
+
+  it("declares settings cli/trust/mcp methods", () => {
+    expect(fcpMethodTable["settings/cli_status"]).toBe(settingsCliStatusMethod)
+    expect(fcpMethodTable["settings/get_trust"]).toBe(settingsGetTrustMethod)
+    expect(fcpMethodTable["settings/set_trust"]).toBe(settingsSetTrustMethod)
+    expect(fcpMethodTable["settings/list_mcp_trust"]).toBe(
+      settingsListMcpTrustMethod
+    )
+    expect(fcpMethodTable["settings/set_mcp_trust"]).toBe(
+      settingsSetMcpTrustMethod
+    )
+    expect(settingsCliStatusMethod.kind).toBe("query")
+    expect(settingsGetTrustMethod.kind).toBe("query")
+    expect(settingsSetTrustMethod.kind).toBe("command")
+    expect(settingsListMcpTrustMethod.kind).toBe("query")
+    expect(settingsSetMcpTrustMethod.kind).toBe("command")
   })
 })

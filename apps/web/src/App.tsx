@@ -12,8 +12,6 @@ import { LibraryPage } from "@/pages/library/LibraryPage"
 import { MockShell } from "@/pages/mock/MockShell"
 import { WorkflowEditorPage } from "@/pages/workflows/WorkflowEditorPage"
 import { WorkflowsPage } from "@/pages/workflows/WorkflowsPage"
-import { SettingsPage } from "@/pages/SettingsPage"
-
 function MockWorkflowRedirect() {
   const { id } = useParams()
   return <Navigate to={`/workflows/${id ?? ""}`} replace />
@@ -33,7 +31,7 @@ export function App() {
         <Route path="skills" element={<SkillsPage />} />
         <Route path="runs" element={<RunsPage />} />
         <Route path="connectors" element={<ConnectorsPage />} />
-        <Route path="settings" element={<SettingsPage />} />
+        <Route path="settings" element={<Navigate to="/docket" replace />} />
         {import.meta.env.DEV ? (
           <Route path="dev/kit" element={<DevKitPage />} />
         ) : null}

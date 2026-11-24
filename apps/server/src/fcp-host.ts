@@ -21,6 +21,7 @@ import { createInboxFcp } from "./fcp-inbox.ts"
 import { createLibraryFcp } from "./fcp-library.ts"
 import { createRunCommandBindings } from "./fcp-run-commands.ts"
 import { createRunReadBindings } from "./fcp-run-read.ts"
+import { createSettingsFcp } from "./fcp-settings.ts"
 import { createSkillsFcp } from "./fcp-skills.ts"
 import { createWorkflowReadBindings } from "./fcp-workflow-read.ts"
 import { createWorkflowWriteBindings } from "./fcp-workflow-write.ts"
@@ -46,6 +47,7 @@ export function createFcpHost(engine: Engine): FcpHost {
   const inbox = createInboxFcp(engine, bus)
   const library = createLibraryFcp(engine, bus)
   const skills = createSkillsFcp(engine, bus)
+  const settings = createSettingsFcp(engine)
   const connectors = createConnectorsFcp(engine, bus, inbox.inbox)
   const idempotency = new IdempotencyStore()
   const coreRuns = createCoreRunHost(engine)
@@ -59,6 +61,7 @@ export function createFcpHost(engine: Engine): FcpHost {
       ...inbox.bindings,
       ...library.bindings,
       ...skills.bindings,
+      ...settings,
     },
     dispose() {
       coreRuns.dispose()

@@ -176,7 +176,7 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 | ----- | ----------------------------------------------------------------- | ------- | -------------------------------------- | ------- |
 | SH-01 | Nav: Docket, Workflows, Inbox, Files, Library, Skills, Connectors | app     | `shell-smoke.spec.ts › nav`            | —       |
 | SH-02 | Runs nav item                                                     | drop    | `shell-smoke.spec.ts › no runs nav`    | BL-209  |
-| SH-03 | Settings entry in sidebar footer → panel                          | missing | `sidebar-settings.spec.ts › panel`     | BL-210  |
+| SH-03 | Settings entry in sidebar footer → panel                          | app     | `sidebar-settings.spec.ts › panel`     | BL-210  |
 | SH-04 | `MockShell` / `MockSidebar` / mock test ids                       | partial | `shell-smoke.spec.ts › app names`      | BL-212  |
 | SH-05 | `/mock/*` redirects                                               | drop    | `shell-smoke.spec.ts › no mock routes` | BL-212  |
 | SH-06 | In-memory `*-store.ts` / `*-data.ts`                              | drop    | —                                      | BL-211  |
@@ -186,19 +186,19 @@ Mock at `22ff78c` only modeled approval cards. App kinds beyond that stay.
 | id    | item                                  | status  | test id                                   | backlog |
 | ----- | ------------------------------------- | ------- | ----------------------------------------- | ------- |
 | ST-01 | Theme toggle (light / dark / system)  | app     | `sidebar-settings.spec.ts › theme`        | BL-210  |
-| ST-02 | Open as panel (not `/settings` route) | missing | `sidebar-settings.spec.ts › panel`        | BL-210  |
-| ST-03 | CLI status / trust                    | missing | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
-| ST-04 | Always-trust paths                    | missing | `sidebar-settings.spec.ts › always trust` | BL-210  |
-| ST-05 | MCP trust allow list                  | missing | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
+| ST-02 | Open as panel (not `/settings` route) | app     | `sidebar-settings.spec.ts › panel`        | BL-210  |
+| ST-03 | CLI status / trust                    | app     | `sidebar-settings.spec.ts › cli trust`    | BL-210  |
+| ST-04 | Always-trust paths                    | app     | `sidebar-settings.spec.ts › always trust` | BL-210  |
+| ST-05 | MCP trust allow list                  | app     | `sidebar-settings.spec.ts › mcp trust`    | BL-210  |
 | ST-06 | `/settings` route                     | drop    | `sidebar-settings.spec.ts › no route`     | BL-210  |
 
 ## Counts
 
 | status    | rows   |
 | --------- | ------ |
-| app       | 28     |
+| app       | 33     |
 | partial   | 7      |
-| missing   | 46     |
+| missing   | 41     |
 | drop      | 5      |
 | **total** | **86** |
 
