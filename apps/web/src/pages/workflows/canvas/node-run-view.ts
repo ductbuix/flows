@@ -16,12 +16,23 @@ export function stepToRunState(status: TaskStatus): RunState | undefined {
 }
 
 /** Map latest steps onto node ids for the canvas. */
-export function statesFromSteps(
-  steps: readonly RunStep[]
-): Record<string, { state: RunState; result?: string; attempts: number }> {
+export function statesFromSteps(steps: readonly RunStep[]): Record<
+  string,
+  {
+    state: RunState
+    result?: string
+    failReason?: string
+    attempts: number
+  }
+> {
   const out: Record<
     string,
-    { state: RunState; result?: string; attempts: number }
+    {
+      state: RunState
+      result?: string
+      failReason?: string
+      attempts: number
+    }
   > = {}
   for (const s of steps) {
     const state = stepToRunState(s.status)
@@ -29,6 +40,7 @@ export function statesFromSteps(
     out[s.nodeId] = {
       state,
       attempts: Math.max(1, s.attempts),
+      ...(s.failReason ? { failReason: s.failReason } : {}),
       ...(s.branch || s.decision || s.failReason
         ? { result: s.branch ?? s.decision ?? s.failReason }
         : {}),

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { Plug, Sparkles } from "lucide-react"
 import { useQuery } from "@workspace/sdk-react"
 import { Badge } from "@workspace/ui/components/badge"
@@ -9,32 +10,37 @@ export function ConnectorCount({
   id,
   connectors = [],
   skills = [],
+  children,
 }: {
+  children?: ReactNode
   id: string
   connectors?: string[]
   skills?: string[]
 }) {
   const { openSettings } = useFlow()
   return (
-    <button
-      type="button"
-      className="nodrag flex w-fit gap-1.5"
-      onClick={() => openSettings(id)}
-      data-testid="step-connectors"
-    >
-      <Badge variant="secondary">
-        <Plug />
-        {connectors.length === 0
-          ? "No connectors"
-          : `${connectors.length} ${connectors.length === 1 ? "connector" : "connectors"}`}
-      </Badge>
-      <Badge variant="secondary" data-testid="step-skills-count">
-        <Sparkles />
-        {skills.length === 0
-          ? "No skills"
-          : `${skills.length} ${skills.length === 1 ? "skill" : "skills"}`}
-      </Badge>
-    </button>
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        className="nodrag flex w-fit gap-1.5"
+        onClick={() => openSettings(id)}
+        data-testid="step-connectors"
+      >
+        <Badge variant="secondary">
+          <Plug />
+          {connectors.length === 0
+            ? "No connectors"
+            : `${connectors.length} ${connectors.length === 1 ? "connector" : "connectors"}`}
+        </Badge>
+        <Badge variant="secondary" data-testid="step-skills-count">
+          <Sparkles />
+          {skills.length === 0
+            ? "No skills"
+            : `${skills.length} ${skills.length === 1 ? "skill" : "skills"}`}
+        </Badge>
+      </button>
+      {children}
+    </div>
   )
 }
 

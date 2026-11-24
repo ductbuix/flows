@@ -41,6 +41,7 @@ export function llmContentBlocks(
 ): ContentBlock[] {
   const blocks: ContentBlock[] = [{ type: "text", text: promptText }]
   for (const input of inputs) {
+    if (!input.text?.trim()) continue
     blocks.push({
       type: "resource",
       uri: `file://${input.name}`,
@@ -49,6 +50,32 @@ export function llmContentBlocks(
     })
   }
   return blocks
+}
+
+/** Shell line from a tool input like `{ command: "ls" }`. */
+export function commandOf(input: unknown): string | undefined {
+  if (!input || typeof input !== "object") return undefined
+  const c = (input as { command?: unknown }).command
+  if (typeof c === "string") return c
+  return Array.isArray(c) ? c.join(" ") : undefined
+}
+
+function contentText(content: unknown): string {
+  if (typeof content === "string") return content
+  if (Array.isArray(content)) {
+    const parts = content.map((item) => {
+      const inner = (item as { content?: { text?: unknown } } | null)?.content
+      if (typeof inner?.text === "string") return inner.text
+      const direct = (item as { text?: unknown } | null)?.text
+      return typeof direct === "string" ? direct : contentText(item)
+    })
+    return parts.join("\n")
+  }
+  try {
+    return JSON.stringify(content, null, 2)
+  } catch {
+    return String(content)
+  }
 }
 
 function readFrozen(
@@ -92,10 +119,35 @@ export const llmKind = defineNodeKind({
         : {}),
     })
     let text = ""
+    const tools = new Map<string, { title?: string; input?: unknown }>()
     try {
       if (session.setMode) await session.setMode("agent")
       for await (const event of session.prompt(blocks, ctx.signal)) {
         if (event.kind === "message_chunk") text += event.text
+        if (event.kind === "tool_call" || event.kind === "tool_call_update") {
+          const prev = tools.get(event.id)
+          const next = {
+            title: event.kind === "tool_call" ? event.title : prev?.title,
+            input: event.input ?? prev?.input,
+          }
+          tools.set(event.id, next)
+          // Log when the call settles, or on first sight of a started call.
+          const settled =
+            event.status === "completed" || event.status === "failed"
+          if (settled || (event.kind === "tool_call" && !prev)) {
+            const command = commandOf(next.input)
+            ctx.log({
+              kind: "tool_call",
+              title: next.title ?? "Tool call",
+              ...(command ? { command } : {}),
+              status: event.status,
+              ...(event.kind === "tool_call_update" &&
+              event.content !== undefined
+                ? { text: contentText(event.content) }
+                : {}),
+            })
+          }
+        }
         if (event.kind === "stop" && event.reason === "cancelled") {
           yield { kind: "failed", reason: "exit", message: "cancelled" }
           return
@@ -108,6 +160,7 @@ export const llmKind = defineNodeKind({
     } finally {
       await session.close()
     }
+    ctx.log({ kind: "message", title: "Agent reply", text: text.trim() })
     yield {
       kind: "output_written",
       path: await ctx.outputs.write("text.md", text.trim()),

@@ -41,7 +41,7 @@ export function resolveAttemptRoot(
 
 export function readLogChunk(
   attemptRoot: string,
-  stream: "stdout" | "stderr",
+  stream: LogChunk["stream"],
   offset: number
 ): LogChunk {
   const path = join(attemptRoot, `${stream}.log`)

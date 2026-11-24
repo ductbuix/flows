@@ -240,6 +240,7 @@ export function NodeShell({
       >
         {children}
         <NodeRunFooter
+          kind={kind}
           nodeId={nodeId}
           state={state}
           result={result}

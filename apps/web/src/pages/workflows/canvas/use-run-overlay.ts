@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { useFlowsClient, useQuery } from "@workspace/sdk-react"
 import { startRun } from "@/components/runs/run-actions"
 import type { CanvasNode } from "./flow-graph"
+import { showsLogButton } from "./node-logs"
 import { useCanvasRun } from "./use-canvas-run"
 
 /** Run list, card picker, start, and node status overlay for the canvas. */
@@ -31,8 +32,9 @@ export function useRunOverlay(
     if (!runId) return nodes
     return nodes.map((n) => {
       const v = views[n.id]
-      // Keep pointer events when Retry is offered on a failed node.
-      const interactive = v?.state === "failed"
+      // Keep pointer events when Retry or Logs is offered.
+      const interactive =
+        v?.state === "failed" || showsLogButton(n.data.kind, v?.state)
       return {
         ...n,
         className: interactive ? undefined : "pointer-events-none",
@@ -42,6 +44,8 @@ export function useRunOverlay(
           ...n.data,
           ...(v?.state ? { state: v.state } : {}),
           ...(v?.result ? { result: v.result } : {}),
+          ...(v?.failReason ? { failReason: v.failReason } : {}),
+          ...(v ? { attempt: v.attempts } : {}),
         },
       }
     })
@@ -68,6 +72,7 @@ export function useRunOverlay(
     starting,
     start,
     onRetry,
+    runId,
     readOnly: !!runId,
   }
 }

@@ -4,6 +4,7 @@ import { useFlow } from "./flow-context"
 import { FIELD, KindPorts, NodeShell, PortHandle } from "./NodeShell"
 import { NodeFileField, NodeYamlField } from "./NodeFields"
 import { ModelRow } from "./ModelRow"
+import { NodeLogsButton } from "./NodeLogsButton"
 import { ConnectorCount } from "./StepConnectors"
 import { portsFor, type CanvasNode } from "./flow-graph"
 
@@ -66,11 +67,9 @@ export function LlmNode({ id, data, selected }: Props) {
           onChange={(p) => update(id, p)}
         />
       ) : null}
-      <ConnectorCount
-        id={id}
-        connectors={data.connectors}
-        skills={data.skills}
-      />
+      <ConnectorCount id={id} connectors={data.connectors} skills={data.skills}>
+        <NodeLogsButton kind={kind} nodeId={id} state={data.state} />
+      </ConnectorCount>
     </NodeShell>
   )
 }

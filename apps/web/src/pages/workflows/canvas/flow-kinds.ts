@@ -76,6 +76,9 @@ export type CanvasNodeData = {
   skills?: string[]
   state?: RunState
   result?: string
+  failReason?: string
+  /** Latest attempt number in the followed run. */
+  attempt?: number
 }
 
 export function kindLabel(kind: string): string {

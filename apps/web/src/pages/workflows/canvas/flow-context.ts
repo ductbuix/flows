@@ -21,6 +21,8 @@ export type FlowActions = {
   decide?: (decision: "approved" | "rejected") => void
   /** Retry a failed node on the followed run. */
   retry?: (id: string) => void
+  /** Open the log viewer for a node of the followed run. */
+  openLogs?: (id: string) => void
 }
 
 const noop = () => {}

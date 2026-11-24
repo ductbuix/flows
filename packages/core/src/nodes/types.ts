@@ -1,3 +1,4 @@
+import type { LogEntry } from "./attempt-log.ts"
 import type { z } from "zod"
 import type { AgentSession, SessionSpec } from "../ports/agent-runtime.ts"
 import type { PublishPort } from "../ports/publish.ts"
@@ -80,6 +81,8 @@ export type StepContext<S> = {
   agent: {
     session(spec: SessionSpec): Promise<AgentSession>
   }
+  /** Append to this attempt's activity log (commands, tool calls). */
+  log(entry: Omit<LogEntry, "at">): void
   outputs: {
     /** Write text under the step folder; returns the run-relative output path. */
     write(relPath: string, text: string): Promise<string>

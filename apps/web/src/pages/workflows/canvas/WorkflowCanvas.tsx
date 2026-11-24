@@ -18,6 +18,7 @@ import {
   type CanvasNode,
 } from "./flow-graph"
 import { CanvasChrome } from "./CanvasChrome"
+import { NodeLogDialog } from "./NodeLogDialog"
 import { nodeTypes } from "./node-types"
 import { useCanvasKeys } from "./use-canvas-keys"
 import { useCanvasOps } from "./use-canvas-ops"
@@ -147,7 +148,9 @@ export function WorkflowCanvas({
     ? workflow.nodes.find((n) => n.id === settingsId)
     : undefined
 
-  const { readOnly, onRetry } = overlay
+  const { readOnly, onRetry, runId } = overlay
+  const [logNodeId, setLogNodeId] = useState<string | null>(null)
+  const logNode = overlay.shown.find((n) => n.id === logNodeId)
   const actions = useMemo<FlowActions>(
     () => ({
       update: ops.update,
@@ -159,6 +162,7 @@ export function WorkflowCanvas({
       openSettings,
       remove: ops.remove,
       retry: onRetry ? (id) => void onRetry(id) : undefined,
+      openLogs: runId ? setLogNodeId : undefined,
     }),
     [
       ops.update,
@@ -167,6 +171,7 @@ export function WorkflowCanvas({
       openSettings,
       readOnly,
       onRetry,
+      runId,
       workflowId,
     ]
   )
@@ -267,6 +272,16 @@ export function WorkflowCanvas({
           />
         </ReactFlow>
       </FlowContext.Provider>
+      {runId && logNode ? (
+        <NodeLogDialog
+          runId={runId}
+          nodeId={logNode.id}
+          nodeName={logNode.data.name ?? logNode.data.kind}
+          attempt={logNode.data.attempt ?? 1}
+          failReason={logNode.data.failReason}
+          onClose={() => setLogNodeId(null)}
+        />
+      ) : null}
     </div>
   )
 }

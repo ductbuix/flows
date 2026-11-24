@@ -1,11 +1,16 @@
 import { RotateCcw } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
-import type { RunState } from "./flow-kinds"
+import type { NodeKindName, RunState } from "./flow-kinds"
+import { NodeLogsButton } from "./NodeLogsButton"
+
+/** Kinds whose card has a connectors/skills row that hosts the Logs button. */
+const HAS_BADGE_ROW: ReadonlySet<NodeKindName> = new Set(["llm", "agent"])
 
 const FIELD = "rounded-2xl bg-muted/60 p-3"
 
 type Props = {
+  kind: NodeKindName
   nodeId: string | null
   state?: RunState
   result?: string
@@ -13,7 +18,7 @@ type Props = {
 }
 
 /** Result text and Retry for a failed node during a run view. */
-export function NodeRunFooter({ nodeId, state, result, onRetry }: Props) {
+export function NodeRunFooter({ kind, nodeId, state, result, onRetry }: Props) {
   return (
     <>
       {result ? (
@@ -38,6 +43,11 @@ export function NodeRunFooter({ nodeId, state, result, onRetry }: Props) {
           Retry
         </Button>
       ) : null}
+      {HAS_BADGE_ROW.has(kind) ? null : (
+        <div className="flex">
+          <NodeLogsButton kind={kind} nodeId={nodeId} state={state} />
+        </div>
+      )}
     </>
   )
 }

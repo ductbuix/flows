@@ -158,8 +158,11 @@ export const runDetailSchema = z.object({
 
 export type RunDetail = z.infer<typeof runDetailSchema>
 
+/** `events` is the NDJSON activity log (commands, tool calls, results). */
+export const logStreamSchema = z.enum(["stdout", "stderr", "events"])
+
 export const logChunkSchema = z.object({
-  stream: z.enum(["stdout", "stderr"]),
+  stream: logStreamSchema,
   offset: z.number().int().nonnegative(),
   nextOffset: z.number().int().nonnegative(),
   text: z.string(),

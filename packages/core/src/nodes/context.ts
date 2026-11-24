@@ -1,5 +1,6 @@
 import type { AcpInboxGates } from "../agents/acp-inbox-answer.ts"
 import { acpSessionHandlers } from "../agents/acp-session-handlers.ts"
+import { appendLogEntry } from "./attempt-log.ts"
 import type { AgentRuntime } from "../ports/agent-runtime.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { PublishPort } from "../ports/publish.ts"
@@ -10,6 +11,8 @@ export type StepContextDeps = {
   runDir: string
   nodeId: string
   pass: number
+  /** Attempt number; unset skips the activity log. */
+  attempt?: number
   settings: unknown
   inputs: readonly StepInput[]
   answers?: Record<string, unknown>
@@ -88,6 +91,10 @@ export function createStepContext<S>(
           signal
         )
       },
+    },
+    log(entry) {
+      if (deps.attempt === undefined) return
+      appendLogEntry(deps.docs, `${stepDir}/attempt-${deps.attempt}`, entry)
     },
     outputs: {
       async write(relPath: string, text: string) {

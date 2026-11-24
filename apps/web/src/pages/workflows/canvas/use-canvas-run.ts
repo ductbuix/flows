@@ -10,6 +10,7 @@ const RESULT_MAX = 600
 export type NodeView = {
   state: RunState
   result?: string
+  failReason?: string
   attempts: number
 }
 
@@ -178,6 +179,7 @@ export function useCanvasRun(runId: string | null) {
     summary: active?.summary ?? null,
     views,
     onRetry: runId ? onRetry : undefined,
+    runId,
     loading: !!runId && !active,
   }
 }

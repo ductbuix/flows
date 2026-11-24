@@ -428,4 +428,48 @@ test.describe("workflows.spec.ts › canvas run bar", () => {
     await retry.click({ force: true })
     await expect(page.getByTestId("flow-run-banner")).toBeVisible()
   })
+  test("node logs button and popup", async ({ page }) => {
+    test.setTimeout(90_000)
+    await cancelLiveRuns("node-run-fail-light")
+    const runId = await startRun("node-run-fail-light")
+    await expect
+      .poll(
+        async () =>
+          (
+            (await fcpRequest("run/get", { id: runId })) as {
+              status: string
+            }
+          ).status,
+        { timeout: 45_000 }
+      )
+      .toBe("failed")
+    await page.goto(`/workflows/node-run-fail-light?run=${runId}`)
+    const logs = page.getByTestId("node-logs-build")
+    await expect(logs).toBeVisible({ timeout: 15_000 })
+    // Trigger and output run nothing locally: no button.
+    await expect(page.locator('[data-testid^="node-logs-"]')).toHaveCount(1)
+
+    for (const size of [
+      { width: 1280, height: 800 },
+      { width: 375, height: 700 },
+    ]) {
+      await page.setViewportSize(size)
+      await logs.click({ force: true })
+      const dialog = page.getByTestId("node-log-dialog")
+      await expect(dialog).toBeVisible()
+      await expect(page.getByTestId("node-log-terminal")).toContainText(
+        "echo broken"
+      )
+      await expect(page.getByTestId("node-log-terminal")).toContainText(
+        "broken"
+      )
+      const entries = page.getByTestId("node-log-entries").locator("> li")
+      await expect(entries.first().locator("time")).toBeVisible()
+      const box = await dialog.boundingBox()
+      expect(box!.x).toBeGreaterThanOrEqual(0)
+      expect(box!.x + box!.width).toBeLessThanOrEqual(size.width)
+      await page.keyboard.press("Escape")
+      await expect(dialog).toHaveCount(0)
+    }
+  })
 })

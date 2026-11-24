@@ -31,7 +31,12 @@ describe("node-run-view", () => {
     ]
     expect(statesFromSteps(steps)).toEqual({
       a: { state: "done", attempts: 1 },
-      b: { state: "failed", attempts: 2, result: "exit 1" },
+      b: {
+        state: "failed",
+        attempts: 2,
+        failReason: "exit 1",
+        result: "exit 1",
+      },
     })
   })
 })
