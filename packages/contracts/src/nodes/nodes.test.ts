@@ -23,6 +23,8 @@ const sample = {
       name: "Draft fix",
       cli: "cursor",
       memory: ["memory/style.md"],
+      connectors: ["github-cli"],
+      skills: ["write-tests"],
       answers: [{ name: "risk", type: "choice", labels: ["low", "high"] }],
       retry: { max: 1 },
     },

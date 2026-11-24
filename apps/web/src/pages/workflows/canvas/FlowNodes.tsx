@@ -1,7 +1,10 @@
 import type { NodeProps } from "@xyflow/react"
 import { cn } from "@workspace/ui/lib/utils"
+import { useFlow } from "./flow-context"
 import type { CanvasNodeData } from "./flow-kinds"
 import { FIELD, NodeShell, PortHandle } from "./NodeShell"
+import { ModelRow } from "./ModelRow"
+import { ConnectorCount } from "./StepConnectors"
 import { portsFor, type CanvasNode } from "./flow-graph"
 
 type Props = NodeProps<CanvasNode>
@@ -46,24 +49,57 @@ function OutPorts({ kind }: { kind: string }) {
   )
 }
 
+function hasModel(kind: string): boolean {
+  return kind === "agent" || kind === "llm" || kind === "judge"
+}
+
+function hasAllowLists(kind: string): boolean {
+  return kind === "agent" || kind === "llm"
+}
+
 /** Generic step card (agent, command, llm, prompt). */
-export function StepNode({ data, selected }: Props) {
+export function StepNode({ id, data, selected }: Props) {
   const kind = data.kind
+  const { update, readOnly } = useFlow()
   return (
     <NodeShell kind={kind} wide selected={selected} state={data.state}>
       <InPorts kind={kind} />
       <Body data={data} />
+      {hasModel(kind) && !readOnly ? (
+        <ModelRow
+          cli={data.cli}
+          model={data.model}
+          effort={data.effort}
+          onChange={(p) => update(id, p)}
+        />
+      ) : null}
+      {hasAllowLists(kind) ? (
+        <ConnectorCount
+          id={id}
+          connectors={data.connectors}
+          skills={data.skills}
+        />
+      ) : null}
       <OutPorts kind={kind} />
     </NodeShell>
   )
 }
 
 /** Judge: yes/no out ports as separate rows. */
-export function JudgeNode({ data, selected }: Props) {
+export function JudgeNode({ id, data, selected }: Props) {
+  const { update, readOnly } = useFlow()
   return (
     <NodeShell kind="judge" wide selected={selected} state={data.state}>
       <InPorts kind="judge" />
       <Body data={data} />
+      {!readOnly ? (
+        <ModelRow
+          cli={data.cli}
+          model={data.model}
+          effort={data.effort}
+          onChange={(p) => update(id, p)}
+        />
+      ) : null}
       {(["yes", "no"] as const).map((b) => (
         <div
           key={b}

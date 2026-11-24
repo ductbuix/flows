@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   Background,
   BackgroundVariant,
@@ -14,39 +14,73 @@ import type { LayoutFile, Workflow } from "@workspace/contracts"
 import { FlowContext, type FlowActions } from "./flow-context"
 import { canvasToLayout, workflowToCanvas, type CanvasNode } from "./flow-graph"
 import { CanvasToolbar } from "./CanvasToolbar"
+import { NodeSettings } from "./NodeSettings"
 import { nodeTypes } from "./node-types"
+import { useCanvasOps } from "./use-canvas-ops"
+import { useSystemPrompt } from "./use-system-prompt"
+
+type History = {
+  undo: () => void
+  redo: () => void
+  canUndo: boolean
+  canRedo: boolean
+}
 
 type Props = {
+  workflowId: string
   workflow: Workflow
+  yaml: string
   layout: LayoutFile
+  onYamlChange: (yaml: string) => void
   onLayoutChange: (layout: LayoutFile) => void
+  history: History
 }
 
-const frameActions: FlowActions = {
-  update: () => {},
-  run: () => {},
-  runAll: () => {},
-  readOnly: true,
-  duplicate: () => {},
-  openSettings: () => {},
-  remove: () => {},
-}
-
-/** Node canvas for a parsed workflow; drag updates layout via onLayoutChange. */
-export function WorkflowCanvas({ workflow, layout, onLayoutChange }: Props) {
+/** Editable node canvas; YAML edits keep comments via contracts helpers. */
+export function WorkflowCanvas({
+  workflowId,
+  workflow,
+  yaml,
+  layout,
+  onYamlChange,
+  onLayoutChange,
+  history,
+}: Props) {
   const initial = useMemo(
     () => workflowToCanvas(workflow, layout),
-    // Remount via key on the parent when the workflow id / yaml hash changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed once per mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount seed
     []
   )
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes)
-  const [edges, , onEdgesChange] = useEdgesState(initial.edges)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges)
   const viewportRef = useRef<Viewport | undefined>(layout.viewport)
-  const nodesRef = useRef(nodes)
+  const [settingsId, setSettingsId] = useState<string | null>(null)
+  const {
+    text: systemText,
+    load: loadSystem,
+    clear: clearSystem,
+    save: saveSystem,
+  } = useSystemPrompt(workflowId)
+
+  const ops = useCanvasOps(
+    yaml,
+    layout,
+    workflow,
+    onYamlChange,
+    onLayoutChange,
+    (id) => setSettingsId((cur) => (cur === id ? null : cur))
+  )
+
   useEffect(() => {
-    nodesRef.current = nodes
-  })
+    const next = workflowToCanvas(workflow, layout)
+    setNodes((prev) =>
+      next.nodes.map((n) => ({
+        ...n,
+        selected: prev.find((p) => p.id === n.id)?.selected ?? false,
+      }))
+    )
+    setEdges(next.edges)
+  }, [workflow, layout, setNodes, setEdges])
 
   const publishLayout = (next: CanvasNode[]) => {
     onLayoutChange(
@@ -68,12 +102,58 @@ export function WorkflowCanvas({ workflow, layout, onLayoutChange }: Props) {
     publishLayout(next)
   }
 
+  const openSettings = useCallback(
+    (id: string) => {
+      setSettingsId(id)
+      const n = workflow.nodes.find((x) => x.id === id)
+      if (n?.kind === "llm") loadSystem(id)
+      else clearSystem()
+    },
+    [workflow.nodes, loadSystem, clearSystem]
+  )
+
+  const { duplicate, remove } = ops
+  useEffect(() => {
+    const onKey = (ev: KeyboardEvent) => {
+      const el = ev.target as HTMLElement
+      if (el.closest("input, textarea, [contenteditable=true]")) return
+      const selected = nodes.filter((n) => n.selected).map((n) => n.id)
+      if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "d") {
+        ev.preventDefault()
+        selected.forEach((id) => duplicate(id))
+        return
+      }
+      if (ev.key === "Backspace" || ev.key === "Delete") {
+        if (selected.length === 0) return
+        ev.preventDefault()
+        selected.forEach((id) => remove(id))
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [nodes, duplicate, remove])
+
+  const editing = workflow.nodes.find((n) => n.id === settingsId)
+
+  const actions = useMemo<FlowActions>(
+    () => ({
+      update: ops.update,
+      run: () => {},
+      runAll: () => {},
+      readOnly: false,
+      duplicate: ops.duplicate,
+      openSettings,
+      remove: ops.remove,
+    }),
+    [ops.update, ops.duplicate, ops.remove, openSettings]
+  )
+
   return (
     <div
       className="min-h-0 flex-1 overflow-hidden rounded-3xl ring-1 ring-foreground/10"
       data-testid="workflow-canvas"
     >
-      <FlowContext.Provider value={frameActions}>
+      <FlowContext.Provider value={actions}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -81,6 +161,13 @@ export function WorkflowCanvas({ workflow, layout, onLayoutChange }: Props) {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeDragStop={onNodeDragStop}
+          onBeforeDelete={async ({ nodes: del, edges: ed }) => ({
+            nodes: del.filter((n) => n.type !== "trigger"),
+            edges: ed,
+          })}
+          onNodesDelete={(del) => {
+            for (const n of del) ops.remove(n.id)
+          }}
           defaultEdgeOptions={{
             style: {
               strokeDasharray: "6 6",
@@ -94,6 +181,11 @@ export function WorkflowCanvas({ workflow, layout, onLayoutChange }: Props) {
           panOnScroll
           zoomOnScroll={false}
           selectionMode={SelectionMode.Partial}
+          onSelectionChange={({ nodes: sel }) =>
+            setSettingsId((cur) =>
+              cur && sel.some((n) => n.id === cur) ? cur : null
+            )
+          }
           onPaneContextMenu={(e) => e.preventDefault()}
           defaultViewport={layout.viewport ?? { x: 120, y: 150, zoom: 0.7 }}
           onMoveEnd={(_e, vp) => {
@@ -107,7 +199,25 @@ export function WorkflowCanvas({ workflow, layout, onLayoutChange }: Props) {
             gap={24}
             color="var(--muted-foreground)"
           />
-          <CanvasToolbar />
+          {editing ? (
+            <NodeSettings
+              key={editing.id}
+              node={editing}
+              systemPrompt={systemText}
+              onSystemPrompt={
+                editing.kind === "llm"
+                  ? (text) => saveSystem(editing.id, text)
+                  : undefined
+              }
+              onChange={(patch) => ops.update(editing.id, patch)}
+              onClose={() => setSettingsId(null)}
+            />
+          ) : null}
+          <CanvasToolbar
+            hasTrigger={workflow.nodes.some((n) => n.kind === "trigger")}
+            onAdd={ops.add}
+            history={history}
+          />
         </ReactFlow>
       </FlowContext.Provider>
     </div>

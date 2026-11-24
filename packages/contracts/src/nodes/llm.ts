@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { effortSchema, modelIdSchema } from "../model-effort.ts"
-import { answersSchema, stepSettings } from "./common.ts"
+import { answersSchema, stepAllowLists, stepSettings } from "./common.ts"
 import { defineNodeKind } from "./define.ts"
 
 /** One model call through a CLI in print mode, no tools; stdout is the text (DES-032). */
@@ -21,6 +21,7 @@ export const llmKind = defineNodeKind({
     answers: answersSchema.optional(),
     /** Cursor create_plan: auto-accept or Inbox review (DES-041 / BL-148). */
     planReview: z.enum(["auto", "ask"]).optional(),
+    ...stepAllowLists,
     ...stepSettings,
   },
 })
