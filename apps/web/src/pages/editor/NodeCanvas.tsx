@@ -39,11 +39,21 @@ function Controls() {
   return (
     <Panel position="bottom-left">
       <ButtonGroup data-testid="graph-controls">
-        <Button type="button" variant="outline" aria-label="Zoom out" onClick={() => void zoomOut()}>
+        <Button
+          type="button"
+          variant="outline"
+          aria-label="Zoom out"
+          onClick={() => void zoomOut()}
+        >
           <MinusIcon />
         </Button>
         <ButtonGroupSeparator />
-        <Button type="button" variant="outline" aria-label="Zoom in" onClick={() => void zoomIn()}>
+        <Button
+          type="button"
+          variant="outline"
+          aria-label="Zoom in"
+          onClick={() => void zoomIn()}
+        >
           <PlusIcon />
         </Button>
         <ButtonGroupSeparator />
@@ -155,37 +165,37 @@ export function NodeCanvas({
   return (
     <div className="h-full min-h-70 w-full" data-testid="canvas">
       <NodeEditsContext.Provider value={edits}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onConnect={onConnect}
-        onConnectEnd={onConnectEnd}
-        onSelectionChange={({ nodes: picked }) =>
-          onSelect?.(picked[0]?.id ?? null)
-        }
-        deleteKeyCode={null}
-        multiSelectionKeyCode={null}
-        fitView
-        fitViewOptions={{ maxZoom: 1 }}
-        onNodeDragStop={(_e, _node, dragged) => {
-          const moved = new Map(dragged.map((n) => [n.id, n.position]))
-          onPositions(
-            Object.fromEntries(
-              nodes.map((n) => {
-                const p = moved.get(n.id) ?? n.position
-                return [n.id, { x: p.x, y: p.y }]
-              })
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
+          onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
+          onSelectionChange={({ nodes: picked }) =>
+            onSelect?.(picked[0]?.id ?? null)
+          }
+          deleteKeyCode={null}
+          multiSelectionKeyCode={null}
+          fitView
+          fitViewOptions={{ maxZoom: 1 }}
+          onNodeDragStop={(_e, _node, dragged) => {
+            const moved = new Map(dragged.map((n) => [n.id, n.position]))
+            onPositions(
+              Object.fromEntries(
+                nodes.map((n) => {
+                  const p = moved.get(n.id) ?? n.position
+                  return [n.id, { x: p.x, y: p.y }]
+                })
+              )
             )
-          )
-        }}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+          }}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
       </NodeEditsContext.Provider>
     </div>
   )

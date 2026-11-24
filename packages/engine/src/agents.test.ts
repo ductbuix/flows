@@ -40,9 +40,7 @@ describe("agent adapters", () => {
     )
     expect(cmd).toContain("claude --print --permission-mode dontAsk")
     expect(cmd).toContain(`--add-dir ${shellSingleQuote("/wf")}`)
-    expect(cmd).toContain(
-      shellSingleQuote(agentPrompt("/wf/tasks/plan.md"))
-    )
+    expect(cmd).toContain(shellSingleQuote(agentPrompt("/wf/tasks/plan.md")))
     expect(cmd).not.toContain("--model")
     expect(cmd).not.toContain("--effort")
   })

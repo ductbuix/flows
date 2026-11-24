@@ -55,9 +55,25 @@ export function ModelRow({
 }) {
   return (
     <div className="-mx-2 flex items-center gap-0.5">
-      <Pick label="Provider" value={data.provider} options={PROVIDERS} onChange={(provider) => onChange({ provider })} />
-      <Pick grow label="Model" value={data.model} options={MODELS} onChange={(model) => onChange({ model })} />
-      <Pick label="Effort" value={data.effort} options={EFFORTS} onChange={(effort) => onChange({ effort })} />
+      <Pick
+        label="Provider"
+        value={data.provider}
+        options={PROVIDERS}
+        onChange={(provider) => onChange({ provider })}
+      />
+      <Pick
+        grow
+        label="Model"
+        value={data.model}
+        options={MODELS}
+        onChange={(model) => onChange({ model })}
+      />
+      <Pick
+        label="Effort"
+        value={data.effort}
+        options={EFFORTS}
+        onChange={(effort) => onChange({ effort })}
+      />
     </div>
   )
 }

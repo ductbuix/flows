@@ -21,7 +21,8 @@ export const agentExecutor = defineExecutor({
   run(ctx) {
     const node = ctx.node
     if (node.kind !== "agent") throw new Error("not an agent node")
-    if (!existsSync(ctx.frozenPath("prompt.md"))) throw new Error("missing_prompt")
+    if (!existsSync(ctx.frozenPath("prompt.md")))
+      throw new Error("missing_prompt")
     const decls = nodeAnswers(ctx)
     // The task text, filled and with the answer request, lives in the attempt.
     const instructionsOf = (attemptRoot: string) =>
@@ -93,7 +94,11 @@ export const agentExecutor = defineExecutor({
     if (raw !== undefined) {
       try {
         const answer: unknown = JSON.parse(raw)
-        if (typeof answer === "object" && answer !== null && !Array.isArray(answer)) {
+        if (
+          typeof answer === "object" &&
+          answer !== null &&
+          !Array.isArray(answer)
+        ) {
           result.answer = answer as Record<string, unknown>
         }
       } catch {

@@ -66,7 +66,9 @@ for (const theme of ["light", "dark"] as const) {
 
     await page.getByTestId("node-save").click()
     await expect(page.getByTestId("node-save")).toBeDisabled()
-    const wf = (await (await page.request.get(`/api/workflows/${id}`)).json()) as {
+    const wf = (await (
+      await page.request.get(`/api/workflows/${id}`)
+    ).json()) as {
       yaml: string
     }
     expect(wf.yaml).toContain("timeout: 30")

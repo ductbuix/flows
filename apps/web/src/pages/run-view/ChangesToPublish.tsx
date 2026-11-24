@@ -116,7 +116,7 @@ export function ChangesToPublish({ run, task }: Props) {
                 <SummaryMarkdown text={previewMd} />
               </div>
             ) : null}
-            <CodeBlock size="sm" data-testid="publish-diff">
+            <CodeBlock data-testid="publish-diff">
               <CodeBlockContent wrap className="max-h-64">
                 {opsDiff(changeSet)}
               </CodeBlockContent>

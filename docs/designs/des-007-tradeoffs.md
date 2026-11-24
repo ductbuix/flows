@@ -22,7 +22,7 @@ related:
     DOC-001,
     DES-031,
   ]
-updated: 2026-11-22
+updated: 2026-11-24
 ---
 
 # Trade-offs and open questions
@@ -105,9 +105,12 @@ the trigger fires and the choice changes.
 
 ### One ESLint config per package
 
-- Risk: six `eslint.config.js` files (two React, four Node copies) drift.
-- Guard: each uses the same recommended sets; `pnpm lint` runs them all.
-- Revisit when: one rule change has to be made in more than one file.
+- Risk: many `eslint.config.js` files drift when a shared rule changes.
+- Guard: DES-042 dependency rules (`import/no-cycle`, package
+  `no-restricted-imports`) live in root `eslint-dependency-guards.mjs`
+  and each package config imports them; other rules stay local.
+- Revisit when: another cross-package rule has to be copied into every
+  config.
 
 ## UI
 

@@ -19,7 +19,9 @@ for (const theme of ["light", "dark"] as const) {
     )
     await expect(page.getByTestId("overview-inputs")).toContainText("ticket")
     await expect(page.getByTestId("overview-tasks")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-overview-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-overview-${theme}.png`),
+    })
   })
 
   test(`Start dialog asks the Trigger input and lists the CLI (${theme})`, async ({

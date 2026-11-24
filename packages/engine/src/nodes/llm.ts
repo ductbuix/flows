@@ -45,7 +45,8 @@ export const llmExecutor = defineExecutor({
   run(ctx) {
     const node = ctx.node
     if (node.kind !== "llm") throw new Error("not an llm node")
-    if (!existsSync(ctx.frozenPath("prompt.md"))) throw new Error("missing_prompt")
+    if (!existsSync(ctx.frozenPath("prompt.md")))
+      throw new Error("missing_prompt")
     const decls = nodeAnswers(ctx)
     const task: AgentSpec = {
       cli: node.cli,
@@ -101,8 +102,13 @@ export const llmExecutor = defineExecutor({
     const decls = nodeAnswers(ctx)
     if (decls.length === 0) return settleProcessOutput(ctx, attemptRoot, text)
     const found = parseAnswerText(decls, text)
-    if (!found.ok) return settleAnswer(attemptRoot, decls, found, { outputs: [] })
-    const done = settleProcessOutput(ctx, attemptRoot, answerText(decls, found.value))
+    if (!found.ok)
+      return settleAnswer(attemptRoot, decls, found, { outputs: [] })
+    const done = settleProcessOutput(
+      ctx,
+      attemptRoot,
+      answerText(decls, found.value)
+    )
     return { ...done, answer: found.value }
   },
 })

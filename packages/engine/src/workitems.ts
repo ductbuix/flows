@@ -1,10 +1,4 @@
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  renameSync,
-} from "node:fs"
+import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs"
 import { join } from "node:path"
 import { parse as parseYaml } from "yaml"
 import {
@@ -12,6 +6,7 @@ import {
   type WorkItem,
   type WorkItemSummary,
 } from "@workspace/shared"
+import { getDocumentStore } from "./document-store.ts"
 import { workItemDir, workItemsRoot } from "./paths.ts"
 import {
   hashText,
@@ -35,9 +30,9 @@ export function readWorkItem(
   id: string
 ): { item: WorkItem; yaml: string; hash: string } | null {
   const path = workItemYamlPath(home, id)
-  if (!existsSync(path)) return null
-  const yaml = readFileSync(path, "utf8")
-  return { item: parseItemYaml(yaml), yaml, hash: hashText(yaml) }
+  const disk = getDocumentStore().read(path)
+  if (!disk) return null
+  return { item: parseItemYaml(disk.text), yaml: disk.text, hash: disk.hash }
 }
 
 export function listWorkItemSummaries(home: string): WorkItemSummary[] {
@@ -135,6 +130,7 @@ export function updateWorkItem(
   id: string,
   input: UpdateWorkItemInput
 ): UpdateWorkItemResult {
+  const path = workItemYamlPath(home, id)
   const loaded = readWorkItem(home, id)
   if (!loaded) return { ok: false, kind: "not_found" }
   if (loaded.hash !== input.baseHash) {
@@ -150,8 +146,18 @@ export function updateWorkItem(
     updatedAt: now,
   })
   const yaml = workItemToYaml(item)
-  writeAtomic(workItemYamlPath(home, id), yaml)
-  return { ok: true, item, hash: hashText(yaml) }
+  const written = getDocumentStore().write(path, yaml, {
+    baseHash: input.baseHash,
+  })
+  if (!written.ok) {
+    return {
+      ok: false,
+      kind: "conflict",
+      item: parseItemYaml(written.text),
+      hash: written.hash,
+    }
+  }
+  return { ok: true, item, hash: written.hash }
 }
 
 export type DeleteWorkItemResult =

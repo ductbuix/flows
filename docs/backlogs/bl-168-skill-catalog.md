@@ -2,7 +2,7 @@
 id: BL-168
 title: Skill catalog
 type: backlog
-status: todo
+status: done
 summary: Scan .agents, .claude and .cursor in workspace and home for SKILL.md folders; skill/list and skill/get over FCP; invalid skills flagged.
 tags: [skills, fcp]
 related: [DES-041]
@@ -19,6 +19,6 @@ Back the Skills mockup page with discovery only.
 
 ## Done when
 
-- [ ] One entry per slug with every dir that holds a copy; a skill without a description has `problem`.
-- [ ] `skill/update skills_changed` on file change.
-- [ ] Tests with fixture folders.
+- [x] One entry per slug with every dir that holds a copy; a skill without a description has `problem`.
+- [x] `skill/update skills_changed` on file change.
+- [x] Tests with fixture folders.

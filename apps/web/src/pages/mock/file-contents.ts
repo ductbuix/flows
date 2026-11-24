@@ -2,7 +2,8 @@
 
 const TEXT: Record<string, string> = {
   "config.yaml": "library:\n  maxBytes: 52428800\nagents:\n  maxParallel: 3\n",
-  "mcp-trust.json": '{\n  "allowed": ["rally", "confluence"],\n  "denied": []\n}\n',
+  "mcp-trust.json":
+    '{\n  "allowed": ["rally", "confluence"],\n  "denied": []\n}\n',
   "docket/board.yaml":
     "version: 1\ncolumns:\n  - { id: todo, label: Todo }\n  - { id: doing, label: Doing }\n  - { id: review, label: Review }\n  - { id: done, label: Done, done: true }\nface: [due, fields.assignee]\n",
   "docket/cards/fix-flaky-login/card.md":
@@ -14,8 +15,10 @@ const TEXT: Record<string, string> = {
   "workflows/review-pr/workflow.yaml":
     "id: review-pr\ntrigger: manual\nnodes:\n  - id: plan\n    kind: llm\n  - id: review\n    kind: llm\n",
   "workflows/review-pr/nodes/plan.md": "Read the diff and plan the review.\n",
-  "workitems/us123456/item.yaml": "id: us123456\ntitle: Sample work item\nsource: rally\n",
-  "workitems/us123456/notes.md": "# Notes\n\nOpen question: which test is flaky?\n",
+  "workitems/us123456/item.yaml":
+    "id: us123456\ntitle: Sample work item\nsource: rally\n",
+  "workitems/us123456/notes.md":
+    "# Notes\n\nOpen question: which test is flaky?\n",
 }
 
 export type FileMeta = {
@@ -34,8 +37,16 @@ const KIND: Record<string, string> = {
 
 export function metaOf(path: string): FileMeta {
   const ext = path.split(".").pop() ?? ""
-  const bytes = path === "app.db" ? 2_400_000 : (TEXT[path]?.length ?? 120 + path.length * 11)
-  const size = bytes > 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : bytes > 1000 ? `${(bytes / 1000).toFixed(1)} KB` : `${bytes} B`
+  const bytes =
+    path === "app.db"
+      ? 2_400_000
+      : (TEXT[path]?.length ?? 120 + path.length * 11)
+  const size =
+    bytes > 1_000_000
+      ? `${(bytes / 1_000_000).toFixed(1)} MB`
+      : bytes > 1000
+        ? `${(bytes / 1000).toFixed(1)} KB`
+        : `${bytes} B`
   return {
     kind: KIND[ext] ?? "File",
     size,

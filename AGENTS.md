@@ -1,7 +1,6 @@
 # AGENTS.md
 
-Keep this file under **100 lines**. Update the layout when you add, remove or
-rename a package, command or feature.
+Keep this file under **100 lines**. Update layout when packages or commands change.
 
 ## What this is
 
@@ -18,42 +17,47 @@ rules: `docs/README.md`. UI/UX: `apps/web/DESIGN.md` and mockups on `/brand`.
 ## Layout
 
 - `apps/web`: Vite 8, React 19, Tailwind 4, shadcn (Base UI, `base-nova`)
-  on `127.0.0.1:5173`, proxies `/api`; node cards in `src/nodes/`. Pages use `components/page`, labels
-  and ids `components/data`. Sidebar Platform (Home, Work items, Workflows,
-  Runs, Connections), Workflows group, Settings;
-  `/work-items` and `/work-items/:id` (Context links + Freshness, Runs,
-  Start, Notes, Attachments; Ad hoc / Library / Rally source Badge);
-  `/connections` (Connections/Library tabs, size warning at 80%) and
-  `/connections/:id` (sign-in, MCP allow, local data, used by, refresh,
-  policy); Settings lists allowed MCP servers; `/workflows` and `/runs`
-  (grouped by work item); one Start run dialog from work item and workflow
-  headers, Allow agent CLI dialog; Home Needs you (incl. publish +
-  connection), expired sign-ins, Work items; Impact/Freshness/Policy on
-  `/dev/kit`; Overview (nodes, inputs)/Editor (node
-  canvas, drag saves layout, loop edges curved; publish node + Cloud badge)/Runs; canvas (Add node, Run step + menu, run history Card, wires); run view summary Cards + Tasks (step table)/Changes/Library
-  pins tabs; connection policy Select.
-- `apps/server`: Hono + `tsx` on `127.0.0.1:8787`. Health, workflow
-  create/rename/delete (409 while live), GET/PUT (hash, 409), memory
-  CRUD, file GET/PUT, trust GET/PUT and preflight (CLIs of the nodes), GET
-  `/cli/:cli/models`, connections CRUD/check/sign-in,
-  `GET/PUT /mcp-trust`, node GET/PUT, `/layout`, `GET /connectors`, library
-  GET/pull/clear (usage + retention), work item CRUD, run REST (list/start/
-  cancel/rerun/retry/approve/reject/delete, changes), run input/files, log/
-  summary/out (+ file), websocket snapshots, `runs_changed`, log chunks,
-  file watches.
-- `packages/engine`: SQLite event log + settings (`cli_trust`; rows it
-  cannot parse, such as old task runs, are skipped), connectors (github
-  draft PR, confluence via MCP, rally, fake), MCP trust allowlist,
-  connections, library pull/pins/retention (`library.ts`, maxBytes, sweep,
-  clear, `resources/` + `RESOURCE_*`), work items, cookie secrets under
-  `secrets/` (Chrome sign-in, sandbox denies), propose work copies (`work/`,
-  change sets, publish gate incl. trust-agent-review, Cloud effects),
-  CliAdapter, model/effort resolve, trust markers, `agents` limits, run
-  deletion, frozen `RUN_INPUT`, queued runs, summary cache,
-  `<workflow>/.cache`; `nodes/` (walk, loops, executors incl. `publish.ts`,
-  `answers.ts` (named answers), `tickNodes`, retry, `partial.ts`,
+  on `127.0.0.1:5173`, proxies `/api`; node cards in `src/nodes/`; pages use
+  `components/page`, labels/ids `components/data`. Routes: Home (Needs you,
+  expired sign-ins), `/work-items(/:id)`, `/workflows` (Overview/Editor/
+  Runs), `/runs` (by work item; run view Tasks/Changes/Library),
+  `/connections(/:id)` (Library tab, sign-in, MCP allow), Settings,
+  `/dev/kit`; one Start run dialog, Allow agent CLI dialog. FCP client:
+  MessagePort in Electron, WebSocket when `__FLOWS_FCP__` is set.
+- `apps/desktop`: Electron main + preload (`connect(): MessagePort`) +
+  utilityProcess engine host; loads the web build; Playwright smoke in
+  `apps/desktop/smoke`.
+- `apps/server`: Hono + `tsx` on `127.0.0.1:8787`, takes `engine.lock`. REST
+  `/api`: health, workflows (hash/409), memory, files, trust + preflight,
+  CLI models, connections + sign-in, `/mcp-trust`, nodes, `/layout`,
+  connectors, library, work items, runs (start/cancel/rerun/retry/approve/
+  reject/delete, changes, input/files, log/summary/out); websocket
+  snapshots, `runs_changed`, log chunks, file watches. `/` + `/fcp`: FCP
+  over ws (loopback Host/Origin + lock token): ping, workflow/list|get,
+  run/list|get, run_changed. `/blobs`: GET/PUT with lock token (BlobStore).
+- `packages/engine`: SQLite event log (via EventStore) + settings, connectors
+  (github draft PR, confluence via MCP, rally, fake), MCP trust, connections,
+  library pull/pins/retention, work items, cookie secrets, work copies +
+  publish gate, CliAdapter, model/effort, trust markers, `agents` limits,
+  queued runs, summary cache; `nodes/` (walk, loops, executors incl.
+  `publish.ts`, `answers.ts`, `tickNodes`, retry, `partial.ts`,
   `run-state.ts` = the run fold).
-- `packages/shared`: zod for API (`runSummarySchema`, `workItemSchema`),
+- `packages/core`: UI-free kernel (`EngineError`, ports: Document/Event/
+  Secret stores, FileWatcher, ProcessRunner, AgentRuntime, BlobStore;
+  `bindEngine`, `bindInitialize` gate, `runs/` pure decide+fold, actor,
+  scheduler, `agents/` permission chain, testing fakes + contract suites);
+  `contracts` + `protocol`; no Node I/O.
+- `packages/adapters-node`: Node adapters for the core ports (SQLite events,
+  fs docs, secrets, watcher, process runner + sandbox), `engine.lock`.
+- `packages/agent-acp`: ACP runtime (later); `testing/fake-agent` (stdio).
+- `packages/protocol`: JSON-RPC 2.0 `RpcPeer` (+ `$/cancel_request`),
+  transports: linked, `wsTransport`, `messagePortTransport`, ndjson (`/node`).
+- `packages/sdk` (`createClient`: queue, backoff, resync) and
+  `packages/sdk-react` (`useQuery`, `useSubscription`); `packages/mcp-gateway`
+  (stdio MCP server forwarding to the engine socket).
+- `packages/contracts` (`packages/shared` re-export shim): zod for API
+  (`runSummarySchema`, `workItemSchema`), branded ids (`CardId`, `RunId`,
+  `WorkflowId`, `StepId`, `ConnectorId`, `SkillSlug`, `LibItemId`),
   websocket, node workflow (`workflowSchema`), `connection.yaml`, library
   list/pull/clear/usage, `resources.json`, `config.yaml` `library.maxBytes`,
   events, `findLoopEdges`, YAML edits that keep comments and key order.
@@ -69,21 +73,18 @@ Run from the repo root with pnpm:
 
 ```sh
 pnpm install
-pnpm dev            # server and web
-pnpm build          # typecheck and build web
+pnpm dev # server and web
+pnpm build # typecheck and build web
 pnpm typecheck
 pnpm lint           # eslint, then docs:check
 pnpm lint:fix
 pnpm format
 pnpm format:check
-pnpm test           # vitest
-pnpm test:e2e       # playwright
+pnpm test # vitest
+pnpm test:e2e # playwright
 pnpm docs:index
 pnpm docs:check
 ```
-
-One package: `pnpm --filter server test`. Install the Playwright browser
-once with `pnpm --filter e2e exec playwright install chromium`.
 
 ## Done means
 

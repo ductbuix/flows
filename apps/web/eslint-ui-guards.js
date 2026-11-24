@@ -4,6 +4,8 @@
  */
 
 const DENSE_SIZES = new Set(["sm", "xs", "icon-sm", "icon-xs"])
+/** Card/Item `size` is layout density (DES-029/036), not a control size. */
+const DENSE_SIZE_LAYOUT = new Set(["Card", "Item"])
 const DENSE_ANCESTORS = new Set([
   "TableCell",
   "TableHead",
@@ -14,9 +16,14 @@ const DENSE_ANCESTORS = new Set([
 const DENSE_FILE = /(?:Graph|Node|IdText)\.tsx$|\/ai-elements\//
 const DIALOG_WIDTHS = new Set(["sm:max-w-md", "sm:max-w-xl"])
 const WIDTH_TOKEN = /^(?:[\w-]+:)*(?:min-|max-)?w-/
-const MONO_OK = /\/components\/(?:data|ai-elements)\/|\/StartRunFormFields\.tsx$/
+const MONO_OK =
+  /\/components\/(?:data|ai-elements)\/|\/StartRunFormFields\.tsx$/
 const FRAME_PADDING = /^(?:[\w-]+:)*(?:p|px|py)-6$/
-const TIME_CALLS = new Set(["toISOString", "toLocaleString", "toLocaleDateString"])
+const TIME_CALLS = new Set([
+  "toISOString",
+  "toLocaleString",
+  "toLocaleDateString",
+])
 
 /** @param {string} filename */
 const norm = (filename) => filename.replaceAll("\\", "/")
@@ -93,20 +100,24 @@ export const denseSizeRule = {
       JSXOpeningElement(node) {
         const name = tagName(node.name)
         if (!name || !ui.names.has(name)) return
+        if (DENSE_SIZE_LAYOUT.has(name)) return
         const attr = node.attributes.find(
           (a) => a.type === "JSXAttribute" && a.name.name === "size"
         )
         if (!attr || attr.value?.type !== "Literal") return
         const size = String(attr.value.value)
         if (!DENSE_SIZES.has(size)) return
-        const dense = context.sourceCode
-          .getAncestors(node)
-          .some((a) => {
-            if (a.type !== "JSXElement") return false
-            const n = tagName(a.openingElement.name)
-            return !!n && (DENSE_ANCESTORS.has(n) || n.startsWith("Sidebar"))
+        const dense = context.sourceCode.getAncestors(node).some((a) => {
+          if (a.type !== "JSXElement") return false
+          const n = tagName(a.openingElement.name)
+          return !!n && (DENSE_ANCESTORS.has(n) || n.startsWith("Sidebar"))
+        })
+        if (!dense)
+          context.report({
+            node: attr,
+            messageId: "dense",
+            data: { size, name },
           })
-        if (!dense) context.report({ node: attr, messageId: "dense", data: { size, name } })
       },
     }
   },
@@ -187,7 +198,9 @@ export const pageFrameTagsRule = {
   meta: {
     type: "problem",
     schema: [],
-    messages: { tag: "Pages never render <{{name}}>; use Page and PageHeader." },
+    messages: {
+      tag: "Pages never render <{{name}}>; use Page and PageHeader.",
+    },
   },
   create(context) {
     return {
@@ -219,7 +232,11 @@ export const noTimeFormatRule = {
           callee.property.type === "Identifier" &&
           TIME_CALLS.has(callee.property.name)
         ) {
-          context.report({ node, messageId: "time", data: { name: callee.property.name } })
+          context.report({
+            node,
+            messageId: "time",
+            data: { name: callee.property.name },
+          })
         }
       },
     }

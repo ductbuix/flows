@@ -8,16 +8,31 @@ const apiPort = process.env.PW_API_PORT ?? "8787"
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Relative asset URLs so Electron can loadFile the dist (BL-186).
+  base: process.env.FLOWAPP_DESKTOP_BUILD === "1" ? "./" : "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "./src"),
+      "@workspace/contracts": resolve(
+        import.meta.dirname,
+        "../../packages/contracts/src/index.ts"
+      ),
+      "@workspace/shared": resolve(
+        import.meta.dirname,
+        "../../packages/shared/src/index.ts"
+      ),
     },
   },
   server: {
     host: "127.0.0.1",
     proxy: {
-      "/api": { target: `http://127.0.0.1:${apiPort}`, ws: true },
+      // changeOrigin so /api/fcp sees the daemon Host (DES-016 loopback guard).
+      "/api": {
+        target: `http://127.0.0.1:${apiPort}`,
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

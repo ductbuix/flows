@@ -20,7 +20,10 @@ export const outputView = defineNodeView({
         </Badge>
       ) : null}
       {node.target === "notify" && node.title ? (
-        <span className="text-xs text-muted-foreground" data-testid="output-title-text">
+        <span
+          className="text-xs text-muted-foreground"
+          data-testid="output-title-text"
+        >
           {node.title}
         </span>
       ) : null}

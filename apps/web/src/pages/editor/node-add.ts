@@ -18,10 +18,7 @@ export type WireSide = {
 }
 
 /** Smallest valid node of a kind; the user edits the rest in the node. */
-export function defaultNode(
-  kind: string,
-  id: string
-): Record<string, unknown> {
+export function defaultNode(kind: string, id: string): Record<string, unknown> {
   switch (kind) {
     case "trigger":
       return { id, kind, type: "manual" }
@@ -80,7 +77,11 @@ export function yamlAfterAddNode(
   if (wire) {
     const edge: WorkflowEdge =
       wire.handle === "source"
-        ? { from: wire.id, to: id, ...(wire.branch ? { branch: wire.branch } : {}) }
+        ? {
+            from: wire.id,
+            to: id,
+            ...(wire.branch ? { branch: wire.branch } : {}),
+          }
         : { from: id, to: wire.id }
     next = addEdge(next, edgeSchema.parse(edge))
   }

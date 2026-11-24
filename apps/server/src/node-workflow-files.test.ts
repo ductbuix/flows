@@ -112,9 +112,7 @@ nodes:
     mkdirSync(join(dir, "nodes", "b"), { recursive: true })
     writeFileSync(join(dir, "nodes", "b", "prompt.md"), "p")
     const d = await get(app)
-    const renamed = nodeYaml
-      .replace("id: b", "id: z")
-      .replace("to: b", "to: z")
+    const renamed = nodeYaml.replace("id: b", "id: z").replace("to: b", "to: z")
     const res = await put(app, renamed, d.hash, [{ from: "b", to: "z" }])
     expect(res.status).toBe(200)
     expect(existsSync(join(dir, "nodes", "b"))).toBe(false)
@@ -193,9 +191,14 @@ tasks:
       body: JSON.stringify({ id: "fresh", goal: "g" }),
     })
     expect(res.status).toBe(201)
-    const yaml = readFileSync(join(home, "workflows", "fresh", "workflow.yaml"), "utf8")
+    const yaml = readFileSync(
+      join(home, "workflows", "fresh", "workflow.yaml"),
+      "utf8"
+    )
     expect(yaml).toContain("kind: trigger")
-    const detail = (await (await app.request("/api/workflows/fresh")).json()) as {
+    const detail = (await (
+      await app.request("/api/workflows/fresh")
+    ).json()) as {
       errors: unknown[]
     }
     expect(detail.errors).toEqual([])

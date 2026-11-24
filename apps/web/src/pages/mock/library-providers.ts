@@ -46,7 +46,8 @@ export const PRESETS: Provider[] = [
     layout: ["page.md", "export.html", "attachments/image-1.png"],
     tags: ["confluence:{id}", "type:page"],
     access: "readwrite",
-    fetch: "Confluence MCP: page as Markdown to fetch, page update to write back",
+    fetch:
+      "Confluence MCP: page as Markdown to fetch, page update to write back",
   },
   {
     id: "rally",
@@ -94,9 +95,16 @@ export const PRESETS: Provider[] = [
   },
 ]
 
-export const DEFAULT_PROVIDERS = PRESETS.filter((p) => ["github", "confluence", "rally"].includes(p.id))
+export const DEFAULT_PROVIDERS = PRESETS.filter((p) =>
+  ["github", "confluence", "rally"].includes(p.id)
+)
 
-export type Match = { provider: Provider; id: string; url: string; title: string }
+export type Match = {
+  provider: Provider
+  id: string
+  url: string
+  title: string
+}
 
 const fill = (t: string, id: string) => t.replace("{id}", id)
 
@@ -119,4 +127,6 @@ export function detect(url: string, providers: Provider[]): Match | null {
 }
 
 export const findExisting = (m: Match | null, items: LibItem[]) =>
-  m ? items.find((i) => i.source === m.provider.id && i.remoteId === m.id) : undefined
+  m
+    ? items.find((i) => i.source === m.provider.id && i.remoteId === m.id)
+    : undefined

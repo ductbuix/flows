@@ -92,7 +92,8 @@ export async function pullOneTarget(
     const existing = currentRevision(home, connection.id, kind, entityId)
     if (!existing) {
       throw new Error(
-        `library pull failed for ${connection.id}/${kind}/${entityId}: ${message}`
+        `library pull failed for ${connection.id}/${kind}/${entityId}: ${message}`,
+        { cause: err }
       )
     }
     const meta = readRevisionMeta(

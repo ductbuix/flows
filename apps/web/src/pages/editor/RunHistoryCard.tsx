@@ -46,7 +46,10 @@ export function RunHistoryCard({
       </CardHeader>
       <CardContent>
         {recent.length === 0 ? (
-          <p className="text-xs text-muted-foreground" data-testid="run-history-empty">
+          <p
+            className="text-xs text-muted-foreground"
+            data-testid="run-history-empty"
+          >
             {runs ? "No runs yet" : "Loading runs"}
           </p>
         ) : (

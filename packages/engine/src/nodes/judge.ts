@@ -1,10 +1,5 @@
 import { createHash } from "node:crypto"
-import {
-  existsSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from "node:fs"
+import { existsSync, readdirSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { evaluateCheck, type AgentJudge } from "@workspace/shared"
 import { judgeAnswerPrompt } from "../agent-prompt.ts"
@@ -51,7 +46,9 @@ function inputHash(ctx: ExecContext): string {
 }
 
 function judgeOf(ctx: ExecContext): {
-  node: Extract<ExecContext["node"], { kind: "judge" }> & { cli: "claude" | "cursor" }
+  node: Extract<ExecContext["node"], { kind: "judge" }> & {
+    cli: "claude" | "cursor"
+  }
   judge: AgentJudge
 } {
   const node = ctx.node
@@ -72,7 +69,9 @@ function keyOf(ctx: ExecContext): string {
   const { judge } = judgeOf(ctx)
   return judgeNodeKey({
     judge,
-    resolved: resolveJudgeModelEffort(judge, { workflowAgent: ctx.graph.agent }),
+    resolved: resolveJudgeModelEffort(judge, {
+      workflowAgent: ctx.graph.agent,
+    }),
     nodeId: ctx.node.id,
     pass: ctx.pass,
     rule: filledFile(ctx, "rule.md") ?? "",
@@ -113,7 +112,8 @@ function runCheck(ctx: ExecContext): ExecResult {
 export const judgeExecutor = defineExecutor({
   kind: "judge",
   run(ctx) {
-    if (ctx.node.kind === "judge" && ctx.node.mode === "check") return runCheck(ctx)
+    if (ctx.node.kind === "judge" && ctx.node.mode === "check")
+      return runCheck(ctx)
     const { node, judge } = judgeOf(ctx)
     const frozen = ctx.frozenPath("rule.md")
     if (!existsSync(frozen)) throw new Error("missing_rule")
@@ -128,13 +128,13 @@ export const judgeExecutor = defineExecutor({
         agent: true,
         cli: node.cli,
         instructions: frozen,
-        modelFields: resolveAttemptModelFields(
-          judge,
-          ctx.graph
-        ),
+        modelFields: resolveAttemptModelFields(judge, ctx.graph),
         prepare({ attemptRoot, inputDir }) {
           // The CLI runs in the attempt folder: keep the rule inside it.
-          writeFileSync(join(inputDir, "rule.md"), filledFile(ctx, "rule.md") ?? "")
+          writeFileSync(
+            join(inputDir, "rule.md"),
+            filledFile(ctx, "rule.md") ?? ""
+          )
           if (node.cli === "cursor") {
             writeCursorTrustMarker(ctx.workflowRoot)
             writeCursorTrustMarker(attemptRoot)
@@ -163,7 +163,11 @@ export const judgeExecutor = defineExecutor({
     if (!verdict) return { outputs: [], failed: "unclear" }
     const text = readOptional(join(attemptRoot, "input", "text.md")) ?? ""
     const outputs = forwardInputs(ctx, text)
-    const recorded: Recorded = { key: keyOf(ctx), verdict, answer: answer.trim() }
+    const recorded: Recorded = {
+      key: keyOf(ctx),
+      verdict,
+      answer: answer.trim(),
+    }
     writeFileSync(join(ctx.stepDir, "judge.json"), JSON.stringify(recorded))
     return { outputs, branch: verdict }
   },

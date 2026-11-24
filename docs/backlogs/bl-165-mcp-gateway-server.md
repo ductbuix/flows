@@ -2,7 +2,7 @@
 id: BL-165
 title: Flows MCP gateway server
 type: backlog
-status: todo
+status: done
 summary: "packages/mcp-gateway: a stdio MCP server that lists given tools and forwards each call to the engine over a private socket."
 tags: [mcp, agents, security]
 related: [DES-041]
@@ -19,6 +19,6 @@ The agent's only door to connectors. This item is the server half only, tested o
 
 ## Done when
 
-- [ ] Tools come from a JSON spec passed at launch; calls forward to a socket path and return its result.
-- [ ] No credentials or connector code in this package.
-- [ ] Test with an MCP client fixture and a stub socket.
+- [x] Tools come from a JSON spec passed at launch; calls forward to a socket path and return its result.
+- [x] No credentials or connector code in this package.
+- [x] Test with an MCP client fixture and a stub socket.

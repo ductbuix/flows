@@ -1,6 +1,14 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { UpdateBus } from "@workspace/core"
 import { createEngine, runDir, workflowDir } from "@workspace/engine"
 import {
   runDetailSchema,
@@ -53,7 +61,10 @@ const post = (app: Stack["app"], path: string, body: unknown = {}) =>
   app.request(`/api${path}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ requestId: crypto.randomUUID(), ...(body as object) }),
+    body: JSON.stringify({
+      requestId: crypto.randomUUID(),
+      ...(body as object),
+    }),
   })
 
 async function start(s: Stack, body: unknown = {}) {
@@ -80,8 +91,12 @@ describe("node runs", () => {
     await until(() => types(s, runId).includes("run_succeeded"))
 
     const root = runDir(s.dir, runId)
-    expect(JSON.parse(readFileSync(join(root, "graph.json"), "utf8")).id).toBe("nr")
-    expect(JSON.parse(readFileSync(join(root, "layout.json"), "utf8")).nodes.t).toEqual({ x: 1, y: 2 })
+    expect(JSON.parse(readFileSync(join(root, "graph.json"), "utf8")).id).toBe(
+      "nr"
+    )
+    expect(
+      JSON.parse(readFileSync(join(root, "layout.json"), "utf8")).nodes.t
+    ).toEqual({ x: 1, y: 2 })
     expect(readFileSync(join(root, "input", "text.md"), "utf8")).toBe("story")
     expect(existsSync(join(root, "output", "c", "text.md"))).toBe(true)
 
@@ -98,8 +113,14 @@ describe("node runs", () => {
 
     const list = (await (await s.app.request("/api/runs")).json()) as unknown[]
     const row = runSummarySchema.parse(list[0])
-    expect(row).toMatchObject({ id: runId, status: "succeeded", taskCounts: { done: 3, total: 3 } })
-    const forWf = (await (await s.app.request("/api/workflows/nr/runs")).json()) as unknown[]
+    expect(row).toMatchObject({
+      id: runId,
+      status: "succeeded",
+      taskCounts: { done: 3, total: 3 },
+    })
+    const forWf = (await (
+      await s.app.request("/api/workflows/nr/runs")
+    ).json()) as unknown[]
     expect(forWf).toHaveLength(1)
 
     const log = await s.app.request(
@@ -140,10 +161,7 @@ edges:
   })
 
   it("writes declared Trigger inputs to the run input and checks them", async () => {
-    const s = stack(
-      'cat "$RUN_INPUT/ticket.txt"',
-      ""
-    )
+    const s = stack('cat "$RUN_INPUT/ticket.txt"', "")
     writeFileSync(
       join(s.dir, "workflow.yaml"),
       yaml('cat "$RUN_INPUT/ticket.txt"').replace(
@@ -171,7 +189,10 @@ edges:
   it("cancels a run with a live process", async () => {
     const s = stack("sleep 30")
     const { runId } = await start(s)
-    await until(() => s.engine.fold(runId)!.steps!.steps.c?.[0]?.current?.pid !== undefined)
+    await until(
+      () =>
+        s.engine.fold(runId)!.steps!.steps.c?.[0]?.current?.pid !== undefined
+    )
     const pid = s.engine.fold(runId)!.steps!.steps.c![0]!.current!.pid!
 
     expect((await post(s.app, `/runs/${runId}/cancel`)).status).toBe(200)
@@ -208,7 +229,10 @@ edges:
     expect((await post(s.app, `/runs/${runId}/tasks/c/retry`)).status).toBe(200)
     await until(() => s.engine.fold(runId)!.status === "succeeded")
     const done = s.engine.fold(runId)!
-    expect(done.steps!.steps.c![0]!).toMatchObject({ status: "done", attempts: 2 })
+    expect(done.steps!.steps.c![0]!).toMatchObject({
+      status: "done",
+      attempts: 2,
+    })
     expect(done.steps!.steps.o![0]!.status).toBe("done")
     s.engine.close()
   })
@@ -219,7 +243,9 @@ edges:
     await until(() => types(s, first.runId).includes("run_succeeded"))
 
     const detail = async (id: string) =>
-      runDetailSchema.parse(await (await s.app.request(`/api/runs/${id}`)).json())
+      runDetailSchema.parse(
+        await (await s.app.request(`/api/runs/${id}`)).json()
+      )
     const step = await start(s, { only: "o" })
     await until(() => types(s, step.runId).includes("run_succeeded"))
     const only = (await detail(step.runId)).steps ?? []
@@ -279,14 +305,18 @@ edges:
 
   it("pushes step events to a websocket subscriber", async () => {
     const s = stack()
-    const hub = new WsHub(s.engine)
+    const hub = new WsHub(s.engine, new UpdateBus())
     const got: WsServerMessage[] = []
-    const ws = { send: (d: string) => got.push(JSON.parse(d)) } as unknown as WSContext
+    const ws = {
+      send: (d: string) => got.push(JSON.parse(d)),
+    } as unknown as WSContext
     const events = hub.connection()
     events.onOpen?.(new Event("open"), ws)
     const { runId } = await start(s)
     events.onMessage?.(
-      { data: JSON.stringify({ type: "subscribe_run", runId }) } as MessageEvent,
+      {
+        data: JSON.stringify({ type: "subscribe_run", runId }),
+      } as MessageEvent,
       ws
     )
     await until(() => types(s, runId).includes("run_succeeded"))
@@ -302,7 +332,10 @@ edges:
   it("resumes a node run left open by a restart", async () => {
     const s = stack("sleep 0.3")
     const { runId } = await start(s)
-    await until(() => s.engine.fold(runId)!.steps!.steps.c?.[0]?.current?.pid !== undefined)
+    await until(
+      () =>
+        s.engine.fold(runId)!.steps!.steps.c?.[0]?.current?.pid !== undefined
+    )
     const engine2 = createEngine({ home: s.home })
     const handles = engine2.resumeAll()
     expect(handles.map((h) => h.runId)).toContain(runId)

@@ -2,7 +2,7 @@
 id: BL-132
 title: "RunActor: one mailbox per live run"
 type: backlog
-status: todo
+status: done
 summary: A RunActor processes one input at a time (decide, append, run effects) and re-issues missing effects on recovery.
 tags: [core, runs, engine]
 related: [DES-041]
@@ -19,6 +19,6 @@ Give each run a single writer, replacing the shared tick loop, as DES-041 Run en
 
 ## Done when
 
-- [ ] Inputs `start`, `effect_result`, `answer`, `cancel`, `agent_event` are queued and handled in order.
-- [ ] Recovery replays events and re-issues effects without a result event, idempotent by step attempt id.
-- [ ] Service tests on fakes: crash between append and effect does not duplicate a step.
+- [x] Inputs `start`, `effect_result`, `answer`, `cancel`, `agent_event` are queued and handled in order.
+- [x] Recovery replays events and re-issues effects without a result event, idempotent by step attempt id.
+- [x] Service tests on fakes: crash between append and effect does not duplicate a step.

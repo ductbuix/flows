@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
@@ -80,24 +86,31 @@ describe("judge node, rule mode", () => {
     ["no", "no"],
     ["**No**: too long", "no"],
     ["false", "no"],
-  ] as const)("%s takes the %s branch and skips the other", async (answer, branch) => {
-    const { home, state, events } = await ask(answer)
-    expect(latestStep(state, "j")).toMatchObject({ status: "done", branch })
-    const taken = branch === "yes" ? "a" : "b"
-    const other = branch === "yes" ? "b" : "a"
-    expect(latestStep(state, taken)?.status).toBe("done")
-    expect(latestStep(state, other)?.status).toBe("skipped")
-    expect(events.at(-1)?.type).toBe("run_succeeded")
-    const root = runDir(workflowDir(home, "wf"), "r1")
-    // The branch forwards what came in.
-    expect(readFileSync(join(root, "nodes/j/pass-1/text.md"), "utf8")).toContain(
-      "a short story"
-    )
-    // The rule is copied into the attempt, and the prompt names it.
-    const out = join(root, "nodes/j/pass-1/attempt-1/out")
-    expect(readFileSync(join(out, "rule.md"), "utf8")).toBe("Is the story short?\n")
-    expect(readFileSync(join(out, "args.txt"), "utf8")).toContain("input/rule.md")
-  })
+  ] as const)(
+    "%s takes the %s branch and skips the other",
+    async (answer, branch) => {
+      const { home, state, events } = await ask(answer)
+      expect(latestStep(state, "j")).toMatchObject({ status: "done", branch })
+      const taken = branch === "yes" ? "a" : "b"
+      const other = branch === "yes" ? "b" : "a"
+      expect(latestStep(state, taken)?.status).toBe("done")
+      expect(latestStep(state, other)?.status).toBe("skipped")
+      expect(events.at(-1)?.type).toBe("run_succeeded")
+      const root = runDir(workflowDir(home, "wf"), "r1")
+      // The branch forwards what came in.
+      expect(
+        readFileSync(join(root, "nodes/j/pass-1/text.md"), "utf8")
+      ).toContain("a short story")
+      // The rule is copied into the attempt, and the prompt names it.
+      const out = join(root, "nodes/j/pass-1/attempt-1/out")
+      expect(readFileSync(join(out, "rule.md"), "utf8")).toBe(
+        "Is the story short?\n"
+      )
+      expect(readFileSync(join(out, "args.txt"), "utf8")).toContain(
+        "input/rule.md"
+      )
+    }
+  )
 
   it("fails with reason unclear when the first word is not yes or no", async () => {
     const { state, events } = await ask("Maybe, it depends.")

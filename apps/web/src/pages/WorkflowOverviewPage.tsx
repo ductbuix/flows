@@ -19,39 +19,50 @@ import { OverviewInputsSection } from "@/pages/OverviewInputsSection"
 import { OverviewNodesSection } from "@/pages/OverviewNodesSection"
 import { WorkflowStartButton } from "@/components/WorkflowStartButton"
 
+type Loaded = { id: string; workflow: Workflow }
+
 export function WorkflowOverviewPage() {
   const { workflowId } = useParams() as { workflowId: string }
   // Inputs sit on the Trigger node.
-  const [nodeWorkflow, setNodeWorkflow] = useState<Workflow | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const [errorFor, setErrorFor] = useState<{
+    id: string
+    message: string
+  } | null>(null)
 
   useEffect(() => {
     let alive = true
-    setLoading(true)
-    setError(null)
     void (async () => {
       const res = await api.workflows[":workflowId"].$get({
         param: { workflowId },
       })
       if (!alive) return
       if (!res.ok) {
-        setLoading(false)
-        setError(
-          res.status === 404
-            ? `Workflow ${workflowId} was not found.`
-            : "Could not load workflow"
-        )
+        setErrorFor({
+          id: workflowId,
+          message:
+            res.status === 404
+              ? `Workflow ${workflowId} was not found.`
+              : "Could not load workflow",
+        })
         return
       }
       const json: unknown = await res.json()
-      setNodeWorkflow(workflowDetailSchema.parse(json).workflow)
-      setLoading(false)
+      setErrorFor(null)
+      setLoaded({
+        id: workflowId,
+        workflow: workflowDetailSchema.parse(json).workflow,
+      })
     })()
     return () => {
       alive = false
     }
   }, [workflowId])
+
+  const match = loaded?.id === workflowId
+  const nodeWorkflow = match ? loaded.workflow : null
+  const error = errorFor?.id === workflowId ? errorFor.message : null
+  const loading = !match && !error
 
   const workflowLabel = useWorkflowLabel(workflowId)
   const nodeInputs: WorkflowInputDecl[] =
@@ -68,7 +79,9 @@ export function WorkflowOverviewPage() {
   return (
     <Page
       crumbs={[...crumbs]}
-      actions={nodeWorkflow ? <WorkflowStartButton workflowId={workflowId} /> : null}
+      actions={
+        nodeWorkflow ? <WorkflowStartButton workflowId={workflowId} /> : null
+      }
       data-testid="workflow-overview"
     >
       <WorkflowHeading

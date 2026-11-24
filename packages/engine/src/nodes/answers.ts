@@ -22,7 +22,9 @@ function read(path: string): string | undefined {
 
 /** The declared answers of an Agent or LLM node, or none. */
 export function nodeAnswers(ctx: ExecContext): readonly AnswerDecl[] {
-  return declaredAnswers(ctx.node as { id: string; kind: string; answers?: AnswerDecl[] })
+  return declaredAnswers(
+    ctx.node as { id: string; kind: string; answers?: AnswerDecl[] }
+  )
 }
 
 /** A frozen node file with `{{name}}` filled from the upstream answers. */

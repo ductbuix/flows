@@ -1,4 +1,11 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs"
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from "node:fs"
 import { dirname, join } from "node:path"
 import {
   workflowSchema,
@@ -90,7 +97,11 @@ function downstreamOf(graph: Workflow, id: string): Set<string> {
 
 /** The graph apart from its nodes and edges: shared defaults and limits. */
 function shell(graph: Workflow): string {
-  const { nodes: _n, edges: _e, ...rest } = graph as Workflow & Record<string, unknown>
+  const rest: Record<string, unknown> = {
+    ...(graph as Workflow & Record<string, unknown>),
+  }
+  delete rest.nodes
+  delete rest.edges
   return canon(rest)
 }
 
@@ -104,8 +115,7 @@ function unchanged(
   const mine = graph.nodes.find((n) => n.id === nodeId)
   const theirs = base.graph.nodes.find((n) => n.id === nodeId)
   if (!mine || !theirs || canon(mine) !== canon(theirs)) return false
-  const into = (g: Workflow) =>
-    canon(g.edges.filter((e) => e.to === nodeId))
+  const into = (g: Workflow) => canon(g.edges.filter((e) => e.to === nodeId))
   if (into(graph) !== into(base.graph)) return false
   const frozen = (root: string) =>
     dirSnapshot(join(root, "nodes", nodeId, "frozen"))

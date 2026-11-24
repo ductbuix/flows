@@ -2,9 +2,11 @@ import js from "@eslint/js"
 import globals from "globals"
 import tseslint from "typescript-eslint"
 import { defineConfig, globalIgnores } from "eslint/config"
+import { noCycleBlock } from "../../eslint-dependency-guards.mjs"
 
 export default defineConfig([
   globalIgnores(["dist"]),
+  noCycleBlock,
   {
     files: ["**/*.ts"],
     extends: [js.configs.recommended, tseslint.configs.recommended],

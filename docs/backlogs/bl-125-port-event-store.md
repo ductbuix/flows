@@ -2,7 +2,7 @@
 id: BL-125
 title: EventStore port, fake and adapter
 type: backlog
-status: todo
+status: done
 summary: EventStore port in core with an in-memory fake, one contract suite, and the Node adapter in adapters-node passing it.
 tags: [core, ports, adapters]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Move the SQLite event log behind the `EventStore` port (DES-041 Ports). Callers 
 
 ## Done when
 
-- [ ] `EventStore` interface: `append(runId, events, { expectSeq })`, `read(runId, fromSeq)`, `tail()`.
-- [ ] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
-- [ ] the SQLite event log lives in `packages/adapters-node` and passes the suite.
+- [x] `EventStore` interface: `append(runId, events, { expectSeq })`, `read(runId, fromSeq)`, `tail()`.
+- [x] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
+- [x] the SQLite event log lives in `packages/adapters-node` and passes the suite.

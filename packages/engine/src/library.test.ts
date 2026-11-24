@@ -140,7 +140,11 @@ function assetGraph(id: string, resource?: { connection: string; id: string }) {
               id: "lib",
               kind: "asset",
               resources: [
-                { connection: resource.connection, entity: "item", id: resource.id },
+                {
+                  connection: resource.connection,
+                  entity: "item",
+                  id: resource.id,
+                },
               ],
             },
           ]
@@ -166,7 +170,10 @@ describe("pull at run start and resources", () => {
   it("pins Asset resources before run_started and writes resources.json", async () => {
     const home = tempHome()
     writeConn(home, "rally-pay", { label: "PAY-1" })
-    const graph = assetGraph("with-assets", { connection: "rally-pay", id: "PAY-1" })
+    const graph = assetGraph("with-assets", {
+      connection: "rally-pay",
+      id: "PAY-1",
+    })
     const engine = createEngine({ home })
     const pins = await engine.pinNodeRun({ graph, runId: "r1" })
     const runRoot = runDir(workflowDir(home, "with-assets"), "r1")
@@ -193,7 +200,10 @@ describe("pull at run start and resources", () => {
       links: [{ connection: "ctx-src", kind: "item", entityId: "CTX-1" }],
     })
     // Links are pulled only when the graph has an Asset node.
-    const graph = assetGraph("link-only", { connection: "ctx-src", id: "CTX-1" })
+    const graph = assetGraph("link-only", {
+      connection: "ctx-src",
+      id: "CTX-1",
+    })
     const engine = createEngine({ home })
     await engine.pinNodeRun({ graph, runId: "r-link", workItemId: item.id })
     expect(resourcesOf(home, "link-only", "r-link").pins).toEqual([
@@ -211,9 +221,9 @@ describe("pull at run start and resources", () => {
     writeConn(home, "bad", { label: "x", signedOut: "1" })
     const graph = assetGraph("fail-pull", { connection: "bad", id: "x" })
     const engine = createEngine({ home })
-    await expect(
-      engine.pinNodeRun({ graph, runId: "r1" })
-    ).rejects.toThrow(/library pull failed|signed out|fake signed out/)
+    await expect(engine.pinNodeRun({ graph, runId: "r1" })).rejects.toThrow(
+      /library pull failed|signed out|fake signed out/
+    )
     engine.close()
   })
 
@@ -282,7 +292,9 @@ describe("pull at run start and resources", () => {
       pinFromRunId: "r1",
       refreshPins: true,
     })
-    expect(resourcesOf(home, "rerun-pins", "r3").pins[0].revision).not.toBe(rev1)
+    expect(resourcesOf(home, "rerun-pins", "r3").pins[0].revision).not.toBe(
+      rev1
+    )
     engine.close()
   })
 })

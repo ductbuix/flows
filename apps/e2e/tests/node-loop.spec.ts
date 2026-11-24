@@ -26,7 +26,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("canvas")).toBeVisible({ timeout: 15_000 })
     // One loop edge: the No branch back into draft.
     await expect(page.locator('[data-testid^="loop-badge-"]')).toHaveCount(1)
-    await expect(page.locator('[data-testid^="loop-badge-"]')).toHaveText("Loop")
+    await expect(page.locator('[data-testid^="loop-badge-"]')).toHaveText(
+      "Loop"
+    )
     await expect(page.getByTestId("loop-warnings")).toHaveCount(0)
     await page.screenshot({ path: info.outputPath(`node-loop-${theme}.png`) })
 
@@ -53,10 +55,15 @@ for (const theme of ["light", "dark"] as const) {
     const runId = await startRun(request, `node-loop-view-${theme}`)
 
     await page.goto(`/runs/${runId}`)
-    await expect(page.getByTestId("step-table")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByTestId("step-state-ship-1")).toHaveText("succeeded", {
-      timeout: 30_000,
+    await expect(page.getByTestId("step-table")).toBeVisible({
+      timeout: 15_000,
     })
+    await expect(page.getByTestId("step-state-ship-1")).toHaveText(
+      "succeeded",
+      {
+        timeout: 30_000,
+      }
+    )
     for (const pass of [1, 2, 3]) {
       await expect(page.getByTestId(`step-state-draft-${pass}`)).toHaveText(
         "succeeded"
@@ -93,14 +100,18 @@ test("a loop that never ends fails with loop_limit at pass limit + 1", async ({
   await expect(page.getByTestId("step-state-draft-3")).toHaveText("failed", {
     timeout: 30_000,
   })
-  await expect(page.getByTestId("step-verdict-draft-3")).toHaveText("Loop limit")
+  await expect(page.getByTestId("step-verdict-draft-3")).toHaveText(
+    "Loop limit"
+  )
   await expect(page.getByTestId("step-state-draft-2")).toHaveText("succeeded")
   await expect(page.getByTestId("step-row-draft-4")).toHaveCount(0)
   await expect(page.getByTestId("step-state-ship-1")).toHaveText("skipped")
   await page.screenshot({ path: info.outputPath("node-loop-limit.png") })
 })
 
-test("a cycle with no Judge shows a warning on the editor", async ({ page }) => {
+test("a cycle with no Judge shows a warning on the editor", async ({
+  page,
+}) => {
   await page.goto("/workflows/node-loop-warn?tab=editor")
   await expect(page.getByTestId("canvas")).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId("loop-warnings")).toContainText("no Judge")

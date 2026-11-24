@@ -1,4 +1,6 @@
+import { randomBytes } from "node:crypto"
 import { serve } from "@hono/node-server"
+import { acquireLock, releaseLock } from "@workspace/adapters-node"
 import {
   createEngine,
   fakeConnector,
@@ -17,9 +19,19 @@ if (process.env.FLOWAPP_FAKE_CONNECTOR === "1") {
 const engine = createEngine()
 engine.resumeAll()
 engine.startLibraryRetention()
-const app = createApp({ engine })
 
 const port = Number(process.env.PORT ?? 8787)
+const fcpToken = randomBytes(32).toString("base64url")
+const fcpUrl = `ws://127.0.0.1:${port}/fcp`
+const lock = acquireLock(engine.home, { url: fcpUrl, token: fcpToken })
+if ("attachTo" in lock) {
+  console.error(
+    `FLOWAPP_HOME already owned at ${lock.attachTo.url}; attach instead of starting another daemon`
+  )
+  process.exit(1)
+}
+
+const app = createApp({ engine, fcpToken, port })
 
 const server = serve(
   {
@@ -31,9 +43,12 @@ const server = serve(
   (info) => console.log(`server on http://127.0.0.1:${info.port}`)
 )
 
+function shutdown() {
+  releaseLock(engine.home)
+  engine.close()
+  server.close(() => process.exit(0))
+}
+
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  process.on(signal, () => {
-    engine.close()
-    server.close(() => process.exit(0))
-  })
+  process.on(signal, shutdown)
 }

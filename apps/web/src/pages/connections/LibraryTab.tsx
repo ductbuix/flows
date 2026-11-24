@@ -35,11 +35,11 @@ export function LibraryTab() {
   const [busy, setBusy] = useState<string | null>(null)
 
   async function load() {
-    setError(null)
     try {
       const res = await api.library.$get()
       if (!res.ok) throw new Error("failed")
       const body = libraryListSchema.parse(await res.json())
+      setError(null)
       setEntities(body.entities)
       setUsage(body.usage)
     } catch {
@@ -50,7 +50,28 @@ export function LibraryTab() {
   }
 
   useEffect(() => {
-    void load()
+    let alive = true
+    void (async () => {
+      try {
+        const res = await api.library.$get()
+        if (!alive) return
+        if (!res.ok) throw new Error("failed")
+        const body = libraryListSchema.parse(await res.json())
+        if (!alive) return
+        setError(null)
+        setEntities(body.entities)
+        setUsage(body.usage)
+      } catch {
+        if (alive) {
+          setError("Could not load library.")
+          setEntities([])
+          setUsage(null)
+        }
+      }
+    })()
+    return () => {
+      alive = false
+    }
   }, [])
 
   async function pull(entity: LibraryEntity) {
@@ -161,7 +182,10 @@ export function LibraryTab() {
             <Skeleton className="h-40 w-full" />
           </div>
         ) : entities.length === 0 ? (
-          <Empty className="ring-1 ring-foreground/10" data-testid="library-empty">
+          <Empty
+            className="ring-1 ring-foreground/10"
+            data-testid="library-empty"
+          >
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <Library />

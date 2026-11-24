@@ -2,7 +2,7 @@
 id: BL-174
 title: File methods
 type: backlog
-status: todo
+status: done
 summary: file/list, stat, read_text, write_text (baseHash) and reveal over FCP for workspace folders.
 tags: [files, fcp]
 related: [DES-040]
@@ -19,5 +19,5 @@ Back the Files mockup page.
 
 ## Done when
 
-- [ ] Paths are confined to allowed roots; outside is `policy_denied`.
-- [ ] Protocol tests including a `..` escape.
+- [x] Paths are confined to allowed roots; outside is `policy_denied`.
+- [x] Protocol tests including a `..` escape.

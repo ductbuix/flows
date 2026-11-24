@@ -22,10 +22,7 @@ import {
   StartRunFormFields,
 } from "@/components/StartRunFormFields"
 import { api } from "@/lib/api"
-import {
-  loadStartRunForm,
-  type StartRunDraft,
-} from "@/lib/load-start-run-form"
+import { loadStartRunForm, type StartRunDraft } from "@/lib/load-start-run-form"
 import { useWorkflows } from "@/lib/workflows-context"
 
 export const WORK_ITEM_NONE = "__none__"
@@ -53,6 +50,22 @@ type Props = {
   onSubmit: (draft: StartRunDraft) => void
 }
 
+type FormFile = { field: string; file: File }
+
+type FormLoaded = {
+  workflowId: string
+  runId?: string
+  decls: WorkflowInputDecl[]
+  baseValues: Record<string, string>
+  files: FormFile[]
+}
+
+type FormFailed = {
+  workflowId: string
+  runId?: string
+  error: string
+}
+
 function mergePrefills(
   base: Record<string, string>,
   decls: WorkflowInputDecl[],
@@ -66,6 +79,14 @@ function mergePrefills(
   return next
 }
 
+function sameFormTarget(
+  loaded: FormLoaded | FormFailed,
+  workflowId: string,
+  runId: string | undefined
+): boolean {
+  return loaded.workflowId === workflowId && loaded.runId === runId
+}
+
 /** The one Start / rerun dialog: pickers, inputs, files (DES-029, DES-021). */
 export function StartRunDialog({
   open,
@@ -77,7 +98,8 @@ export function StartRunDialog({
 }: Props) {
   const { workflows } = useWorkflows()
   const rerun = target.mode === "rerun"
-  const fromWorkItem = target.mode === "start" && target.workItemId !== undefined
+  const fromWorkItem =
+    target.mode === "start" && target.workItemId !== undefined
   const askWorkflow = fromWorkItem
   const askWorkItem = target.mode === "start" && !fromWorkItem
 
@@ -86,16 +108,28 @@ export function StartRunDialog({
     target.mode === "start" ? (target.workItemId ?? null) : null
   )
   const [workItems, setWorkItems] = useState<WorkItemSummary[]>([])
-  const [prefills, setPrefills] = useState<Record<string, string>>({})
-  const [decls, setDecls] = useState<WorkflowInputDecl[]>([])
-  const [baseValues, setBaseValues] = useState<Record<string, string>>({})
-  const [values, setValues] = useState<Record<string, string>>({})
-  const [files, setFiles] = useState<{ field: string; file: File }[]>([])
-  const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [prefillLoaded, setPrefillLoaded] = useState<{
+    id: string
+    values: Record<string, string>
+  } | null>(null)
+  const [formLoaded, setFormLoaded] = useState<FormLoaded | FormFailed | null>(
+    null
+  )
+  const [fileEdits, setFileEdits] = useState<{
+    key: string
+    files: FormFile[]
+  } | null>(null)
+  const [valueEdits, setValueEdits] = useState<{
+    key: string
+    values: Record<string, string>
+  } | null>(null)
+  const [localErrorState, setLocalErrorState] = useState<{
+    key: string
+    errors: Record<string, string>
+  } | null>(null)
 
   const runId = target.mode === "rerun" ? target.runId : undefined
+  const formKey = `${workflowId}\0${runId ?? ""}`
 
   useEffect(() => {
     if (!open || !askWorkItem) return
@@ -116,22 +150,20 @@ export function StartRunDialog({
   }, [open, askWorkItem])
 
   useEffect(() => {
-    if (!open) return
-    if (!workItemId) {
-      setPrefills({})
-      return
-    }
+    if (!open || !workItemId) return
+    const requested = workItemId
     let alive = true
     void (async () => {
       try {
         const res = await api.workitems[":id"].$get({
-          param: { id: workItemId },
+          param: { id: requested },
         })
         if (!res.ok || !alive) return
         const detail = workItemDetailSchema.parse(await res.json())
-        if (alive) setPrefills(detail.item.inputs)
+        if (alive)
+          setPrefillLoaded({ id: requested, values: detail.item.inputs })
       } catch {
-        if (alive) setPrefills({})
+        if (alive) setPrefillLoaded({ id: requested, values: {} })
       }
     })()
     return () => {
@@ -140,46 +172,69 @@ export function StartRunDialog({
   }, [open, workItemId])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || !workflowId) return
+    const requestedWorkflowId = workflowId
+    const requestedRunId = runId
     let alive = true
-    setLocalErrors({})
-    setLoadError(null)
-    if (!workflowId) {
-      setDecls([])
-      setBaseValues({})
-      setFiles([])
-      setLoading(false)
-      return
-    }
-    setLoading(true)
     const loadTarget =
-      runId !== undefined
-        ? ({ mode: "rerun", runId, workflowId } as const)
-        : ({ mode: "start", workflowId } as const)
+      requestedRunId !== undefined
+        ? ({
+            mode: "rerun",
+            runId: requestedRunId,
+            workflowId: requestedWorkflowId,
+          } as const)
+        : ({ mode: "start", workflowId: requestedWorkflowId } as const)
     void loadStartRunForm(loadTarget).then((result) => {
       if (!alive) return
-      setLoading(false)
       if ("error" in result) {
-        setLoadError(result.error)
+        setFormLoaded({
+          workflowId: requestedWorkflowId,
+          runId: requestedRunId,
+          error: result.error,
+        })
         return
       }
-      setDecls(result.decls)
-      setBaseValues(result.values)
-      setFiles(result.files)
+      setFormLoaded({
+        workflowId: requestedWorkflowId,
+        runId: requestedRunId,
+        decls: result.decls,
+        baseValues: result.values,
+        files: result.files,
+      })
+      setFileEdits({
+        key: `${requestedWorkflowId}\0${requestedRunId ?? ""}`,
+        files: result.files,
+      })
     })
     return () => {
       alive = false
     }
   }, [open, workflowId, runId])
 
-  useEffect(() => {
-    setValues(mergePrefills(baseValues, decls, prefills))
-  }, [baseValues, decls, prefills])
+  const formMatch =
+    formLoaded && sameFormTarget(formLoaded, workflowId, runId)
+      ? formLoaded
+      : null
+  const loading = !!open && !!workflowId && !formMatch
+  const loadError = formMatch && "error" in formMatch ? formMatch.error : null
+  const loadedOk = formMatch && !("error" in formMatch) ? formMatch : null
+  const decls = loadedOk ? loadedOk.decls : []
+  const loadedFiles = loadedOk ? loadedOk.files : []
 
-  useEffect(() => {
-    if (fieldErrors) setLocalErrors(fieldErrors)
-  }, [fieldErrors])
+  const files = fileEdits?.key === formKey ? fileEdits.files : loadedFiles
 
+  const baseline = useMemo(() => {
+    const prefills =
+      workItemId && prefillLoaded?.id === workItemId ? prefillLoaded.values : {}
+    const baseValues = loadedOk ? loadedOk.baseValues : {}
+    const formDecls = loadedOk ? loadedOk.decls : []
+    return mergePrefills(baseValues, formDecls, prefills)
+  }, [workItemId, prefillLoaded, loadedOk])
+  const valuesKey = `${formKey}\0${workItemId ?? ""}\0${JSON.stringify(baseline)}`
+  const values = valueEdits?.key === valuesKey ? valueEdits.values : baseline
+
+  const localErrors =
+    localErrorState?.key === formKey ? localErrorState.errors : {}
   const errors = { ...localErrors, ...fieldErrors }
   const attachOnly = decls.length === 0
 
@@ -195,18 +250,34 @@ export function StartRunDialog({
     [workItems]
   )
 
+  function setValues(next: Record<string, string>) {
+    setValueEdits({ key: valuesKey, values: next })
+  }
+
+  function setLocalErrors(next: Record<string, string>) {
+    setLocalErrorState({ key: formKey, errors: next })
+  }
+
   function setFileField(field: string, file: File | undefined) {
-    setFiles((prev) => [
-      ...prev.filter((f) => f.field !== field),
-      ...(file ? [{ field, file }] : []),
-    ])
+    const prev = files
+    setFileEdits({
+      key: formKey,
+      files: [
+        ...prev.filter((f) => f.field !== field),
+        ...(file ? [{ field, file }] : []),
+      ],
+    })
   }
 
   function setAttachList(list: File[]) {
-    setFiles((prev) => [
-      ...prev.filter((f) => f.field !== "attach"),
-      ...list.map((file) => ({ field: "attach", file })),
-    ])
+    const prev = files
+    setFileEdits({
+      key: formKey,
+      files: [
+        ...prev.filter((f) => f.field !== "attach"),
+        ...list.map((file) => ({ field: "attach", file })),
+      ],
+    })
   }
 
   function submit() {
@@ -283,7 +354,7 @@ export function StartRunDialog({
             files={files}
             errors={errors}
             onChangeValue={(name, value) =>
-              setValues((prev) => ({ ...prev, [name]: value }))
+              setValues({ ...values, [name]: value })
             }
             onChangeFile={setFileField}
             onChangeAttach={setAttachList}

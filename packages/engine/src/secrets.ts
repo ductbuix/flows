@@ -1,18 +1,10 @@
-import { randomBytes } from "node:crypto"
-import {
-  chmodSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs"
-import { dirname, join } from "node:path"
+import { createNodeSecretStore } from "@workspace/adapters-node"
+import type { SecretStore } from "@workspace/core/ports"
+import { chmodSync, existsSync, mkdirSync, rmSync } from "node:fs"
+import { join } from "node:path"
 import { secretsDir, secretsRoot } from "./paths.ts"
 
 const DIR_MODE = 0o700
-const FILE_MODE = 0o600
 
 /** Cookie shape stored under secrets/<id>/cookies.json (DES-026 / BL-053). */
 export type StoredCookie = {
@@ -26,8 +18,18 @@ export type StoredCookie = {
   sameSite?: "Strict" | "Lax" | "None"
 }
 
+/** Absolute on-disk path; unchanged for callers that inspect the file. */
 export function cookiesPath(home: string, connectionId: string): string {
   return join(secretsDir(home, connectionId), "cookies.json")
+}
+
+/** Logical SecretStore key relative to FLOWAPP_HOME/secrets. */
+function cookiesKey(connectionId: string): string {
+  return `${connectionId}/cookies.json`
+}
+
+function secretStoreFor(home: string): SecretStore {
+  return createNodeSecretStore({ root: secretsRoot(home) })
 }
 
 export function profileDir(home: string, connectionId: string): string {
@@ -44,18 +46,6 @@ export function ensureSecretsDir(home: string, connectionId?: string): string {
   mkdirSync(dir, { recursive: true })
   chmodSync(dir, DIR_MODE)
   return dir
-}
-
-function writeAtomicMode(path: string, data: string, mode: number): void {
-  mkdirSync(dirname(path), { recursive: true })
-  chmodSync(dirname(path), DIR_MODE)
-  const tmp = join(
-    dirname(path),
-    `.${Date.now()}-${randomBytes(4).toString("hex")}.tmp`
-  )
-  writeFileSync(tmp, data, { mode })
-  renameSync(tmp, path)
-  chmodSync(path, mode)
 }
 
 function parseCookies(raw: unknown): StoredCookie[] | undefined {
@@ -94,10 +84,10 @@ export function readCookies(
   home: string,
   connectionId: string
 ): StoredCookie[] | undefined {
-  const path = cookiesPath(home, connectionId)
-  if (!existsSync(path)) return undefined
+  const raw = secretStoreFor(home).get(cookiesKey(connectionId))
+  if (raw === null) return undefined
   try {
-    return parseCookies(JSON.parse(readFileSync(path, "utf8")) as unknown)
+    return parseCookies(JSON.parse(raw) as unknown)
   } catch {
     return undefined
   }
@@ -121,10 +111,9 @@ export function writeCookies(
   const parsed = parseCookies(cookies)
   if (!parsed) throw new Error("invalid cookies")
   ensureSecretsDir(home, connectionId)
-  writeAtomicMode(
-    cookiesPath(home, connectionId),
-    `${JSON.stringify(parsed, null, 2)}\n`,
-    FILE_MODE
+  secretStoreFor(home).set(
+    cookiesKey(connectionId),
+    `${JSON.stringify(parsed, null, 2)}\n`
   )
 }
 
@@ -133,6 +122,7 @@ export function writeCookies(
  * untouched. Marks the connection signed out (DES-026).
  */
 export function removeSignIn(home: string, connectionId: string): void {
+  secretStoreFor(home).delete(cookiesKey(connectionId))
   const dir = secretsDir(home, connectionId)
   if (!existsSync(dir)) return
   rmSync(dir, { recursive: true, force: true })

@@ -65,7 +65,9 @@ async function run(
   home: string,
   graph: ReturnType<typeof workflowSchema.parse>,
   runId = "r1",
-  workItemLinks: Parameters<typeof materializeNodeRunResources>[0]["workItemLinks"] = []
+  workItemLinks: Parameters<
+    typeof materializeNodeRunResources
+  >[0]["workItemLinks"] = []
 ) {
   const log = new EventLog(appDbPath(home))
   const runRoot = runDir(workflowDir(home, graph.id), runId)
@@ -110,7 +112,9 @@ describe("asset node (fake connector)", () => {
     expect(events.at(-1)?.type).toBe("run_succeeded")
     expect(events.filter((e) => e.type === "library_pulled")).toHaveLength(1)
     const pulled = events.findIndex((e) => e.type === "library_pulled")
-    expect(pulled).toBeGreaterThan(events.findIndex((e) => e.type === "run_started"))
+    expect(pulled).toBeGreaterThan(
+      events.findIndex((e) => e.type === "run_started")
+    )
 
     const step = latestStep(state, "lib")
     expect(step?.status).toBe("done")
@@ -215,10 +219,15 @@ describe("asset node (GitHub fixture)", () => {
     const { state, runRoot } = await run(home, graph)
     expect(latestStep(state, "lib")?.status).toBe("done")
     const dir = join(runRoot, "nodes/lib/pass-1")
-    expect(readFileSync(join(dir, "text.md"), "utf8")).toContain(`revision ${sha}`)
+    expect(readFileSync(join(dir, "text.md"), "utf8")).toContain(
+      `revision ${sha}`
+    )
     // `acme/demo` is one folder name: the slash is escaped.
     expect(
-      readFileSync(join(dir, "files/github-demo/repo/acme%2Fdemo/README.md"), "utf8")
+      readFileSync(
+        join(dir, "files/github-demo/repo/acme%2Fdemo/README.md"),
+        "utf8"
+      )
     ).toContain("hello from repo")
   })
 })
@@ -231,7 +240,9 @@ describe("asset node (Confluence fixture)", () => {
       markdown: "# Hello page\n",
       title: "Hello",
     })
-    registerConnector(createConfluenceConnector({ connect: async () => client }))
+    registerConnector(
+      createConfluenceConnector({ connect: async () => client })
+    )
     const made = createConnection(home, {
       id: "conf-team",
       connector: "confluence",
@@ -242,11 +253,15 @@ describe("asset node (Confluence fixture)", () => {
     })
     expect(made.ok).toBe(true)
     allowMcpServerAlways(home, "stub://asset")
-    const graph = wf([{ connection: "conf-team", entity: "page", id: "TEAM/42" }])
+    const graph = wf([
+      { connection: "conf-team", entity: "page", id: "TEAM/42" },
+    ])
     const { state, runRoot } = await run(home, graph)
     expect(latestStep(state, "lib")?.status).toBe("done")
     const dir = join(runRoot, "nodes/lib/pass-1")
-    expect(readFileSync(join(dir, "text.md"), "utf8")).toContain("(conf-team/page/TEAM/42), revision 7")
+    expect(readFileSync(join(dir, "text.md"), "utf8")).toContain(
+      "(conf-team/page/TEAM/42), revision 7"
+    )
     expect(
       readFileSync(join(dir, "files/conf-team/page/TEAM%2F42/page.md"), "utf8")
     ).toBe("# Hello page\n")

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   runChangesResponseSchema,
   type ChangeSet,
@@ -26,26 +26,34 @@ type ConnDiff = {
 
 /** Local unpublished work-copy diffs per connection (DES-025 / BL-051). */
 export function UnpublishedChanges({ run }: Props) {
-  const localConnections = [
-    ...new Set(
-      (run.effects ?? [])
-        .filter((e) => e.impact === "local")
-        .map((e) => e.connection)
-    ),
-  ].sort()
-  const [diffs, setDiffs] = useState<ConnDiff[]>([])
+  const localConnections = useMemo(
+    () =>
+      [
+        ...new Set(
+          (run.effects ?? [])
+            .filter((e) => e.impact === "local")
+            .map((e) => e.connection)
+        ),
+      ].sort(),
+    [run.effects]
+  )
+  const connKey = localConnections.join("\0")
+  const [fetched, setFetched] = useState<{
+    runId: string
+    connKey: string
+    diffs: ConnDiff[]
+  } | null>(null)
 
   useEffect(() => {
-    if (localConnections.length === 0) {
-      setDiffs([])
-      return
-    }
+    if (localConnections.length === 0) return
+    const key = connKey
+    const runId = run.id
     let alive = true
     void (async () => {
       const next: ConnDiff[] = []
       for (const connection of localConnections) {
         const res = await api.runs[":runId"].changes[":connectionId"].$get({
-          param: { runId: run.id, connectionId: connection },
+          param: { runId, connectionId: connection },
         })
         if (!alive || !res.ok) continue
         const body = runChangesResponseSchema.parse(await res.json())
@@ -56,14 +64,19 @@ export function UnpublishedChanges({ run }: Props) {
           changeSet: body.changeSet,
         })
       }
-      if (alive) setDiffs(next)
+      if (alive) setFetched({ runId, connKey: key, diffs: next })
     })()
     return () => {
       alive = false
     }
-    // localConnections is derived from run.effects; re-fetch when effects change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
-  }, [run.id, run.effects])
+  }, [run.id, localConnections, connKey])
+
+  const diffs =
+    localConnections.length === 0
+      ? []
+      : fetched?.runId === run.id && fetched.connKey === connKey
+        ? fetched.diffs
+        : []
 
   if (diffs.length === 0) return null
 
@@ -81,7 +94,7 @@ export function UnpublishedChanges({ run }: Props) {
               <ImpactBadge impact="local" />
             </div>
             <SummaryMarkdown text={diff.previewMd} />
-            <CodeBlock size="sm">
+            <CodeBlock>
               <CodeBlockContent wrap className="max-h-48">
                 {diff.changeSet.ops
                   .map(

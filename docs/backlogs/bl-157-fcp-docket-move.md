@@ -2,7 +2,7 @@
 id: BL-157
 title: Docket move
 type: backlog
-status: todo
+status: done
 summary: docket/move_card {status, beforeId} rewrites status, rank and done date of one card only.
 tags: [docket, fcp]
 related: [DES-038]
@@ -19,6 +19,6 @@ Drag on the board is one small write.
 
 ## Done when
 
-- [ ] Entering a `done` column sets `done`; leaving clears it.
-- [ ] Two moves of different cards never conflict (test).
-- [ ] Protocol test.
+- [x] Entering a `done` column sets `done`; leaving clears it.
+- [x] Two moves of different cards never conflict (test).
+- [x] Protocol test.

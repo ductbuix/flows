@@ -1,4 +1,3 @@
-import type { ChildProcess } from "node:child_process"
 import {
   cpSync,
   existsSync,
@@ -19,7 +18,7 @@ import {
 import { loadAppConfig, effectiveLimit } from "../config.ts"
 import { resolveFinishReason } from "../failure-reason.ts"
 import { isPidAlive, killProcessGroup, waitForPid } from "../pid.ts"
-import { spawnWrapped, waitForExit } from "../runner.ts"
+import { spawnWrapped } from "../runner.ts"
 import { workflowCacheEnv } from "../task-cache-env.ts"
 import { ensureWorkCopiesFor } from "../work-copy.ts"
 import { remainingTimeoutMs, resolveAttemptTimeout } from "../timeout.ts"
@@ -35,6 +34,8 @@ export type ProcessHost = {
   wake(): void
   /** Ask for another tick after `ms` (retry backoff). */
   later(ms: number): void
+  /** Stop the driver: clear wake timers so close does not race a tick. */
+  stop(): void
 }
 
 const now = () => new Date().toISOString()
@@ -43,10 +44,7 @@ export function attemptKey(nodeId: string, pass: number, attempt: number) {
   return `${nodeId}:${pass}:${attempt}`
 }
 
-export function attemptRootOf(
-  stepDir: string,
-  attempt: number
-): string {
+export function attemptRootOf(stepDir: string, attempt: number): string {
   return join(stepDir, `attempt-${attempt}`)
 }
 
@@ -67,9 +65,14 @@ function readStderr(attemptRoot: string): string {
   }
 }
 
-function cliOf(graph: Workflow, nodeId: string): "claude" | "cursor" | undefined {
+function cliOf(
+  graph: Workflow,
+  nodeId: string
+): "claude" | "cursor" | undefined {
   const node = graph.nodes.find((n) => n.id === nodeId)
-  return node?.kind === "agent" || node?.kind === "judge" || node?.kind === "llm"
+  return node?.kind === "agent" ||
+    node?.kind === "judge" ||
+    node?.kind === "llm"
     ? node.cli
     : undefined
 }
@@ -349,8 +352,9 @@ export function launchAttempt(
     { timeout: (node as { timeout?: number }).timeout },
     graph
   )
-  let child: ChildProcess
-  let sandboxed = false
+  let pid: number
+  let sandboxed: boolean
+  let exit: Promise<number>
   try {
     const launched = spawnWrapped(
       cmd.shell,
@@ -362,8 +366,9 @@ export function launchAttempt(
       cmd.allowCursorHome === true,
       cmd.writeAttemptOnly === true ? attemptRoot : undefined
     )
-    child = launched.child
+    pid = launched.pid
     sandboxed = launched.sandboxed
+    exit = launched.exit
   } catch (err) {
     appendFinished(
       run,
@@ -384,7 +389,7 @@ export function launchAttempt(
     nodeId: node.id,
     pass,
     attempt,
-    pid: child.pid!,
+    pid,
     sandboxed,
     timeout,
     ...(spec.modelFields ?? {}),
@@ -399,14 +404,12 @@ export function launchAttempt(
       pass,
       attempt,
       attemptRoot,
-      pid: child.pid!,
+      pid,
       timeoutSeconds: timeout,
       startedAt,
     },
     (done) => {
-      void waitForExit(child)
-        .then((code) => done(code))
-        .catch(() => done(1))
+      void exit.then((code) => done(code)).catch(() => done(1))
     }
   )
   return true

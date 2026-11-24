@@ -57,7 +57,8 @@ export function answerProblem(
   others: readonly AnswerDecl[]
 ): string | null {
   const parsed = answerDeclSchema.safeParse(row)
-  if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid answer"
+  if (!parsed.success)
+    return parsed.error.issues[0]?.message ?? "Invalid answer"
   if (others.some((o) => o.name === row.name)) {
     return `duplicate answer name ${row.name}`
   }

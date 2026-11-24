@@ -2,7 +2,7 @@
 id: BL-127
 title: FileWatcher port, fake and adapter
 type: backlog
-status: todo
+status: done
 summary: FileWatcher port in core with an in-memory fake, one contract suite, and the Node adapter in adapters-node passing it.
 tags: [core, ports, adapters]
 related: [DES-041, DES-042]
@@ -19,6 +19,6 @@ Move the file watch layer behind the `FileWatcher` port (DES-041 Ports). Callers
 
 ## Done when
 
-- [ ] `FileWatcher` interface: `watch(globs, onChange) -> Disposable`, debounced.
-- [ ] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
-- [ ] the file watch layer lives in `packages/adapters-node` and passes the suite.
+- [x] `FileWatcher` interface: `watch(globs, onChange) -> Disposable`, debounced.
+- [x] In-memory fake in `core/src/testing/` and a contract suite run with `describe.each` against fake and adapter.
+- [x] the file watch layer lives in `packages/adapters-node` and passes the suite.

@@ -19,6 +19,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
 } from "@workspace/ui/components/attachment"
+import { ItemActions } from "@workspace/ui/components/item"
 import { FileText, Paperclip, X } from "lucide-react"
 import { useRef } from "react"
 
@@ -74,37 +75,41 @@ function FilePicker({
           e.target.value = ""
         }}
       />
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="w-fit"
-        onClick={() => ref.current?.click()}
-      >
-        <Paperclip data-icon="inline-start" />
-        {addLabel}
-      </Button>
+      <ItemActions>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-fit"
+          onClick={() => ref.current?.click()}
+        >
+          <Paperclip data-icon="inline-start" />
+          {addLabel}
+        </Button>
+      </ItemActions>
       {files.length > 0 && (
-        <AttachmentGroup className="flex-wrap overflow-visible">
-          {files.map((file, i) => (
-            <Attachment key={`${file.name}-${i}`} size="sm">
-              <AttachmentMedia>
-                <FileText />
-              </AttachmentMedia>
-              <AttachmentContent>
-                <AttachmentTitle>{file.name}</AttachmentTitle>
-              </AttachmentContent>
-              <AttachmentActions>
-                <AttachmentAction
-                  aria-label={`Remove ${file.name}`}
-                  onClick={() => onRemove(i)}
-                >
-                  <X />
-                </AttachmentAction>
-              </AttachmentActions>
-            </Attachment>
-          ))}
-        </AttachmentGroup>
+        <ItemActions>
+          <AttachmentGroup className="flex-wrap overflow-visible">
+            {files.map((file, i) => (
+              <Attachment key={`${file.name}-${i}`} size="sm">
+                <AttachmentMedia>
+                  <FileText />
+                </AttachmentMedia>
+                <AttachmentContent>
+                  <AttachmentTitle>{file.name}</AttachmentTitle>
+                </AttachmentContent>
+                <AttachmentActions>
+                  <AttachmentAction
+                    aria-label={`Remove ${file.name}`}
+                    onClick={() => onRemove(i)}
+                  >
+                    <X />
+                  </AttachmentAction>
+                </AttachmentActions>
+              </Attachment>
+            ))}
+          </AttachmentGroup>
+        </ItemActions>
       )}
     </div>
   )
@@ -159,7 +164,11 @@ export function StartRunFormFields({
               <FilePicker
                 id={`start-run-field-${decl.name}`}
                 testId={`start-run-field-${decl.name}`}
-                files={fileByField(files, decl.name) ? [fileByField(files, decl.name)!] : []}
+                files={
+                  fileByField(files, decl.name)
+                    ? [fileByField(files, decl.name)!]
+                    : []
+                }
                 addLabel="Add file"
                 onPick={(list) => onChangeFile(decl.name, list[0])}
                 onRemove={() => onChangeFile(decl.name, undefined)}

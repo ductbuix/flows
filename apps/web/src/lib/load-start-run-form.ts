@@ -47,11 +47,13 @@ export async function loadStartRunForm(
   const json: unknown = await wfRes.json()
   // Declared inputs live on the Trigger nodes.
   const decls: WorkflowInputDecl[] =
-    workflowDetailSchema.parse(json).workflow?.nodes.flatMap((n) =>
-      n.kind === "trigger" && Array.isArray(n.inputs)
-        ? (n.inputs as WorkflowInputDecl[])
-        : []
-    ) ?? []
+    workflowDetailSchema
+      .parse(json)
+      .workflow?.nodes.flatMap((n) =>
+        n.kind === "trigger" && Array.isArray(n.inputs)
+          ? (n.inputs as WorkflowInputDecl[])
+          : []
+      ) ?? []
   const values: Record<string, string> = {}
   const files: { field: string; file: File }[] = []
 

@@ -48,11 +48,11 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   async function load() {
-    setError(null)
     try {
       const res = await api.connections.$get()
       if (!res.ok) throw new Error("failed")
       const body = connectionsListSchema.parse(await res.json())
+      setError(null)
       setRows(body.connections)
       const next: Record<string, ConnectionCheckResult> = {}
       await Promise.all(
@@ -74,7 +74,39 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
   }
 
   useEffect(() => {
-    void load()
+    let alive = true
+    void (async () => {
+      try {
+        const res = await api.connections.$get()
+        if (!alive) return
+        if (!res.ok) throw new Error("failed")
+        const body = connectionsListSchema.parse(await res.json())
+        if (!alive) return
+        setError(null)
+        setRows(body.connections)
+        const next: Record<string, ConnectionCheckResult> = {}
+        await Promise.all(
+          body.connections.map(async (conn) => {
+            const checkRes = await api.connections[":id"].check.$post({
+              param: { id: conn.id },
+            })
+            if (!checkRes.ok) return
+            next[conn.id] = connectionCheckResultSchema.parse(
+              await checkRes.json()
+            )
+          })
+        )
+        if (alive) setChecks(next)
+      } catch {
+        if (alive) {
+          setError("Could not load connections.")
+          setRows([])
+        }
+      }
+    })()
+    return () => {
+      alive = false
+    }
   }, [])
 
   return (
@@ -104,7 +136,10 @@ export function ConnectionsListTab({ addOpen, onAddOpenChange }: Props) {
           <Skeleton className="h-40 w-full" />
         </div>
       ) : rows.length === 0 ? (
-        <Empty className="ring-1 ring-foreground/10" data-testid="connections-empty">
+        <Empty
+          className="ring-1 ring-foreground/10"
+          data-testid="connections-empty"
+        >
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Plug />

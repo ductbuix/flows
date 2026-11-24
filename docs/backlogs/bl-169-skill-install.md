@@ -2,7 +2,7 @@
 id: BL-169
 title: Install and uninstall skills from a source
 type: backlog
-status: todo
+status: done
 summary: skill/install copies a skill from a source into .agents and .claude and records from; uninstall removes the copies.
 tags: [skills, fcp]
 related: [DES-041]
@@ -19,5 +19,5 @@ Install keeps a copy; later source updates never touch it.
 
 ## Done when
 
-- [ ] `from: { sourceId, version }` recorded; installing over an existing slug asks via `conflict`.
-- [ ] Tests on fakes.
+- [x] `from: { sourceId, version }` recorded; installing over an existing slug asks via `conflict`.
+- [x] Tests on fakes.

@@ -34,7 +34,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("node-save")).toBeDisabled()
     const before = await page.locator(".react-flow__node").count()
     expect(before).toBe(4)
-    await page.screenshot({ path: info.outputPath(`node-history-card-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-history-card-${theme}.png`),
+    })
 
     await row.click()
     await expect(page.getByTestId("past-run")).toBeVisible()
@@ -43,7 +45,9 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByTestId("node-status-build")).toHaveText("Done")
     await expect(page.locator(".react-flow__node")).toHaveCount(3)
     await expect(page.getByTestId("node-settings-build")).toHaveCount(0)
-    await page.screenshot({ path: info.outputPath(`node-history-past-${theme}.png`) })
+    await page.screenshot({
+      path: info.outputPath(`node-history-past-${theme}.png`),
+    })
 
     await page.getByTestId("back-to-editing").click()
     await expect(page.getByTestId("past-run")).toHaveCount(0)

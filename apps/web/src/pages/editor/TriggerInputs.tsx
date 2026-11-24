@@ -9,6 +9,7 @@ import {
   FieldLegend,
   FieldSet,
 } from "@workspace/ui/components/field"
+import { ItemActions } from "@workspace/ui/components/item"
 import { InputEditDialog } from "./InputEditDialog"
 import { nextInputName } from "./node-sheet"
 
@@ -36,16 +37,18 @@ export function TriggerInputs({ inputs, onChange }: Props) {
     <FieldSet data-testid="trigger-inputs">
       <div className="flex items-center justify-between gap-2">
         <FieldLegend variant="label">Inputs</FieldLegend>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          data-testid="input-add"
-          onClick={() => setEditing(inputs.length)}
-        >
-          <PlusIcon data-icon="inline-start" />
-          Add input
-        </Button>
+        <ItemActions>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            data-testid="input-add"
+            onClick={() => setEditing(inputs.length)}
+          >
+            <PlusIcon data-icon="inline-start" />
+            Add input
+          </Button>
+        </ItemActions>
       </div>
       {inputs.length === 0 ? (
         <FieldDescription>
@@ -54,10 +57,10 @@ export function TriggerInputs({ inputs, onChange }: Props) {
       ) : (
         <ul className="flex flex-col gap-1.5">
           {inputs.map((row, i) => (
-            <li key={row.name}>
+            <li key={row.name} className="rounded-md border px-2 py-1.5">
               <Field
                 orientation="horizontal"
-                className="items-center rounded-md border px-2 py-1.5"
+                className="items-center"
                 data-testid={`input-row-${row.name}`}
               >
                 <div className="flex min-w-0 flex-1 flex-col">
@@ -66,29 +69,33 @@ export function TriggerInputs({ inputs, onChange }: Props) {
                   </span>
                   <span className="flex gap-1.5 text-xs text-muted-foreground">
                     {row.type}
-                    {row.required ? <Badge variant="outline">required</Badge> : null}
+                    {row.required ? (
+                      <Badge variant="outline">required</Badge>
+                    ) : null}
                   </span>
                 </div>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={`Edit ${row.name}`}
-                  data-testid={`input-edit-${row.name}`}
-                  onClick={() => setEditing(i)}
-                >
-                  <PencilIcon />
-                </Button>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={`Remove ${row.name}`}
-                  data-testid={`input-remove-${row.name}`}
-                  onClick={() => commit(inputs.filter((_, j) => j !== i))}
-                >
-                  <Trash2Icon />
-                </Button>
+                <ItemActions>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={`Edit ${row.name}`}
+                    data-testid={`input-edit-${row.name}`}
+                    onClick={() => setEditing(i)}
+                  >
+                    <PencilIcon />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={`Remove ${row.name}`}
+                    data-testid={`input-remove-${row.name}`}
+                    onClick={() => commit(inputs.filter((_, j) => j !== i))}
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </ItemActions>
               </Field>
             </li>
           ))}

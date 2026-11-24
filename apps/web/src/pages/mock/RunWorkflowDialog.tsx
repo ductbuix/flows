@@ -28,9 +28,9 @@ function guess(input: string, card: Card, file: string): string {
   const key = input.toLowerCase()
   if (key.includes("ticket") || key.includes("story"))
     return card.refs[0]?.id ?? card.refs[0]?.label ?? ""
-  if (key.includes("file") || key.includes("changelog"))
-    return file
-  if (key.includes("version")) return card.title.match(/v?\d+(\.\d+)+/)?.[0] ?? ""
+  if (key.includes("file") || key.includes("changelog")) return file
+  if (key.includes("version"))
+    return card.title.match(/v?\d+(\.\d+)+/)?.[0] ?? ""
   return card.title
 }
 
@@ -107,17 +107,23 @@ export function RunWorkflowDialog({ card, open, onOpenChange }: Props) {
               id={`rw-${i}`}
               value={edits[`${workflow.id}:${i}`] ?? guess(i, card, file)}
               onChange={(e) =>
-                setEdits((p) => ({ ...p, [`${workflow.id}:${i}`]: e.target.value }))
+                setEdits((p) => ({
+                  ...p,
+                  [`${workflow.id}:${i}`]: e.target.value,
+                }))
               }
             />
-
           </Field>
         ))}
         <DialogFooter>
           <Button variant="outline" onClick={() => close(false)}>
             Cancel
           </Button>
-          <Button disabled={!workflow} onClick={start} data-testid="card-run-start">
+          <Button
+            disabled={!workflow}
+            onClick={start}
+            data-testid="card-run-start"
+          >
             <Play />
             Start run
           </Button>

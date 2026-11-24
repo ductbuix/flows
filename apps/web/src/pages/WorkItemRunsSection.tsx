@@ -52,7 +52,10 @@ export function WorkItemRunsSection({ workItemId }: Props) {
           <Skeleton className="h-24 w-full" />
         </div>
       ) : runs.length === 0 ? (
-        <Empty className="ring-1 ring-foreground/10" data-testid="work-item-runs-empty">
+        <Empty
+          className="ring-1 ring-foreground/10"
+          data-testid="work-item-runs-empty"
+        >
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Play />

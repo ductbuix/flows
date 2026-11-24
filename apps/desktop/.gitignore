@@ -1,0 +1,5 @@
+dist/
+smoke-results/
+test-results/
+playwright-report/
+.turbo/

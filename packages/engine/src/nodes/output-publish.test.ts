@@ -34,10 +34,13 @@ import { assertNodePublishValid } from "./publish.ts"
 
 const dirs: string[] = []
 const logs: EventLog[] = []
+const hosts: ProcessHost[] = []
 
 beforeEach(() => registerConnector(fakeConnector))
 afterEach(() => {
   clearConnectors()
+  // Stop pumps before closing logs so a late wake cannot read a closed DB.
+  for (const h of hosts.splice(0)) h.stop()
   for (const l of logs.splice(0)) l.close()
   for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true })
 })
@@ -123,6 +126,7 @@ async function start(
   let host: ProcessHost | undefined
   const done = runNodes({ log, home, runId, graph, pins }, (h) => {
     host = h
+    hosts.push(h)
   })
   const events = () => log.listByRun(runId).map((s) => s.event)
   return {
@@ -135,10 +139,7 @@ async function start(
   }
 }
 
-async function until(
-  cond: () => boolean,
-  ms = 15_000
-): Promise<void> {
+async function until(cond: () => boolean, ms = 15_000): Promise<void> {
   const t0 = Date.now()
   while (!cond()) {
     if (Date.now() - t0 > ms) throw new Error("timed out waiting")
@@ -181,9 +182,9 @@ describe("output publish: validation", () => {
     lib.access = "propose"
     expect(msgs(base)).toEqual([])
     // The Asset must be upstream, not just in the graph.
-    expect(
-      msgs({ ...base, edges: [] }).join()
-    ).toMatch(/needs an upstream Asset/)
+    expect(msgs({ ...base, edges: [] }).join()).toMatch(
+      /needs an upstream Asset/
+    )
     // And it must reach the same connection.
     const other = {
       ...base,
@@ -199,7 +200,11 @@ describe("output publish: validation", () => {
     expect(msgs(other).join()).toMatch(/needs an upstream Asset/)
     const noConn = {
       ...base,
-      nodes: [base.nodes[0], lib, { id: "o", kind: "output", target: "publish" }],
+      nodes: [
+        base.nodes[0],
+        lib,
+        { id: "o", kind: "output", target: "publish" },
+      ],
     }
     expect(msgs(noConn).join()).toMatch(/publish needs a connection/)
     const folderConn = {
@@ -243,7 +248,9 @@ describe("output publish (fake connector)", () => {
       question: "Publish 1 change to demo?",
     })
     expect(types(s.events(), "publish_started")).toHaveLength(0)
-    expect(existsSync(join(s.runRoot, "changes/ship-demo/preview.md"))).toBe(true)
+    expect(existsSync(join(s.runRoot, "changes/ship-demo/preview.md"))).toBe(
+      true
+    )
     // The agent step worked in the work copy; the pinned copy is untouched.
     expect(
       readFileSync(join(s.runRoot, "work/demo/item/v1/data.txt"), "utf8")
@@ -257,7 +264,10 @@ describe("output publish (fake connector)", () => {
       { taskId: "ship-demo", status: "applied", impact: "cloud" },
     ])
     const result = JSON.parse(
-      readFileSync(join(s.runRoot, "nodes/ship-demo/pass-1/result.json"), "utf8")
+      readFileSync(
+        join(s.runRoot, "nodes/ship-demo/pass-1/result.json"),
+        "utf8"
+      )
     ) as { url: string }
     expect(result.url).toMatch(/example\.test/)
     expect(latestStep(foldSteps(events), "ship-demo")?.outputs).toEqual([
@@ -305,7 +315,10 @@ describe("output publish (fake connector)", () => {
     expect(made.ok).toBe(true)
     const s = await start(
       home,
-      wf(["demo"], `printf '__destructive__' > "$RESOURCE_DEMO/item/v1/wipe.destructive"`)
+      wf(
+        ["demo"],
+        `printf '__destructive__' > "$RESOURCE_DEMO/item/v1/wipe.destructive"`
+      )
     )
     await until(() => s.status("ship-demo") === "waiting")
     expect(types(s.events(), "agent_review_finished")).toMatchObject([
@@ -486,7 +499,11 @@ describe("output publish (GitHub fixture)", () => {
     // A stub `gh`: nothing leaves the machine; the remote is the local bare repo.
     const runGh = async (args: string[]): Promise<CommandResult> => {
       if (args[0] === "auth") {
-        return { stdout: "", stderr: "Logged in to github.com account test", code: 0 }
+        return {
+          stdout: "",
+          stderr: "Logged in to github.com account test",
+          code: 0,
+        }
       }
       if (args[0] === "pr" && args[1] === "create") {
         return { stdout: `${prUrl}\n`, stderr: "", code: 0 }
@@ -519,14 +536,21 @@ describe("output publish (GitHub fixture)", () => {
           id: "repo",
           kind: "asset",
           access: "propose",
-          resources: [{ connection: "github-demo", entity: "repo", id: "acme/demo" }],
+          resources: [
+            { connection: "github-demo", entity: "repo", id: "acme/demo" },
+          ],
         },
         {
           id: "edit",
           kind: "command",
           run: 'git -C "$RESOURCE_GITHUB_DEMO/repo/acme%2Fdemo" config user.email t@example.com; git -C "$RESOURCE_GITHUB_DEMO/repo/acme%2Fdemo" config user.name T; echo shipped > "$RESOURCE_GITHUB_DEMO/repo/acme%2Fdemo/feature.txt"',
         },
-        { id: "pr", kind: "output", target: "publish", connection: "github-demo" },
+        {
+          id: "pr",
+          kind: "output",
+          target: "publish",
+          connection: "github-demo",
+        },
       ],
       edges: [
         { from: "t", to: "edit" },

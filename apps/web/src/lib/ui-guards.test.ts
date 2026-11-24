@@ -26,9 +26,23 @@ const imp = 'import { Button } from "@workspace/ui/components/button"\n'
 
 tester.run("dense-size", denseSizeRule, {
   valid: [
-    { filename: page, code: `${imp}<TableCell><Button size="sm" /></TableCell>` },
-    { filename: page, code: `${imp}<ItemActions><Button size="icon-xs" /></ItemActions>` },
+    {
+      filename: page,
+      code: `${imp}<TableCell><Button size="sm" /></TableCell>`,
+    },
+    {
+      filename: page,
+      code: `${imp}<ItemActions><Button size="icon-xs" /></ItemActions>`,
+    },
     { filename: page, code: `${imp}<Button />` },
+    {
+      filename: page,
+      code: 'import { Card } from "@workspace/ui/components/card"\n<Card size="sm" />',
+    },
+    {
+      filename: page,
+      code: 'import { Item } from "@workspace/ui/components/item"\n<Item size="xs" />',
+    },
     {
       filename: "/repo/apps/web/src/pages/run-view/TaskGraph.tsx",
       code: `${imp}<Button size="sm" />`,
@@ -68,23 +82,44 @@ tester.run("dialog-width", dialogWidthRule, {
 
 tester.run("mono", monoRule, {
   valid: [
-    { filename: "/repo/apps/web/src/components/data/IdText.tsx", code: 'x("font-mono")' },
-    { filename: "/repo/apps/web/src/components/ai-elements/a.tsx", code: 'x("font-mono")' },
+    {
+      filename: "/repo/apps/web/src/components/data/IdText.tsx",
+      code: 'x("font-mono")',
+    },
+    {
+      filename: "/repo/apps/web/src/components/ai-elements/a.tsx",
+      code: 'x("font-mono")',
+    },
     { filename: page, code: 'x("text-sm")' },
   ],
   invalid: [
-    { filename: page, code: '<p className="font-mono text-sm" />', errors: [{ messageId: "banned" }] },
+    {
+      filename: page,
+      code: '<p className="font-mono text-sm" />',
+      errors: [{ messageId: "banned" }],
+    },
   ],
 })
 
 tester.run("frame-padding", framePaddingRule, {
   valid: [
-    { filename: "/repo/apps/web/src/components/page/Page.tsx", code: 'x("px-4 lg:px-6")' },
+    {
+      filename: "/repo/apps/web/src/components/page/Page.tsx",
+      code: 'x("px-4 lg:px-6")',
+    },
     { filename: page, code: 'x("px-4 p-3")' },
   ],
   invalid: [
-    { filename: page, code: '<div className="lg:px-6" />', errors: [{ messageId: "banned" }] },
-    { filename: page, code: '<div className="p-6" />', errors: [{ messageId: "banned" }] },
+    {
+      filename: page,
+      code: '<div className="lg:px-6" />',
+      errors: [{ messageId: "banned" }],
+    },
+    {
+      filename: page,
+      code: '<div className="p-6" />',
+      errors: [{ messageId: "banned" }],
+    },
   ],
 })
 

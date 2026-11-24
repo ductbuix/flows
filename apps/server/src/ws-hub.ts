@@ -1,3 +1,4 @@
+import type { UpdateBus } from "@workspace/core"
 import type { Engine, StoredEvent } from "@workspace/engine"
 import {
   engineEventSchema,
@@ -5,6 +6,7 @@ import {
   type WsServerMessage,
 } from "@workspace/shared"
 import type { WSContext, WSEvents } from "hono/ws"
+import { publishRunFcpUpdates } from "./fcp-run-updates.ts"
 import { buildRunDetail } from "./run-detail.ts"
 import { type LogSub, logSubKey, startLogSubscription } from "./ws-log.ts"
 import { WorkflowWatcher, type FileChange } from "./workflow-watch.ts"
@@ -22,13 +24,16 @@ export class WsHub {
   private readonly workflowWatchers = new Map<string, Set<WSContext>>()
   readonly files: WorkflowWatcher
 
-  constructor(private readonly engine: Engine) {
+  constructor(
+    private readonly engine: Engine,
+    private readonly bus: UpdateBus
+  ) {
     this.files = new WorkflowWatcher(engine, (change) =>
       this.broadcastFileChange(change)
     )
     this.offEvent = engine.onEvent((stored) => {
       const runId = stored.event.runId
-      this.broadcastRunsChanged(runId)
+      this.broadcastRunsChanged(runId, stored)
       const sockets = this.runWatchers.get(runId)
       if (!sockets) return
       for (const ws of sockets) this.pushRunEvent(ws, stored)
@@ -136,13 +141,20 @@ export class WsHub {
     for (const ws of sockets) this.send(ws, message)
   }
 
-  private broadcastRunsChanged(runId: string) {
+  private broadcastRunsChanged(runId: string, stored: StoredEvent) {
+    const summary = this.engine.getRunSummary(runId)
     const message: WsServerMessage = {
       type: "runs_changed",
       runId,
-      summary: this.engine.getRunSummary(runId),
+      summary,
     }
     for (const ws of this.sockets.keys()) this.send(ws, message)
+    this.bus.publish("run/update", {
+      kind: "run_changed",
+      runId,
+      summary,
+    })
+    publishRunFcpUpdates(this.engine, this.bus, stored, summary)
   }
 
   private subscribeRun(ws: WSContext, runId: string, afterSeq: number) {

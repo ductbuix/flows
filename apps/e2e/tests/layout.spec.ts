@@ -38,9 +38,9 @@ async function expectLayout(page: Page, route: Route) {
   expect(await h1.evaluate((el) => getComputedStyle(el).fontSize)).toBe("20px")
 
   const content = page.locator(CONTENT).first()
-  expect(
-    await content.evaluate((el) => getComputedStyle(el).paddingTop)
-  ).toBe("24px")
+  expect(await content.evaluate((el) => getComputedStyle(el).paddingTop)).toBe(
+    "24px"
+  )
 
   const edges = await content.evaluate((el) =>
     [...el.children]
@@ -58,7 +58,8 @@ async function expectLayout(page: Page, route: Route) {
       "[data-slot=button],[data-slot=input],[data-slot=select-trigger]"
     )) {
       // Link-variant buttons are inline text, not controls.
-      if (el.closest(dense) || el.classList.contains("underline-offset-4")) continue
+      if (el.closest(dense) || el.classList.contains("underline-offset-4"))
+        continue
       const r = el.getBoundingClientRect()
       if (r.height === 0) continue
       out.push({
@@ -190,7 +191,12 @@ test.describe("layout check (BL-061)", () => {
         await expect(page).toHaveScreenshot(`${route.name}-${theme}.png`, {
           maxDiffPixelRatio: 0.01,
           mask,
-          clip: { x: 256, y: 48, width: 1184, height: route.dynamic ? 160 : 852 },
+          clip: {
+            x: 256,
+            y: 48,
+            width: 1184,
+            height: route.dynamic ? 160 : 852,
+          },
         })
       })
     }

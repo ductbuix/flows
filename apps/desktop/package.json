@@ -1,0 +1,36 @@
+{
+  "name": "desktop",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:web": "FLOWAPP_DESKTOP_BUILD=1 pnpm --filter web exec vite build",
+    "start": "electron .",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:smoke": "pnpm run build && pnpm run build:web && playwright test"
+  },
+  "dependencies": {
+    "@workspace/adapters-node": "workspace:*",
+    "@workspace/contracts": "workspace:*",
+    "@workspace/core": "workspace:*",
+    "@workspace/protocol": "workspace:*",
+    "@workspace/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^24.19.2",
+    "electron": "^39.2.7",
+    "esbuild": "^0.27.2",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "playwright": "^1.65.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.1"
+  }
+}

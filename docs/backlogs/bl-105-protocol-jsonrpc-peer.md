@@ -2,7 +2,7 @@
 id: BL-105
 title: JSON-RPC peer and linked transports
 type: backlog
-status: todo
+status: done
 summary: New packages/protocol with a JSON-RPC 2.0 peer (requests, results, errors, notifications) and an in-memory linked transport pair.
 tags: [protocol, json-rpc]
 related: [DES-040, DES-039]
@@ -19,6 +19,6 @@ Create `packages/protocol` with the `Transport` interface from DES-040 and one `
 
 ## Done when
 
-- [ ] `packages/protocol` exists, imports nothing in the repo except `contracts` types (none needed yet) and builds in the workspace.
-- [ ] Peer supports `request`, `notify`, `onRequest(method, handler)`, `onNotification(method, handler)` and rejects pending requests when the transport closes.
-- [ ] Unit tests over linked transports: round trip, unknown method gives -32601, handler error gives an error response, close rejects pending.
+- [x] `packages/protocol` exists, imports nothing in the repo except `contracts` types (none needed yet) and builds in the workspace.
+- [x] Peer supports `request`, `notify`, `onRequest(method, handler)`, `onNotification(method, handler)` and rejects pending requests when the transport closes.
+- [x] Unit tests over linked transports: round trip, unknown method gives -32601, handler error gives an error response, close rejects pending.

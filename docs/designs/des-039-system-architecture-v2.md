@@ -116,7 +116,7 @@ flowchart TB
 | `packages/core`          | bounded contexts, services, ports, run engine, node registry, `createEngine`, `bindEngine`    | `contracts`, `protocol` (types)             |
 | `packages/adapters-node` | SQLite event store, fs document store, watcher, process runner, sandbox, keychain, blob store | `core`, `contracts`                         |
 | `packages/agent-acp`     | `AgentRuntime` over ACP; `cursor` and `generic` profiles                                      | `core` (ports), `protocol`, `contracts`     |
-| `packages/mcp-gateway`   | local MCP server that exposes allowed connector capabilities to agents                        | `core` (ports), `contracts`                 |
+| `packages/mcp-gateway`   | local MCP server that exposes allowed connector capabilities to agents                        | `protocol`, `contracts`                     |
 | `packages/sdk`           | `FlowsClient`, typed call/subscribe, reconnect and resync                                     | `protocol`, `contracts`                     |
 | `packages/sdk-react`     | `useQuery`/`useSubscription` hooks over `sdk`                                                 | `sdk`, React                                |
 | `packages/ui`            | unchanged: shadcn and domain-free AI Elements                                                 | nothing in the repo                         |

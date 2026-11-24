@@ -43,13 +43,13 @@ export function TaskDetailEnvironment({ run, task, attempt, attemptN }: Props) {
       {command ? (
         <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">Command</p>
-          <CodeBlock size="sm" data-testid="task-env-command">
+          <CodeBlock data-testid="task-env-command">
             <CodeBlockContent wrap>{command}</CodeBlockContent>
           </CodeBlock>
         </div>
       ) : null}
       {attempt?.pid !== undefined ? (
-        <Item size="sm" variant="outline" data-testid="task-env-pid">
+        <Item variant="outline" data-testid="task-env-pid">
           <ItemContent className="flex-row items-center gap-2">
             <ItemTitle>PID</ItemTitle>
             <Badge variant="secondary">{attempt.pid}</Badge>
@@ -74,7 +74,7 @@ export function TaskDetailEnvironment({ run, task, attempt, attemptN }: Props) {
       {logLoading && !logText ? (
         <p className="text-sm text-muted-foreground">Loading log…</p>
       ) : logText ? (
-        <CodeBlock size="sm" data-testid="task-env-raw-log">
+        <CodeBlock data-testid="task-env-raw-log">
           <CodeBlockContent wrap className="max-h-64">
             {logText}
           </CodeBlockContent>

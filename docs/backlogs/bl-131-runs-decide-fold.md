@@ -2,7 +2,7 @@
 id: BL-131
 title: Pure decide and fold for runs
 type: backlog
-status: todo
+status: done
 summary: Run rules move into pure decide(state, input) -> { events, effects } and fold(state, event) in core, ported from nodes/tick.
 tags: [core, runs, engine]
 related: [DES-041, DES-034, DES-042]
@@ -19,6 +19,6 @@ Separate rules from I/O (functional core). Today's tick logic is the source; beh
 
 ## Done when
 
-- [ ] `decide` and `fold` have no I/O and no clock reads (time comes in the input).
-- [ ] Effects are a discriminated union: `launch_step`, `post_inbox`, `write_output`, `notify`.
-- [ ] Table tests port today's tick tests (branches, loops with limit, retry, partial runs).
+- [x] `decide` and `fold` have no I/O and no clock reads (time comes in the input).
+- [x] Effects are a discriminated union: `launch_step`, `post_inbox`, `write_output`, `notify`.
+- [x] Table tests port today's tick tests (branches, loops with limit, retry, partial runs).

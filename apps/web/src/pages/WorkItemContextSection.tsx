@@ -101,7 +101,10 @@ export function WorkItemContextSection({
   return (
     <PageSection title="Context">
       {item.links.length === 0 ? (
-        <Empty className="ring-1 ring-foreground/10" data-testid="work-item-context-empty">
+        <Empty
+          className="ring-1 ring-foreground/10"
+          data-testid="work-item-context-empty"
+        >
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Link2 />
