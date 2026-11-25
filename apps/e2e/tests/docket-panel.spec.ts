@@ -1,0 +1,132 @@
+import { expect, test } from "@playwright/test"
+import { openFixLogin } from "./docket-helpers"
+
+test.describe("docket card panel sections (BL-198)", () => {
+  test("add ref", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    await panel.getByRole("button", { name: "Add ref" }).click()
+    await panel
+      .getByTestId("docket-ref-url")
+      .fill("https://github.com/costory/flows/issues/198")
+    await panel.getByTestId("docket-ref-add").click()
+    await expect(panel.getByText("github", { exact: true })).toBeVisible()
+    await expect(
+      panel.getByRole("link", {
+        name: "github.com/costory/flows/issues/198",
+      })
+    ).toBeVisible()
+    await panel
+      .getByRole("button", {
+        name: "Remove ref github.com/costory/flows/issues/198",
+      })
+      .click()
+    await expect(
+      panel.getByRole("link", {
+        name: "github.com/costory/flows/issues/198",
+      })
+    ).toHaveCount(0)
+  })
+
+  test("properties", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+
+    await panel.getByTestId("docket-prop-status").click()
+    await page.getByRole("option", { name: "Review" }).click()
+    await expect(page.getByTestId("docket-card-fix-login")).toBeVisible()
+    await expect(page.getByTestId("docket-column-review")).toContainText(
+      "Fix flaky login"
+    )
+
+    await panel.getByLabel("Edit start date").click()
+    await panel.getByLabel("start date").fill("2026-11-21")
+    await panel.getByLabel("start date").press("Enter")
+    await expect(panel.getByLabel("Edit start date")).toContainText(
+      "Nov 21, 2026"
+    )
+
+    await panel.getByRole("button", { name: "Add property" }).click()
+    await panel.getByTestId("docket-prop-name").fill("assignee")
+    await panel.getByTestId("docket-prop-value").fill("dbx")
+    await panel.getByTestId("docket-prop-add").click()
+    await expect(panel.getByLabel("Edit assignee")).toContainText("dbx")
+    await panel.getByLabel("Edit assignee").click()
+    await panel.getByRole("textbox", { name: "assignee" }).fill("flows")
+    await panel.getByRole("textbox", { name: "assignee" }).press("Enter")
+    await expect(panel.getByLabel("Edit assignee")).toContainText("flows")
+    await panel
+      .getByRole("button", { name: "Remove property assignee" })
+      .click()
+    await expect(panel.getByLabel("Edit assignee")).toHaveCount(0)
+  })
+
+  test("add link", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    await panel.getByRole("button", { name: "Add link" }).click()
+    await panel.getByTestId("docket-link-rel").click()
+    await page.getByRole("option", { name: "blocks" }).click()
+    await panel.getByTestId("docket-link-target").click()
+    await page.getByRole("option", { name: "Refactor auth session" }).click()
+    await panel.getByTestId("docket-link-add").click()
+    await expect(panel.getByText("blocks")).toBeVisible()
+    await expect(panel.getByText("Refactor auth session")).toBeVisible()
+    await panel
+      .getByRole("button", { name: "Remove link to Refactor auth session" })
+      .click()
+    await expect(panel.getByText("No links yet")).toBeVisible()
+  })
+})
+
+test.describe("docket card panel assets (BL-199)", () => {
+  test("add asset", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    await expect(panel.getByText("Acceptance criteria")).toBeVisible()
+    // The fixture card already owns one asset; notes.md is added after it.
+    const menus = panel.getByTestId("asset-open-menu")
+    await expect(menus).toHaveCount(1)
+
+    await panel.getByRole("button", { name: "Add asset" }).click()
+    await page.getByTestId("asset-add-from-disk").click()
+    const dialog = page.getByTestId("asset-disk-dialog")
+    await expect(dialog).toBeVisible()
+    await dialog.getByTestId("disk-file-input").setInputFiles({
+      name: "notes.md",
+      mimeType: "text/markdown",
+      buffer: Buffer.from("# Notes\n"),
+    })
+    await expect(dialog.getByTestId("disk-picker")).toContainText("notes.md")
+    await dialog.getByTestId("asset-disk-submit").click()
+    await expect(dialog).toBeHidden()
+    await expect(panel.getByText("notes.md")).toBeVisible()
+    await expect(menus).toHaveCount(2)
+
+    await menus.nth(1).click()
+    await page.getByTestId("asset-remove").click()
+    await expect(panel.getByText("notes.md")).toHaveCount(0)
+    await expect(menus).toHaveCount(1)
+    await expect(panel.getByText("Acceptance criteria")).toBeVisible()
+  })
+
+  test("item files", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    await panel.getByTestId("item-open-menu").click()
+    await page.getByTestId("item-view-files").click()
+    await expect(page).toHaveURL(/\/files/)
+    await expect(page.getByTestId("files-page")).toBeVisible()
+  })
+
+  test("ref data", async ({ page }) => {
+    await openFixLogin(page)
+    const panel = page.getByTestId("docket-panel")
+    const block = panel.getByTestId("ref-data-block")
+    await expect(block).toBeVisible()
+    await expect(block.getByText("rally", { exact: true })).toBeVisible()
+    await expect(block.getByText("US1234")).toBeVisible()
+    await expect(block.getByText("In progress")).toBeVisible()
+    await expect(block.getByText("Sprint 42")).toBeVisible()
+  })
+})
