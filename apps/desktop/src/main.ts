@@ -2,11 +2,12 @@ import {
   app,
   BrowserWindow,
   ipcMain,
+  session,
   utilityProcess,
   type UtilityProcess,
 } from "electron"
 import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 import { resolveAppHome } from "@workspace/adapters-node"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
 import { notifyInboxIfUnfocused, notifySystem } from "./host-notifications.ts"
@@ -16,6 +17,7 @@ import {
   installFlowsBlobProtocol,
   registerFlowsBlobScheme,
 } from "./install-flows-blob.ts"
+import { denyAllPermissions, lockDownWindow } from "./window-guards.ts"
 import { resolveEngineMode, type EngineMode } from "./resolve-engine-mode.ts"
 import type { MessagePortLike } from "@workspace/protocol"
 
@@ -56,18 +58,20 @@ function createWindow(): BrowserWindow {
       preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   })
 
-  const dist = webDistDir()
-  void win.loadFile(join(dist, "index.html"), { hash: "/docket" })
+  const indexPath = join(webDistDir(), "index.html")
+  lockDownWindow(win, pathToFileURL(indexPath).href)
+  void win.loadFile(indexPath, { hash: "/docket" })
   return win
 }
 
 app.whenReady().then(() => {
   const home = resolveAppHome()
 
+  denyAllPermissions(session.defaultSession)
   installFlowsBlobProtocol(home)
 
   engineMode = resolveEngineMode(home)

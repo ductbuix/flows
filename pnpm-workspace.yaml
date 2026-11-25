@@ -6,3 +6,6 @@ allowBuilds:
   electron: true
   esbuild: true
   msw: false
+
+overrides:
+  "@ts-morph/common>minimatch": "^11.0.1"
