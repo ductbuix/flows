@@ -26,3 +26,7 @@ pnpm test:e2e     # playwright, records video and screenshots
 Agent guide: `AGENTS.md`. Cursor rules: `.cursor/rules`.
 
 Add a UI component: `pnpm dlx shadcn@latest add <name> -c apps/web`.
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
