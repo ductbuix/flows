@@ -27,7 +27,7 @@ function summaryOf(node: WorkflowNode): string | undefined {
     case "output":
       return node.title ?? node.target
     case "asset":
-      return `${node.access ?? "read"} · ${node.resources.length} resources`
+      return `${node.items?.length ?? 0} library items`
     case "judge":
       return node.mode === "check" ? "Check" : "Rule"
     case "agent":
@@ -63,6 +63,11 @@ function dataOf(node: WorkflowNode): CanvasNodeData {
     summary: summaryOf(node),
     question: node.kind === "approval" ? node.question : undefined,
     title: node.kind === "output" ? node.title : undefined,
+    run: node.kind === "command" ? node.run : undefined,
+    mode: node.kind === "judge" ? (node.mode ?? "rule") : undefined,
+    target: node.kind === "output" ? node.target : undefined,
+    channel: node.kind === "output" ? node.channel : undefined,
+    items: node.kind === "asset" ? node.items?.map(String) : undefined,
     cli,
     model,
     effort,
@@ -82,6 +87,9 @@ export function workflowEdgesToCanvas(
     const port = e.port ?? "text"
     return {
       id: edgeId(e),
+      type: "smoothstep",
+      // Turn away from the card before bending so wires never graze it.
+      pathOptions: { borderRadius: 16, offset: 32 },
       source: e.from,
       target: e.to,
       sourceHandle: e.branch ?? port,
@@ -89,6 +97,14 @@ export function workflowEdgesToCanvas(
       label: e.branch ? (BRANCH_LABEL[e.branch] ?? e.branch) : undefined,
     }
   })
+}
+
+/**
+ * React Flow type key for a kind. Prefixed so `output` (and friends) never
+ * pick up React Flow's built-in node styles.
+ */
+export function nodeTypeOf(kind: string): string {
+  return `flow-${kind}`
 }
 
 /** Positions from layout; missing ids get dagre next to their inputs. */
@@ -108,7 +124,7 @@ export function workflowToCanvas(
 
   const nodes: CanvasNode[] = workflow.nodes.map((n) => ({
     id: n.id,
-    type: n.kind,
+    type: nodeTypeOf(n.kind),
     position: placed.get(n.id) ?? { x: 0, y: 0 },
     data: dataOf(n),
   }))
@@ -159,4 +175,40 @@ export function canvasToLayout(
 
 export function portsFor(kind: string) {
   return PORT_TABLE[kind] ?? { in: ["text"] as const, out: ["text"] as const }
+}
+
+/**
+ * Workflow edge for a drawn wire: the target handle is the port; a Judge
+ * source handle is the branch. Null when the wire is not allowed.
+ */
+export function connectionToEdge(
+  c: {
+    source: string
+    target: string
+    sourceHandle?: string | null
+    targetHandle?: string | null
+  },
+  kindOf: (id: string) => string | undefined
+): WorkflowEdge | null {
+  const fromKind = kindOf(c.source)
+  const toKind = kindOf(c.target)
+  if (!fromKind || !toKind || c.source === c.target) return null
+  const port = (c.targetHandle ?? "text") as "text" | "file"
+  const from = portsFor(fromKind)
+  const to = portsFor(toKind)
+  if (!to.in.includes(port)) return null
+  const branch = from.branches?.length ? (c.sourceHandle ?? "") : undefined
+  if (branch !== undefined) {
+    if (!from.branches!.includes(branch) || !from.out.includes(port)) {
+      return null
+    }
+  } else if ((c.sourceHandle ?? "text") !== port || !from.out.includes(port)) {
+    return null
+  }
+  return {
+    from: c.source,
+    to: c.target,
+    ...(port === "file" ? { port } : {}),
+    ...(branch ? { branch } : {}),
+  }
 }

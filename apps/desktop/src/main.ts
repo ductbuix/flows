@@ -7,8 +7,9 @@ import {
 } from "electron"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { resolveAppHome } from "@workspace/adapters-node"
 import { bridgePortToWebSocket } from "./fcp-bridge.ts"
-import { notifyInboxIfUnfocused } from "./host-notifications.ts"
+import { notifyInboxIfUnfocused, notifySystem } from "./host-notifications.ts"
 import { openBrowserSignIn } from "./host-browser-sign-in.ts"
 import { revealPathInFolder } from "./host-shell.ts"
 import {
@@ -33,10 +34,7 @@ let engineMode: EngineMode | undefined
 const bridges: Array<{ dispose: () => void }> = []
 
 function startEngineHost(): UtilityProcess {
-  const home = process.env.FLOWAPP_HOME
-  if (!home) {
-    throw new Error("FLOWAPP_HOME is required")
-  }
+  const home = resolveAppHome()
   const child = utilityProcess.fork(engineHostPath, [], {
     env: { ...process.env, FLOWAPP_HOME: home },
     serviceName: "flows-engine",
@@ -68,10 +66,7 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  const home = process.env.FLOWAPP_HOME
-  if (!home) {
-    throw new Error("FLOWAPP_HOME is required")
-  }
+  const home = resolveAppHome()
 
   installFlowsBlobProtocol(home)
 
@@ -114,6 +109,13 @@ app.whenReady().then(() => {
     const { title, body } = payload as { title?: unknown; body?: unknown }
     if (typeof title !== "string" || typeof body !== "string") return
     notifyInboxIfUnfocused({ title, body })
+  })
+
+  ipcMain.on("flows:notify-system", (_event, payload: unknown) => {
+    if (!payload || typeof payload !== "object") return
+    const { title, body } = payload as { title?: unknown; body?: unknown }
+    if (typeof title !== "string" || typeof body !== "string") return
+    notifySystem({ title, body })
   })
 
   ipcMain.handle("flows:browser-sign-in", async (_event, raw: unknown) => {

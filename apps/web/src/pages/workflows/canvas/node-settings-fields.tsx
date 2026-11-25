@@ -134,7 +134,10 @@ export function AllowLists({
     <>
       <Separator className="my-1" />
       <div className="flex flex-col gap-4">
-        <Section title="Connectors" hint="Systems this step may read or change.">
+        <Section
+          title="Connectors"
+          hint="Systems this step may read or change."
+        >
           <ConnectorList
             value={connectors}
             onChange={(next) =>

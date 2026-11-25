@@ -9,6 +9,7 @@ import {
   RunActor,
   type AcpAsks,
   type AcpInboxAnswerInput,
+  type NoticePost,
   type PartialRun,
 } from "@workspace/core"
 import {
@@ -54,8 +55,16 @@ export type CoreRunHost = {
   dispose(): void
 }
 
+export type CoreRunHostOptions = {
+  /** A notify step stored a new notice (not a repeat of the same step). */
+  onNotice?: (n: NoticePost) => void
+}
+
 /** Core RunActor + Scheduler over the shared engine EventLog (BL-194..196). */
-export function createCoreRunHost(engine: Host): CoreRunHost {
+export function createCoreRunHost(
+  engine: Host,
+  options: CoreRunHostOptions = {}
+): CoreRunHost {
   const docs = createNodeDocumentStore({ root: engine.home })
   const processRunner = getProcessRunner()
   const agentRuntime = createAcpRuntime({ processRunner })
@@ -88,7 +97,9 @@ export function createCoreRunHost(engine: Host): CoreRunHost {
         `${relRunDir(state.workflowId, state.runId)}/nodes/${nodeId}/pass-${pass}`
       ),
     signalOf: (state) => aborts.get(state.runId)?.signal,
-    postNotice: (n) => engine.postNotice(n),
+    postNotice: (n) => {
+      if (engine.postNotice(n)) options.onNotice?.(n)
+    },
   })
 
   const makeActor = (runId: string) =>
@@ -103,7 +114,10 @@ export function createCoreRunHost(engine: Host): CoreRunHost {
     session.endIfTerminal(runId, entry.actor)
   }
   session.onActivated = (runId) => {
-    void activate(runId).catch(() => session.endLive(runId))
+    void activate(runId).catch((err: unknown) => {
+      console.error(`run ${runId} activate failed`, err)
+      session.endLive(runId)
+    })
   }
 
   const recordLocal = async (runId: string, workflowId: string) => {

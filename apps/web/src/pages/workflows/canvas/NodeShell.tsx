@@ -1,18 +1,12 @@
 import type { ReactNode } from "react"
-import {
-  Handle,
-  NodeToolbar,
-  Position,
-  useConnection,
-  useNodeConnections,
-  useNodeId,
-} from "@xyflow/react"
-import { Copy, File, Plus, Settings2, Trash2, Type } from "lucide-react"
+import { NodeToolbar, Position, useNodeId } from "@xyflow/react"
+import { Copy, Settings2, Trash2 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import { StatusPill, type Tone } from "@/components/brand/StatusPill"
 import { useFlow } from "./flow-context"
 import {
+  HAS_SETTINGS,
   KIND_ICON,
   KIND_LABEL,
   type NodeKindName,
@@ -40,59 +34,10 @@ const STATE_RING: Partial<Record<RunState, string>> = {
   waiting: "ring-warning/60",
 }
 
-export const PORT_STYLE = {
-  text: "bg-info/20! text-info ring-info/40",
-  file: "bg-warning/20! text-warning ring-warning/40",
-  any: "bg-muted! text-foreground ring-foreground/20",
-}
-
-type Port = keyof typeof PORT_STYLE
-
-type PortProps = {
-  io: "in" | "out"
-  port?: Port
-  id?: string
-  top?: number | string
-  gap?: number
-}
-
-/** Typed connection point: T for text, file icon for file. */
-export function PortHandle({
-  io,
-  port = "text",
-  id,
-  top = "50%",
-  gap = 16,
-}: PortProps) {
-  const Icon = port === "text" ? Type : port === "file" ? File : Plus
-  const handleId = id ?? port
-  const linked =
-    useNodeConnections({
-      handleType: io === "in" ? "target" : "source",
-      handleId,
-    }).length > 0
-  const { inProgress } = useConnection()
-  return (
-    <Handle
-      id={handleId}
-      type={io === "in" ? "target" : "source"}
-      position={io === "in" ? Position.Left : Position.Right}
-      style={{ top, [io === "in" ? "left" : "right"]: -gap }}
-      className={cn(
-        "flex size-6! items-center justify-center rounded-full! border-0! ring-1 transition-opacity hover:opacity-100",
-        PORT_STYLE[port],
-        !linked &&
-          !inProgress &&
-          "opacity-0 group-hover/node:opacity-100 group-data-[selected=true]/node:opacity-100"
-      )}
-    >
-      <Icon className="pointer-events-none size-3" />
-    </Handle>
-  )
-}
-
 type ShellProps = {
   kind: NodeKindName
+  /** Node name from YAML; the kind label shows when unset. */
+  name?: string
   selected?: boolean
   wide?: boolean
   state?: RunState
@@ -103,6 +48,7 @@ type ShellProps = {
 /** Label above, rounded body below; ports sit outside the body. */
 export function NodeShell({
   kind,
+  name,
   selected,
   wide,
   state,
@@ -118,11 +64,11 @@ export function NodeShell({
       data-testid={`canvas-node-${kind}`}
       className={cn(
         "group/node flex flex-col gap-1.5",
-        wide ? "w-96" : "w-64",
+        wide ? "w-96" : "w-72",
         state === "skipped" && "opacity-40"
       )}
     >
-      {nodeId && !readOnly ? (
+      {nodeId && !readOnly && kind !== "trigger" ? (
         <NodeToolbar
           isVisible={selected}
           position={Position.Top}
@@ -130,43 +76,50 @@ export function NodeShell({
           className="!z-50"
         >
           <div className="flex gap-1 rounded-2xl bg-card p-1 ring-1 ring-foreground/10">
+            {HAS_SETTINGS.has(kind) ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Node settings"
+                data-testid="node-open-settings"
+                onClick={() => openSettings(nodeId)}
+              >
+                <Settings2 />
+              </Button>
+            ) : null}
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Node settings"
-              data-testid="node-open-settings"
-              onClick={() => openSettings(nodeId)}
+              aria-label="Duplicate node"
+              data-testid="node-duplicate"
+              onClick={() => duplicate(nodeId)}
             >
-              <Settings2 />
+              <Copy />
             </Button>
-            {kind === "trigger" ? null : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Duplicate node"
-                  data-testid="node-duplicate"
-                  onClick={() => duplicate(nodeId)}
-                >
-                  <Copy />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Delete node"
-                  data-testid="node-delete"
-                  onClick={() => remove(nodeId)}
-                >
-                  <Trash2 />
-                </Button>
-              </>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Delete node"
+              data-testid="node-delete"
+              onClick={() => remove(nodeId)}
+            >
+              <Trash2 />
+            </Button>
           </div>
         </NodeToolbar>
       ) : null}
       <div className="flex min-h-6 items-center gap-1.5 px-1 text-xs text-muted-foreground">
         <Icon className="size-3.5" />
-        <span className="flex-1">{KIND_LABEL[kind]}</span>
+        <span className="flex-1 truncate">
+          {name ? (
+            <>
+              <span className="text-foreground">{name}</span>
+              <span> · {KIND_LABEL[kind]}</span>
+            </>
+          ) : (
+            KIND_LABEL[kind]
+          )}
+        </span>
         {state && state !== "skipped" ? (
           <StatusPill tone={STATE_TONE[state]}>{STATE_LABEL[state]}</StatusPill>
         ) : state === "skipped" ? (
@@ -182,6 +135,7 @@ export function NodeShell({
       >
         {children}
         <NodeRunFooter
+          kind={kind}
           nodeId={nodeId}
           state={state}
           result={result}

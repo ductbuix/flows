@@ -7,7 +7,9 @@ const CONTENT = '[class~="@container/main"]'
 const DENSE =
   "[data-slot=table-cell],[data-slot=table-head],[data-slot=item-actions]," +
   "[data-slot=input-group],[data-slot=sidebar],[data-sidebar],[data-slot=code-block]," +
-  "[data-testid=graph-canvas],[data-testid=canvas],[data-slot=prompt-input],[role=dialog]"
+  "[data-testid=graph-canvas],[data-testid=canvas],[data-slot=prompt-input],[role=dialog]," +
+  // Canvas nodes scale with zoom, so their controls never measure 32px.
+  ".react-flow__node"
 
 type Route = {
   name: string

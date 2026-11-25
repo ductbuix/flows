@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { workflowSchema, type LayoutFile } from "@workspace/contracts"
 import {
   canvasToLayout,
+  connectionToEdge,
   workflowEdgesToCanvas,
   workflowToCanvas,
 } from "./flow-graph"
@@ -35,7 +36,11 @@ describe("workflowToCanvas", () => {
       { x: 400, y: 20 },
       { x: 800, y: 20 },
     ])
-    expect(nodes.map((n) => n.type)).toEqual(["trigger", "command", "output"])
+    expect(nodes.map((n) => n.type)).toEqual([
+      "flow-trigger",
+      "flow-command",
+      "flow-output",
+    ])
     expect(edges).toHaveLength(2)
     expect(edges[0]).toMatchObject({
       source: "start",
@@ -82,5 +87,86 @@ describe("workflowEdgesToCanvas / canvasToLayout", () => {
       nodes: { a: { x: 1, y: 2 } },
       viewport: { x: 0, y: 0, zoom: 1 },
     })
+  })
+})
+
+describe("connectionToEdge", () => {
+  const kinds: Record<string, string> = {
+    t: "trigger",
+    l: "llm",
+    c: "command",
+    j: "judge",
+    o: "output",
+  }
+  const kindOf = (id: string) => kinds[id]
+
+  it("wires text to text and omits the default port", () => {
+    expect(
+      connectionToEdge(
+        {
+          source: "t",
+          target: "l",
+          sourceHandle: "text",
+          targetHandle: "text",
+        },
+        kindOf
+      )
+    ).toEqual({ from: "t", to: "l" })
+  })
+
+  it("keeps file ports and judge branches", () => {
+    expect(
+      connectionToEdge(
+        {
+          source: "c",
+          target: "o",
+          sourceHandle: "file",
+          targetHandle: "file",
+        },
+        kindOf
+      )
+    ).toEqual({ from: "c", to: "o", port: "file" })
+    expect(
+      connectionToEdge(
+        { source: "j", target: "o", sourceHandle: "no", targetHandle: "text" },
+        kindOf
+      )
+    ).toEqual({ from: "j", to: "o", branch: "no" })
+  })
+
+  it("rejects mismatched ports, self loops and trigger files", () => {
+    expect(
+      connectionToEdge(
+        {
+          source: "c",
+          target: "l",
+          sourceHandle: "text",
+          targetHandle: "file",
+        },
+        kindOf
+      )
+    ).toBeNull()
+    expect(
+      connectionToEdge(
+        {
+          source: "l",
+          target: "l",
+          sourceHandle: "text",
+          targetHandle: "text",
+        },
+        kindOf
+      )
+    ).toBeNull()
+    expect(
+      connectionToEdge(
+        {
+          source: "t",
+          target: "c",
+          sourceHandle: "file",
+          targetHandle: "file",
+        },
+        kindOf
+      )
+    ).toBeNull()
   })
 })

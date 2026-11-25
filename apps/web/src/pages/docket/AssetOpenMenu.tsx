@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronDown, Code, Expand, FolderOpen } from "lucide-react"
+import { Code, ExternalLink, Expand, FolderOpen, Trash2 } from "lucide-react"
 import { useNavigate } from "react-router"
 import type { FlowsClient } from "@workspace/sdk"
 import { Button } from "@workspace/ui/components/button"
@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import { mono } from "@/components/data/mono"
@@ -17,13 +18,25 @@ type Props = {
   /** Store-relative folder for owned assets (e.g. docket/cards/x/assets). */
   storePath: string
   home: string
+  /** Drop the asset from the card; omit on the folder row. */
+  onRemove?: () => void
+  /** Hide the path line (asset rows). */
+  compact?: boolean
+  triggerTestId?: string
 }
 
 /**
  * Item files menu: view in Files, reveal in Finder, open in Cursor
  * (DK-13 / BL-199).
  */
-export function AssetOpenMenu({ client, storePath, home }: Props) {
+export function AssetOpenMenu({
+  client,
+  storePath,
+  home,
+  onRemove,
+  compact,
+  triggerTestId = "item-open-menu",
+}: Props) {
   const navigate = useNavigate()
   const [note, setNote] = useState<string | null>(null)
 
@@ -47,17 +60,28 @@ export function AssetOpenMenu({ client, storePath, home }: Props) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <p
-          className={`${mono} min-w-0 flex-1 truncate text-xs text-muted-foreground`}
-        >
-          ~/.flowapp/{storePath}
-        </p>
+        {compact ? (
+          <span className="flex-1" />
+        ) : (
+          <p
+            className={`${mono} min-w-0 flex-1 truncate text-xs text-muted-foreground`}
+          >
+            ~/.flowapp/{storePath}
+          </p>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="outline" data-testid="item-open-menu" />}
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Open in"
+                className="shrink-0"
+                data-testid={triggerTestId}
+              />
+            }
           >
-            Open in
-            <ChevronDown />
+            <ExternalLink />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
@@ -81,6 +105,19 @@ export function AssetOpenMenu({ client, storePath, home }: Props) {
               <Code />
               Cursor
             </DropdownMenuItem>
+            {onRemove ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={onRemove}
+                  data-testid="asset-remove"
+                >
+                  <Trash2 />
+                  Remove asset
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

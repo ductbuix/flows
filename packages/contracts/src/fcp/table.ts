@@ -38,6 +38,7 @@ import {
   inboxListMethod,
   inboxUpdateNotification,
 } from "./inbox.ts"
+import { noticeUpdateNotification } from "./notice.ts"
 import { initializeMethod } from "./initialize.ts"
 import {
   libraryAddMethod,
@@ -175,6 +176,7 @@ export const fcpNotificationTable = {
   "run/update": runUpdateNotification,
   "skill/update": skillUpdateNotification,
   "inbox/update": inboxUpdateNotification,
+  "notice/update": noticeUpdateNotification,
   "library/update": libraryUpdateNotification,
   "connector/update": connectorUpdateNotification,
 } as const satisfies Record<string, FcpNotificationDef>

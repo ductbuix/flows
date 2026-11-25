@@ -37,6 +37,25 @@ test.describe("sidebar settings panel (BL-210)", () => {
     })
   })
 
+  test("text size", async ({ page }) => {
+    const rootSize = () =>
+      page.evaluate(() => document.documentElement.style.fontSize)
+    await openSettings(page)
+    await page.getByTestId("text-size-large").click()
+    await expect.poll(rootSize).toBe("112.5%")
+
+    await page.reload()
+    await expect.poll(rootSize).toBe("112.5%")
+    await openSettings(page)
+    await expect(page.getByTestId("text-size-large")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    )
+
+    await page.getByTestId("text-size-default").click()
+    await expect.poll(rootSize).toBe("100%")
+  })
+
   test("cli trust", async ({ page }) => {
     await openSettings(page)
     await expect(page.getByTestId("cli-status-list")).toBeVisible({

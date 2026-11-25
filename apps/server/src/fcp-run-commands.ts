@@ -135,7 +135,8 @@ export function createRunCommandBindings(
         engine,
         params.runId,
         params.stepId,
-        params.attempt
+        params.attempt,
+        params.pass
       )
       if (!attemptRoot) {
         throw engineError("not_found", "attempt not found")

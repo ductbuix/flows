@@ -1,6 +1,9 @@
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { DEFAULT_LIBRARY_MAX_BYTES, type LibraryUsage } from "@workspace/contracts"
+import {
+  DEFAULT_LIBRARY_MAX_BYTES,
+  type LibraryUsage,
+} from "@workspace/contracts"
 import { loadAppConfig } from "./config.ts"
 import { libraryDir } from "./paths.ts"
 

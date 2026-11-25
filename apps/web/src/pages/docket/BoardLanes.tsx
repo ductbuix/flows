@@ -52,7 +52,7 @@ export function BoardLanes({
           <section
             key={col.id}
             className={cn(
-              "flex max-h-full w-72 shrink-0 snap-start flex-col gap-2.5 overflow-y-auto rounded-3xl p-2.5",
+              "flex max-h-full w-72 shrink-0 snap-start flex-col gap-2.5 overflow-hidden rounded-3xl p-2.5",
               LANE_BG[col.tone],
               dragId && overCol === col.id && "ring-2 ring-ring ring-inset"
             )}
@@ -67,40 +67,45 @@ export function BoardLanes({
             data-testid={`docket-column-${col.id}`}
           >
             <ColumnHeader col={col} count={colCards.length} />
-            {colCards.length === 0 ? (
-              <Empty
-                className="ring-1 ring-foreground/10"
-                data-testid={`docket-empty-${col.id}`}
-              >
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Inbox />
-                  </EmptyMedia>
-                  <EmptyTitle>No cards</EmptyTitle>
-                  <EmptyDescription>
-                    {dragId ? "Drop here" : `Drag a card to ${col.label}`}
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : null}
-            {colCards.map((card) => (
-              <CardTile
-                key={card.id}
-                card={card}
-                dragging={dragId === card.id}
-                showDrop={
-                  !!dragId && overCard === card.id && dragId !== card.id
-                }
-                onOpen={() => onOpen(card.id)}
-                onDragStart={() => onDragStart(card.id)}
-                onDragEnd={onDragEnd}
-                onDragOver={() => onOverCard(col.id, card.id)}
-                onDrop={() => onDropCard(col.id, card.id)}
-              />
-            ))}
+            <div
+              className="flex min-h-0 flex-col gap-2.5 overflow-y-auto"
+              data-testid={`docket-scroll-${col.id}`}
+            >
+              {colCards.length === 0 ? (
+                <Empty
+                  className="ring-1 ring-foreground/10"
+                  data-testid={`docket-empty-${col.id}`}
+                >
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Inbox />
+                    </EmptyMedia>
+                    <EmptyTitle>No cards</EmptyTitle>
+                    <EmptyDescription>
+                      {dragId ? "Drop here" : `Drag a card to ${col.label}`}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : null}
+              {colCards.map((card) => (
+                <CardTile
+                  key={card.id}
+                  card={card}
+                  dragging={dragId === card.id}
+                  showDrop={
+                    !!dragId && overCard === card.id && dragId !== card.id
+                  }
+                  onOpen={() => onOpen(card.id)}
+                  onDragStart={() => onDragStart(card.id)}
+                  onDragEnd={onDragEnd}
+                  onDragOver={() => onOverCard(col.id, card.id)}
+                  onDrop={() => onDropCard(col.id, card.id)}
+                />
+              ))}
+            </div>
             <Button
               variant="ghost"
-              className="justify-start text-muted-foreground"
+              className="shrink-0 justify-start text-muted-foreground"
               data-testid={`docket-add-${col.id}`}
               onClick={() => onAdd(col.id)}
             >

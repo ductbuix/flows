@@ -9,11 +9,6 @@ import {
   StepLimits,
   SystemPromptField,
 } from "./node-settings-fields"
-import {
-  ApprovalSettings,
-  OutputSettings,
-  TriggerSettings,
-} from "./node-settings-kinds"
 
 type Patch = Record<string, unknown>
 
@@ -63,12 +58,6 @@ function settingsBody(
     case "judge":
     case "command":
       return <StepLimits node={node} onChange={onChange} />
-    case "approval":
-      return <ApprovalSettings node={node} onChange={onChange} />
-    case "output":
-      return <OutputSettings node={node} onChange={onChange} />
-    case "trigger":
-      return <TriggerSettings node={node} onChange={onChange} />
     default:
       return (
         <p className="text-sm text-muted-foreground">
@@ -78,7 +67,7 @@ function settingsBody(
   }
 }
 
-/** Advanced settings of the selected node (WF-12, WF-14, WF-15). */
+/** Advanced settings of LLM, Command and Judge nodes (WF-12, WF-14, WF-15). */
 export function NodeSettings({
   node,
   systemPrompt,

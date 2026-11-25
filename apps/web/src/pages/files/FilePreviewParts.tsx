@@ -85,7 +85,10 @@ export function FilePreviewHeader({
         ))}
       </span>
       {metaLine ? (
-        <span className="text-xs text-muted-foreground" data-testid="files-stat">
+        <span
+          className="text-xs text-muted-foreground"
+          data-testid="files-stat"
+        >
           {metaLine}
         </span>
       ) : null}

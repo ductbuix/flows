@@ -103,6 +103,9 @@ export function mapSessionUpdate(
         title,
         toolKind: typeof update.kind === "string" ? update.kind : "other",
         status: typeof update.status === "string" ? update.status : "pending",
+        ...(update.rawInput !== undefined && update.rawInput !== null
+          ? { input: update.rawInput }
+          : {}),
       }
     }
     case "tool_call_update": {
@@ -113,11 +116,20 @@ export function mapSessionUpdate(
       }
       const status =
         typeof update.status === "string" ? update.status : "pending"
-      const event: AgentEvent = { kind: "tool_call_update", id, status }
-      if (update.content !== undefined && update.content !== null) {
-        return { ...event, content: update.content }
+      return {
+        kind: "tool_call_update",
+        id,
+        status,
+        ...(update.content !== undefined && update.content !== null
+          ? { content: update.content }
+          : {}),
+        ...(update.rawInput !== undefined && update.rawInput !== null
+          ? { input: update.rawInput }
+          : {}),
+        ...(update.rawOutput !== undefined && update.rawOutput !== null
+          ? { output: update.rawOutput }
+          : {}),
       }
-      return event
     }
     case "plan": {
       const entries = asPlanEntries(update.entries)

@@ -1,6 +1,7 @@
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
-import { latestStep } from "../runs/model.ts"
+import { loadStepInputs } from "./context.ts"
+import { resolveInputSources } from "./input-sources.ts"
 
 export type WriteOutputEffectDeps = {
   docs: DocumentStore
@@ -8,7 +9,8 @@ export type WriteOutputEffectDeps = {
 }
 
 /**
- * Folder output: copy each upstream step folder into run `output/` (DES-034).
+ * Folder output: copy each upstream step's results into run `output/`
+ * (DES-034). Results pass through Judge and Approval; logs never do.
  */
 export function runWriteOutputEffect(
   effect: Extract<RunEffect, { kind: "write_output" }>,
@@ -17,18 +19,15 @@ export function runWriteOutputEffect(
 ): EffectResult {
   const runDir = deps.runDirOf(state)
   const outputs: string[] = []
-  for (const fromId of effect.from) {
-    const pass = latestStep(state.steps, fromId)?.pass ?? 1
-    const base = `${runDir}/nodes/${fromId}/pass-${pass}`
-    const destRoot = `${runDir}/output/${fromId}`
-    for (const path of deps.docs.list(`${base}/**`)) {
-      if (!path.startsWith(`${base}/`)) continue
-      const rel = path.slice(base.length + 1)
-      if (!rel || rel.endsWith("/")) continue
-      const body = deps.docs.read(path)?.text ?? ""
-      deps.docs.write(`${destRoot}/${rel}`, body)
-      outputs.push(`output/${fromId}/${rel}`)
-    }
+  const sources = resolveInputSources(state, effect.nodeId).filter(
+    (s) => s.role === "result"
+  )
+  for (const input of loadStepInputs(deps.docs, runDir, sources)) {
+    deps.docs.write(
+      `${runDir}/output/${input.from}/${input.name}`,
+      input.text ?? ""
+    )
+    outputs.push(`output/${input.from}/${input.name}`)
   }
   return { ok: true, outputs }
 }

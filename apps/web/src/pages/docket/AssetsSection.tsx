@@ -15,13 +15,7 @@ import {
 import { errorMessage } from "@/lib/fcp-error"
 import { AddAssetDiskDialog } from "./AddAssetDiskDialog"
 import { AssetOpenMenu } from "./AssetOpenMenu"
-import {
-  Adder,
-  EmptyLine,
-  ListRow,
-  RemoveButton,
-  Section,
-} from "./SectionParts"
+import { Adder, EmptyLine, ListRow, Section } from "./SectionParts"
 
 type IndexedAsset = FcpCallResult<"docket/get_card">["assets"][number]
 type LibItem = FcpCallResult<"library/list">["items"][number]
@@ -32,6 +26,11 @@ type Props = {
   baseHash: string
   assets: IndexedAsset[]
   onMutated: () => void
+}
+
+function relativeToHome(path: string, home: string): string {
+  const root = home.replace(/\/$/, "") + "/"
+  return path.startsWith(root) ? path.slice(root.length) : path
 }
 
 function basename(path: string): string {
@@ -122,9 +121,13 @@ export function AssetsSection({
                 Missing
               </Badge>
             ) : null}
-            <RemoveButton
-              label={`Remove asset ${a.label ?? basename(a.path)}`}
-              onClick={() => void remove(a.path)}
+            <AssetOpenMenu
+              client={client}
+              storePath={relativeToHome(a.path, home)}
+              home={home}
+              compact
+              triggerTestId="asset-open-menu"
+              onRemove={() => void remove(a.path)}
             />
           </ListRow>
         ))

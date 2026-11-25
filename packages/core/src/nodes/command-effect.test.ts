@@ -42,6 +42,12 @@ describe("command effect on RunActor", () => {
       status: "done",
     })
     expect(docs.read(`${runDir}/nodes/a/pass-1/text.md`)?.text).toBe("out")
+    expect(
+      docs.read(`${runDir}/nodes/a/pass-1/attempt-1/stdout.log`)?.text
+    ).toBe("out")
+    expect(
+      docs.read(`${runDir}/nodes/a/pass-1/attempt-1/stderr.log`)?.text
+    ).toBe("")
     const types = events.read("r1").map((s) => s.event.type)
     expect(types).toContain("run_started")
     expect(types).toContain("step_done")
@@ -71,6 +77,22 @@ describe("command effect on RunActor", () => {
     await actor.push({ kind: "start", at, runId: "r1", graph })
     expect(actor.getState()?.status).toBe("failed")
     expect(latestStep(actor.getState()!.steps, "a")?.status).toBe("failed")
+    expect(
+      docs.read(`${runDir}/nodes/a/pass-1/attempt-1/stderr.log`)?.text
+    ).toBe("boom")
+    const lines = docs
+      .read(`${runDir}/nodes/a/pass-1/attempt-1/events.log`)
+      ?.text.trim()
+      .split("\n")
+      .map((l) => JSON.parse(l))
+    expect(lines).toMatchObject([
+      {
+        kind: "command",
+        command: "false",
+        status: "failed",
+        text: "boom",
+      },
+    ])
   })
 
   it("fails the run after skipping successors of a failed command", async () => {

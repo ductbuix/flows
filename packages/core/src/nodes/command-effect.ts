@@ -1,4 +1,5 @@
 import { connectionEnvName, type WorkflowNode } from "@workspace/contracts"
+import { appendLogEntry } from "./attempt-log.ts"
 import type { DocumentStore } from "../ports/document-store.ts"
 import type { ProcessRunner } from "../ports/process-runner.ts"
 import type { EffectResult, RunEffect, RunState } from "../runs/model.ts"
@@ -67,6 +68,7 @@ export async function runCommandEffect(
   const workflowAbs = abs(workflowDir)
   const outAbs = abs(outDir)
   const runAbs = abs(runDir)
+  const startedAt = now()
   const signal = deps.signalOf?.(state) ?? new AbortController().signal
   const proc = deps.process.spawn(
     {
@@ -89,7 +91,18 @@ export async function runCommandEffect(
   const stderrP = readAll(proc.stderr)
   const code = await proc.exit
   const stdout = await stdoutP
-  await stderrP
+  const stderr = await stderrP
+  // Keep full logs per attempt so the canvas can show them (run/get_log).
+  deps.docs.write(`${attemptRoot}/stdout.log`, stdout)
+  deps.docs.write(`${attemptRoot}/stderr.log`, stderr)
+  appendLogEntry(deps.docs, attemptRoot, {
+    at: startedAt,
+    kind: "command",
+    title: run,
+    command: run,
+    status: code === 0 ? "ok" : "failed",
+    text: [stdout, stderr].filter((t) => t.trim()).join("\n"),
+  })
 
   // Let a queued cancel settle the run (do not emit step_failed first).
   if (signal.aborted) {

@@ -4,10 +4,7 @@ import {
   putTrustBodySchema,
   trustStatusSchema,
 } from "../trust.ts"
-import {
-  mcpTrustStatusSchema,
-  putMcpTrustBodySchema,
-} from "../mcp-trust.ts"
+import { mcpTrustStatusSchema, putMcpTrustBodySchema } from "../mcp-trust.ts"
 import { defineMethod } from "./define.ts"
 
 /** Read-only agent CLI probe (DES-024 / BL-210). */

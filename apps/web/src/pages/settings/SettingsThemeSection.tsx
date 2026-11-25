@@ -1,7 +1,4 @@
-import {
-  Field,
-  FieldDescription,
-} from "@workspace/ui/components/field"
+import { Field, FieldDescription } from "@workspace/ui/components/field"
 import { Kbd } from "@workspace/ui/components/kbd"
 import {
   ToggleGroup,

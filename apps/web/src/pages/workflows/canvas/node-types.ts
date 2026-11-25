@@ -1,15 +1,15 @@
-import { JudgeNode, StepNode } from "./FlowNodes"
+import { CommandNode, JudgeNode, LlmNode, PromptNode } from "./FlowNodes"
 import { ApprovalNode, AssetNode, OutputNode, TriggerNode } from "./FlowNodesIO"
 
-/** React Flow nodeTypes keyed by registry kind. */
+/** React Flow nodeTypes keyed by `nodeTypeOf(kind)`. */
 export const nodeTypes = {
-  trigger: TriggerNode,
-  prompt: StepNode,
-  asset: AssetNode,
-  agent: StepNode,
-  command: StepNode,
-  llm: StepNode,
-  judge: JudgeNode,
-  approval: ApprovalNode,
-  output: OutputNode,
+  "flow-trigger": TriggerNode,
+  "flow-prompt": PromptNode,
+  "flow-asset": AssetNode,
+  "flow-agent": LlmNode,
+  "flow-command": CommandNode,
+  "flow-llm": LlmNode,
+  "flow-judge": JudgeNode,
+  "flow-approval": ApprovalNode,
+  "flow-output": OutputNode,
 }

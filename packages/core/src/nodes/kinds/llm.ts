@@ -1,8 +1,14 @@
 import { fillTemplate } from "@workspace/contracts"
 import { z } from "zod"
-import type { ContentBlock } from "../../ports/agent-runtime.ts"
 import { defineNodeKind } from "../define.ts"
-import type { StepContext, StepEvent, StepInput } from "../types.ts"
+import type { StepContext, StepEvent } from "../types.ts"
+import {
+  llmContentBlocks,
+  llmPromptText,
+  llmProfileId,
+} from "../agent-prompt.ts"
+import { createReply, logNarration } from "../agent-reply.ts"
+import { logPrompt, logToolEvent, type ToolMap } from "../tool-log.ts"
 
 const settings = z.object({
   cli: z.enum(["claude", "cursor"]).default("cursor"),
@@ -17,40 +23,6 @@ const settings = z.object({
 
 type Settings = z.infer<typeof settings>
 
-/** Profile id for the ACP session (Cursor first; BL-140). */
-export function llmProfileId(cli: "claude" | "cursor"): string {
-  return cli === "cursor" ? "cursor" : "cursor"
-}
-
-/** Prompt text: optional system, then prompt (DES-032 / DES-041). */
-export function llmPromptText(parts: {
-  system?: string
-  prompt: string
-}): string {
-  const out: string[] = []
-  const system = parts.system?.trim()
-  if (system) out.push(system)
-  out.push(parts.prompt.trim())
-  return `${out.join("\n\n")}\n`
-}
-
-/** Text plus one resource block per input file (DES-041). */
-export function llmContentBlocks(
-  promptText: string,
-  inputs: readonly StepInput[]
-): ContentBlock[] {
-  const blocks: ContentBlock[] = [{ type: "text", text: promptText }]
-  for (const input of inputs) {
-    blocks.push({
-      type: "resource",
-      uri: `file://${input.name}`,
-      mimeType: "text/plain",
-      text: input.text ?? "",
-    })
-  }
-  return blocks
-}
-
 function readFrozen(
   ctx: StepContext<Settings>,
   name: string
@@ -60,8 +32,8 @@ function readFrozen(
 }
 
 /**
- * LLM over ACP in agent mode (DES-041 / BL-142). Prompt plus input files
- * as resource blocks; message text becomes the step output.
+ * LLM over ACP in agent mode (DES-041 / BL-142). Prompt plus upstream
+ * results as resource blocks; the agent's last message is the result.
  */
 export const llmKind = defineNodeKind({
   kind: "llm",
@@ -78,7 +50,8 @@ export const llmKind = defineNodeKind({
       system: systemRaw ? fillTemplate(systemRaw, ctx.answers) : undefined,
       prompt: fillTemplate(promptRaw, ctx.answers),
     })
-    const blocks = llmContentBlocks(promptText, ctx.inputs)
+    const blocks = llmContentBlocks(promptText, ctx.inputs, ctx.node.id)
+    logPrompt(ctx, ctx.settings, "agent", promptText)
     const session = await ctx.agent.session({
       profileId: llmProfileId(ctx.settings.cli),
       // Host fills absolute cwd via createStepContext agentCwd (DES-041).
@@ -91,11 +64,13 @@ export const llmKind = defineNodeKind({
         ? { effort: ctx.settings.effort }
         : {}),
     })
-    let text = ""
+    const reply = createReply(logNarration(ctx))
+    const tools: ToolMap = new Map()
     try {
       if (session.setMode) await session.setMode("agent")
       for await (const event of session.prompt(blocks, ctx.signal)) {
-        if (event.kind === "message_chunk") text += event.text
+        reply.push(event)
+        logToolEvent(ctx, tools, event)
         if (event.kind === "stop" && event.reason === "cancelled") {
           yield { kind: "failed", reason: "exit", message: "cancelled" }
           return
@@ -108,9 +83,11 @@ export const llmKind = defineNodeKind({
     } finally {
       await session.close()
     }
+    const text = reply.final()
+    ctx.log({ kind: "message", title: "Agent reply", text })
     yield {
       kind: "output_written",
-      path: await ctx.outputs.write("text.md", text.trim()),
+      path: await ctx.outputs.write("text.md", text),
     }
     yield { kind: "done" }
   },

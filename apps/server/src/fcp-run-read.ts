@@ -23,9 +23,7 @@ export function createRunReadBindings(engine: Host): RunReadBindings {
       pageRunSummaries(
         engine.listRunSummaries({
           limit: LIST_SCAN_LIMIT,
-          ...(params.cardId !== undefined
-            ? { cardId: params.cardId }
-            : {}),
+          ...(params.cardId !== undefined ? { cardId: params.cardId } : {}),
           ...(params.workflowId !== undefined
             ? { workflowId: params.workflowId }
             : {}),

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { connectionIdSchema } from "../ids.ts"
+import { LibItemId, connectionIdSchema } from "../ids.ts"
 import { defineNodeKind } from "./define.ts"
 
 /** One library resource an Asset lists: a connection's entity (DES-026). */
@@ -22,7 +22,9 @@ export const assetKind = defineNodeKind({
   group: "inputs",
   ports: { in: [], out: ["text", "file"] },
   settings: {
-    resources: z.array(assetResourceSchema),
+    resources: z.array(assetResourceSchema).default([]),
+    /** Library items whose current version the step emits (canvas picker). */
+    items: z.array(LibItemId).optional(),
     access: z.enum(["read", "propose"]).default("read"),
   },
 })

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  fileKindLabel,
-  formatFileSize,
-  formatStatLine,
-} from "./file-meta"
+import { fileKindLabel, formatFileSize, formatStatLine } from "./file-meta"
 
 describe("file-meta", () => {
   it("labels common extensions and folders", () => {

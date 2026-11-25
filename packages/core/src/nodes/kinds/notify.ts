@@ -5,6 +5,7 @@ import type { StepContext, StepEvent, StepInput } from "../types.ts"
 const settings = z.object({
   target: z.literal("notify"),
   title: z.string().trim().min(1).max(120).optional(),
+  channel: z.enum(["app", "system"]).optional(),
   name: z.string().optional(),
 })
 
@@ -20,7 +21,8 @@ function joinedText(inputs: readonly StepInput[]): string {
 }
 
 /**
- * Output notify: posts an in-app notice with title and input text (BL-100).
+ * Output notify: posts an in-app notice with title and input text (BL-100);
+ * `channel: system` also asks the host for a system notification.
  * Registered as kind `notify`; YAML remains `output` + `target: notify`.
  */
 export const notifyKind = defineNodeKind({
@@ -35,7 +37,8 @@ export const notifyKind = defineNodeKind({
       ctx.graph.name ??
       ctx.graph.id
     const text = joinedText(ctx.inputs).trim()
-    yield { kind: "notify", title, text }
+    const { channel } = ctx.settings
+    yield { kind: "notify", title, text, ...(channel ? { channel } : {}) }
     yield { kind: "done", outputs: [] }
   },
 })

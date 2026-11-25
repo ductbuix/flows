@@ -2,6 +2,8 @@ import { canvasMockup } from "./mockups/CanvasMockup"
 import { createFormMockup } from "./mockups/CreateFormMockup"
 import { detailPanelMockup } from "./mockups/DetailPanelMockup"
 import { kanbanMockup } from "./mockups/KanbanMockup"
+import { nodeAskMockup } from "./mockups/NodeAskMockup"
+import { nodeLogsMockup } from "./mockups/NodeLogsMockup"
 import { runCardMockup } from "./mockups/RunCardMockup"
 import { statusMockup } from "./mockups/StatusMockup"
 import type { Mockup } from "./types"
@@ -15,6 +17,8 @@ export const MOCKUPS: Mockup[] = [
   kanbanMockup,
   canvasMockup,
   runCardMockup,
+  nodeAskMockup,
+  nodeLogsMockup,
   detailPanelMockup,
 ]
 

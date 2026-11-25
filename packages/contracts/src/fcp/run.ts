@@ -1,5 +1,10 @@
 import { z } from "zod"
-import { logChunkSchema, runStepSchema, runSummarySchema } from "../runs.ts"
+import {
+  logChunkSchema,
+  logStreamSchema,
+  runStepSchema,
+  runSummarySchema,
+} from "../runs.ts"
 import { connectionIdSchema } from "../ids.ts"
 import { runChangesResponseSchema } from "../publish.ts"
 import { runStatusSchema } from "../events.ts"
@@ -90,7 +95,9 @@ export const runGetLogParamsSchema = z.object({
   runId: z.string().min(1),
   stepId: z.string().min(1),
   attempt: z.number().int().positive(),
-  stream: z.enum(["stdout", "stderr"]),
+  /** Pass of a looped node; the latest when omitted. */
+  pass: z.number().int().positive().optional(),
+  stream: logStreamSchema,
   offset: z.number().int().nonnegative().optional(),
 })
 

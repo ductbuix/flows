@@ -1,8 +1,14 @@
 import { fillTemplate } from "@workspace/contracts"
 import { z } from "zod"
 import { defineNodeKind } from "../define.ts"
-import type { StepContext, StepEvent, StepInput } from "../types.ts"
-import { llmContentBlocks, llmProfileId, llmPromptText } from "./llm.ts"
+import type { StepContext, StepEvent } from "../types.ts"
+import {
+  llmContentBlocks,
+  llmProfileId,
+  llmPromptText,
+} from "../agent-prompt.ts"
+import { createReply, logNarration } from "../agent-reply.ts"
+import { logPrompt, logToolEvent } from "../tool-log.ts"
 
 /** Named branches on a condition node (DES-041 / mockup). */
 export const CONDITION_BRANCHES = ["yes", "no"] as const
@@ -42,48 +48,6 @@ function readFrozen(
   return ctx.docs.read(path)?.text
 }
 
-async function* keepAnswer(
-  ctx: StepContext<Settings>,
-  text: string
-): AsyncIterable<StepEvent> {
-  yield {
-    kind: "output_written",
-    path: await ctx.outputs.write("answer.md", text),
-  }
-}
-
-function joinedText(inputs: readonly StepInput[]): string {
-  const byFrom = new Map<string, string>()
-  for (const i of inputs) {
-    if (i.name !== "text.md" || i.text === undefined) continue
-    byFrom.set(i.from, i.text)
-  }
-  const parts: string[] = []
-  for (const [from, body] of byFrom) {
-    parts.push(`## ${from}\n\n${body.trimEnd()}\n`)
-  }
-  return parts.join("\n")
-}
-
-async function* forwardInputs(
-  ctx: StepContext<Settings>
-): AsyncIterable<StepEvent> {
-  yield {
-    kind: "output_written",
-    path: await ctx.outputs.write("text.md", joinedText(ctx.inputs)),
-  }
-  for (const input of ctx.inputs) {
-    if (input.name === "text.md") continue
-    const rel = input.name.startsWith("files/")
-      ? input.name
-      : `files/${input.name}`
-    yield {
-      kind: "output_written",
-      path: await ctx.outputs.write(rel, input.text ?? ""),
-    }
-  }
-}
-
 function resolvePrompt(ctx: StepContext<Settings>): string | undefined {
   const raw =
     ctx.settings.prompt ??
@@ -93,8 +57,10 @@ function resolvePrompt(ctx: StepContext<Settings>): string | undefined {
 }
 
 /**
- * Condition over ACP in ask mode (DES-041 / BL-143). Answer's first word
- * picks a named branch; unparsable fails with reason unclear and keeps text.
+ * Condition over ACP in ask mode (DES-041 / BL-143). The verdict is the
+ * step result (`text.md`) and its first word picks a named branch;
+ * unparsable fails with reason unclear. Inputs are not copied: nodes
+ * after a judge read the gated results by reference (DES-034).
  */
 export const conditionKind = defineNodeKind({
   kind: "condition",
@@ -111,7 +77,8 @@ export const conditionKind = defineNodeKind({
       system: systemRaw ? fillTemplate(systemRaw, ctx.answers) : undefined,
       prompt: fillTemplate(promptRaw, ctx.answers),
     })
-    const blocks = llmContentBlocks(promptText, ctx.inputs)
+    const blocks = llmContentBlocks(promptText, ctx.inputs, ctx.node.id)
+    logPrompt(ctx, ctx.settings, "ask", promptText)
     const session = await ctx.agent.session({
       profileId: llmProfileId(ctx.settings.cli),
       cwd: "",
@@ -123,11 +90,13 @@ export const conditionKind = defineNodeKind({
         ? { effort: ctx.settings.effort }
         : {}),
     })
-    let text = ""
+    const reply = createReply(logNarration(ctx))
+    const tools = new Map<string, { title?: string; input?: unknown }>()
     try {
       if (session.setMode) await session.setMode("ask")
       for await (const event of session.prompt(blocks, ctx.signal)) {
-        if (event.kind === "message_chunk") text += event.text
+        reply.push(event)
+        logToolEvent(ctx, tools, event)
         if (event.kind === "stop" && event.reason === "cancelled") {
           yield { kind: "failed", reason: "exit", message: "cancelled" }
           return
@@ -140,9 +109,18 @@ export const conditionKind = defineNodeKind({
     } finally {
       await session.close()
     }
-    const answer = text.trim()
-    yield* keepAnswer(ctx, answer)
+    const answer = reply.final()
+    yield {
+      kind: "output_written",
+      path: await ctx.outputs.write("text.md", answer),
+    }
     const branch = conditionBranch(answer)
+    ctx.log({
+      kind: "message",
+      title: branch ? `Judge answered ${branch}` : "Judge answer unclear",
+      status: branch ? "ok" : "failed",
+      text: answer,
+    })
     if (!branch) {
       yield {
         kind: "failed",
@@ -151,7 +129,6 @@ export const conditionKind = defineNodeKind({
       }
       return
     }
-    yield* forwardInputs(ctx)
     yield { kind: "done", branch }
   },
 })

@@ -44,9 +44,24 @@ export function createFcpHost(engine: Host): FcpHost {
   const events = createEventBus()
   const unsubBus = bindEngineToBus(engine, bus, events)
   const docket = createDocketFcp(engine, bus, events)
-  const coreRuns = createCoreRunHost(engine)
+  const coreRuns = createCoreRunHost(engine, {
+    onNotice: (n) =>
+      bus.publish("notice/update", {
+        kind: "notice_added",
+        notice: {
+          title: n.title,
+          text: n.text,
+          runId: n.runId,
+          workflowId: n.workflowId,
+          nodeId: n.nodeId,
+          channel: n.channel ?? "app",
+        },
+      }),
+  })
   // Core owns live runs; engine only keeps removals/trust/summary (BL-196).
-  void coreRuns.resumeAll()
+  void coreRuns.resumeAll().catch((err: unknown) => {
+    console.error("resume runs failed", err)
+  })
   engine.bootHousekeeping()
   const inbox = createInboxFcp(engine, bus, coreRuns)
   const library = createLibraryFcp(engine, bus)

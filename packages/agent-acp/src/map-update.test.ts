@@ -58,6 +58,18 @@ describe("mapSessionUpdate", () => {
       mapSessionUpdate({
         sessionId: "s",
         update: {
+          sessionUpdate: "tool_call_update",
+          toolCallId: "t1",
+          status: "completed",
+          rawOutput: { stdout: "hi", exitCode: 0 },
+        },
+      })
+    ).toMatchObject({ output: { stdout: "hi", exitCode: 0 } })
+
+    expect(
+      mapSessionUpdate({
+        sessionId: "s",
+        update: {
           sessionUpdate: "plan",
           entries: [{ content: "a" }],
         },

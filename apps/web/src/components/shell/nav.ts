@@ -1,11 +1,25 @@
 /** Primary app sidebar destinations. */
+import {
+  BrainCog,
+  Folder,
+  Inbox,
+  Library,
+  Link2,
+  ListTodo,
+  RouteArrowRight,
+  type LucideIcon,
+} from "lucide-react"
 
-export const APP_NAV = [
-  { to: "/docket", label: "Docket", badge: "M" },
-  { to: "/workflows", label: "Workflows", badge: "M" },
-  { to: "/inbox", label: "Inbox", badge: "A" },
-  { to: "/files", label: "Files", badge: "A" },
-  { to: "/library", label: "Library", badge: "A" },
-  { to: "/skills", label: "Skills", badge: "A" },
-  { to: "/connectors", label: "Connectors", badge: "A" },
-] as const
+export const APP_NAV: readonly {
+  to: string
+  label: string
+  icon: LucideIcon
+}[] = [
+  { to: "/docket", label: "Docket", icon: ListTodo },
+  { to: "/workflows", label: "Workflows", icon: RouteArrowRight },
+  { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/files", label: "Files", icon: Folder },
+  { to: "/library", label: "Library", icon: Library },
+  { to: "/skills", label: "Skills", icon: BrainCog },
+  { to: "/connectors", label: "Connectors", icon: Link2 },
+]

@@ -188,15 +188,15 @@ sequenceDiagram
 
 ## What stays, what changes
 
-| Today                                        | v2                                                               |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| Hono REST + `hc` typed client, ws snapshots  | FCP JSON-RPC; HTTP only for blob download/upload                 |
-| ~~`packages/engine`~~ deleted (BL-215)          | `core` behind ports; Node + `createHost` in `adapters-node`      |
-| `cli-adapters.ts` builds shell strings       | `AgentRuntime` port; ACP sessions with streamed events           |
-| Agent approvals are not visible mid-step     | ACP permission requests become Inbox items under a policy        |
-| Work items record (DES-026)                  | Docket cards as files (DES-038)                                  |
-| Connections tied to library pull             | Connectors (transport x auth x capabilities) via the MCP gateway |
-| UI types from `AppType`                      | UI types from `contracts`; sdk is the only door                  |
+| Today                                       | v2                                                               |
+| ------------------------------------------- | ---------------------------------------------------------------- |
+| Hono REST + `hc` typed client, ws snapshots | FCP JSON-RPC; HTTP only for blob download/upload                 |
+| ~~`packages/engine`~~ deleted (BL-215)      | `core` behind ports; Node + `createHost` in `adapters-node`      |
+| `cli-adapters.ts` builds shell strings      | `AgentRuntime` port; ACP sessions with streamed events           |
+| Agent approvals are not visible mid-step    | ACP permission requests become Inbox items under a policy        |
+| Work items record (DES-026)                 | Docket cards as files (DES-038)                                  |
+| Connections tied to library pull            | Connectors (transport x auth x capabilities) via the MCP gateway |
+| UI types from `AppType`                     | UI types from `contracts`; sdk is the only door                  |
 
 Kept: SQLite append-only event log and fold, files as context,
 hash-checked writes with 409 semantics (now error `conflict`), node

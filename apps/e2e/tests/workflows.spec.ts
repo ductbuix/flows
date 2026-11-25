@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { cancelLiveRuns, e2eHome, fcpRequest, startRun } from "./helpers"
+import { e2eHome } from "./helpers"
 
 async function screenshotThemes(
   page: import("@playwright/test").Page,
@@ -133,9 +133,10 @@ test.describe("workflows.spec.ts › canvas", () => {
     const command = page.getByTestId("canvas-node-command")
     const box = await command.boundingBox()
     expect(box).toBeTruthy()
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    // Grab the header: the card body is an editable field (nodrag).
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + 8)
     await page.mouse.down()
-    await page.mouse.move(box!.x + box!.width / 2 + 120, box!.y + 40, {
+    await page.mouse.move(box!.x + box!.width / 2 + 120, box!.y + 48, {
       steps: 8,
     })
     await page.mouse.up()
@@ -213,26 +214,39 @@ test.describe("workflows.spec.ts › undo redo", () => {
   })
 })
 
-test.describe("workflows.spec.ts › trigger inputs", () => {
-  test("trigger inputs", async ({ page }) => {
-    // Own workflow so later diamond start-run tests are not blocked by a
-    // required input left on disk.
-    await page.goto("/workflows/node-run-ok-light")
-    await page.getByTestId("workflow-canvas-fit").click()
+test.describe("workflows.spec.ts › canvas edit", () => {
+  test("trigger has no settings; edit, wire and notify inline", async ({
+    page,
+  }) => {
+    await page.goto("/workflows/canvas-edit-e2e")
     await page.getByTestId("canvas-node-trigger").click()
-    await expect(page.getByTestId("node-open-settings")).toBeVisible()
-    await page.getByTestId("node-open-settings").click()
-    await expect(page.getByTestId("node-settings")).toBeVisible()
-    await expect(page.getByTestId("trigger-inputs")).toBeVisible()
-    await page.getByTestId("trigger-input-draft").fill("ticket")
-    await page.getByTestId("trigger-input-add").click()
-    await expect(page.getByText("ticket")).toBeVisible()
+    await expect(page.getByTestId("node-open-settings")).toHaveCount(0)
+
+    const instructions = page
+      .getByTestId("canvas-node-llm")
+      .getByTestId("node-field-prompt")
+    await expect(instructions).toHaveValue("Plan it.\n")
+    await instructions.fill("Plan the ticket.")
+    await instructions.blur()
+
+    await page
+      .getByTestId("canvas-node-trigger")
+      .locator('.react-flow__handle[data-handleid="text"]')
+      .dragTo(
+        page
+          .getByTestId("canvas-node-llm")
+          .locator('.react-flow__handle-left[data-handleid="text"]')
+      )
+    await page.getByTestId("output-channel-system").click()
     await saveAndWait(page)
-    const onDisk = readFileSync(
-      join(e2eHome(), "workflows", "node-run-ok-light", "workflow.yaml"),
-      "utf8"
-    )
-    expect(onDisk).toContain("ticket")
+
+    const dir = join(e2eHome(), "workflows", "canvas-edit-e2e")
+    const onDisk = readFileSync(join(dir, "workflow.yaml"), "utf8")
+    expect(onDisk).toContain("{ from: start, to: plan }")
+    expect(onDisk).toContain("channel: system")
+    await expect
+      .poll(() => readFileSync(join(dir, "nodes", "plan", "prompt.md"), "utf8"))
+      .toBe("Plan the ticket.")
   })
 })
 
@@ -278,7 +292,8 @@ test.describe("workflows.spec.ts › node actions", () => {
     await page.goto("/workflows/diamond")
     await page.getByTestId("workflow-canvas-fit").click()
     const command = page.getByTestId("canvas-node-command")
-    await command.click()
+    // Header: the body is an editable field and may sit under a neighbour.
+    await command.getByText("Command").click()
     // evaluate: toolbar remounts on mutate and stalls Playwright's click.
     // Duplicate offsets +40,+40 under a wide card — don't click .last().
     await page.getByTestId("node-duplicate").evaluate((el: HTMLElement) => {
@@ -300,117 +315,5 @@ test.describe("workflows.spec.ts › validate", () => {
     await yaml.fill("id: diamond\nnodes: [{ id: x, kind: nope }]\n")
     await page.getByTestId("workflow-editor-save").click()
     await expect(page.getByTestId("workflow-editor-validation")).toBeVisible()
-  })
-})
-
-test.describe("workflows.spec.ts › sheet", () => {
-  test("sheet", async ({ page }) => {
-    await page.goto("/workflows")
-    await page.getByTestId("workflow-diamond").click()
-    await expect(page.getByTestId("workflow-sheet")).toBeVisible()
-    await expect(page.getByTestId("workflow-open-editor")).toBeVisible()
-    await expect(page.getByTestId("sheet-inputs")).toBeVisible()
-    await expect(page.getByTestId("workflow-start")).toBeVisible()
-  })
-})
-
-test.describe("workflows.spec.ts › sheet inputs", () => {
-  test("sheet inputs", async ({ page }) => {
-    await page.goto("/workflows")
-    await page.getByTestId("workflow-node-start-run").click()
-    const sheet = page.getByTestId("workflow-sheet")
-    await expect(sheet).toBeVisible()
-    await expect(sheet.getByTestId("sheet-inputs")).toContainText("ticket")
-    await sheet.getByTestId("trigger-input-draft").fill("repo")
-    await sheet.getByTestId("trigger-input-add").click()
-    await expect(sheet.getByTestId("sheet-inputs")).toContainText("repo")
-    await page.keyboard.press("Escape")
-    await page.getByTestId("workflow-node-start-run").click()
-    await expect(page.getByTestId("sheet-inputs")).toContainText("repo")
-  })
-})
-
-test.describe("workflows.spec.ts › sheet runs", () => {
-  test("sheet runs", async ({ page }) => {
-    // Diamond is shared across specs; do not require an empty runs list.
-    await cancelLiveRuns("diamond")
-    await page.goto("/workflows")
-    await page.getByTestId("workflow-diamond").click()
-    const sheet = page.getByTestId("workflow-sheet")
-    await sheet.getByTestId("sheet-start-card").click()
-    await page.getByRole("option", { name: /Fix flaky login/i }).click()
-    await sheet.getByTestId("workflow-start").click()
-    await expect(page.getByTestId("workflow-editor")).toBeVisible({
-      timeout: 15_000,
-    })
-    await expect(page.getByTestId("flow-run-banner")).toBeVisible({
-      timeout: 15_000,
-    })
-    await page.goto("/workflows")
-    await page.getByTestId("workflow-diamond").click()
-    await expect(page.getByTestId("sheet-runs-list")).toBeVisible({
-      timeout: 15_000,
-    })
-  })
-})
-
-test.describe("workflows.spec.ts › sheet start", () => {
-  test("sheet start", async ({ page }) => {
-    await page.goto("/workflows")
-    await page.getByTestId("workflow-diamond").click()
-    const sheet = page.getByTestId("workflow-sheet")
-    await sheet.getByTestId("sheet-start-card").click()
-    await page.getByRole("option", { name: /Fix flaky login/i }).click()
-    await sheet.getByTestId("workflow-start").click()
-    await expect(page.getByTestId("flow-run-bar")).toBeVisible({
-      timeout: 15_000,
-    })
-    await expect(page.getByTestId("flow-run-banner")).toBeVisible({
-      timeout: 20_000,
-    })
-    await expect(page).toHaveURL(/run=/)
-  })
-})
-
-test.describe("workflows.spec.ts › canvas run bar", () => {
-  test("canvas run bar", async ({ page }) => {
-    await page.goto("/workflows/diamond")
-    await expect(page.getByTestId("flow-run-bar")).toBeVisible()
-    await page.getByTestId("flow-run-card").click()
-    await page.getByRole("option", { name: /Fix flaky login/i }).click()
-    await expect(page.getByTestId("flow-start-run")).toBeEnabled()
-    await page.getByTestId("flow-start-run").click()
-    await expect(page.getByTestId("flow-run-banner")).toBeVisible({
-      timeout: 20_000,
-    })
-    await expect(page.getByTestId("flow-run-select")).toBeVisible()
-    await expect(
-      page.locator('[data-testid="canvas-node-command"]')
-    ).toBeVisible()
-  })
-
-  test("offers Retry on a failed node", async ({ page }) => {
-    test.setTimeout(90_000)
-    await cancelLiveRuns("node-run-fail-light")
-    const runId = await startRun("node-run-fail-light")
-    await expect
-      .poll(
-        async () => {
-          const got = (await fcpRequest("run/get", { id: runId })) as {
-            status: string
-          }
-          return got.status
-        },
-        { timeout: 45_000 }
-      )
-      .toBe("failed")
-    await page.goto(`/workflows/node-run-fail-light?run=${runId}`)
-    await expect(page.getByTestId("flow-run-banner")).toContainText(/Failed/i, {
-      timeout: 15_000,
-    })
-    const retry = page.getByTestId("node-retry-build")
-    await expect(retry).toBeVisible({ timeout: 15_000 })
-    await retry.click({ force: true })
-    await expect(page.getByTestId("flow-run-banner")).toBeVisible()
   })
 })

@@ -9,6 +9,9 @@ import "@workspace/ui/globals.css"
 import { App } from "./App.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { createAppClient, isDesktopRenderer } from "@/lib/create-app-client.ts"
+import { applyTextSize, readTextSize } from "@/lib/text-size.ts"
+
+applyTextSize(readTextSize())
 
 const Router = isDesktopRenderer() ? HashRouter : BrowserRouter
 

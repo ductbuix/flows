@@ -1,18 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
+  ConnectionLineType,
   ReactFlow,
   SelectionMode,
   useEdgesState,
   useNodesState,
-  type OnNodeDrag,
   type Viewport,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import type { LayoutFile, Workflow } from "@workspace/contracts"
-import { FlowContext, type FlowActions } from "./flow-context"
-import { canvasToLayout, workflowToCanvas, type CanvasNode } from "./flow-graph"
+import { FlowContext } from "./flow-context"
+import { workflowToCanvas } from "./flow-graph"
 import { CanvasChrome } from "./CanvasChrome"
+import {
+  CONNECTION_LINE_STYLE,
+  DEFAULT_EDGE_OPTIONS,
+  SELECTED_EDGE,
+} from "./canvas-styles"
+import { CanvasNodeLogs } from "./NodeLogDialog"
 import { nodeTypes } from "./node-types"
+import { useCanvasActions } from "./use-canvas-actions"
+import { useCanvasConnect } from "./use-canvas-connect"
 import { useCanvasKeys } from "./use-canvas-keys"
 import { useCanvasOps } from "./use-canvas-ops"
 import { useRunOverlay } from "./use-run-overlay"
@@ -80,57 +88,41 @@ export function WorkflowCanvas({
     setEdges(next.edges)
   }, [workflow, layout, setNodes, setEdges])
 
-  const publishLayout = (next: CanvasNode[]) => {
-    onLayoutChange(
-      canvasToLayout(
-        next,
-        viewportRef.current
-          ? {
-              x: viewportRef.current.x,
-              y: viewportRef.current.y,
-              zoom: viewportRef.current.zoom,
-            }
-          : layout.viewport
-      )
-    )
-  }
-
-  const onNodeDragStop: OnNodeDrag = (_e, _node, next) => {
-    const canvas = next as CanvasNode[]
-    setNodes(canvas)
-    publishLayout(canvas)
-  }
-
-  const { load: loadSystem, clear: clearSystem } = system
-  const openSettings = useCallback(
-    (id: string) => {
-      setSettingsId(id)
-      const n = workflow.nodes.find((x) => x.id === id)
-      if (n?.kind === "llm") loadSystem(id)
-      else clearSystem()
-    },
-    [workflow.nodes, loadSystem, clearSystem]
+  const { removeEdges, isValidConnection, onConnect, onNodeDragStop } =
+    useCanvasConnect({
+      workflow,
+      layout,
+      nodes,
+      edges,
+      setNodes,
+      viewportRef,
+      onLayoutChange,
+      ops,
+    })
+  useCanvasKeys(
+    nodes,
+    edges,
+    ops.duplicate,
+    ops.remove,
+    removeEdges,
+    !overlay.readOnly
   )
-
-  useCanvasKeys(nodes, ops.duplicate, ops.remove, !overlay.readOnly)
   const editing = !overlay.readOnly
     ? workflow.nodes.find((n) => n.id === settingsId)
     : undefined
 
-  const { readOnly, onRetry } = overlay
-  const actions = useMemo<FlowActions>(
-    () => ({
-      update: ops.update,
-      run: () => {},
-      runAll: () => {},
-      readOnly,
-      duplicate: ops.duplicate,
-      openSettings,
-      remove: ops.remove,
-      retry: onRetry ? (id) => void onRetry(id) : undefined,
-    }),
-    [ops.update, ops.duplicate, ops.remove, openSettings, readOnly, onRetry]
-  )
+  const { runId } = overlay
+  const [logNodeId, setLogNodeId] = useState<string | null>(null)
+  const logNode = overlay.shown.find((n) => n.id === logNodeId)
+  const actions = useCanvasActions({
+    workflowId,
+    workflow,
+    ops,
+    overlay,
+    system,
+    setSettingsId,
+    setLogNodeId,
+  })
 
   return (
     <div
@@ -140,26 +132,29 @@ export function WorkflowCanvas({
       <FlowContext.Provider value={actions}>
         <ReactFlow
           nodes={overlay.shown}
-          edges={edges}
+          edges={edges.map((e) =>
+            e.selected ? { ...e, style: SELECTED_EDGE } : e
+          )}
           nodeTypes={nodeTypes}
           onNodesChange={overlay.readOnly ? undefined : onNodesChange}
           onEdgesChange={overlay.readOnly ? undefined : onEdgesChange}
           onNodeDragStop={overlay.readOnly ? undefined : onNodeDragStop}
           onBeforeDelete={async ({ nodes: del, edges: ed }) => ({
-            nodes: del.filter((n) => n.type !== "trigger"),
+            nodes: del.filter((n) => n.data.kind !== "trigger"),
             edges: ed,
           })}
           onNodesDelete={(del) => {
             for (const n of del) ops.remove(n.id)
           }}
-          defaultEdgeOptions={{
-            style: {
-              strokeDasharray: "6 6",
-              stroke: "var(--muted-foreground)",
-            },
-          }}
+          defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
           nodesDraggable={!overlay.readOnly}
-          nodesConnectable={false}
+          nodesConnectable={!overlay.readOnly}
+          isValidConnection={isValidConnection}
+          onConnect={onConnect}
+          connectionLineType={ConnectionLineType.SmoothStep}
+          connectionRadius={28}
+          connectionLineStyle={CONNECTION_LINE_STYLE}
+          edgesFocusable={!overlay.readOnly}
           elementsSelectable={!overlay.readOnly}
           selectionOnDrag={!overlay.readOnly}
           deleteKeyCode={null}
@@ -202,6 +197,13 @@ export function WorkflowCanvas({
           />
         </ReactFlow>
       </FlowContext.Provider>
+      {runId && logNode ? (
+        <CanvasNodeLogs
+          runId={runId}
+          node={logNode}
+          onClose={() => setLogNodeId(null)}
+        />
+      ) : null}
     </div>
   )
 }

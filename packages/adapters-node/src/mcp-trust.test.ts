@@ -2,10 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
-import {
-  clearMcpOnceGrants,
-  createNodeMcpTrustPort,
-} from "./mcp-trust.ts"
+import { clearMcpOnceGrants, createNodeMcpTrustPort } from "./mcp-trust.ts"
 
 describe("createNodeMcpTrustPort", () => {
   let dir: string

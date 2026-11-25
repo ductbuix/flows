@@ -19,7 +19,10 @@ export type AppTrustPort = {
 /** MCP server allow list (DES-026). */
 export type McpTrustPort = {
   listServers(): readonly McpTrustEntry[]
-  setGrant(key: string, grant: "once" | "always" | "none"): readonly McpTrustEntry[]
+  setGrant(
+    key: string,
+    grant: "once" | "always" | "none"
+  ): readonly McpTrustEntry[]
 }
 
 export type SettingsPorts = {

@@ -7,10 +7,7 @@ import {
 } from "@workspace/sdk-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
-import {
-  FieldDescription,
-  FieldGroup,
-} from "@workspace/ui/components/field"
+import { FieldDescription, FieldGroup } from "@workspace/ui/components/field"
 import {
   Item,
   ItemActions,
@@ -110,7 +107,11 @@ function SettingsTrustSections() {
         ) : (
           <ItemGroup data-testid="cli-status-list">
             {clis.map((cli) => (
-              <Item key={cli.id} variant="outline" data-testid={`cli-${cli.id}`}>
+              <Item
+                key={cli.id}
+                variant="outline"
+                data-testid={`cli-${cli.id}`}
+              >
                 <ItemContent>
                   <ItemTitle className={mono}>{cli.id}</ItemTitle>
                   <ItemDescription>

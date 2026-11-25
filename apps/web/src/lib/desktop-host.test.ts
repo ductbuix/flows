@@ -111,4 +111,42 @@ describe("desktop-host", () => {
       body: "Ship it?",
     })
   })
+
+  it("shows system notices only for channel system", async () => {
+    const notifySystem = vi.fn()
+    window.flowsDesktop = {
+      connect: () => {},
+      revealPath: vi.fn(),
+      notifyInboxItem: vi.fn(),
+      notifySystem,
+      browserSignIn: vi.fn(),
+    }
+    const client = fakeDesktopClient()
+    installDesktopHost(client)
+    await client.ready
+    await Promise.resolve()
+
+    const notice = {
+      title: "Shipped",
+      text: "## build\n\nall green\n",
+      runId: "r1",
+      workflowId: "wf",
+      nodeId: "done",
+    }
+    client.emitNotification("notice/update", {
+      seq: 2,
+      kind: "notice_added",
+      notice: { ...notice, channel: "app" },
+    })
+    expect(notifySystem).not.toHaveBeenCalled()
+    client.emitNotification("notice/update", {
+      seq: 3,
+      kind: "notice_added",
+      notice: { ...notice, channel: "system" },
+    })
+    expect(notifySystem).toHaveBeenCalledWith({
+      title: "Shipped",
+      body: "all green",
+    })
+  })
 })

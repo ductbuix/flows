@@ -81,8 +81,18 @@ export type AgentEvent =
       title: string
       toolKind: string
       status: string
+      /** Raw tool input (e.g. `{ command }` for a shell tool). */
+      input?: unknown
     }
-  | { kind: "tool_call_update"; id: string; status: string; content?: unknown }
+  | {
+      kind: "tool_call_update"
+      id: string
+      status: string
+      content?: unknown
+      input?: unknown
+      /** Raw tool result (e.g. shell stdout, stderr and exit code). */
+      output?: unknown
+    }
   | { kind: "plan"; entries: PlanEntry[] }
   | { kind: "todos"; entries: TodoEntry[] }
   | {

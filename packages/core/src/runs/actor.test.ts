@@ -153,6 +153,19 @@ describe("RunActor mailbox", () => {
   })
 })
 
+describe("RunActor thrown effects", () => {
+  it("settles a step whose effect throws as failed", async () => {
+    const actor = new RunActor("r1", {
+      events: createFakeEventStore(),
+      runEffect: async () => {
+        throw new Error("Invalid params")
+      },
+    })
+    await actor.push({ kind: "start", at, runId: "r1", graph })
+    expect(actor.getState()?.status).toBe("failed")
+  })
+})
+
 describe("RunActor recovery", () => {
   it("crash between append and effect does not duplicate a step", async () => {
     const launches: string[] = []

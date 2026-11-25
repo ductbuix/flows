@@ -24,21 +24,13 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@workspace/ui/components/input-group"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
 import { FlowsClientGate } from "@/components/FlowsClientGate"
 import { Page, PageTitle } from "@/components/page"
 import { workflowLabel } from "@/lib/labels"
-import { WorkflowRowMenu } from "./WorkflowRowMenu"
 import { WorkflowDialogs } from "./WorkflowDialogs"
 import { WorkflowSheet } from "./WorkflowSheet"
 import { WorkflowsLoadError, WorkflowsLoading } from "./WorkflowsStates"
+import { WorkflowsTable } from "./WorkflowsTable"
 
 export function WorkflowsPage() {
   const existing = useOptionalFlowsClient()
@@ -147,42 +139,12 @@ function WorkflowsPageInner() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <Table data-testid="workflows-table">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Solves</TableHead>
-              <TableHead>Tasks</TableHead>
-              <TableHead className="w-12" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {shown.map((w) => (
-              <TableRow
-                key={w.id}
-                className="cursor-pointer"
-                onClick={() => setOpenId(w.id)}
-                data-testid={`workflow-${w.id}`}
-              >
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{workflowLabel(w)}</span>
-                    <span className="max-w-md truncate text-xs text-muted-foreground">
-                      {w.goal ?? w.id}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>{w.taskCount}</TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <WorkflowRowMenu
-                    name={workflowLabel(w)}
-                    onRename={() => setRenamingId(w.id)}
-                    onDelete={() => setDeletingId(w.id)}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <WorkflowsTable
+          shown={shown}
+          onOpen={setOpenId}
+          onRename={setRenamingId}
+          onDelete={setDeletingId}
+        />
       )}
       <WorkflowDialogs
         client={client}
