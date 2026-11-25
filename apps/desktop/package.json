@@ -28,7 +28,7 @@
     "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
     "@types/ws": "^8.18.2",
-    "electron": "^42.11.18",
+    "electron": "^45.4.1",
     "esbuild": "^0.28.1",
     "eslint": "^10.15.0",
     "globals": "^17.14.0",
