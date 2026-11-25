@@ -1,45 +1,30 @@
-import { mkdirSync } from "node:fs"
 import type {
   CliTrustValue,
   EngineEvent,
   NoticeList,
   RunSummary,
   TrustDecision,
-  Workflow,
 } from "@workspace/contracts"
-import {
-  materializeNodeRunResources,
-  type MaterializeResourcesResult,
-} from "./library-run.ts"
-import { deleteRunFiles, finishRunRemoval } from "./delete-run.ts"
-import {
-  prepareTrustMarker,
-  reconcileEngineTrustMarker,
-  trustDecisionFor,
-} from "./engine-trust.ts"
+import type { MaterializeResourcesResult } from "./library-run.ts"
 import type { EventStore } from "@workspace/core/ports"
 import { EventLog, type StoredEvent } from "./event-log.ts"
-import {
-  appDbPath,
-  resolveAppHome,
-  resolveAppHomeRealpath,
-  runDir,
-  workflowDir,
-} from "./paths.ts"
+import { appDbPath, resolveAppHome, resolveAppHomeRealpath } from "./paths.ts"
 import { cancelNodeRun } from "./nodes/cancel.ts"
-import { assertNodePublishValid } from "./nodes/publish-assert.ts"
 import {
   foldEvents,
   isLiveRunStatus,
   type RunState,
 } from "./nodes/run-state.ts"
 import { RunSummaryCache, type ListRunSummariesOptions } from "./run-summary.ts"
-import { assertNodeTemplatesValid } from "./nodes/template-assert.ts"
 import {
   LIBRARY_RETENTION_INTERVAL_MS,
   sweepLibrary,
 } from "./library-retention.ts"
 import { ensureBlobStore } from "./blob-store.ts"
+import { listLoggedRuns } from "./log-runs.ts"
+import * as runRemoval from "./run-removal.ts"
+import type { PinNodeRunInput } from "./run-removal.ts"
+import * as trust from "./trust.ts"
 
 export type CreateHostOptions = {
   home?: string
@@ -91,33 +76,23 @@ export class Host {
   }
 
   getCliTrust(): CliTrustValue | null {
-    return this.log.getCliTrust()
+    return trust.getCliTrust(this.log)
   }
 
   trustDecision(): TrustDecision {
-    return trustDecisionFor(this.homeRealpath(), this.getCliTrust())
+    return trust.trustDecision(this.log, this.home)
   }
 
   setAlwaysTrust(): void {
-    this.log.setCliTrust({
-      homeRealpath: this.homeRealpath(),
-      trustedAt: new Date().toISOString(),
-    })
-    prepareTrustMarker(this.homeRealpath())
+    trust.setAlwaysTrust(this.log, this.home)
   }
 
   revokeAlwaysTrust(): void {
-    this.log.clearCliTrust()
-    this.reconcileTrustMarker()
+    trust.revokeAlwaysTrust(this.log, this.home)
   }
 
   reconcileTrustMarker(): void {
-    reconcileEngineTrustMarker({
-      home: this.home,
-      homeRealpath: this.homeRealpath(),
-      settings: this.getCliTrust(),
-      runs: this.listRuns(),
-    })
+    trust.reconcileTrustMarker(this.log, this.home)
   }
 
   events(runId: string): EngineEvent[] {
@@ -147,12 +122,7 @@ export class Host {
   }
 
   listRuns(): RunState[] {
-    const out: RunState[] = []
-    for (const runId of this.log.listRunIds()) {
-      const state = this.fold(runId)
-      if (state && !state.deleted) out.push(state)
-    }
-    return out
+    return listLoggedRuns(this.log)
   }
 
   listRunsForWorkflow(workflowId: string): RunState[] {
@@ -182,52 +152,20 @@ export class Host {
   }
 
   markWorkflowRunsDeleted(workflowId: string): void {
-    for (const state of this.listRunsForWorkflow(workflowId)) {
-      if (isLiveRunStatus(state.status)) {
-        throw new Error(`cannot delete live run ${state.runId}`)
-      }
-      this.log.append({
-        type: "run_deleted",
-        runId: state.runId,
-        at: new Date().toISOString(),
-      })
-    }
+    runRemoval.markWorkflowRunsDeleted(
+      this.log,
+      this.listRunsForWorkflow(workflowId)
+    )
   }
 
   /**
    * Pulls and pins the Asset resources of a node run before it starts (BL-082).
    * Undefined when the graph has no Asset.
    */
-  async pinNodeRun(input: {
-    graph: Workflow
-    runId: string
-    cardId?: string
-    /** Reuse the pins of this run (rerun, partial runs) unless `refreshPins`. */
-    pinFromRunId?: string
-    refreshPins?: boolean
-  }): Promise<MaterializeResourcesResult | undefined> {
-    assertNodePublishValid(this.home, input.graph)
-    assertNodeTemplatesValid(this.home, input.graph)
-    if (!input.graph.nodes.some((n) => n.kind === "asset")) return undefined
-    const runRoot = runDir(workflowDir(this.home, input.graph.id), input.runId)
-    mkdirSync(runRoot, { recursive: true })
-    void input.cardId
-    return materializeNodeRunResources({
-      home: this.home,
-      graph: input.graph,
-      runRoot,
-      runId: input.runId,
-      cardLinks: [],
-      pinFromRunRoot: this.runRootOf(input.pinFromRunId),
-      refreshPins: input.refreshPins,
-    })
-  }
-
-  private runRootOf(runId: string | undefined): string | undefined {
-    const prior = runId === undefined ? undefined : this.fold(runId)
-    return prior && runId !== undefined
-      ? runDir(workflowDir(this.home, prior.workflowId), runId)
-      : undefined
+  async pinNodeRun(
+    input: PinNodeRunInput
+  ): Promise<MaterializeResourcesResult | undefined> {
+    return runRemoval.pinNodeRun(this.log, this.home, input)
   }
 
   /** Run id that pins and inputs of a partial run come from, if any. */
@@ -248,10 +186,7 @@ export class Host {
   }
 
   deleteRun(runId: string): void {
-    const state = this.fold(runId)
-    if (!state) throw new Error(`unknown run ${runId}`)
-    const root = runDir(workflowDir(this.home, state.workflowId), runId)
-    deleteRunFiles(root, (event) => this.log.append(event), state)
+    runRemoval.deleteRun(this.log, this.home, runId)
   }
 
   /**
@@ -259,7 +194,7 @@ export class Host {
    * Run drivers resume via the core host (BL-197).
    */
   bootHousekeeping(): void {
-    this.finishPendingRemovals()
+    runRemoval.finishPendingRemovals(this.log, this.home)
     this.reconcileTrustMarker()
     this.rebuildSummaryCache()
   }
@@ -295,15 +230,6 @@ export class Host {
 
   private rebuildSummaryCache(): void {
     this.summaryCache.rebuild(this.log.listRunIds())
-  }
-
-  private finishPendingRemovals(): void {
-    for (const runId of this.log.listRunIds()) {
-      const state = this.fold(runId)
-      if (!state?.deleted) continue
-      const root = runDir(workflowDir(this.home, state.workflowId), runId)
-      finishRunRemoval(root)
-    }
   }
 }
 
